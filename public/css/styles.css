@@ -161,7 +161,10 @@ a:hover{text-decoration:underline}
 
 /* Dim navbar and menu links when hovering the logo; keep GORILLAZ MOTORBIKES label vivid */
 .nav-bar::after{
-  content:"";position:absolute;inset:0;background:rgba(0,0,0,.28);opacity:0;transition:opacity .25s ease;pointer-events:none;z-index:0;
+  content:"";position:absolute;inset:0;
+  /* Center fully clear, opacity increases to edges */
+  background:radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 38%, rgba(0,0,0,.16) 68%, rgba(0,0,0,.30) 100%);
+  opacity:0;transition:opacity .25s ease;pointer-events:none;z-index:0;
 }
 .logo-hover-dim .nav-bar::after{opacity:1}
 .logo-hover-dim .site-header .nav a,
