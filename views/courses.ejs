@@ -1,20 +1,31 @@
-<%- include('partials/head', { title: 'Cursos — Gorillaz Motorbikes', user }) %>
+<%- include('partials/head', { title: 'Cursos — Gorillaz Motorbikes' }) %>
 
-<section class="container">
-  <h1>Cursos</h1>
-  <p>Aprende con los expertos de Gorillaz Motorbikes.</p>
-  <ul class="grid two">
-    <% categories.forEach(cat => { %>
-      <li class="card">
-        <h3><%= cat.title %></h3>
-        <p class="muted"><%= cat.desc %></p>
-        <div class="cta-row">
-          <a class="btn btn-sm" href="#">Ver temario</a>
-          <a class="btn btn-sm btn-outline" href="#">Inscribirme</a>
-        </div>
-      </li>
-    <% }) %>
-  </ul>
-</section>
+<main class="container">
+  <section class="section">
+    <h1 class="section-title">Cursos</h1>
+    <p class="section-subtitle">Aprende con los expertos de Gorillaz Motorbikes.</p>
+    <ul class="grid two">
+      <% list.forEach(c => { %>
+        <li class="card">
+          <h3><a href="/cursos/<%= c.slug %>"><%= c.title %></a></h3>
+          <p class="muted"><%= c.short %></p>
+          <div class="meta-row">
+            <span class="chip"><%= c.category %></span>
+            <span class="chip"><%= c.level %></span>
+            <span class="chip"><%= c.durationHours %> h</span>
+            <span class="chip">~<%= c.readingMinutes %> min de lectura</span>
+          </div>
+          <div class="price-row" style="margin-top:8px">
+            <strong>$<%= c.priceCOP.toLocaleString('es-CO') %></strong>
+            <div class="cta-row">
+              <a class="btn btn-sm" href="/cursos/<%= c.slug %>">Ver temario</a>
+              <a class="btn btn-sm btn-outline" href="/cursos/<%= c.slug %>#inscripcion">Inscribirme</a>
+            </div>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  </section>
+</main>
 
 <%- include('partials/footer') %>

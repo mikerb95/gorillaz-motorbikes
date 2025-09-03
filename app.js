@@ -4,6 +4,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const catalog = require('./data/catalog');
+const courses = require('./data/courses.json');
 
 const app = express();
 
@@ -232,13 +233,13 @@ app.post('/pagar', (req, res) => {
 });
 
 app.get('/cursos', (req, res) => {
-  const categories = [
-    { slug: 'mecanica-motos', title: 'Mecánica de Motos', desc: 'Fundamentos, mantenimiento y diagnósticos.' },
-    { slug: 'electronica-motos', title: 'Electrónica de Motos', desc: 'Sistemas eléctricos, sensores e inyección.' },
-    { slug: 'mecanica-rapida', title: 'Mecánica Rápida', desc: 'Servicios rápidos: frenos, llantas, aceite.' },
-    { slug: 'torno', title: 'Elaboración de piezas con torno', desc: 'Fabricación y ajuste de componentes en torno.' },
-  ];
-  res.render('courses', { user: users.find(u => u.id === req.session.userId), categories });
+  res.render('courses', { list: courses });
+});
+
+app.get('/cursos/:slug', (req, res) => {
+  const course = courses.find(c => c.slug === req.params.slug);
+  if (!course) return res.status(404).render('404');
+  res.render('course', { course });
 });
 
 // Legales

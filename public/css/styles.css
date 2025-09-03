@@ -206,6 +206,31 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   .map-embed{height:300px}
 }
 
+/* Floating WhatsApp FAB */
+.whatsapp-fab{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  width:56px;
+  height:56px;
+  border-radius:999px;
+  background:#25D366; /* WhatsApp brand */
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 20px rgba(0,0,0,.18), 0 3px 8px rgba(0,0,0,.12);
+  z-index:140;
+  transition:transform .2s ease, filter .2s ease;
+}
+.whatsapp-fab:hover{transform:translateY(-2px);filter:brightness(1.05);text-decoration:none}
+@supports(padding: max(0px)){
+  .whatsapp-fab{bottom:calc(18px + env(safe-area-inset-bottom))}
+}
+@media (max-width:640px){
+  .whatsapp-fab{width:52px;height:52px;right:14px;bottom:14px}
+}
+
 /* Shop */
 .section{padding-top:24px}
 .section-title{margin:12px 0 4px}
@@ -270,3 +295,7 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 .password-toggle{position:absolute;top:50%;right:8px;transform:translateY(-50%);border:1px solid #e5e7eb;background:#fff;color:#111;border-radius:10px;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .password-toggle:hover{filter:brightness(0.98)}
 .link{color:#111;font-weight:700}
+
+/* Utility chips and meta rows */
+.chip{display:inline-block;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;background:#fff;color:#111;font-size:12px}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px}

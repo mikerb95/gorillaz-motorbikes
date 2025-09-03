@@ -1,0 +1,65 @@
+<%- include('partials/head', { title: course.title + ' — Curso' }) %>
+
+<main class="container">
+  <section class="section">
+    <a href="/cursos" class="btn btn-ghost">← Volver a cursos</a>
+    <h1 class="section-title" style="margin-top:10px"><%= course.title %></h1>
+    <p class="muted"><%= course.short %></p>
+
+    <div class="meta-row" style="margin:10px 0">
+      <span class="chip"><%= course.category %></span>
+      <span class="chip"><%= course.level %></span>
+      <span class="chip"><%= course.durationHours %> h</span>
+      <span class="chip">~<%= course.readingMinutes %> min</span>
+      <span class="chip"><%= course.modality %></span>
+      <span class="chip"><%= course.location %></span>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>Temario</h3>
+        <ol class="list" style="gap:8px">
+          <% course.syllabus.forEach(unit => { %>
+            <li>
+              <strong><%= unit.title %></strong>
+              <ul class="list" style="margin-top:6px">
+                <% unit.items.forEach(it => { %>
+                  <li style="border:0;padding:4px 0"><%= it %></li>
+                <% }) %>
+              </ul>
+            </li>
+          <% }) %>
+        </ol>
+      </div>
+      <aside class="card">
+        <h3>Detalles</h3>
+        <p><strong>Próxima cohorte:</strong> <%= course.nextIntake %></p>
+        <p><strong>Horario:</strong> <%= course.schedule %></p>
+        <p><strong>Precio:</strong> $<%= course.priceCOP.toLocaleString('es-CO') %></p>
+        <div class="meta-row" style="margin-top:8px">
+          <% course.tags.forEach(t => { %>
+            <span class="chip"><%= t %></span>
+          <% }) %>
+        </div>
+        <h3 style="margin-top:16px">Resultados</h3>
+        <ul class="list">
+          <% course.outcomes.forEach(o => { %>
+            <li><%= o %></li>
+          <% }) %>
+        </ul>
+        <h3 style="margin-top:16px">Requisitos</h3>
+        <ul class="list">
+          <% course.requirements.forEach(r => { %>
+            <li><%= r %></li>
+          <% }) %>
+        </ul>
+        <div id="inscripcion" class="stack" style="margin-top:16px">
+          <a class="btn btn-primary" href="/servicios">Inscribirme</a>
+          <p class="muted">Completa tus datos y deja el curso en el mensaje. Te contactaremos.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,94 @@
+[
+  {
+    "slug": "mecanica-motos",
+    "title": "Mecánica de Motos",
+    "short": "Fundamentos, mantenimiento preventivo y diagnóstico de sistemas mecánicos.",
+    "category": "Técnico",
+    "level": "Inicial-Intermedio",
+    "durationHours": 24,
+    "readingMinutes": 6,
+    "modality": "Presencial",
+    "location": "Bogotá D.C.",
+    "priceCOP": 450000,
+    "tags": ["motor", "transmisión", "chasis", "mantenimiento"],
+    "syllabus": [
+      {"title": "Introducción y seguridad", "items": ["EPP y normas del taller", "Herramientas básicas"]},
+      {"title": "Motor y lubricación", "items": ["Cuatro tiempos", "Aceites y filtros", "Par de apriete"]},
+      {"title": "Transmisión y frenos", "items": ["Cadena, piñón y sprocket", "Frenos de disco y tambor"]},
+      {"title": "Chasis y suspensión", "items": ["Ajustes básicos", "Inspección y diagnóstico"]}
+    ],
+    "outcomes": ["Realizar mantenimiento básico", "Identificar fallas comunes", "Aplicar protocolos de seguridad"],
+    "requirements": ["Mayor de edad", "Conocimientos básicos deseables"],
+    "schedule": "Sábados 9:00 am - 1:00 pm (6 semanas)",
+    "nextIntake": "Octubre 2025"
+  },
+  {
+    "slug": "electronica-motos",
+    "title": "Electrónica de Motos",
+    "short": "Sistemas eléctricos, sensores, inyección y diagnóstico con multímetro.",
+    "category": "Técnico",
+    "level": "Intermedio",
+    "durationHours": 20,
+    "readingMinutes": 7,
+    "modality": "Presencial",
+    "location": "Bogotá D.C.",
+    "priceCOP": 520000,
+    "tags": ["eléctrico", "inyección", "diagnóstico"],
+    "syllabus": [
+      {"title": "Fundamentos eléctricos", "items": ["Voltaje, corriente, resistencia", "Lectura de diagramas"]},
+      {"title": "Sistema de carga y arranque", "items": ["Batería y regulador", "Alternador y motor de arranque"]},
+      {"title": "Inyección y sensores", "items": ["ECU", "Sensores TPS, MAP, O2"]},
+      {"title": "Diagnóstico", "items": ["Uso de multímetro", "Códigos de falla"]}
+    ],
+    "outcomes": ["Interpretar diagramas", "Diagnosticar fallas eléctricas", "Probar componentes"],
+    "requirements": ["Conocimientos básicos de mecánica"],
+    "schedule": "Martes y Jueves 6:00 pm - 8:00 pm (5 semanas)",
+    "nextIntake": "Noviembre 2025"
+  },
+  {
+    "slug": "mecanica-rapida",
+    "title": "Mecánica Rápida",
+    "short": "Servicios rápidos: frenos, llantas, aceites y ajustes esenciales.",
+    "category": "Operativo",
+    "level": "Inicial",
+    "durationHours": 16,
+    "readingMinutes": 5,
+    "modality": "Presencial",
+    "location": "Bogotá D.C.",
+    "priceCOP": 320000,
+    "tags": ["frenos", "llantas", "aceite"],
+    "syllabus": [
+      {"title": "Buenas prácticas y EPP", "items": ["Seguridad y orden del puesto"]},
+      {"title": "Cambio de aceite y filtros", "items": ["Selección de insumos", "Disposición de residuos"]},
+      {"title": "Frenos y llantas", "items": ["Pastillas y bandas", "Torque y calibración"]},
+      {"title": "Checklist de entrega", "items": ["Prueba y verificación final"]}
+    ],
+    "outcomes": ["Ejecutar servicios rápidos", "Cumplir estándares de calidad"],
+    "requirements": ["Mayor de edad"],
+    "schedule": "Viernes 2:00 pm - 6:00 pm (4 semanas)",
+    "nextIntake": "Septiembre 2025"
+  },
+  {
+    "slug": "torno",
+    "title": "Elaboración de piezas con torno",
+    "short": "Fabricación y ajuste de componentes en torno para motocicletas.",
+    "category": "Especializado",
+    "level": "Intermedio-Avanzado",
+    "durationHours": 18,
+    "readingMinutes": 6,
+    "modality": "Presencial",
+    "location": "Bogotá D.C.",
+    "priceCOP": 600000,
+    "tags": ["torno", "fabricación", "tolerancias"],
+    "syllabus": [
+      {"title": "Seguridad y calibración", "items": ["EPP específico", "Ajustes de la máquina"]},
+      {"title": "Materiales y herramientas", "items": ["Aceros y aleaciones", "Porta-herramientas"]},
+      {"title": "Operaciones en torno", "items": ["Desbaste, refrentado, roscado", "Control dimensional"]},
+      {"title": "Pieza final", "items": ["Fabricación guiada", "Verificación de tolerancias"]}
+    ],
+    "outcomes": ["Operar torno de forma segura", "Fabricar piezas con tolerancias"],
+    "requirements": ["Experiencia previa en taller", "Conocimientos de medición"],
+    "schedule": "Miércoles 6:00 pm - 9:00 pm (6 semanas)",
+    "nextIntake": "Octubre 2025"
+  }
+]
