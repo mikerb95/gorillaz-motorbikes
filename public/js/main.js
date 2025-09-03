@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Build and animate the orange blob under brand and nav items
   const headerInner = document.querySelector('.header-inner');
-  const logo = document.querySelector('.logo');
+  const logo = document.querySelector('.nav-center .logo') || document.querySelector('.logo');
   const links = Array.from(document.querySelectorAll('.nav-links a'));
   const ctaLinks = Array.from(document.querySelectorAll('.header-right a, .nav-cta a, .nav-cta form button, .header-right form button'));
   if (headerInner && logo) {
@@ -26,7 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const padY = 10;
       const x = rect.left - host.left - padX/2;
       const y = rect.top - host.top + rect.height/2;
-      const w = Math.max(120, rect.width + padX);
+      const isLogo = el.classList.contains('logo') || el.closest('.logo');
+      const baseW = Math.max(120, rect.width + padX);
+      const w = isLogo ? Math.max(120, Math.min(160, baseW)) : baseW;
       const h = Math.max(32, rect.height + padY);
       blob.style.setProperty('--x', `${x}px`);
       blob.style.setProperty('--w', `${w}px`);
@@ -35,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Default position under the brand text (or full logo)
-  const defaultTarget = document.querySelector('.logo-text') || logo;
+  const defaultTarget = logo;
     setToEl(defaultTarget);
 
     // Hover interactions (only on pointer-capable devices): move blob to hovered nav item
