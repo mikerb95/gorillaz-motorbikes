@@ -86,9 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseW = isSub ? (rect.width + padX) : Math.max(120, rect.width + padX);
   const w = isLogo ? Math.max(120, Math.min(160, baseW)) : baseW;
   const h = isSub ? Math.max(24, rect.height + padY) : Math.max(32, rect.height + padY);
-      // Center the blob horizontally under the target element
-      const centerX = rect.left - host.left + rect.width / 2;
-      const x = centerX - (w / 2);
+  // Center the blob horizontally; for submenu, apply a slight left bias to counter visual drift
+  const centerX = rect.left - host.left + rect.width / 2;
+  const leftBias = isSub ? 6 : 0; // pixels to nudge left on submenu
+  const x = centerX - (w / 2) - leftBias;
       const y = rect.top - host.top + rect.height/2;
       blob.style.setProperty('--x', `${x}px`);
       blob.style.setProperty('--w', `${w}px`);
