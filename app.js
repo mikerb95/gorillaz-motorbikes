@@ -136,18 +136,27 @@ const writeCatalog = (obj) => {
 
 // Routes
 app.get('/', (req, res) => {
-  // Build slideshow images list from images/slideshow
+  // Build slideshow images list; prefer WEBP variants under images/slideshow/WEBP
+  const slidesDirWebp = path.join(__dirname, 'images', 'slideshow', 'WEBP');
   const slidesDir = path.join(__dirname, 'images', 'slideshow');
   let slides = [];
-  try {
-    const files = fs.readdirSync(slidesDir);
-    const allowed = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
-    slides = files
-      .filter(f => allowed.has(path.extname(f).toLowerCase()))
-      .sort()
-  .map(f => `/images/slideshow/${encodeURIComponent(f)}`);
-  } catch (e) {
-    // directory may not exist yet; keep slides empty
+  const allowed = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
+  const readSlides = (dir, urlPrefix) => {
+    try {
+      const files = fs.readdirSync(dir);
+      return files
+        .filter(f => allowed.has(path.extname(f).toLowerCase()))
+        .sort()
+        .map(f => `${urlPrefix}/${encodeURIComponent(f)}`);
+    } catch {
+      return [];
+    }
+  };
+  // Try WEBP folder first
+  slides = readSlides(slidesDirWebp, '/images/slideshow/WEBP');
+  // Fallback to original folder if empty
+  if (!slides.length) {
+    slides = readSlides(slidesDir, '/images/slideshow');
   }
   res.render('home', {
     user: users.find(u => u.id === req.session.userId),
