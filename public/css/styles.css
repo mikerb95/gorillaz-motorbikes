@@ -8,6 +8,7 @@
   --radius:12px;
   --radius-lg:14px;
   --radius-pill:999px;
+  --nav-gap:28px;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#fff;color:#111;font-family:"Helvetica Neue", Helvetica, Arial, system-ui, Segoe UI, Roboto, sans-serif}
@@ -24,7 +25,8 @@ a:hover{text-decoration:underline}
 .logo{display:inline-flex;align-items:center;justify-content:center}
 .logo img{height:36px;width:auto;display:block}
 .nav{display:flex;align-items:center;justify-content:flex-start;gap:16px}
-.nav-links{display:flex;gap:18px;text-transform:uppercase;font-weight:800;letter-spacing:.6px}
+/* unified spacing for nav items */
+.nav-links{display:flex;gap:var(--nav-gap);text-transform:uppercase;font-weight:800;letter-spacing:.6px}
 .nav a{color:#111;opacity:.9;text-decoration:none}
 .nav a:hover{opacity:1;text-decoration:none}
 .site-header a:hover{text-decoration:none}
@@ -57,7 +59,8 @@ a:hover{text-decoration:underline}
 .site-header .nav-cta form button{ font-family:inherit; font-size:inherit; }
 .nav-cta{display:none;align-items:center;gap:10px}
 .nav form{display:inline}
-.header-right{display:flex;align-items:center}
+.header-right{display:flex;align-items:center;gap:var(--nav-gap)}
+.header-right form{margin:0;display:inline}
 .nav-toggle{display:none;background:transparent;border:0;font-size:22px}
 
 /* Orange blob background under brand and menu items */
