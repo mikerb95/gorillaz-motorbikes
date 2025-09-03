@@ -119,6 +119,32 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(setHeaderOffset, 0);
   }
 
+  // Measure submenu height to push sub-embed to the bottom while it's open
+  const navBar = document.querySelector('.nav-bar');
+  const updateSubmenuDepth = () => {
+    if (!navBar) return;
+    let depth = 0;
+    // Find the tallest visible submenu under hover/focus
+    document.querySelectorAll('.nav-item.has-submenu .nav-submenu').forEach(sm => {
+      const host = sm.closest('.nav-item.has-submenu');
+      const hovered = host && (host.matches(':hover') || sm.matches(':hover'));
+      if (!hovered) return;
+      const r = sm.getBoundingClientRect();
+      depth = Math.max(depth, Math.ceil(r.height + 16)); // include a little breathing room
+    });
+    navBar.style.setProperty('--submenu-depth', depth > 0 ? depth + 'px' : '');
+  };
+  // Hook events
+  document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
+    item.addEventListener('mouseenter', updateSubmenuDepth);
+    item.addEventListener('mouseleave', () => { updateSubmenuDepth(); });
+    item.addEventListener('focusin', updateSubmenuDepth);
+    item.addEventListener('focusout', updateSubmenuDepth);
+  });
+  window.addEventListener('resize', () => { updateSubmenuDepth(); });
+  // Initial compute after layout
+  setTimeout(updateSubmenuDepth, 0);
+
   // Mark when page has a full-bleed hero to adjust layout via CSS
   if (document.querySelector('.hero')) {
     document.body.classList.add('has-hero');
