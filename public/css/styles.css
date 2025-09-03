@@ -26,14 +26,14 @@ a:hover{text-decoration:underline}
 .nav-center{display:flex;align-items:center;justify-content:center}
 .logo{display:inline-grid;grid-template-areas:'stack';align-items:center;justify-items:center}
 .logo img{height:36px;width:auto;display:block;grid-area:stack;opacity:1;transition:opacity .18s ease}
-/* Limit text-swap hover effect to header logo only */
-.site-header .logo .logo-text{grid-area:stack;opacity:0;visibility:hidden;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;transition:opacity .18s ease, visibility .18s steps(1, end)}
-.site-header .logo:hover .logo-text,
-.site-header .logo:active .logo-text,
-.site-header .logo.is-hidden .logo-text{opacity:1;visibility:visible}
-.site-header .logo:hover img,
-.site-header .logo:active img,
-.site-header .logo.is-hidden img{opacity:0}
+/* Header logo: swap base mark to name image on hover */
+.site-header .logo .logo-name{opacity:0;visibility:hidden;transition:opacity .18s ease, visibility .18s steps(1, end)}
+.site-header .logo:hover .logo-base,
+.site-header .logo:active .logo-base,
+.site-header .logo.is-hidden .logo-base{opacity:0}
+.site-header .logo:hover .logo-name,
+.site-header .logo:active .logo-name,
+.site-header .logo.is-hidden .logo-name{opacity:1;visibility:visible}
 .nav{display:flex;align-items:center;justify-content:flex-start;gap:0}
 /* unified spacing for nav items */
 .nav-links{display:flex;gap:var(--nav-gap);text-transform:uppercase;font-weight:800;letter-spacing:.6px}
