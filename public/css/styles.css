@@ -76,6 +76,20 @@ a:hover{text-decoration:underline}
   transition:transform .35s cubic-bezier(.2,.8,.2,1), width .35s, height .35s, opacity .3s;
   opacity:.9;
 }
+.nav-blob.is-label{
+  background:transparent;
+  filter:none;
+  color:#fff;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  padding:0 8px;
+  height:auto;
+  line-height:1.2;
+  white-space:nowrap;
+  z-index:2;
+}
+.logo.is-hidden img{opacity:0;transition:opacity .2s ease}
 .logo, .nav-links a, .header-right a{position:relative;z-index:1}
 
 main{min-height:60vh}

@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
       blob.style.setProperty('--w', `${w}px`);
       blob.style.setProperty('--h', `${h}px`);
       blob.style.top = `${y}px`;
+  // default: gradient mode
+  blob.classList.remove('is-label');
+  blob.textContent = '';
+  logo.classList.remove('is-hidden');
     };
 
     // Default position under the brand text (or full logo)
@@ -49,6 +53,32 @@ document.addEventListener('DOMContentLoaded', () => {
         el.addEventListener('focus', () => setToEl(el));
       });
       headerInner.addEventListener('mouseleave', () => setToEl(defaultTarget));
+
+      // Special behavior for logo: show text label instead of blob
+      logo.addEventListener('mouseenter', () => {
+        const rect = logo.getBoundingClientRect();
+        const host = headerInner.getBoundingClientRect();
+        const label = 'Gorillaz Motorbikes'.toUpperCase();
+        blob.classList.add('is-label');
+        blob.textContent = label;
+        logo.classList.add('is-hidden');
+        const measure = document.createElement('span');
+        measure.style.position = 'absolute';
+        measure.style.visibility = 'hidden';
+        measure.style.fontWeight = '800';
+        measure.style.textTransform = 'uppercase';
+        measure.style.letterSpacing = '.6px';
+        measure.textContent = label;
+        document.body.appendChild(measure);
+        const textW = measure.getBoundingClientRect().width + 16; // padding
+        document.body.removeChild(measure);
+        const x = rect.left - host.left - (textW - rect.width)/2;
+        const y = rect.top - host.top + rect.height/2;
+        blob.style.setProperty('--x', `${x}px`);
+        blob.style.setProperty('--w', `${textW}px`);
+        blob.style.top = `${y}px`;
+      });
+      logo.addEventListener('mouseleave', () => setToEl(defaultTarget));
     }
 
     // Keep blob responsive on resize
