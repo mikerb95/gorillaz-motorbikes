@@ -87,8 +87,16 @@ a:hover{text-decoration:underline}
   .nav-item.has-submenu .nav-submenu:hover{display:block}
   /* Expand navbar thickness while submenu is visible */
   .nav-bar{transition:padding .22s ease}
-  .nav-bar:has(.nav-item.has-submenu:hover),
-  .nav-bar:has(.nav-item.has-submenu .nav-submenu:hover){padding-bottom:0}
+  /* When there is NO embedded sub navbar, expand the navbar to fit the submenu */
+  .nav-bar:not(:has(.sub-embed)):has(.nav-item.has-submenu:hover),
+  .nav-bar:not(:has(.sub-embed)):has(.nav-item.has-submenu .nav-submenu:hover){
+    padding-bottom:max(200px, var(--submenu-depth, 200px));
+  }
+  /* When sub navbar is embedded, keep padding zero (sub-embed shifts down instead) */
+  .nav-bar:has(.sub-embed):has(.nav-item.has-submenu:hover),
+  .nav-bar:has(.sub-embed):has(.nav-item.has-submenu .nav-submenu:hover){
+    padding-bottom:0;
+  }
 }
 
 /* Make right-side and mobile CTA items look like nav links */
