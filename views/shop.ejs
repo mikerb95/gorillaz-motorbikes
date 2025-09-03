@@ -1,41 +1,90 @@
 <%- include('partials/head', { title: 'Tienda' }) %>
 
-<main class="container">
-  <section class="section">
-    <h1 class="section-title">Tienda</h1>
-    <p class="section-subtitle">Explora por categoría</p>
+<main class="container shop-layout">
+  <aside class="shop-sidebar">
+    <form class="shop-filters" method="get" action="/tienda">
+      <div class="filter-group">
+        <label for="q">Buscar</label>
+        <input id="q" name="q" placeholder="Producto o categoría" value="<%= q %>" />
+      </div>
 
-    <div class="category-tabs">
-      <% categories.forEach(c => { %>
-        <a class="chip" href="#cat-<%= c.slug %>"><%= c.name %></a>
-      <% }) %>
-    </div>
-
-    <% byCat.forEach(block => { %>
-      <div id="cat-<%= block.slug %>" class="category-block">
-        <h2 class="category-title"><%= block.name %></h2>
-        <div class="grid">
-      <% block.items.forEach(p => { %>
-            <article class="card product-card">
-        <div class="card-media" aria-hidden="true" style="background-image:url('<%= p.image %>');background-size:cover;background-position:center"></div>
-              <div class="card-body">
-                <h3 class="card-title"><%= p.name %></h3>
-                <% if (p.description) { %>
-                  <p class="card-text"><%= p.description %></p>
-                <% } %>
-                <div class="price-row">
-                  <span class="price">$<%= (p.price).toLocaleString('es-CO') %></span>
-                  <form method="post" action="/cart/add">
-                    <input type="hidden" name="id" value="<%= p.id %>" />
-                    <button type="submit" class="btn btn-primary">Añadir</button>
-                  </form>
-                </div>
-              </div>
-            </article>
+      <div class="filter-group">
+        <div class="filter-title">Categorías</div>
+        <ul class="filter-list">
+          <li><a class="<%= !selectedCat ? 'is-active' : '' %>" href="/tienda<%= baseQuery ? ('?' + baseQuery) : '' %>">Todas</a></li>
+          <% categories.forEach(c => { %>
+            <li>
+              <a class="<%= selectedCat === c.slug ? 'is-active' : '' %>" href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %>cat=<%= c.slug %>">
+                <span><%= c.name %></span>
+                <small class="muted"><%= c.count %></small>
+              </a>
+            </li>
           <% }) %>
+        </ul>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-title">Precio</div>
+        <div class="row-2">
+          <label>
+            Mín
+            <input name="min" inputmode="numeric" value="<%= min %>" />
+          </label>
+          <label>
+            Máx
+            <input name="max" inputmode="numeric" value="<%= max %>" />
+          </label>
         </div>
       </div>
-    <% }) %>
+
+      <div class="filter-group">
+        <label for="sort">Ordenar</label>
+        <select id="sort" name="sort">
+          <option value="">Relevancia</option>
+          <option value="price-asc" <%= sort==='price-asc' ? 'selected' : '' %>>Precio: menor a mayor</option>
+          <option value="price-desc" <%= sort==='price-desc' ? 'selected' : '' %>>Precio: mayor a menor</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-primary" type="submit">Aplicar</button>
+        <a class="btn btn-ghost" href="/tienda">Limpiar</a>
+      </div>
+    </form>
+  </aside>
+
+  <section class="shop-content">
+    <div class="shop-header">
+      <h1 class="section-title">Tienda</h1>
+      <% if (selectedCat) { %>
+        <div class="muted">Categoría: <strong><%= (categories.find(c => c.slug === selectedCat) || {}).name %></strong></div>
+      <% } %>
+    </div>
+
+    <% if (products.length === 0) { %>
+      <p>No hay resultados para tu búsqueda.</p>
+    <% } else { %>
+      <div class="grid products-grid">
+        <% products.forEach(p => { %>
+          <article class="card product-card">
+            <div class="card-media" aria-hidden="true" style="background-image:url('<%= p.image %>');background-size:cover;background-position:center"></div>
+            <div class="card-body">
+              <h3 class="card-title"><%= p.name %></h3>
+              <% if (p.description) { %>
+                <p class="card-text"><%= p.description %></p>
+              <% } %>
+              <div class="price-row">
+                <span class="price">$<%= (p.price).toLocaleString('es-CO') %></span>
+                <form method="post" action="/cart/add">
+                  <input type="hidden" name="id" value="<%= p.id %>" />
+                  <button type="submit" class="btn btn-primary">Añadir</button>
+                </form>
+              </div>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
   </section>
 </main>
 
