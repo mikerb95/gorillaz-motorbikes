@@ -208,6 +208,11 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   .nav{inset:var(--header-offset) 12px auto 12px}
   .nav-links{flex-direction:column;gap:12px;align-items:stretch}
   .nav-links a, .nav-cta a, .nav-cta form button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px}
+  /* Ensure cart item looks like others in the mobile list */
+  .nav .cart-link{display:flex;align-items:center;gap:10px}
+  .nav .cart-link .cart-label{display:inline}
+  /* Hide floating badge in the mobile panel to keep rows uniform */
+  .nav[data-open="true"] .cart-badge{display:none}
   /* On mobile overlay, restore dark text for contrast */
   .nav a, .nav-cta a, .nav-cta form button{ color:#111 !important; }
   .nav-cta{display:flex}
