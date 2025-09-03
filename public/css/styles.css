@@ -228,7 +228,7 @@ body.has-hero main{padding-top:0}
 @media (max-width:600px){.admin-top{flex-direction:column;align-items:flex-start}}
 
 /* Hero de imagen a pantalla completa con overlay */
-.hero{position:relative;min-height:100vh;display:grid;align-items:end;margin-top:0;overflow:hidden}
+.hero{position:relative;min-height:100vh;min-height:100svh;display:grid;align-items:end;margin-top:0;overflow:hidden}
 .hero-slides{position:absolute;inset:0}
 .hero-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1s ease}
 .hero-slide.is-active{opacity:1}
@@ -243,6 +243,9 @@ body.has-hero main{padding-top:0}
 @keyframes cue-bounce{0%,100%{transform:translate(-50%, 0)}50%{transform:translate(-50%, -8px)}}
 .hero .scroll-cue{animation:cue-bounce 1.8s ease-in-out infinite}
 @media (prefers-reduced-motion: reduce){ .hero .scroll-cue{animation:none} }
+
+/* Smooth anchor scrolling */
+html{scroll-behavior:smooth}
 .btn{display:inline-block;background:var(--brand);color:#fff;border:1px solid var(--brand);border-radius:var(--radius-pill);padding:10px 14px;font-weight:700;letter-spacing:.3px;box-shadow:0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.06);transition:filter .15s ease, box-shadow .15s ease, transform .15s ease;position:relative;overflow:hidden;isolation:isolate}
 .btn:hover{filter:brightness(1.04);text-decoration:none;box-shadow:0 0 0 1px rgba(0,0,0,.08), 0 6px 18px rgba(242,92,5,.25);transform:translateY(-1px)}
 .btn-outline{background:#fff;color:#111;border:1px solid #111;position:relative;overflow:hidden;isolation:isolate;transition:box-shadow .15s ease, transform .15s ease}

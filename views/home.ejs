@@ -2,6 +2,9 @@
 
 <section class="hero" data-slideshow='<%- JSON.stringify(slides||[]) %>'>
   <div class="hero-slides" aria-hidden="true"></div>
+  <button class="scroll-cue" aria-label="Desplázate para ver el contenido" title="Desplázate" onclick="(function(){var next=document.querySelector('main .container'); if(next){next.scrollIntoView({behavior:'smooth'});} else {window.scrollTo({top: window.innerHeight, behavior:'smooth'});} })()" >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 16.5c-.3 0-.6-.1-.8-.3l-6-6a1.1 1.1 0 0 1 1.6-1.6L12 13.8l5.2-5.2a1.1 1.1 0 0 1 1.6 1.6l-6 6c-.2.2-.5.3-.8.3Z"/></svg>
+  </button>
 </section>
 
 <section class="container">
