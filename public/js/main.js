@@ -14,11 +14,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Detect when nav items overflow and force compact (hamburger) mode regardless of fixed breakpoint
   const updateNavCompact = () => {
+    if (updateNavCompact._measuring) return;
+    updateNavCompact._measuring = true;
     const headerInner = document.querySelector('.header-inner');
     const navLeft = document.querySelector('.nav-left');
     const navCenter = document.querySelector('.nav-center');
     const headerRight = document.querySelector('.header-right');
     if (!headerInner || !navLeft || !navCenter || !headerRight) return;
+    // Temporarily remove classes to measure natural desktop layout
+    const body = document.body;
+    const hadCompact = body.classList.contains('nav-compact');
+    const hadSqueeze = body.classList.contains('nav-squeeze');
+    if (hadCompact || hadSqueeze){
+      body.classList.remove('nav-compact');
+      body.classList.remove('nav-squeeze');
+    }
+
     const host = headerInner.getBoundingClientRect();
     const leftR = navLeft.getBoundingClientRect();
     const centerR = navCenter.getBoundingClientRect();
@@ -41,32 +52,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const nearEdgeRight = edgeRight < 24;          // earlier squeeze
     const shouldSqueeze = !shouldCompact && (nearRightCenter || nearLeftCenter || nearEdgeRight);
 
-    const wasCompact = document.body.classList.contains('nav-compact');
-    const wasSqueeze = document.body.classList.contains('nav-squeeze');
+    // Restore classes based on measurement
+    const prevState = hadCompact ? 'compact' : (hadSqueeze ? 'squeeze' : 'normal');
+    let nextState = 'normal';
+    if (shouldCompact) nextState = 'compact';
+    else if (shouldSqueeze) nextState = 'squeeze';
 
-    if (shouldCompact){
-      if (!wasCompact){
-        document.body.classList.add('nav-compact');
-        document.body.classList.remove('nav-squeeze');
-      }
-    } else if (shouldSqueeze){
-      if (!wasSqueeze || wasCompact){
-        document.body.classList.remove('nav-compact');
-        document.body.classList.add('nav-squeeze');
-        // Re-measure on next frame since layout shrinks
-        requestAnimationFrame(() => updateNavCompact());
-      }
-    } else {
-      if (wasCompact || wasSqueeze){
-        document.body.classList.remove('nav-compact');
-        document.body.classList.remove('nav-squeeze');
-        // Ensure overlay menu is closed when returning to full desktop
+    if (nextState !== prevState){
+      body.classList.toggle('nav-compact', nextState === 'compact');
+      body.classList.toggle('nav-squeeze', nextState === 'squeeze');
+      if (prevState === 'compact' && nextState !== 'compact'){
+        // Ensure overlay menu is closed when returning from compact
         const nav = document.querySelector('[data-nav]');
         const toggle = document.querySelector('.nav-toggle');
         if (nav){ nav.setAttribute('data-open', 'false'); }
         if (toggle){ toggle.setAttribute('aria-expanded', 'false'); }
       }
+    } else {
+      // No state change: if we removed classes for measuring, reapply the same
+      if (prevState === 'compact') body.classList.add('nav-compact');
+      if (prevState === 'squeeze') body.classList.add('nav-squeeze');
     }
+    updateNavCompact._measuring = false;
   };
   // Initial and responsive checks
   updateNavCompact();
