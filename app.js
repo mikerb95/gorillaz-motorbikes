@@ -101,16 +101,52 @@ app.get('/servicios', (req, res) => {
 });
 
 app.get('/tienda', (req, res) => {
-  const cat = catalog.categories;
-  const products = catalog.products;
-  const byCat = cat.map(c => ({
+  const allCats = catalog.categories;
+  const allProds = catalog.products;
+  const q = (req.query.q || '').toString().trim().toLowerCase();
+  const selectedCat = (req.query.cat || '').toString();
+  const min = Number.isFinite(parseInt(req.query.min, 10)) ? parseInt(req.query.min, 10) : null;
+  const max = Number.isFinite(parseInt(req.query.max, 10)) ? parseInt(req.query.max, 10) : null;
+  const sort = (req.query.sort || '').toString();
+
+  // Base filter: text and price
+  let base = allProds.filter(p => {
+    if (q && !(p.name.toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q))) return false;
+    if (min !== null && p.price < min) return false;
+    if (max !== null && p.price > max) return false;
+    return true;
+  });
+
+  // Category counts based on base filters
+  const categories = allCats.map(c => ({
     ...c,
-    items: products.filter(p => p.category === c.slug)
+    count: base.filter(p => p.category === c.slug).length
   }));
+
+  // Apply category filter
+  let products = selectedCat ? base.filter(p => p.category === selectedCat) : base;
+
+  // Sorting
+  if (sort === 'price-asc') products = products.slice().sort((a, b) => a.price - b.price);
+  if (sort === 'price-desc') products = products.slice().sort((a, b) => b.price - a.price);
+
+  // Build base query string (without category) to reuse in links
+  const qp = new URLSearchParams();
+  if (q) qp.set('q', q);
+  if (min !== null) qp.set('min', String(min));
+  if (max !== null) qp.set('max', String(max));
+  if (sort) qp.set('sort', sort);
+  const baseQuery = qp.toString();
+
   res.render('shop', {
-    user: users.find(u => u.id === req.session.userId),
-    categories: cat,
-    byCat
+    categories,
+    products,
+    selectedCat,
+    q,
+    min: min ?? '',
+    max: max ?? '',
+    sort,
+    baseQuery
   });
 });
 
