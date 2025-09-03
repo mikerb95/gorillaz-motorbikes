@@ -107,6 +107,11 @@
           <a href="/carrito"><%= item.qty %> × <%= item.name %> — COP <%= (item.total).toLocaleString('es-CO') %></a>
         <% }) %>
         <a href="/carrito">Ir al carrito — Total: COP <%= (cart && cart.subtotal ? cart.subtotal : 0).toLocaleString('es-CO') %></a>
+      <% } else if (cart && cart.items && Object.keys(cart.items).length) { %>
+        <% Object.entries(cart.items).forEach(function(entry){ var id = entry[0]; var qty = entry[1]; %>
+          <a href="/carrito"><%= qty %> × <%= id %></a>
+        <% }) %>
+        <a href="/carrito">Ir al carrito — Total: COP <%= (cart && cart.subtotal ? cart.subtotal : 0).toLocaleString('es-CO') %></a>
       <% } else { %>
         <a href="/carrito">Carrito vacío</a>
       <% } %>
