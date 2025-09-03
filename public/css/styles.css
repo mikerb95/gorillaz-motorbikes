@@ -255,12 +255,15 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 
 @media (max-width:900px){
   .nav-bar{margin:12px 12px 0}
+  /* Left = hamburger, Right = (hidden on mobile) header-right */
   .header-inner{grid-template-columns:auto auto;column-gap:12px}
   .header-right{display:none}
   .nav{position:fixed;inset:96px 12px auto 12px;background:#fff;display:none;flex-direction:column;align-items:stretch;gap:12px;padding:20px;border-bottom:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(0,0,0,.08);border-radius:var(--radius-lg)}
   .nav{inset:var(--header-offset) 12px 12px 12px;overflow:auto}
   .nav-links{flex-direction:column;gap:12px;align-items:stretch}
-  .nav-links a, .nav-cta a, .nav-cta form button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px;background:#f8f8f8;border:1px solid #eee}
+  /* Mobile links unified like “Inicio” */
+  .nav-links a, .nav-cta a, .nav-cta form button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px;background:#f8f8f8 !important;border:1px solid #eee !important;color:#111 !important;font-weight:800;text-transform:uppercase;letter-spacing:.6px}
+  .nav-links a:hover, .nav-cta a:hover, .nav-cta form button:hover{background:#f3f4f6 !important;text-decoration:none}
   /* Ensure cart item looks like others in the mobile list */
   .nav .cart-link{display:flex;align-items:center;gap:10px}
   /* Hide floating badge in the mobile panel to keep rows uniform */
@@ -272,8 +275,11 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   .nav-cta form button{width:100%;text-align:left}
   .nav[data-open="true"]{display:flex}
   .nav-toggle{display:inline-flex}
-  .nav-center{justify-content:flex-end}
-  .logo img{height:28px}
+  /* Hide center logo area on small screens */
+  .nav-center{display:none}
+  /* Mobile brand row inside panel */
+  .nav-brand-mobile{display:flex;justify-content:flex-end;align-items:center;margin-bottom:4px}
+  .nav-brand-mobile .logo img{height:28px}
 }
 
 @media (max-width:640px){
