@@ -27,7 +27,7 @@
               <input type="number" step="1" name="priceCOP" value="<%= c.priceCOP %>" />
               <button class="btn" type="submit">Actualizar</button>
             </form>
-            <form method="post" action="/admin/cursos/eliminar">
+            <form method="post" action="/admin/cursos/eliminar" data-confirm="¿Eliminar este curso?">
               <input type="hidden" name="slug" value="<%= c.slug %>" />
               <button class="btn btn-danger" type="submit">Eliminar</button>
             </form>

@@ -32,7 +32,7 @@
               <input name="service" value="<%= a.service %>" />
               <button class="btn" type="submit">Actualizar</button>
             </form>
-            <form method="post" action="/admin/citas/eliminar">
+            <form method="post" action="/admin/citas/eliminar" data-confirm="¿Eliminar esta cita?">
               <input type="hidden" name="id" value="<%= a.id %>" />
               <button class="btn btn-danger" type="submit">Eliminar</button>
             </form>

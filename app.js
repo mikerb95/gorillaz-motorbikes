@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
+const csrf = require('csurf');
 const catalog = require('./data/catalog');
 const courses = require('./data/courses.json');
 
@@ -45,6 +46,9 @@ app.use(
   })
 );
 
+// CSRF protection (cookie-less, session-based secret)
+app.use(csrf());
+
 // Static files
 app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/favicons', express.static(path.join(__dirname, 'favicons')));
@@ -57,6 +61,7 @@ app.set('view engine', 'ejs');
 // Locals for templates
 app.use((req, res, next) => {
   res.locals.user = users.find(u => u.id === req.session.userId);
+  res.locals.csrfToken = req.csrfToken ? req.csrfToken() : null;
   const c = req.session.cart || { items: {}, count: 0, subtotal: 0 };
   // compute totals defensively without relying on other helpers
   let count = 0, subtotal = 0;
@@ -66,6 +71,12 @@ app.use((req, res, next) => {
   }
   res.locals.cart = { items: c.items || {}, count, subtotal };
   next();
+});
+
+// CSRF error handler
+app.use((err, req, res, next) => {
+  if (err.code !== 'EBADCSRFTOKEN') return next(err);
+  res.status(403).render('403', { message: 'Token inválido. Actualiza la página e inténtalo de nuevo.' });
 });
 
 // Helpers

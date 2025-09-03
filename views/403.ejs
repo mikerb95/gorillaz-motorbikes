@@ -1,0 +1,7 @@
+<%- include('partials/head', { title: 'Acceso denegado' }) %>
+<main class="container center">
+  <h1>403 — Solicitud no autorizada</h1>
+  <p><%= message || 'Tu sesión de seguridad expiró. Vuelve a intentarlo.' %></p>
+  <p><a class="btn" href="/">Volver al inicio</a></p>
+</main>
+<%- include('partials/footer') %>

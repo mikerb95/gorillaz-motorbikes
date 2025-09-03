@@ -36,7 +36,7 @@
               <textarea name="description" rows="2"><%= p.description || '' %></textarea>
               <button class="btn" type="submit">Actualizar</button>
             </form>
-            <form method="post" action="/admin/tienda/eliminar">
+            <form method="post" action="/admin/tienda/eliminar" data-confirm="¿Eliminar este artículo?">
               <input type="hidden" name="id" value="<%= p.id %>" />
               <button class="btn btn-danger" type="submit">Eliminar</button>
             </form>

@@ -231,3 +231,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// CSRF helper and destructive action confirms
+document.addEventListener('DOMContentLoaded', () => {
+  // Inject CSRF token into all POST forms automatically
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  const token = meta && meta.getAttribute('content');
+  if (token) {
+    document.querySelectorAll('form[method="post" i]').forEach(form => {
+      if (!form.querySelector('input[name="_csrf"]')){
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = '_csrf';
+        input.value = token;
+        form.appendChild(input);
+      }
+    });
+  }
+  // Intercept forms/buttons marked with data-confirm
+  document.querySelectorAll('form[data-confirm]')
+    .forEach(form => {
+      form.addEventListener('submit', (e) => {
+        const msg = form.getAttribute('data-confirm') || '¿Confirmas esta acción?';
+        if (!confirm(msg)) e.preventDefault();
+      });
+    });
+  document.querySelectorAll('[data-confirm-click]')
+    .forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const msg = btn.getAttribute('data-confirm-click') || '¿Confirmas esta acción?';
+        if (!confirm(msg)) e.preventDefault();
+      });
+    });
+});
