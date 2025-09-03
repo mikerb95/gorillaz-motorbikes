@@ -105,6 +105,17 @@ app.get('/cursos', (req, res) => {
   res.render('courses', { user: users.find(u => u.id === req.session.userId), categories });
 });
 
+// Legales
+app.get('/privacidad', (req, res) => {
+  res.render('privacy', { user: users.find(u => u.id === req.session.userId) });
+});
+app.get('/licencia', (req, res) => {
+  res.render('license', { user: users.find(u => u.id === req.session.userId) });
+});
+app.get('/terminos', (req, res) => {
+  res.render('terms', { user: users.find(u => u.id === req.session.userId) });
+});
+
 // Club
 app.get('/club', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
