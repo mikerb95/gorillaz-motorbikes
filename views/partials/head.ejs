@@ -72,6 +72,18 @@
       </div>
     </div>
   </header>
+  <% if (user) { %>
+  <div class="sub-bar">
+    <div class="sub-inner">
+      <div class="sub-left">Hola, <strong><%= user.name %></strong>.</div>
+      <nav class="sub-right">
+        <a href="/club/panel">Ir al panel del club</a>
+        <a href="/club/panel#vehiculos">Gestionar mis vehículos</a>
+        <a href="/eventos">Eventos</a>
+      </nav>
+    </div>
+  </div>
+  <% } %>
   <main>
   <a class="whatsapp-fab" href="https://wa.me/573213204299" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
     <svg viewBox="0 0 32 32" width="26" height="26" fill="currentColor" aria-hidden="true">

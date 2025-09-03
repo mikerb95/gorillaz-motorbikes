@@ -128,6 +128,16 @@ main{min-height:60vh;padding-top:var(--header-offset)}
 .hero{margin-top:var(--header-offset)}
 body.has-hero main{padding-top:0}
 .container{max-width:1200px;margin:0 auto;padding:24px 16px}
+/* Slim sub navigation bar for logged-in users */
+.sub-bar{position:fixed;left:0;right:0;top:calc(var(--header-offset));background:#FF6400;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.sub-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:6px 20px}
+.sub-left{color:#fff;opacity:.95;font-weight:800;letter-spacing:.3px;font-size:.8rem}
+.sub-right{display:flex;gap:18px}
+.sub-right a{color:#fff;opacity:.95;font-weight:800;letter-spacing:.3px;font-size:.8rem;text-decoration:none}
+.sub-right a:hover{opacity:1}
+/* Add top padding when sub-bar is present via body attribute handled by JS */
+.has-subbar main{padding-top:calc(var(--header-offset) + 34px)}
+.has-subbar .hero{margin-top:calc(var(--header-offset) + 34px)}
 /* Admin only top action on dashboard */
 .admin-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;margin-bottom:-8px}
 @media (max-width:600px){.admin-top{flex-direction:column;align-items:flex-start}}

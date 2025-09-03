@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(setHeaderOffset, 100);
   window.addEventListener('resize', setHeaderOffset);
 
+  // If sub-bar exists (logged-in), add body class and recalc spacing
+  if (document.querySelector('.sub-bar')){
+    document.body.classList.add('has-subbar');
+    setTimeout(setHeaderOffset, 0);
+  }
+
   // Mark when page has a full-bleed hero to adjust layout via CSS
   if (document.querySelector('.hero')) {
     document.body.classList.add('has-hero');
