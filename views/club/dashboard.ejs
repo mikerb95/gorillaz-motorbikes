@@ -59,16 +59,46 @@
       <% if (!reminders || reminders.length === 0) { %>
         <p class="muted">Aún no has registrado vehículos.</p>
       <% } else { %>
-        <ul class="list">
+        <ul class="reminders-list">
         <% reminders.forEach(r => { %>
+          <% const soatState = (r.soat === null) ? 'none' : (r.soat < 0 ? 'expired' : (r.soat <= 30 ? 'soon' : 'ok')); %>
+          <% const tecState = (r.tecno === null) ? 'none' : (r.tecno < 0 ? 'expired' : (r.tecno <= 30 ? 'soon' : 'ok')); %>
           <li>
-            <span><strong><%= r.plate %></strong></span>
-            <span>
-              SOAT: <%= r.soat === null ? '—' : (r.soat < 0 ? ('Vencido hace ' + Math.abs(r.soat) + ' días') : ('en ' + r.soat + ' días')) %>
-              &nbsp;|&nbsp;
-              Tecno: <%= r.tecno === null ? '—' : (r.tecno < 0 ? ('Vencida hace ' + Math.abs(r.tecno) + ' días') : ('en ' + r.tecno + ' días')) %>
-            </span>
+            <div class="rem-row">
+              <div class="rem-plate"><%= r.plate %></div>
+              <div class="rem-stats">
+                <span class="stat <%= soatState %>">SOAT: <%= r.soat === null ? '—' : (r.soat < 0 ? ('hace ' + Math.abs(r.soat) + ' días') : ('en ' + r.soat + ' días')) %></span>
+                <span class="stat <%= tecState %>">Tecno: <%= r.tecno === null ? '—' : (r.tecno < 0 ? ('hace ' + Math.abs(r.tecno) + ' días') : ('en ' + r.tecno + ' días')) %></span>
+              </div>
+              <div class="rem-actions">
+                <button class="btn btn-xs btn-outline" type="button" data-modal-open="#edit-<%= r.plate %>">Editar fechas</button>
+              </div>
+            </div>
           </li>
+
+          <!-- Modal editar fechas -->
+          <div class="modal" id="edit-<%= r.plate %>" aria-hidden="true">
+            <div class="modal-backdrop" data-modal-close></div>
+            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-edit-<%= r.plate %>">
+              <div class="modal-header">
+                <h3 class="modal-title" id="title-edit-<%= r.plate %>">Editar fechas — <%= r.plate %></h3>
+                <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
+              </div>
+              <form method="post" action="/club/vehiculos/actualizar">
+                <div class="modal-body">
+                  <input type="hidden" name="plate" value="<%= r.plate %>" />
+                  <div class="grid two">
+                    <label>Vence SOAT<input type="date" name="soatExpires" /></label>
+                    <label>Vence Tecno<input type="date" name="tecnoExpires" /></label>
+                  </div>
+                </div>
+                <div class="modal-actions">
+                  <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
+                  <button class="btn" type="submit">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
         <% }) %>
         </ul>
       <% } %>

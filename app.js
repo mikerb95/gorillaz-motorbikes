@@ -654,6 +654,18 @@ app.post('/club/vehiculos/eliminar', requireAuth, (req, res) => {
   res.redirect('/club/panel');
 });
 
+// Actualizar fechas de SOAT/Tecno de un vehículo
+app.post('/club/vehiculos/actualizar', requireAuth, (req, res) => {
+  const user = users.find(u => u.id === req.session.userId);
+  const { plate, soatExpires, tecnoExpires } = req.body;
+  const v = (user.vehicles || []).find(x => x.plate === (plate || '').toUpperCase());
+  if (v){
+    if (typeof soatExpires !== 'undefined') v.soatExpires = soatExpires || '';
+    if (typeof tecnoExpires !== 'undefined') v.tecnoExpires = tecnoExpires || '';
+  }
+  res.redirect('/club/panel');
+});
+
 // 404
 app.use((req, res) => {
   res.status(404).render('404');
