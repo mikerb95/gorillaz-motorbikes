@@ -72,16 +72,24 @@ a:hover{text-decoration:underline}
 .nav-blob{
   position:absolute;
   top:50%; left:0;
-  transform:translate(var(--x, 0px), -50%);
+  transform:translate(var(--x, 0px), -50%) scaleX(var(--sx, 1)) skewX(var(--skew, 0deg));
   width:var(--w, 140px);
   height:var(--h, 36px);
-  background:radial-gradient(120px 40px at 50% 50%, rgba(255,255,255,.33), rgba(255,255,255,.16) 60%, rgba(255,255,255,0) 70%);
+  background:radial-gradient(120px 40px at 50% 50%, rgba(255,255,255,.45), rgba(255,255,255,.22) 60%, rgba(255,255,255,0) 72%);
   filter:blur(8px);
   pointer-events:none;
-  transition:transform .35s cubic-bezier(.2,.8,.2,1), width .35s, height .35s, opacity .3s;
+  transition:transform .38s cubic-bezier(.2,.8,.2,1), width .38s, height .38s, opacity .3s, filter .25s ease;
   opacity:0;
 }
-.nav-blob.is-visible{opacity:.9}
+.nav-blob.is-visible{opacity:.95}
+/* Peel motion: briefly stretch and skew depending on travel direction */
+.nav-blob.is-peel{
+  --sx: 1.35;
+  filter:blur(10px) saturate(1.05);
+  transition:transform .22s cubic-bezier(.15,.9,.1,1.2), width .22s, height .22s, opacity .22s, filter .22s;
+}
+.nav-blob[data-dir="right"].is-peel{ --skew: -6deg; }
+.nav-blob[data-dir="left"].is-peel{ --skew: 6deg; }
 .nav-blob.is-label{
   background:transparent;
   filter:none;

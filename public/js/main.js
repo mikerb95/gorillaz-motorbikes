@@ -62,8 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
       lastEl = el;
     };
     const showFor = (el) => {
+      // Determine travel direction for peel animation
+      let dir = 'right';
+      try {
+        const prevRect = lastEl ? lastEl.getBoundingClientRect() : null;
+        const nextRect = el.getBoundingClientRect();
+        if (prevRect) dir = nextRect.left >= prevRect.left ? 'right' : 'left';
+      } catch {}
+      blob.setAttribute('data-dir', dir);
+
+      // Trigger peel: stretch a bit, then settle to target
+      blob.classList.add('is-peel');
       setToEl(el);
       blob.classList.add('is-visible');
+      // Remove peel after a short moment so subsequent moves can re-trigger
+      clearTimeout(blob._peelT);
+      blob._peelT = setTimeout(() => blob.classList.remove('is-peel'), 160);
     };
     const hideBlob = () => {
       blob.classList.remove('is-visible');
