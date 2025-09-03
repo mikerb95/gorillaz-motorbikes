@@ -289,7 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.save();
       ctx.globalCompositeOperation = 'multiply';
       ctx.strokeStyle = opts.glow || 'rgba(0,0,0,0.25)';
-      ctx.lineWidth = (opts.width||2.2)*3;
+      const glowScale = opts.glowScale || 2.4;
+      ctx.lineWidth = (opts.width||2.2)*glowScale;
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(sub[0].x, sub[0].y);
@@ -375,12 +376,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const yMid = (center.top + center.bottom)/2 - host.top;
       const leftPts = makePath(xMid, yMid, 8, yMid);
       const rightPts = makePath(xMid, yMid, host.width-8, yMid);
-      const leftBranches = buildBranches(leftPts, 2 + Math.floor(Math.random()*2));
-      const rightBranches = buildBranches(rightPts, 2 + Math.floor(Math.random()*2));
+  const leftBranches = buildBranches(leftPts, 3 + Math.floor(Math.random()*3));
+  const rightBranches = buildBranches(rightPts, 3 + Math.floor(Math.random()*3));
       let start = performance.now();
-      const travel = prefersReduce ? 80 : 140;
-      const preflash = prefersReduce ? 0 : 70;
-      const dissipate = prefersReduce ? 140 : 320;
+  const travel = prefersReduce ? 60 : 90;
+  const preflash = prefersReduce ? 0 : 40;
+  const dissipate = prefersReduce ? 100 : 180;
       cancelAnimationFrame(c._raf || 0);
       clearTimeout(c._fadeT1); clearTimeout(c._fadeT2);
       c.classList.add('is-on');
@@ -396,11 +397,11 @@ document.addEventListener('DOMContentLoaded', () => {
           drawCorona(ctx, xMid, yMid, 16 + t*0.15, a);
         }
         // Draw main bolts
-        drawPath(ctx, leftPts, p, { width: 2.2 });
-        drawPath(ctx, rightPts, p, { width: 2.2 });
+  drawPath(ctx, leftPts, p, { width: 1.4, glowScale: 2.0 });
+  drawPath(ctx, rightPts, p, { width: 1.4, glowScale: 2.0 });
         // Draw branches as the head passes
-        drawBranches(ctx, leftBranches, p, { width: 2.2, totalPts: leftPts.length });
-        drawBranches(ctx, rightBranches, p, { width: 2.2, totalPts: rightPts.length });
+  drawBranches(ctx, leftBranches, p, { width: 1.0, totalPts: leftPts.length });
+  drawBranches(ctx, rightBranches, p, { width: 1.0, totalPts: rightPts.length });
         // Head corona for a hot tip
         if (p > 0 && p < 1){
           const li = Math.max(1, Math.floor(leftPts.length * p));
@@ -420,10 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
           // Slight flicker on dissipate
           const flicker = prefersReduce ? 0 : (Math.random()*0.06);
           ctx.globalAlpha = Math.max(0, 1 - fp - flicker);
-          drawPath(ctx, leftPts, 1, { width: 2.2 });
-          drawPath(ctx, rightPts, 1, { width: 2.2 });
-          drawBranches(ctx, leftBranches, 1, { width: 2.2, totalPts: leftPts.length });
-          drawBranches(ctx, rightBranches, 1, { width: 2.2, totalPts: rightPts.length });
+          drawPath(ctx, leftPts, 1, { width: 1.4, glowScale: 2.0 });
+          drawPath(ctx, rightPts, 1, { width: 1.4, glowScale: 2.0 });
+          drawBranches(ctx, leftBranches, 1, { width: 1.0, totalPts: leftPts.length });
+          drawBranches(ctx, rightBranches, 1, { width: 1.0, totalPts: rightPts.length });
           ctx.globalAlpha = 1;
           if (fp < 1){ c._raf = requestAnimationFrame(fadeStep); return; }
           // Done
