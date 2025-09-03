@@ -32,7 +32,14 @@
           </div>
           <div class="nav-cta">
               <a class="btn-ghost btn-sm btn-square" href="/tienda">Tienda</a>
-              <a class="btn-ghost btn-sm btn-square" href="/carrito">Carrito (<%= (cart && cart.count) || 0 %>)</a>
+              <a class="btn-ghost btn-sm btn-square cart-link" href="/carrito" aria-label="Carrito">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                  <path d="M3 4h2l2.5 12h9l2-8H7.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <circle cx="9" cy="20" r="1.8" fill="currentColor"></circle>
+                  <circle cx="17" cy="20" r="1.8" fill="currentColor"></circle>
+                </svg>
+                <span class="cart-badge"><%= (cart && cart.count) || 0 %></span>
+              </a>
               <a class="btn-ghost btn-sm btn-square" href="/cursos">Cursos</a>
               <a class="btn-ghost btn-sm btn-square" href="/club">Club</a>
               <a class="btn btn-sm" href="/servicios">Agendar servicio</a>
@@ -52,7 +59,14 @@
       </div>
       <div class="header-right">
         <a class="btn-ghost btn-sm btn-square" href="/tienda">Tienda</a>
-  <a class="btn-ghost btn-sm btn-square" href="/carrito">Carrito (<%= (cart && cart.count) || 0 %>)</a>
+  <a class="btn-ghost btn-sm btn-square cart-link" href="/carrito" aria-label="Carrito">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path d="M3 4h2l2.5 12h9l2-8H7.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle cx="9" cy="20" r="1.8" fill="currentColor"></circle>
+      <circle cx="17" cy="20" r="1.8" fill="currentColor"></circle>
+    </svg>
+    <span class="cart-badge"><%= (cart && cart.count) || 0 %></span>
+  </a>
         <a class="btn-ghost btn-sm btn-square" href="/cursos">Cursos</a>
   <a class="btn-ghost btn-sm btn-square" href="/club">Club</a>
         <a class="btn btn-sm" href="/servicios">Agendar servicio</a>
