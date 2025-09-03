@@ -193,6 +193,17 @@ section h2, section h1{max-width:1200px;margin:0 auto 12px;padding:0 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;list-style:none;padding:0;max-width:1200px;margin:0 auto}
 .grid li{background:#fff;border:1px solid #e5e7eb;padding:16px;border-radius:var(--radius-lg)}
 .grid.two{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+/* Services image cards */
+.services-grid li{padding:0;border:0;background:transparent}
+.service-card{position:relative;border-radius:var(--radius-lg);overflow:hidden;min-height:160px;display:grid;align-items:end;background:#000}
+.service-card::before{content:"";position:absolute;inset:0;background:
+  linear-gradient(180deg, rgba(0,0,0,.05) 20%, rgba(0,0,0,.45) 100%),
+  var(--bg) center/cover no-repeat;opacity:.9}
+.service-card::after{content:"";position:absolute;inset:0;pointer-events:none}
+.service-content{position:relative;padding:14px;color:#fff;display:grid;gap:6px}
+.service-content h3{margin:0;font-size:18px}
+.service-content p{margin:0;color:rgba(255,255,255,.92)}
+.service-card:hover::before{opacity:1}
 
 /* Two fixed columns on desktop, single on mobile */
 .grid.halves{grid-template-columns:repeat(2,1fr)}
