@@ -485,6 +485,14 @@ app.get('/terminos', (req, res) => {
   res.render('terms', { user: users.find(u => u.id === req.session.userId) });
 });
 
+// Misión y Visión
+app.get('/mision', (req, res) => {
+  res.render('mission');
+});
+app.get('/vision', (req, res) => {
+  res.render('vision');
+});
+
 // Club
 app.get('/club', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
