@@ -606,3 +606,10 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 .admin-row .summary-content{padding:12px 14px;border-top:1px dashed #e5e7eb;background:#fafafa}
 .admin-row .actions{display:flex;gap:10px;flex-wrap:wrap}
 .admin-row a.btn-link{font-weight:800}
+
+/* FAQ */
+.faq-item{border-bottom:1px dashed #e5e7eb;padding:10px 0}
+.faq-item:last-child{border-bottom:0}
+.faq-item summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-body{margin-top:8px;color:#111}

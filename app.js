@@ -598,6 +598,11 @@ app.get('/vision', (req, res) => {
   res.render('vision');
 });
 
+// Preguntas frecuentes
+app.get('/faq', (req, res) => {
+  res.render('faq');
+});
+
 // Club
 app.get('/club', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');

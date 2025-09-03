@@ -1,0 +1,52 @@
+<%- include('partials/head', { title: 'Preguntas Frecuentes — Gorillaz Motorbikes', user }) %>
+
+<main class="container section">
+  <h1 class="section-title">Preguntas Frecuentes</h1>
+  <p class="muted">Encuentra respuestas rápidas sobre nuestros servicios, club y tienda.</p>
+
+  <div class="card" style="max-width:1000px;margin:0 auto">
+    <details class="faq-item" open>
+      <summary><strong>¿Cómo agendo una cita para mi moto?</strong></summary>
+      <div class="faq-body">
+        Puedes solicitar agendamiento desde la sección <a href="/servicios">Servicios</a>. Completa el formulario con tus datos, servicio y fecha deseada. Te contactaremos para confirmar.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary><strong>¿Qué métodos de pago aceptan?</strong></summary>
+      <div class="faq-body">
+        Aceptamos <strong>Nequi</strong>, <strong>Daviplata</strong> y todas las <strong>tarjetas débito y crédito</strong> en la tienda y en el taller.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary><strong>¿Cómo funciona el Club Gorillaz?</strong></summary>
+      <div class="faq-body">
+        El Club ofrece beneficios como descuentos, lavados y eventos exclusivos. Puedes conocer más y registrarte desde <a href="/club">esta página</a>.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary><strong>¿Pueden preparar mi moto para la tecnomecánica?</strong></summary>
+      <div class="faq-body">
+        Sí. Ofrecemos alistamiento tecnomecánico, diagnóstico y corrección de fallas. Agenda en <a href="/servicios">Servicios</a>.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary><strong>¿Hacen envíos de productos?</strong></summary>
+      <div class="faq-body">
+        Sí, realizamos envíos a nivel nacional. El costo y tiempo dependen del destino y se calculan en el checkout.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary><strong>¿Puedo cambiar o devolver un producto?</strong></summary>
+      <div class="faq-body">
+        Tienes 5 días hábiles para solicitar cambios o devoluciones si el producto está en perfecto estado y con empaque original. Revisa condiciones en <a href="/terminos">Términos</a>.
+      </div>
+    </details>
+  </div>
+</main>
+
+<%- include('partials/footer') %>
