@@ -102,7 +102,7 @@
     <span class="cart-badge"><%= (cart && cart.count) || 0 %></span>
     </a>
     <div class="nav-submenu" aria-label="Resumen del carrito">
-      <% if ((cartItems && cartItems.length) || 0) { %>
+      <% if (typeof cartItems !== 'undefined' && cartItems && cartItems.length) { %>
         <% cartItems.forEach(function(item){ %>
           <a href="/carrito"><%= item.qty %> × <%= item.name %> — COP <%= (item.total).toLocaleString('es-CO') %></a>
         <% }) %>
