@@ -80,12 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const host = headerInner.getBoundingClientRect();
       const isLogo = el.classList.contains('logo') || el.closest('.logo');
       const isSub = !!el.closest('.nav-submenu');
-      // Tighter pad and smaller min width for submenu items to improve centering fidelity
-      const padX = isSub ? 12 : 24; // extra width for "splash" feel
-      const padY = isSub ? 6 : 10;
-      const baseW = Math.max(isSub ? 80 : 120, rect.width + padX);
-      const w = isLogo ? Math.max(120, Math.min(160, baseW)) : baseW;
-      const h = Math.max(isSub ? 28 : 32, rect.height + padY);
+  // For submenu items, use the exact anchor width (no extra pad/min) to avoid visual offset
+  const padX = isSub ? 0 : 24; // extra width for main items only
+  const padY = isSub ? 6 : 10;
+  const baseW = isSub ? (rect.width + padX) : Math.max(120, rect.width + padX);
+  const w = isLogo ? Math.max(120, Math.min(160, baseW)) : baseW;
+  const h = isSub ? Math.max(24, rect.height + padY) : Math.max(32, rect.height + padY);
       // Center the blob horizontally under the target element
       const centerX = rect.left - host.left + rect.width / 2;
       const x = centerX - (w / 2);
