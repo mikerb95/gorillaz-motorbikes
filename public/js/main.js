@@ -12,6 +12,45 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(setHeaderOffset, 100);
   window.addEventListener('resize', setHeaderOffset);
 
+  // Detect when nav items overflow and force compact (hamburger) mode regardless of fixed breakpoint
+  const updateNavCompact = () => {
+    const headerInner = document.querySelector('.header-inner');
+    const navLeft = document.querySelector('.nav-left');
+    const navCenter = document.querySelector('.nav-center');
+    const headerRight = document.querySelector('.header-right');
+    if (!headerInner || !navLeft || !navCenter || !headerRight) return;
+    const host = headerInner.getBoundingClientRect();
+    const leftR = navLeft.getBoundingClientRect();
+    const centerR = navCenter.getBoundingClientRect();
+    const rightR = headerRight.getBoundingClientRect();
+
+    // Conditions for overflow: right side clipped by container OR overlaps center; similarly left overlaps center
+    const clipRight = rightR.right > host.right - 4;
+    const overlapRightCenter = rightR.left < centerR.right + 8;
+    const overlapLeftCenter = leftR.right > centerR.left - 8;
+    const shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter;
+
+    const wasCompact = document.body.classList.contains('nav-compact');
+    if (shouldCompact && !wasCompact){
+      document.body.classList.add('nav-compact');
+    } else if (!shouldCompact && wasCompact){
+      document.body.classList.remove('nav-compact');
+      // Ensure overlay menu is closed when returning to desktop
+      const nav = document.querySelector('[data-nav]');
+      const toggle = document.querySelector('.nav-toggle');
+      if (nav){ nav.setAttribute('data-open', 'false'); }
+      if (toggle){ toggle.setAttribute('aria-expanded', 'false'); }
+    }
+  };
+  // Initial and responsive checks
+  updateNavCompact();
+  window.addEventListener('resize', () => {
+    // throttle with rAF
+    if (updateNavCompact._ticking) return;
+    updateNavCompact._ticking = true;
+    requestAnimationFrame(() => { updateNavCompact(); updateNavCompact._ticking = false; });
+  });
+
   // If sub-bar exists (logged-in), add body class and recalc spacing
   if (document.querySelector('.sub-bar')){
     document.body.classList.add('has-subbar');
