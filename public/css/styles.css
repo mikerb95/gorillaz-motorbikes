@@ -27,7 +27,6 @@ a:hover{text-decoration:underline}
 .nav-center{display:flex;align-items:center;justify-content:center}
 .logo{display:inline-flex;align-items:center;justify-content:center}
 .logo img{height:36px;width:auto;display:block}
-.brand-label{margin-left:10px;color:#fff;font-weight:800;letter-spacing:.6px}
 .nav{display:flex;align-items:center;justify-content:flex-start;gap:0}
 /* unified spacing for nav items */
 .nav-links{display:flex;gap:var(--nav-gap);text-transform:uppercase;font-weight:800;letter-spacing:.6px}
@@ -96,8 +95,6 @@ a:hover{text-decoration:underline}
 }
 .logo.is-hidden img{opacity:0;transition:opacity .2s ease}
 .logo, .nav-links a, .header-right a{position:relative;z-index:1}
-/* Keep brand label bright when dimmed */
-.logo-hover-dim .brand-label{opacity:1 !important; color:#fff}
 
 /* Dim navbar and menu links when hovering the logo; keep GORILLAZ MOTORBIKES label vivid */
 .nav-bar::after{
