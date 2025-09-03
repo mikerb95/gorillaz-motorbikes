@@ -1,0 +1,24 @@
+<%- include('../partials/head', { title: 'Club — Iniciar sesión', user: null }) %>
+
+<section class="auth">
+  <h1>Club de Moteros — Iniciar sesión</h1>
+  <% if (error) { %>
+    <div class="alert error"><%= error %></div>
+  <% } %>
+  <form method="post" action="/club/login" class="card">
+    <label>
+      Correo
+      <input name="email" type="email" placeholder="tu@correo.com" required />
+    </label>
+    <label>
+      Contraseña
+      <input name="password" type="password" placeholder="********" required />
+    </label>
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+  <p class="muted">Demo: miembro@gorillaz.co / gorillaz123</p>
+  <p><a href="/">Volver al inicio</a></p>
+  
+</section>
+
+<%- include('../partials/footer') %>

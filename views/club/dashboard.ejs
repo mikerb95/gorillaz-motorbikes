@@ -1,0 +1,46 @@
+<%- include('../partials/head', { title: 'Club — Panel', user }) %>
+
+<section>
+  <h1>Hola, <%= user.name %></h1>
+  <div class="grid two">
+    <div class="card">
+      <h2>Tu membresía</h2>
+      <p><strong>Nivel:</strong> <%= user.membership.level %></p>
+      <p><strong>Desde:</strong> <%= user.membership.since %></p>
+      <p><strong>Vence:</strong> <%= user.membership.expires %></p>
+      <h3>Beneficios</h3>
+      <ul>
+        <% user.membership.benefits.forEach(b => { %>
+          <li><%= b %></li>
+        <% }) %>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Historial de visitas</h2>
+      <ul class="list">
+        <% if (user.visits.length === 0) { %>
+          <li class="muted">Sin registros aún.</li>
+        <% } %>
+        <% user.visits.forEach(v => { %>
+          <li>
+            <span><strong><%= v.date %></strong></span>
+            <span><%= v.service %></span>
+          </li>
+        <% }) %>
+      </ul>
+      <form class="stack" method="post" action="/club/visitas">
+        <label>
+          Fecha
+          <input type="date" name="date" required />
+        </label>
+        <label>
+          Servicio
+          <input type="text" name="service" placeholder="Descripción del servicio" required />
+        </label>
+        <button class="btn" type="submit">Agregar visita</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

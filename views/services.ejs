@@ -1,0 +1,13 @@
+<%- include('partials/head', { title: 'Servicios — Gorillaz Motorbikes', user }) %>
+
+<section>
+  <h1>Servicios</h1>
+  <p>Ofrecemos atención integral para tu moto:</p>
+  <ul class="grid">
+    <% services.forEach(s => { %>
+      <li><%= s %></li>
+    <% }) %>
+  </ul>
+</section>
+
+<%- include('partials/footer') %>

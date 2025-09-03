@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title || 'Gorillaz Motorbikes' %></title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="/favicons/site.webmanifest" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="logo">
+      <img src="/favicons/favicon.svg" alt="Gorillaz Motorbikes" />
+      <span>Gorillaz Motorbikes</span>
+    </a>
+    <nav>
+      <a href="/">Inicio</a>
+      <a href="/servicios">Servicios</a>
+      <a href="/club">Club</a>
+      <% if (user) { %>
+        <form action="/club/logout" method="post" style="display:inline">
+          <button class="btn btn-outline" type="submit">Salir</button>
+        </form>
+      <% } %>
+    </nav>
+  </header>
+  <main class="container">
