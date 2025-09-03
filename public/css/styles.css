@@ -172,6 +172,10 @@ body.has-hero main{padding-top:0}
 /* Add top padding when sub-bar is present via body attribute handled by JS */
 .has-subbar main{padding-top:calc(var(--header-offset) + var(--subbar-offset, 40px))}
 .has-subbar .hero{margin-top:0}
+/* Mobile: match sub navbar width to main navbar (12px side margins) */
+@media (max-width:900px){
+  .sub-inner{margin:0 12px}
+}
 /* Admin only top action on dashboard */
 .admin-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;margin-bottom:-8px}
 @media (max-width:600px){.admin-top{flex-direction:column;align-items:flex-start}}
