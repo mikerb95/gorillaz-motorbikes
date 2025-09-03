@@ -53,7 +53,7 @@ a:hover{text-decoration:underline}
 .site-header a:hover{text-decoration:none}
 .nav-links a{padding:8px 10px;border-radius:8px}
 /* Slight squeeze state before going full hamburger */
-.nav-squeeze .header-inner{padding:10px 14px}
+.nav-squeeze .header-inner{padding:10px 14px; column-gap:8px}
 .nav-squeeze .nav-left{gap:calc(var(--nav-gap) - 10px)}
 .nav-squeeze .header-right{gap:calc(var(--nav-gap) - 10px)}
 .nav-squeeze .nav-links a,

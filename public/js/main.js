@@ -40,17 +40,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const gapCenterToRight = Math.max(0, rightR.left - centerR.right);
     const edgeRight = host.right - rightR.right;
 
-    // Compact when overlapping or clipping
+    // Compact when overlapping or clipping (default evaluation)
     const clipRight = edgeRight < 4;
     const overlapRightCenter = rightR.left < centerR.right + 8;
     const overlapLeftCenter = leftR.right > centerR.left - 8;
-    const shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter;
+    let shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter;
 
-    // Squeeze when near-overlap but not yet compact
-  const nearRightCenter = gapCenterToRight < 40; // earlier squeeze
-  const nearLeftCenter = gapLeftToCenter < 40;   // earlier squeeze
-  const nearEdgeRight = edgeRight < 24;          // earlier squeeze
-    const shouldSqueeze = !shouldCompact && (nearRightCenter || nearLeftCenter || nearEdgeRight);
+    // Squeeze when near-overlap
+    const nearRightCenter = gapCenterToRight < 40;
+    const nearLeftCenter = gapLeftToCenter < 40;
+    const nearEdgeRight = edgeRight < 24;
+    let shouldSqueeze = !shouldCompact && (nearRightCenter || nearLeftCenter || nearEdgeRight);
+
+    // If compact is needed, try squeeze first and re-measure to see if it prevents overlap
+    if (shouldCompact){
+      document.body.classList.add('nav-squeeze');
+      const host2 = headerInner.getBoundingClientRect();
+      const left2 = navLeft.getBoundingClientRect();
+      const center2 = navCenter.getBoundingClientRect();
+      const right2 = headerRight.getBoundingClientRect();
+      const clipRight2 = (host2.right - right2.right) < 4;
+      const overlapRightCenter2 = right2.left < center2.right + 4; // tighter threshold under squeeze
+      const overlapLeftCenter2 = left2.right > center2.left - 4;
+      if (!(clipRight2 || overlapRightCenter2 || overlapLeftCenter2)){
+        // Squeeze rescued layout; prefer squeeze over compact
+        shouldCompact = false;
+        shouldSqueeze = true;
+      }
+    }
 
     // Restore classes based on measurement
     const prevState = hadCompact ? 'compact' : (hadSqueeze ? 'squeeze' : 'normal');
