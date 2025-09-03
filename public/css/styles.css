@@ -13,7 +13,7 @@
   --header-offset:96px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:#fff;color:#111;font-family:"Helvetica Neue", Helvetica, Arial, system-ui, Segoe UI, Roboto, sans-serif}
+html,body{margin:0;padding:0;background:#fff;color:#111;font-family:"Montserrat", system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif}
 a{color:#111;text-decoration:none}
 a:hover{text-decoration:underline}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
