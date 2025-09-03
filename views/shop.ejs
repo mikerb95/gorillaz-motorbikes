@@ -15,12 +15,14 @@
       <div id="cat-<%= block.slug %>" class="category-block">
         <h2 class="category-title"><%= block.name %></h2>
         <div class="grid">
-          <% block.items.forEach(p => { %>
+      <% block.items.forEach(p => { %>
             <article class="card product-card">
-              <div class="card-media" aria-hidden="true"></div>
+        <div class="card-media" aria-hidden="true" style="background-image:url('<%= p.image %>');background-size:cover;background-position:center"></div>
               <div class="card-body">
                 <h3 class="card-title"><%= p.name %></h3>
-                <p class="card-text"><%= p.description %></p>
+                <% if (p.description) { %>
+                  <p class="card-text"><%= p.description %></p>
+                <% } %>
                 <div class="price-row">
                   <span class="price">$<%= (p.price).toLocaleString('es-CO') %></span>
                   <form method="post" action="/cart/add">

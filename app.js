@@ -55,7 +55,8 @@ app.set('view engine', 'ejs');
 // Locals for templates
 app.use((req, res, next) => {
   res.locals.user = users.find(u => u.id === req.session.userId);
-  res.locals.cart = req.session.cart || { items: {}, count: 0, subtotal: 0 };
+  const c = req.session.cart || { items: {}, count: 0, subtotal: 0 };
+  res.locals.cart = recalc ? recalc(c) : c;
   next();
 });
 
