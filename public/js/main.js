@@ -80,28 +80,40 @@ document.addEventListener('DOMContentLoaded', () => {
       const host = headerInner.getBoundingClientRect();
       const isLogo = el.classList.contains('logo') || el.closest('.logo');
       const isSub = !!el.closest('.nav-submenu');
-  // For submenu items, use the exact anchor width (no extra pad/min) to avoid visual offset
-  const padX = isSub ? 0 : 24; // extra width for main items only
-  const padY = isSub ? 6 : 10;
-  const baseW = isSub ? (rect.width + padX) : Math.max(120, rect.width + padX);
-  const w = isLogo ? Math.max(120, Math.min(160, baseW)) : baseW;
-  const h = isSub ? Math.max(24, rect.height + padY) : Math.max(32, rect.height + padY);
-  // Center the blob horizontally; for submenu, apply a slight left bias to counter visual drift
-      const centerX = rect.left - host.left + rect.width / 2;
-      // Stronger left nudge for submenu: use the anchor's left padding + extra
-      let leftBias = 0;
+
+      // Compute geometry differently for submenu items: center on text content, not the full anchor box
+      let centerX;
+      let baseW;
+      let h;
       if (isSub) {
+        // Use Range to measure the text content bounds precisely
+        let txtRect = rect;
         try {
-          const cs = window.getComputedStyle(el);
-          const padL = parseFloat(cs.paddingLeft || '0') || 0;
-          leftBias = padL + 12; // push further left
-        } catch { leftBias = 16; }
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const rects = range.getClientRects();
+          txtRect = rects.length ? rects[0] : range.getBoundingClientRect();
+          range.detach && range.detach();
+        } catch {}
+        centerX = txtRect.left - host.left + (txtRect.width / 2);
+        baseW = Math.max(64, txtRect.width + 8); // tight around text, slight breathing room
+        h = Math.max(24, rect.height + 6);
+      } else {
+        const padX = 24; // extra width for main items only
+        const padY = 10;
+        baseW = Math.max(120, rect.width + padX);
+        h = Math.max(32, rect.height + padY);
+        centerX = rect.left - host.left + (rect.width / 2);
       }
+
+      const w = isLogo ? Math.max(120, Math.min(160, baseW)) : baseW;
+      // Small fine-tune bias for submenu (visual centering) – far less than before
+      const leftBias = isSub ? 2 : 0;
       const x = centerX - (w / 2) - leftBias;
       const y = rect.top - host.top + rect.height/2;
       blob.style.setProperty('--x', `${x}px`);
       blob.style.setProperty('--w', `${w}px`);
-  blob.style.setProperty('--h', `${h}px`);
+      blob.style.setProperty('--h', `${h}px`);
       blob.style.top = `${y}px`;
       // default: gradient mode
       blob.classList.remove('is-label');
