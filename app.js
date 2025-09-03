@@ -57,7 +57,13 @@ app.set('view engine', 'ejs');
 app.use((req, res, next) => {
   res.locals.user = users.find(u => u.id === req.session.userId);
   const c = req.session.cart || { items: {}, count: 0, subtotal: 0 };
-  res.locals.cart = recalc ? recalc(c) : c;
+  // compute totals defensively without relying on other helpers
+  let count = 0, subtotal = 0;
+  for (const [id, qty] of Object.entries(c.items || {})){
+    const prod = (catalog.products || []).find(p => p.id === id);
+    if (prod){ count += qty; subtotal += prod.price * qty; }
+  }
+  res.locals.cart = { items: c.items || {}, count, subtotal };
   next();
 });
 
@@ -98,7 +104,7 @@ app.get('/servicios', (req, res) => {
     'Prensa',
     'Mecánica rápida'
   ];
-  res.render('services', { services });
+  res.render('services', { services, bookingMessage: null });
 });
 
 app.post('/servicios', (req, res) => {
