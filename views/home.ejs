@@ -31,4 +31,25 @@
   </ul>
 </section>
 
+<section class="container">
+  <h2>Club Gorillaz</h2>
+  <div class="card club-promo">
+    <p><strong>Únete al club y disfruta de beneficios exclusivos</strong></p>
+    <ul class="list">
+      <li><span>Descuento 15% en mecánica rápida</span></li>
+      <li><span>Lavado gratis cada 3 visitas</span></li>
+      <li><span>Eventos y rutas exclusivas en Bogotá</span></li>
+    </ul>
+    <div class="btn-row">
+      <a class="btn btn-sm" href="/club">Conoce el Club</a>
+      <% if (!user) { %>
+        <a class="btn btn-sm btn-outline" href="/club/login">Iniciar sesión</a>
+      <% } else { %>
+        <a class="btn btn-sm btn-outline" href="/club/panel">Mi panel</a>
+      <% } %>
+    </div>
+  </div>
+  <p class="muted">Ser parte del Club Gorillaz te da prioridad en agenda y sorpresas durante el año.</p>
+</section>
+
 <%- include('partials/footer') %>

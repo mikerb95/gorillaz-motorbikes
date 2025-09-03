@@ -126,6 +126,8 @@ section h2, section h1{max-width:1200px;margin:0 auto 12px;padding:0 0}
 }
 
 .card{background:#fff;border:1px solid #e5e7eb;padding:18px;border-radius:var(--radius-lg)}
+.club-promo{max-width:800px;margin:0 auto}
+.btn-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .list{list-style:none;padding:0;margin:0}
 .list li{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #e5e7eb;color:#111}
 .list li:last-child{border-bottom:none}
