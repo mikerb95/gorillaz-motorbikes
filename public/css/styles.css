@@ -46,8 +46,8 @@ a:hover{text-decoration:underline}
   .nav-item{position:relative}
   .nav-item > a{display:inline-block}
   .nav-item.has-submenu .nav-submenu{
-    position:absolute;left:0;top:100%;margin-top:8px;display:none;min-width:220px;z-index:5;
-    background:transparent;border:0;border-radius:0;box-shadow:none;padding:0
+    position:absolute;left:0;top:100%;margin-top:0;display:none;min-width:220px;z-index:5;
+    background:transparent;border:0;border-radius:0;box-shadow:none;padding-top:8px
   }
   .nav-item.has-submenu .nav-submenu a{
     display:block;padding:0;margin:4px 0;color:#fff;font-weight:400;text-transform:none;border-radius:0
@@ -55,9 +55,12 @@ a:hover{text-decoration:underline}
   .nav-item.has-submenu .nav-submenu a:hover{background:transparent;text-decoration:none}
   /* Show submenu on hover of the parent item */
   .nav-item.has-submenu:hover .nav-submenu{display:block}
+  /* Keep visible when hovering the submenu itself */
+  .nav-item.has-submenu .nav-submenu:hover{display:block}
   /* Expand navbar thickness while submenu is visible */
   .nav-bar{transition:padding .22s ease}
-  .nav-bar:has(.nav-item.has-submenu:hover){padding-bottom:240px}
+  .nav-bar:has(.nav-item.has-submenu:hover),
+  .nav-bar:has(.nav-item.has-submenu .nav-submenu:hover){padding-bottom:200px}
 }
 
 /* Make right-side and mobile CTA items look like nav links */
