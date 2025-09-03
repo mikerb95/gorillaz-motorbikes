@@ -1,12 +1,56 @@
 document.addEventListener('DOMContentLoaded', () => {
   const toggle = document.querySelector('.nav-toggle');
   const nav = document.querySelector('[data-nav]');
-  if (!toggle || !nav) return;
-  toggle.addEventListener('click', () => {
-    const open = nav.getAttribute('data-open') === 'true';
-    nav.setAttribute('data-open', String(!open));
-    toggle.setAttribute('aria-expanded', String(!open));
-  });
+  if (toggle && nav) {
+    toggle.addEventListener('click', () => {
+      const open = nav.getAttribute('data-open') === 'true';
+      nav.setAttribute('data-open', String(!open));
+      toggle.setAttribute('aria-expanded', String(!open));
+    });
+  }
+
+  // Build and animate the orange blob under brand and nav items
+  const headerInner = document.querySelector('.header-inner');
+  const logo = document.querySelector('.logo');
+  const links = Array.from(document.querySelectorAll('.nav-links a'));
+  if (headerInner && logo) {
+    const blob = document.createElement('div');
+    blob.className = 'nav-blob';
+    headerInner.appendChild(blob);
+
+    const setToEl = (el) => {
+      const rect = el.getBoundingClientRect();
+      const host = headerInner.getBoundingClientRect();
+      const padX = 24; // extra width for "splash" feel
+      const padY = 10;
+      const x = rect.left - host.left - padX/2;
+      const y = rect.top - host.top + rect.height/2;
+      const w = Math.max(120, rect.width + padX);
+      const h = Math.max(32, rect.height + padY);
+      blob.style.setProperty('--x', `${x}px`);
+      blob.style.setProperty('--w', `${w}px`);
+      blob.style.setProperty('--h', `${h}px`);
+      blob.style.top = `${y}px`;
+    };
+
+    // Default position under the brand text (or full logo)
+    const defaultTarget = document.querySelector('.logo-text') || logo;
+    setToEl(defaultTarget);
+
+    // Hover interactions (only on pointer-capable devices): move blob to hovered nav item
+    const canHover = window.matchMedia && window.matchMedia('(pointer:fine)').matches;
+    if (canHover) {
+      const hoverables = [defaultTarget, ...links];
+      hoverables.forEach((el) => {
+        el.addEventListener('mouseenter', () => setToEl(el));
+        el.addEventListener('focus', () => setToEl(el));
+      });
+      headerInner.addEventListener('mouseleave', () => setToEl(defaultTarget));
+    }
+
+    // Keep blob responsive on resize
+    window.addEventListener('resize', () => setToEl(defaultTarget));
+  }
 });
 
 // Background slideshow for home hero

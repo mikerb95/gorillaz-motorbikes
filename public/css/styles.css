@@ -16,7 +16,7 @@ a:hover{text-decoration:underline}
 
 /* Header flotante centrado estilo Ducati */
 .site-header{position:fixed;top:0;left:0;right:0;z-index:100}
-.nav-bar{max-width:1200px;margin:16px auto 0;background:#fff;border-top:3px solid #e5e7eb;border-bottom:1px solid #e5e7eb;box-shadow:0 6px 24px rgba(0,0,0,.08);border-radius:var(--radius-lg);overflow:hidden}
+.nav-bar{max-width:1200px;margin:16px auto 0;background:#fff;border-top:3px solid #e5e7eb;border-bottom:1px solid #e5e7eb;box-shadow:0 8px 28px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);border-radius:var(--radius-lg);overflow:hidden}
 .header-inner{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:12px 20px}
 .logo{display:flex;align-items:center;gap:10px;color:#111;font-weight:800;letter-spacing:.2px;text-transform:uppercase}
 .logo img{width:28px;height:28px}
@@ -28,6 +28,23 @@ a:hover{text-decoration:underline}
 .nav form{display:inline}
 .header-right{display:flex;align-items:center}
 .nav-toggle{display:none;background:transparent;border:0;font-size:22px}
+
+/* Orange blob background under brand and menu items */
+.header-inner{position:relative}
+.nav-blob{
+  position:absolute;
+  top:50%; left:0;
+  transform:translate(var(--x, 0px), -50%);
+  width:var(--w, 140px);
+  height:var(--h, 36px);
+  background:radial-gradient(120px 40px at 50% 50%, rgba(242,92,5,.25), rgba(242,92,5,.12) 60%, rgba(242,92,5,0) 70%);
+  filter:blur(6px);
+  pointer-events:none;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1), width .35s, height .35s, opacity .3s;
+  opacity:.9;
+}
+.logo, .nav-links a{position:relative;z-index:1}
+.logo-text{position:relative}
 
 main{min-height:60vh}
 .container{max-width:1200px;margin:0 auto;padding:24px 16px}
