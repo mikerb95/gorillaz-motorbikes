@@ -1,13 +1,64 @@
-<%- include('partials/head', { title: 'Servicios — Gorillaz Motorbikes', user }) %>
+<%- include('partials/head', { title: 'Servicios — Gorillaz Motorbikes' }) %>
 
-<section class="container">
-  <h1>Servicios</h1>
-  <p>Ofrecemos atención integral para tu moto:</p>
-  <ul class="grid">
-    <% services.forEach(s => { %>
-      <li><%= s %></li>
-    <% }) %>
-  </ul>
-</section>
+<main class="container schedule-layout">
+  <section class="schedule-main">
+    <h1 class="section-title">Agendar servicio</h1>
+    <p class="section-subtitle">Selecciona la fecha deseada y completa tus datos. Nuestro equipo confirmará la cita.</p>
+
+    <% if (bookingMessage) { %>
+      <div class="alert" style="border:1px solid #d1fae5;background:#ecfdf5;color:#065f46;border-radius:12px;padding:12px;margin:12px 0"><%= bookingMessage %></div>
+    <% } %>
+
+    <form class="card schedule-form" method="post" action="/servicios">
+      <div class="grid two">
+        <div>
+          <label for="name">Nombre</label>
+          <input id="name" name="name" placeholder="Tu nombre" required />
+        </div>
+        <div>
+          <label for="phone">Teléfono</label>
+          <input id="phone" name="phone" placeholder="Tu número de contacto" required />
+        </div>
+      </div>
+      <div class="grid two">
+        <div>
+          <label for="service">Servicio</label>
+          <select id="service" name="service" required>
+            <% services.forEach(s => { %>
+              <option value="<%= s %>"><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label for="date">Fecha</label>
+          <input id="date" name="date" type="hidden" required />
+          <div id="calendar" data-calendar aria-label="Calendario para seleccionar fecha"></div>
+          <div class="muted" id="selectedDateText" style="margin-top:6px">Selecciona una fecha disponible</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit">Solicitar cita</button>
+    </form>
+
+    <div style="margin-top:24px">
+      <h2 class="section-title">Nuestros servicios</h2>
+      <ul class="grid">
+        <% services.forEach(s => { %>
+          <li><%= s %></li>
+        <% }) %>
+      </ul>
+    </div>
+  </section>
+
+  <aside class="schedule-aside">
+    <div class="card">
+      <h3 style="margin:0 0 8px">Horarios del taller</h3>
+      <ul class="list">
+        <li><span>Lun - Vie</span><strong>9:00 am - 6:00 pm</strong></li>
+        <li><span>Sábados</span><strong>10:00 am - 4:00 pm</strong></li>
+        <li><span>Domingos</span><strong class="muted">Cerrado</strong></li>
+      </ul>
+    </div>
+  </aside>
+</main>
 
 <%- include('partials/footer') %>

@@ -143,3 +143,64 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   setInterval(advance, 6000);
 });
+
+// Inline calendar for Services scheduling
+document.addEventListener('DOMContentLoaded', () => {
+  const calHost = document.querySelector('#calendar[data-calendar]');
+  if (!calHost) return;
+  const input = document.getElementById('date');
+  const selectedText = document.getElementById('selectedDateText');
+
+  const state = { date: new Date() };
+  state.date.setHours(0,0,0,0);
+  let current = new Date(state.date);
+
+  const fmt = (d) => d.toISOString().slice(0,10);
+  const wk = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+
+  const render = () => {
+    calHost.innerHTML = '';
+    const head = document.createElement('div');
+    head.className = 'cal-head';
+    const month = current.toLocaleString('es-CO', { month: 'long', year: 'numeric' });
+    const prev = document.createElement('button'); prev.type='button'; prev.textContent='‹';
+    const next = document.createElement('button'); next.type='button'; next.textContent='›';
+    const title = document.createElement('div'); title.textContent = month.charAt(0).toUpperCase() + month.slice(1);
+    head.append(prev, title, next);
+    calHost.appendChild(head);
+
+    const grid = document.createElement('div');
+    grid.className = 'cal-grid';
+    wk.forEach(w => { const el = document.createElement('div'); el.className='cal-weekday'; el.textContent=w; grid.appendChild(el); });
+
+    const first = new Date(current.getFullYear(), current.getMonth(), 1);
+    const startDay = (first.getDay() + 6) % 7; // make Monday=0
+    const daysInMonth = new Date(current.getFullYear(), current.getMonth()+1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const minDate = today; // no past dates
+
+    for (let i=0;i<startDay;i++) {
+      const blank = document.createElement('div'); blank.className='cal-day is-disabled'; blank.textContent=''; grid.appendChild(blank);
+    }
+    for (let d=1; d<=daysInMonth; d++){
+      const date = new Date(current.getFullYear(), current.getMonth(), d);
+      const el = document.createElement('button'); el.type='button'; el.className='cal-day'; el.textContent=String(d);
+      if (fmt(date) === fmt(today)) el.classList.add('is-today');
+      const isPast = date < minDate;
+      if (isPast) { el.classList.add('is-disabled'); el.disabled = true; }
+      if (input.value && fmt(date) === input.value) el.classList.add('is-selected');
+      el.addEventListener('click', () => {
+        input.value = fmt(date);
+        selectedText.textContent = 'Fecha seleccionada: ' + date.toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+        render();
+      });
+      grid.appendChild(el);
+    }
+    calHost.appendChild(grid);
+
+    prev.addEventListener('click', () => { current.setMonth(current.getMonth()-1); render(); });
+    next.addEventListener('click', () => { current.setMonth(current.getMonth()+1); render(); });
+  };
+
+  render();
+});

@@ -97,7 +97,18 @@ app.get('/servicios', (req, res) => {
     'Prensa',
     'Mecánica rápida'
   ];
-  res.render('services', { services, user: users.find(u => u.id === req.session.userId) });
+  res.render('services', { services });
+});
+
+app.post('/servicios', (req, res) => {
+  const { name, phone, service, date } = req.body;
+  const services = [
+    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida'
+  ];
+  const bookingMessage = (name && service && date)
+    ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' })}. Te contactaremos al ${phone} para confirmar.`
+    : 'Por favor completa todos los campos.';
+  res.render('services', { services, bookingMessage });
 });
 
 app.get('/tienda', (req, res) => {
