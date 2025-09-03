@@ -360,7 +360,7 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 .footer-inner{padding:40px 16px}
 .footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:24px}
 .footer-col h4{margin:0 0 12px 0}
-.footer-brand .logo{font-size:16px}
+.footer-brand .logo{font-size:16px; display:inline-flex; align-items:center; gap:8px; text-align:left}
 .footer-links{margin:0}
 .footer-links li{border:0;padding:6px 0}
 .site-footer a{color:#fff}
@@ -372,7 +372,7 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 .social-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid #e5e7eb;color:var(--brand);background:#fff}
 .social-btn:hover{background:#fff;filter:brightness(0.97);text-decoration:none}
 .footer-bottom{max-width:1200px;margin:18px auto 0;padding:16px 0;border-top:1px solid rgba(255,255,255,.18);text-align:center;color:rgba(255,255,255,.85)}
-.footer-bottom .attribution{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:6px;font-size:.625rem}
+.footer-bottom .attribution{display:flex;gap:8px;align-items:center;justify-content:flex-start;margin-top:6px;font-size:.625rem}
 .footer-bottom .attribution a{display:inline-flex;gap:6px;align-items:center;color:#fff;text-decoration:none}
 .footer-bottom .attribution a:hover{opacity:.9}
 
