@@ -20,7 +20,7 @@ a:hover{text-decoration:underline}
 
 /* Header flotante centrado */
 .site-header{position:fixed;top:0;left:0;right:0;z-index:100;background:transparent}
-.nav-bar{max-width:1400px;margin:16px auto 0;background:#FF6400;border-top:0;border-bottom:0;box-shadow:0 8px 28px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);border-radius:var(--radius-lg);overflow:hidden;position:relative}
+.nav-bar{max-width:1400px;margin:16px auto 0;background:#FF6400;border-top:0;border-bottom:0;box-shadow:0 9px 30px rgba(0,0,0,.08), 0 3px 10px rgba(0,0,0,.05);border-radius:var(--radius-lg);overflow:hidden;position:relative}
 /* Subtle vignette: slightly darker edges, lighter center */
 .nav-bar::before{
   content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
