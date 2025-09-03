@@ -80,15 +80,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const host = headerInner.getBoundingClientRect();
       const padX = 24; // extra width for "splash" feel
       const padY = 10;
-      const x = rect.left - host.left - padX/2;
+  const isLogo = el.classList.contains('logo') || el.closest('.logo');
+  const baseW = Math.max(120, rect.width + padX);
+  const w = isLogo ? Math.max(120, Math.min(160, baseW)) : baseW;
+  const h = Math.max(32, rect.height + padY);
+      // Center the blob horizontally under the target element
+      const centerX = rect.left - host.left + rect.width / 2;
+      const x = centerX - (w / 2);
       const y = rect.top - host.top + rect.height/2;
-      const isLogo = el.classList.contains('logo') || el.closest('.logo');
-      const baseW = Math.max(120, rect.width + padX);
-      const w = isLogo ? Math.max(120, Math.min(160, baseW)) : baseW;
-      const h = Math.max(32, rect.height + padY);
       blob.style.setProperty('--x', `${x}px`);
       blob.style.setProperty('--w', `${w}px`);
-      blob.style.setProperty('--h', `${h}px`);
+  blob.style.setProperty('--h', `${h}px`);
       blob.style.top = `${y}px`;
       // default: gradient mode
       blob.classList.remove('is-label');
