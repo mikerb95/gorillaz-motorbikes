@@ -10,6 +10,7 @@
   --radius-pill:999px;
   --nav-gap:28px;
   --nav-center-gap:96px;
+  --header-offset:96px;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#fff;color:#111;font-family:"Helvetica Neue", Helvetica, Arial, system-ui, Segoe UI, Roboto, sans-serif}
@@ -94,7 +95,10 @@ a:hover{text-decoration:underline}
 .logo.is-hidden img{opacity:0;transition:opacity .2s ease}
 .logo, .nav-links a, .header-right a{position:relative;z-index:1}
 
-main{min-height:60vh}
+main{min-height:60vh;padding-top:var(--header-offset)}
+/* When home hero is full-bleed, shift the hero itself instead of main padding */
+.hero{margin-top:var(--header-offset)}
+body.has-hero main{padding-top:0}
 .container{max-width:1200px;margin:0 auto;padding:24px 16px}
 
 /* Hero de imagen a pantalla completa con overlay */
@@ -161,6 +165,7 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   .header-inner{grid-template-columns:auto auto;column-gap:12px}
   .header-right{display:none}
   .nav{position:fixed;inset:96px 12px auto 12px;background:#fff;display:none;flex-direction:column;align-items:stretch;gap:12px;padding:20px;border-bottom:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(0,0,0,.08);border-radius:var(--radius-lg)}
+  .nav{inset:var(--header-offset) 12px auto 12px}
   .nav-links{flex-direction:column;gap:12px;align-items:stretch}
   .nav-links a, .nav-cta a, .nav-cta form button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px}
   /* On mobile overlay, restore dark text for contrast */

@@ -1,4 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Dynamically set header offset so content doesn't sit under the fixed header
+  const setHeaderOffset = () => {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+    const rect = header.getBoundingClientRect();
+    const h = Math.ceil(rect.height);
+    document.documentElement.style.setProperty('--header-offset', h + 'px');
+  };
+  setHeaderOffset();
+  // Recalculate after layout settles and on resize
+  setTimeout(setHeaderOffset, 100);
+  window.addEventListener('resize', setHeaderOffset);
+
+  // Mark when page has a full-bleed hero to adjust layout via CSS
+  if (document.querySelector('.hero')) {
+    document.body.classList.add('has-hero');
+  }
+
   const toggle = document.querySelector('.nav-toggle');
   const nav = document.querySelector('[data-nav]');
   if (toggle && nav) {
@@ -6,6 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const open = nav.getAttribute('data-open') === 'true';
       nav.setAttribute('data-open', String(!open));
       toggle.setAttribute('aria-expanded', String(!open));
+      // Recompute in case header height changes due to wrap or scrollbar
+      setHeaderOffset();
     });
   }
 
