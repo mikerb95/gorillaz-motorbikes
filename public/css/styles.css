@@ -348,6 +348,8 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 @media (min-width:901px){
   .site-header .header-inner{padding:18px 20px}
   .site-header .logo img{height:54px}
+  /* Match spacing: Club ↔ calendar icon same as Cart ↔ Tienda */
+  .nav-links .cart-link{margin-left:-8px}
 }
 
 @media (max-width:900px){
