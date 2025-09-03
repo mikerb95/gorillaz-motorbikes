@@ -32,6 +32,15 @@
             <a href="/">Inicio</a>
             <a href="/servicios">Servicios</a>
             <a href="/club">Club</a>
+            <a class="cart-link" href="/eventos<%= (typeof eventsFirstAnchor !== 'undefined' && eventsFirstAnchor) ? eventsFirstAnchor : '' %>" aria-label="Eventos">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+                <line x1="8" y1="3" x2="8" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+                <line x1="16" y1="3" x2="16" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+                <line x1="3" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+              </svg>
+              <span class="cart-badge"><%= (typeof eventsUpcoming !== 'undefined' && eventsUpcoming) ? eventsUpcoming : 0 %></span>
+            </a>
           </div>
           <div class="nav-cta">
               <a class="btn-ghost btn-sm btn-square" href="/tienda">Tienda</a>
