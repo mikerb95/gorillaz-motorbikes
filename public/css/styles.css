@@ -66,9 +66,10 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 .site-footer{border-top:1px solid #e5e7eb;padding:24px;text-align:center;color:#6b7280;background:#fff}
 
 @media (max-width:900px){
+  .nav-bar{margin:12px 12px 0}
   .header-inner{grid-template-columns:auto auto}
   .header-right{display:none}
-  .nav{position:fixed;inset:96px 0 auto 0;background:#fff;display:none;flex-direction:column;gap:14px;padding:16px;border-bottom:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+  .nav{position:fixed;inset:96px 12px auto 12px;background:#fff;display:none;flex-direction:column;gap:14px;padding:16px;border-bottom:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(0,0,0,.08);border-radius:var(--radius-lg)}
   .nav-links{flex-direction:column;gap:12px}
   .nav[data-open="true"]{display:flex}
   .nav-toggle{display:inline-flex}
