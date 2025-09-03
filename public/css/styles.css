@@ -207,6 +207,7 @@ body.has-hero main{padding-top:0}
   .btn-outline:hover::before, .btn-outline:focus-visible::before{
     transform:none;opacity:0
   }
+  .service-card::before{animation:none}
 }
 .btn-sm{padding:8px 12px;border-radius:10px}
 .btn-xs{padding:6px 10px;border-radius:9px;font-size:.9rem}
@@ -230,12 +231,13 @@ section h2, section h1{max-width:1200px;margin:0 auto 16px;padding:0 0}
 .service-card{position:relative;border-radius:var(--radius-lg);overflow:hidden;min-height:160px;display:grid;align-items:end;background:#000}
 .service-card::before{content:"";position:absolute;inset:0;background:
   linear-gradient(180deg, rgba(0,0,0,.05) 20%, rgba(0,0,0,.45) 100%),
-  var(--bg) center/cover no-repeat;opacity:.9}
+  var(--bg) center/cover no-repeat;opacity:.9; background-position:center center, 50% 50%; will-change:background-position; animation:service-pan 16s ease-in-out infinite}
 .service-card::after{content:"";position:absolute;inset:0;pointer-events:none}
 .service-content{position:relative;padding:14px;color:#fff;display:grid;gap:6px}
 .service-content h3{margin:0;font-size:18px}
 .service-content p{margin:0;color:rgba(255,255,255,.92)}
 .service-card:hover::before{opacity:1}
+@keyframes service-pan{0%,100%{background-position:center center,50% 50%}50%{background-position:center center,50% 53%}}
 
 /* Two fixed columns on desktop, single on mobile */
 .grid.halves{grid-template-columns:repeat(2,1fr)}
