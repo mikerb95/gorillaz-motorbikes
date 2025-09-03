@@ -1,0 +1,48 @@
+<%- include('partials/head', { title: 'Checkout' }) %>
+
+<main class="container">
+  <section class="section">
+    <h1 class="section-title">Checkout</h1>
+    <p class="section-subtitle">Pasarela de pago simulada</p>
+
+    <div class="checkout-grid">
+      <form class="payment-form" method="post" action="/pagar">
+        <h2>Datos de pago</h2>
+        <label>
+          Nombre en la tarjeta
+          <input name="cardName" required />
+        </label>
+        <label>
+          Número de tarjeta
+          <input name="cardNumber" inputmode="numeric" pattern="[0-9 ]{12,19}" placeholder="4111 1111 1111 1111" required />
+        </label>
+        <div class="row-2">
+          <label>
+            Expiración
+            <input name="exp" placeholder="MM/AA" required />
+          </label>
+          <label>
+            CVV
+            <input name="cvv" inputmode="numeric" minlength="3" maxlength="4" required />
+          </label>
+        </div>
+        <button class="btn btn-primary" type="submit">Pagar $<%= cart.subtotal.toLocaleString('es-CO') %></button>
+        <p class="muted">No se realizará ningún cargo real. Esto es una simulación.</p>
+      </form>
+
+      <aside class="order-summary">
+        <h2>Resumen</h2>
+        <div class="summary-row">
+          <span>Artículos</span>
+          <strong><%= cart.count %></strong>
+        </div>
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong>$<%= cart.subtotal.toLocaleString('es-CO') %></strong>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
+const catalog = require('./data/catalog');
 
 const app = express();
 
@@ -51,6 +52,13 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+// Locals for templates
+app.use((req, res, next) => {
+  res.locals.user = users.find(u => u.id === req.session.userId);
+  res.locals.cart = req.session.cart || { items: {}, count: 0, subtotal: 0 };
+  next();
+});
+
 // Helpers
 const requireAuth = (req, res, next) => {
   if (!req.session.userId) return res.redirect('/club/login');
@@ -92,7 +100,87 @@ app.get('/servicios', (req, res) => {
 });
 
 app.get('/tienda', (req, res) => {
-  res.render('shop', { user: users.find(u => u.id === req.session.userId) });
+  const cat = catalog.categories;
+  const products = catalog.products;
+  const byCat = cat.map(c => ({
+    ...c,
+    items: products.filter(p => p.category === c.slug)
+  }));
+  res.render('shop', {
+    user: users.find(u => u.id === req.session.userId),
+    categories: cat,
+    byCat
+  });
+});
+
+// Cart helpers
+const getCart = (req) => {
+  if (!req.session.cart) req.session.cart = { items: {}, count: 0, subtotal: 0 };
+  return req.session.cart;
+};
+const recalc = (cart) => {
+  let count = 0, subtotal = 0;
+  for (const [id, qty] of Object.entries(cart.items)){
+    const prod = catalog.products.find(p => p.id === id);
+    if (prod){ count += qty; subtotal += prod.price * qty; }
+  }
+  cart.count = count; cart.subtotal = subtotal; return cart;
+};
+
+// Add to cart
+app.post('/cart/add', (req, res) => {
+  const { id, qty } = req.body;
+  const product = catalog.products.find(p => p.id === id);
+  if (!product) return res.status(400).send('Producto no encontrado');
+  const cart = getCart(req);
+  const q = Math.max(1, parseInt(qty || '1', 10));
+  cart.items[id] = (cart.items[id] || 0) + q;
+  recalc(cart);
+  res.redirect('/carrito');
+});
+
+// Update cart
+app.post('/cart/update', (req, res) => {
+  const { id, qty } = req.body;
+  const cart = getCart(req);
+  const q = Math.max(0, parseInt(qty || '0', 10));
+  if (q === 0) delete cart.items[id]; else cart.items[id] = q;
+  recalc(cart);
+  res.redirect('/carrito');
+});
+
+// Clear cart
+app.post('/cart/clear', (req, res) => {
+  req.session.cart = { items: {}, count: 0, subtotal: 0 };
+  res.redirect('/carrito');
+});
+
+// Cart page
+app.get('/carrito', (req, res) => {
+  const cart = recalc(getCart(req));
+  const items = Object.entries(cart.items).map(([id, qty]) => {
+    const p = catalog.products.find(x => x.id === id);
+    return { ...p, qty, total: p.price * qty };
+  });
+  res.render('cart', { user: users.find(u => u.id === req.session.userId), items, cart });
+});
+
+// Checkout (mock)
+app.get('/checkout', (req, res) => {
+  const cart = recalc(getCart(req));
+  if (cart.count === 0) return res.redirect('/tienda');
+  res.render('checkout', { user: users.find(u => u.id === req.session.userId), cart });
+});
+
+// Mock payment gateway
+app.post('/pagar', (req, res) => {
+  const cart = recalc(getCart(req));
+  if (cart.count === 0) return res.redirect('/tienda');
+  // Simulate success
+  const orderId = uuidv4();
+  const total = cart.subtotal;
+  req.session.cart = { items: {}, count: 0, subtotal: 0 };
+  res.render('payment/success', { user: users.find(u => u.id === req.session.userId), orderId, total });
 });
 
 app.get('/cursos', (req, res) => {

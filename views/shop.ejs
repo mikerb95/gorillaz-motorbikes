@@ -1,3 +1,43 @@
+<%- include('partials/head', { title: 'Tienda' }) %>
+
+<main class="container">
+  <section class="section">
+    <h1 class="section-title">Tienda</h1>
+    <p class="section-subtitle">Explora por categoría</p>
+
+    <div class="category-tabs">
+      <% categories.forEach(c => { %>
+        <a class="chip" href="#cat-<%= c.slug %>"><%= c.name %></a>
+      <% }) %>
+    </div>
+
+    <% byCat.forEach(block => { %>
+      <div id="cat-<%= block.slug %>" class="category-block">
+        <h2 class="category-title"><%= block.name %></h2>
+        <div class="grid">
+          <% block.items.forEach(p => { %>
+            <article class="card product-card">
+              <div class="card-media" aria-hidden="true"></div>
+              <div class="card-body">
+                <h3 class="card-title"><%= p.name %></h3>
+                <p class="card-text"><%= p.description %></p>
+                <div class="price-row">
+                  <span class="price">$<%= (p.price).toLocaleString('es-CO') %></span>
+                  <form method="post" action="/cart/add">
+                    <input type="hidden" name="id" value="<%= p.id %>" />
+                    <button type="submit" class="btn btn-primary">Añadir</button>
+                  </form>
+                </div>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      </div>
+    <% }) %>
+  </section>
+</main>
+
+<%- include('partials/footer') %>
 <%- include('partials/head', { title: 'Tienda — Gorillaz Motorbikes', user }) %>
 
 <section class="container">

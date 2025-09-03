@@ -1,0 +1,15 @@
+<%- include('../partials/head', { title: 'Pago Exitoso' }) %>
+
+<main class="container">
+  <section class="section">
+    <h1 class="section-title">¡Pago Exitoso!</h1>
+    <p>Gracias por tu compra. Tu número de orden es <strong><%= orderId %></strong>.</p>
+    <p>Total pagado: <strong>$<%= total.toLocaleString('es-CO') %></strong></p>
+    <div class="actions-row">
+      <a class="btn" href="/tienda">Volver a la tienda</a>
+      <a class="btn btn-primary" href="/">Ir al inicio</a>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>

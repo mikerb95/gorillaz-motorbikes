@@ -1,0 +1,46 @@
+<%- include('partials/head', { title: 'Carrito' }) %>
+
+<main class="container">
+  <section class="section">
+    <h1 class="section-title">Tu Carrito</h1>
+
+    <% if (items.length === 0) { %>
+      <p>Tu carrito está vacío.</p>
+      <a class="btn" href="/tienda">Ir a la tienda</a>
+    <% } else { %>
+      <div class="cart-list">
+        <% items.forEach(item => { %>
+          <div class="cart-item">
+            <div class="cart-info">
+              <strong><%= item.name %></strong>
+              <span class="muted">$<%= item.price.toLocaleString('es-CO') %> c/u</span>
+            </div>
+            <form method="post" action="/cart/update" class="cart-actions">
+              <input type="hidden" name="id" value="<%= item.id %>" />
+              <input type="number" min="0" name="qty" value="<%= item.qty %>" />
+              <span class="line-total">$<%= item.total.toLocaleString('es-CO') %></span>
+              <button class="btn" type="submit">Actualizar</button>
+            </form>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="cart-summary">
+        <form method="post" action="/cart/clear">
+          <button class="btn btn-ghost" type="submit">Vaciar carrito</button>
+        </form>
+        <div class="totals">
+          <span>Subtotal:</span>
+          <strong>$<%= cart.subtotal.toLocaleString('es-CO') %></strong>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <a class="btn btn-ghost" href="/tienda">Seguir comprando</a>
+        <a class="btn btn-primary" href="/checkout">Proceder al pago</a>
+      </div>
+    <% } %>
+  </section>
+</main>
+
+<%- include('partials/footer') %>
