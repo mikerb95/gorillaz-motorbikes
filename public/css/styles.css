@@ -212,7 +212,6 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   .nav{inset:var(--header-offset) 12px 12px 12px;overflow:auto}
   .nav-links{flex-direction:column;gap:12px;align-items:stretch}
   .nav-links a, .nav-cta a, .nav-cta form button{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px;background:#f8f8f8;border:1px solid #eee}
-  .nav-cta a.btn{background:#f8f8f8;border:1px solid #eee;color:#111}
   /* Ensure cart item looks like others in the mobile list */
   .nav .cart-link{display:flex;align-items:center;gap:10px}
   /* Hide floating badge in the mobile panel to keep rows uniform */
