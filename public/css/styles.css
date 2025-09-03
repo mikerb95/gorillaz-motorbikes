@@ -211,7 +211,6 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   .nav-cta a.btn{background:#f8f8f8;border:1px solid #eee;color:#111}
   /* Ensure cart item looks like others in the mobile list */
   .nav .cart-link{display:flex;align-items:center;gap:10px}
-  .nav .cart-link .cart-label{display:inline}
   /* Hide floating badge in the mobile panel to keep rows uniform */
   .nav[data-open="true"] .cart-badge{display:none}
   /* On mobile overlay, restore dark text for contrast */
