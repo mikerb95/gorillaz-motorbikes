@@ -26,6 +26,9 @@ a:hover{text-decoration:underline}
 .nav-center{display:flex;align-items:center;justify-content:center}
 .logo{display:inline-flex;align-items:center;justify-content:center}
 .logo img{height:36px;width:auto;display:block}
+.logo .logo-text{display:none;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:.6px}
+.logo:hover img,.logo:active img{display:none}
+.logo:hover .logo-text,.logo:active .logo-text{display:inline}
 .nav{display:flex;align-items:center;justify-content:flex-start;gap:0}
 /* unified spacing for nav items */
 .nav-links{display:flex;gap:var(--nav-gap);text-transform:uppercase;font-weight:800;letter-spacing:.6px}
@@ -93,6 +96,7 @@ a:hover{text-decoration:underline}
   z-index:2;
 }
 .logo.is-hidden img{opacity:0;transition:opacity .2s ease}
+.logo.is-hidden .logo-text{display:inline}
 .logo, .nav-links a, .header-right a{position:relative;z-index:1}
 .cart-link{position:relative;display:inline-flex;align-items:center;justify-content:center}
 .cart-label{display:none}

@@ -82,67 +82,25 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       headerInner.addEventListener('mouseleave', hideBlob);
 
-      // Special behavior for logo: show text label instead of blob
+      // Special behavior for logo: hide the image and show the inline text; no blob overlay
       logo.addEventListener('mouseenter', () => {
-        const rect = logo.getBoundingClientRect();
-        const host = headerInner.getBoundingClientRect();
-        const label = 'Gorillaz Motorbikes'.toUpperCase();
-        blob.classList.add('is-label');
-        blob.classList.add('is-visible');
-        blob.textContent = label;
+        hideBlob();
         logo.classList.add('is-hidden');
-        document.body.classList.add('logo-hover-dim');
-        const measure = document.createElement('span');
-        measure.style.position = 'absolute';
-        measure.style.visibility = 'hidden';
-        measure.style.fontWeight = '800';
-        measure.style.textTransform = 'uppercase';
-        measure.style.letterSpacing = '.6px';
-        measure.textContent = label;
-        document.body.appendChild(measure);
-        const textW = measure.getBoundingClientRect().width + 16; // padding
-        document.body.removeChild(measure);
-        const x = rect.left - host.left - (textW - rect.width)/2;
-        const y = rect.top - host.top + rect.height/2;
-        blob.style.setProperty('--x', `${x}px`);
-        blob.style.setProperty('--w', `${textW}px`);
-        blob.style.top = `${y}px`;
       });
       logo.addEventListener('mouseleave', () => {
         hideBlob();
-        document.body.classList.remove('logo-hover-dim');
+        logo.classList.remove('is-hidden');
       });
     }
 
     // Also support keyboard focus for accessibility (works regardless of pointer type)
     logo.addEventListener('focus', () => {
-      const rect = logo.getBoundingClientRect();
-      const host = headerInner.getBoundingClientRect();
-      const label = 'Gorillaz Motorbikes'.toUpperCase();
-      blob.classList.add('is-label');
-      blob.classList.add('is-visible');
-      blob.textContent = label;
+      hideBlob();
       logo.classList.add('is-hidden');
-      document.body.classList.add('logo-hover-dim');
-      const measure = document.createElement('span');
-      measure.style.position = 'absolute';
-      measure.style.visibility = 'hidden';
-      measure.style.fontWeight = '800';
-      measure.style.textTransform = 'uppercase';
-      measure.style.letterSpacing = '.6px';
-      measure.textContent = label;
-      document.body.appendChild(measure);
-      const textW = measure.getBoundingClientRect().width + 16;
-      document.body.removeChild(measure);
-      const x = rect.left - host.left - (textW - rect.width)/2;
-      const y = rect.top - host.top + rect.height/2;
-      blob.style.setProperty('--x', `${x}px`);
-      blob.style.setProperty('--w', `${textW}px`);
-      blob.style.top = `${y}px`;
     });
     logo.addEventListener('blur', () => {
       hideBlob();
-      document.body.classList.remove('logo-hover-dim');
+      logo.classList.remove('is-hidden');
     });
 
     // Keep blob responsive on resize
