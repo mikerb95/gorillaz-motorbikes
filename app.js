@@ -157,6 +157,11 @@ app.post('/servicios', (req, res) => {
 app.get('/tienda', (req, res) => {
   const allCats = catalog.categories;
   const allProds = catalog.products;
+  const priceVals = (allProds || []).map(p => p.price).filter(n => Number.isFinite(n));
+  const priceStats = {
+    min: priceVals.length ? Math.min(...priceVals) : 0,
+    max: priceVals.length ? Math.max(...priceVals) : 0
+  };
   const q = (req.query.q || '').toString().trim().toLowerCase();
   const selectedCat = (req.query.cat || '').toString();
   const min = Number.isFinite(parseInt(req.query.min, 10)) ? parseInt(req.query.min, 10) : null;
@@ -200,7 +205,8 @@ app.get('/tienda', (req, res) => {
     min: min ?? '',
     max: max ?? '',
     sort,
-    baseQuery
+  baseQuery,
+  priceStats
   });
 });
 

@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         blob.classList.add('is-visible');
         blob.textContent = label;
         logo.classList.add('is-hidden');
+        document.body.classList.add('logo-hover-dim');
         const measure = document.createElement('span');
         measure.style.position = 'absolute';
         measure.style.visibility = 'hidden';
@@ -107,7 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
         blob.style.setProperty('--w', `${textW}px`);
         blob.style.top = `${y}px`;
       });
-      logo.addEventListener('mouseleave', hideBlob);
+      logo.addEventListener('mouseleave', () => {
+        hideBlob();
+        document.body.classList.remove('logo-hover-dim');
+      });
     }
 
     // Keep blob responsive on resize
@@ -263,4 +267,48 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm(msg)) e.preventDefault();
       });
     });
+});
+
+// Dual range slider for price filter
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-price-slider]').forEach(slider => {
+    const minInput = slider.querySelector('input[name="min"]');
+    const maxInput = slider.querySelector('input[name="max"]');
+    const minThumb = slider.querySelector('[data-price-min]');
+    const maxThumb = slider.querySelector('[data-price-max]');
+    const minText = slider.querySelector('[data-price-min-text]');
+    const maxText = slider.querySelector('[data-price-max-text]');
+    const defaultMin = Number(slider.getAttribute('data-min-default') || '0');
+    const defaultMax = Number(slider.getAttribute('data-max-default') || '0');
+
+    const toNumber = (v, fall) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : fall;
+    };
+
+    const setUI = (mn, mx) => {
+      minThumb.value = String(mn);
+      maxThumb.value = String(mx);
+      minInput.value = String(mn);
+      maxInput.value = String(mx);
+      minText.textContent = toNumber(mn, defaultMin).toLocaleString('es-CO');
+      maxText.textContent = toNumber(mx, defaultMax).toLocaleString('es-CO');
+    };
+
+    const clampUpdate = () => {
+      let mn = Math.min(toNumber(minThumb.value, defaultMin), toNumber(maxThumb.value, defaultMax));
+      let mx = Math.max(toNumber(minThumb.value, defaultMin), toNumber(maxThumb.value, defaultMax));
+      // ensure at least 0 gap
+      if (mn > mx) [mn, mx] = [mx, mn];
+      setUI(mn, mx);
+    };
+
+    // Initialize
+    const startMin = toNumber(minInput.value || minThumb.value, defaultMin);
+    const startMax = toNumber(maxInput.value || maxThumb.value, defaultMax);
+    setUI(Math.min(startMin, startMax), Math.max(startMin, startMax));
+
+    minThumb.addEventListener('input', clampUpdate);
+    maxThumb.addEventListener('input', clampUpdate);
+  });
 });

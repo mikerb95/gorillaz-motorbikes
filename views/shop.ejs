@@ -25,15 +25,17 @@
 
       <div class="filter-group">
         <div class="filter-title">Precio</div>
-        <div class="row-2">
-          <label>
-            Mín
-            <input name="min" inputmode="numeric" value="<%= min %>" />
-          </label>
-          <label>
-            Máx
-            <input name="max" inputmode="numeric" value="<%= max %>" />
-          </label>
+        <div class="price-slider" data-price-slider data-min-default="<%= priceStats.min %>" data-max-default="<%= priceStats.max %>">
+          <div class="price-values">
+            <span>Desde: $<span data-price-min-text><%= (min || priceStats.min).toLocaleString('es-CO') %></span></span>
+            <span>Hasta: $<span data-price-max-text><%= (max || priceStats.max).toLocaleString('es-CO') %></span></span>
+          </div>
+          <div class="slider-rows">
+            <input type="range" min="<%= priceStats.min %>" max="<%= priceStats.max %>" step="1" value="<%= min || priceStats.min %>" data-price-min>
+            <input type="range" min="<%= priceStats.min %>" max="<%= priceStats.max %>" step="1" value="<%= max || priceStats.max %>" data-price-max>
+          </div>
+          <input type="hidden" name="min" value="<%= min %>">
+          <input type="hidden" name="max" value="<%= max %>">
         </div>
       </div>
 
