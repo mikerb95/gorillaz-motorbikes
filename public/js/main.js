@@ -219,35 +219,220 @@ document.addEventListener('DOMContentLoaded', () => {
       logo.classList.remove('is-hidden');
       lastEl = el;
     };
-    const ensureRays = () => {
-      if (headerInner.querySelector('.nav-ray')) return;
-      const left = document.createElement('div'); left.className='nav-ray nav-ray--left';
-      const right = document.createElement('div'); right.className='nav-ray nav-ray--right';
-      headerInner.appendChild(left); headerInner.appendChild(right);
+    const ensureRayCanvas = () => {
+      let c = headerInner.querySelector('.nav-ray-canvas');
+      if (c) return c;
+      c = document.createElement('canvas');
+      c.className = 'nav-ray-canvas';
+      headerInner.appendChild(c);
+      return c;
+    };
+    const drawLightning = (ctx, x0, y0, x1, y1, options={}) => {
+      const steps = options.steps || 18;
+      const amp = options.amp || 16;
+      const branchPct = options.branchPct || 0.25;
+      ctx.save();
+      ctx.strokeStyle = options.color || 'rgba(0,0,0,0.9)';
+      ctx.lineWidth = options.width || 2.2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      for (let i=1;i<=steps;i++){
+        const t = i/steps;
+        const x = x0 + (x1-x0)*t;
+        const y = y0 + (y1-y0)*t + (Math.sin(t*6*Math.PI)+ (Math.random()-.5))*amp*(1-t);
+        ctx.lineTo(x,y);
+        // occasional tiny branch
+        if (Math.random()<branchPct*t*0.5){
+          const bx = x + (Math.random()>.5?1:-1)*8;
+          const by = y + (Math.random()-.5)*12;
+          ctx.moveTo(x,y);
+          ctx.lineTo(bx,by);
+          ctx.moveTo(x,y);
+        }
+      }
+      ctx.stroke();
+      // Outer glow
+      ctx.strokeStyle = options.colorOuter || 'rgba(0,0,0,0.25)';
+      ctx.lineWidth = (options.width||2.2)*3;
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.beginPath();
+      ctx.moveTo(x0,y0);
+      for (let i=1;i<=steps;i++){
+        const t = i/steps;
+        const x = x0 + (x1-x0)*t;
+        const y = y0 + (y1-y0)*t + (Math.sin(t*6*Math.PI)+ (Math.random()-.5))*amp*(1-t);
+        ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    };
+    const makePath = (x0,y0,x1,y1) => {
+      const dx = x1-x0, dy = y1-y0;
+      const len = Math.hypot(dx,dy);
+      const steps = Math.max(14, Math.min(48, Math.floor(len/18)));
+      const amp = Math.max(10, Math.min(22, len/18));
+      const pts = [{x:x0,y:y0}];
+      for (let i=1;i<=steps;i++){
+        const t = i/steps;
+        const x = x0 + dx*t;
+        const y = y0 + dy*t + (Math.sin(t*6*Math.PI) + (Math.random()-.5))*amp*(1-t);
+        pts.push({x,y});
+      }
+      return pts;
+    };
+    const drawPath = (ctx, pts, progress, opts) => {
+      const n = Math.max(2, Math.floor(pts.length*progress));
+      if (n < 2) return;
+      const sub = pts.slice(0,n);
+      // Glow
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.strokeStyle = opts.glow || 'rgba(0,0,0,0.25)';
+      ctx.lineWidth = (opts.width||2.2)*3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sub[0].x, sub[0].y);
+      for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
+      ctx.stroke();
+      // Core
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = opts.color || 'rgba(0,0,0,0.95)';
+      ctx.lineWidth = opts.width || 2.2;
+      ctx.beginPath();
+      ctx.moveTo(sub[0].x, sub[0].y);
+      for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
+      ctx.stroke();
+      ctx.restore();
+    };
+    const buildBranches = (pts, count=3) => {
+      const branches = [];
+      const n = pts.length;
+      for (let i=0;i<count;i++){
+        const startIndex = Math.floor( (0.15 + Math.random()*0.6) * n );
+        const start = pts[startIndex];
+        const len = 6 + Math.floor(Math.random()*8);
+        const dir = (Math.random()<0.5?-1:1);
+        const seg = [start];
+        for (let j=1;j<=len;j++){
+          const base = pts[Math.min(n-1, startIndex+j)];
+          const x = base.x + dir * (2 + Math.random()*6) * (1 - j/len);
+          const y = base.y + (Math.random()-.5)*6 * (1 - j/len);
+          seg.push({x,y});
+        }
+        branches.push({startIndex, seg});
+      }
+      return branches;
+    };
+    const drawBranches = (ctx, branches, mainProgress, opts) => {
+      branches.forEach(({startIndex, seg}) => {
+        const startT = startIndex / Math.max(1, (opts.totalPts||1));
+        if (mainProgress <= startT) return;
+        const local = Math.min(1, (mainProgress - startT) / (1 - startT));
+        const n = Math.max(2, Math.floor(seg.length * local));
+        const sub = seg.slice(0,n);
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+        ctx.lineWidth = (opts.width||2.2)*2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(sub[0].x, sub[0].y);
+        for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
+        ctx.stroke();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+        ctx.lineWidth = (opts.width||2.2)*0.9;
+        ctx.beginPath();
+        ctx.moveTo(sub[0].x, sub[0].y);
+        for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
+        ctx.stroke();
+        ctx.restore();
+      });
+    };
+    const drawCorona = (ctx, x, y, r, alpha=0.25) => {
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(1,r), 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
     };
     const emitRays = () => {
-      ensureRays();
-      const left = headerInner.querySelector('.nav-ray--left');
-      const right = headerInner.querySelector('.nav-ray--right');
-      // Reset
-      [left,right].forEach(r=>{ r.classList.remove('is-on','is-fade'); r.style.transition='none'; r.style.transform='translate(-50%,-50%) scaleX(0)'; r.offsetHeight; r.style.transition=''; });
-      // Compute dynamic length based on available space to edges
+      const c = ensureRayCanvas();
+      const prefersReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const dpr = Math.min(window.devicePixelRatio||1, 2);
       const host = headerInner.getBoundingClientRect();
+      c.width = Math.ceil(host.width*dpr);
+      c.height = Math.ceil(host.height*dpr);
+      c.style.width = host.width+'px';
+      c.style.height = host.height+'px';
+      const ctx = c.getContext('2d');
+      ctx.setTransform(dpr,0,0,dpr,0,0);
       const center = logo.getBoundingClientRect();
-      const leftLen = Math.max(0, (center.left - host.left));
-      const rightLen = Math.max(0, (host.right - center.right));
-      left.style.width = Math.ceil(leftLen) + 'px';
-      right.style.width = Math.ceil(rightLen) + 'px';
-      // Turn on
-      requestAnimationFrame(()=>{
-        [left,right].forEach(r=>r.classList.add('is-on'));
-        left.style.transform='translate(-50%,-50%) scaleX(1)';
-        right.style.transform='translate(-50%,-50%) scaleX(1)';
-        clearTimeout(emitRays._t);
-        emitRays._t = setTimeout(()=>{
-          [left,right].forEach(r=>r.classList.add('is-fade'));
-        }, 520);
-      });
+      const xMid = (center.left + center.right)/2 - host.left;
+      const yMid = (center.top + center.bottom)/2 - host.top;
+      const leftPts = makePath(xMid, yMid, 8, yMid);
+      const rightPts = makePath(xMid, yMid, host.width-8, yMid);
+      const leftBranches = buildBranches(leftPts, 2 + Math.floor(Math.random()*2));
+      const rightBranches = buildBranches(rightPts, 2 + Math.floor(Math.random()*2));
+      let start = performance.now();
+      const travel = prefersReduce ? 80 : 140;
+      const preflash = prefersReduce ? 0 : 70;
+      const dissipate = prefersReduce ? 140 : 320;
+      cancelAnimationFrame(c._raf || 0);
+      clearTimeout(c._fadeT1); clearTimeout(c._fadeT2);
+      c.classList.add('is-on');
+      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+      const step = (now) => {
+        const t = now - start;
+        const pLin = Math.max(0, Math.min(1, (t - preflash)/Math.max(1,travel)));
+        const p = easeOutCubic(Math.max(0,pLin));
+        ctx.clearRect(0,0,host.width,host.height);
+        // Preflash corona around logo center
+        if (t < preflash){
+          const a = 0.18 + 0.22 * (0.5 + 0.5*Math.sin(t*0.06));
+          drawCorona(ctx, xMid, yMid, 16 + t*0.15, a);
+        }
+        // Draw main bolts
+        drawPath(ctx, leftPts, p, { width: 2.2 });
+        drawPath(ctx, rightPts, p, { width: 2.2 });
+        // Draw branches as the head passes
+        drawBranches(ctx, leftBranches, p, { width: 2.2, totalPts: leftPts.length });
+        drawBranches(ctx, rightBranches, p, { width: 2.2, totalPts: rightPts.length });
+        // Head corona for a hot tip
+        if (p > 0 && p < 1){
+          const li = Math.max(1, Math.floor(leftPts.length * p));
+          const ri = Math.max(1, Math.floor(rightPts.length * p));
+          const lh = leftPts[Math.min(leftPts.length-1, li)];
+          const rh = rightPts[Math.min(rightPts.length-1, ri)];
+          drawCorona(ctx, lh.x, lh.y, 6, 0.2);
+          drawCorona(ctx, rh.x, rh.y, 6, 0.2);
+        }
+        if (p < 1){ c._raf = requestAnimationFrame(step); return; }
+        // Hold a tick then fade by reducing global alpha over dissipate time
+        const fadeStart = performance.now();
+        const fadeStep = (now2) => {
+          const ft = now2 - fadeStart;
+          const fp = Math.max(0, Math.min(1, ft/dissipate));
+          ctx.clearRect(0,0,host.width,host.height);
+          // Slight flicker on dissipate
+          const flicker = prefersReduce ? 0 : (Math.random()*0.06);
+          ctx.globalAlpha = Math.max(0, 1 - fp - flicker);
+          drawPath(ctx, leftPts, 1, { width: 2.2 });
+          drawPath(ctx, rightPts, 1, { width: 2.2 });
+          drawBranches(ctx, leftBranches, 1, { width: 2.2, totalPts: leftPts.length });
+          drawBranches(ctx, rightBranches, 1, { width: 2.2, totalPts: rightPts.length });
+          ctx.globalAlpha = 1;
+          if (fp < 1){ c._raf = requestAnimationFrame(fadeStep); return; }
+          // Done
+          c.classList.remove('is-on');
+          ctx.clearRect(0,0,host.width,host.height);
+        };
+        c._raf = requestAnimationFrame(fadeStep);
+      };
+      c._raf = requestAnimationFrame(step);
     };
     const showFor = (el) => {
       // Determine travel direction for peel animation
@@ -274,11 +459,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       setToEl(el);
       blob.classList.add('is-visible');
-      // Remove peel after a short moment so subsequent moves can re-trigger
+  // Remove peel after a short moment so subsequent moves can re-trigger
       clearTimeout(blob._peelT);
       blob._peelT = setTimeout(() => blob.classList.remove('is-peel'), 160);
-  // If hovering logo, emit rays outward; otherwise no-op
-  if (el === logo) emitRays();
+  // Lightning emit is handled in the dedicated logo mouseenter handler to avoid double triggers
     };
     const hideBlob = () => {
       blob.classList.remove('is-visible');
