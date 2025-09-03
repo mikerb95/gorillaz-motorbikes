@@ -95,6 +95,16 @@ app.get('/tienda', (req, res) => {
   res.render('shop', { user: users.find(u => u.id === req.session.userId) });
 });
 
+app.get('/cursos', (req, res) => {
+  const categories = [
+    { slug: 'mecanica-motos', title: 'Mecánica de Motos', desc: 'Fundamentos, mantenimiento y diagnósticos.' },
+    { slug: 'electronica-motos', title: 'Electrónica de Motos', desc: 'Sistemas eléctricos, sensores e inyección.' },
+    { slug: 'mecanica-rapida', title: 'Mecánica Rápida', desc: 'Servicios rápidos: frenos, llantas, aceite.' },
+    { slug: 'torno', title: 'Elaboración de piezas con torno', desc: 'Fabricación y ajuste de componentes en torno.' },
+  ];
+  res.render('courses', { user: users.find(u => u.id === req.session.userId), categories });
+});
+
 // Club
 app.get('/club', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');

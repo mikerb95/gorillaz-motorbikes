@@ -1,0 +1,20 @@
+<%- include('partials/head', { title: 'Cursos — Gorillaz Motorbikes', user }) %>
+
+<section class="container">
+  <h1>Cursos</h1>
+  <p>Aprende con los expertos de Gorillaz Motorbikes.</p>
+  <ul class="grid two">
+    <% categories.forEach(cat => { %>
+      <li class="card">
+        <h3><%= cat.title %></h3>
+        <p class="muted"><%= cat.desc %></p>
+        <div class="cta-row">
+          <a class="btn btn-sm" href="#">Ver temario</a>
+          <a class="btn btn-sm btn-outline" href="#">Inscribirme</a>
+        </div>
+      </li>
+    <% }) %>
+  </ul>
+</section>
+
+<%- include('partials/footer') %>
