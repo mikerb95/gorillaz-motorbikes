@@ -9,7 +9,7 @@
   --radius-lg:14px;
   --radius-pill:999px;
   --nav-gap:28px;
-  --nav-center-gap:72px;
+  --nav-center-gap:96px;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#fff;color:#111;font-family:"Helvetica Neue", Helvetica, Arial, system-ui, Segoe UI, Roboto, sans-serif}
