@@ -33,7 +33,7 @@ a:hover{text-decoration:underline}
 .header-inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:var(--nav-center-gap);padding:12px 20px;position:relative}
 .sub-embed{padding:8px 20px 12px; transition:margin-top .22s ease}
 .nav-bar:has(.sub-embed) .header-inner{padding-bottom:10px}
-.sub-embed .sub-inner{max-width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 12px;background:#FF6400;border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.sub-embed .sub-inner{max-width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 12px;background:transparent;border-radius:var(--radius-lg);box-shadow:none}
 .nav-bar:has(.nav-item.has-submenu:hover) .sub-embed,
 .nav-bar:has(.nav-item.has-submenu .nav-submenu:hover) .sub-embed{margin-top:var(--submenu-depth, 100px)}
 .nav-left{display:flex;align-items:center;justify-content:flex-end;gap:var(--nav-gap)}
@@ -189,8 +189,12 @@ body.has-hero main{padding-top:0}
 .sub-bar{display:none}
 .sub-inner{transition:transform .22s ease, opacity .18s ease}
 .sub-left{color:#fff;opacity:.95;font-weight:700;letter-spacing:.3px;font-size:.8rem}
+/* Align vertically with navbar items without changing text style */
+.sub-embed .sub-left{ padding:8px 10px; line-height:1.2; display:inline-flex; align-items:center; border-radius:8px }
 .sub-right{display:flex;gap:18px}
 .sub-right a{color:#fff;opacity:.95;font-weight:400;letter-spacing:.3px;font-size:.8rem;text-decoration:none}
+/* Keep original button look; only align center vertically */
+.sub-embed .sub-right{ align-items:center }
 .sub-right a:hover{opacity:1}
 .sub-btn{display:inline-block;background:#fff;border:1px solid #ffe0cc;color:var(--brand) !important;border-radius:10px;padding:8px 10px;font-weight:400;letter-spacing:.2px;font-size:.85rem;box-shadow:0 1px 0 rgba(0,0,0,.02)}
 .sub-btn:hover{background:#fff7f2;text-decoration:none}
