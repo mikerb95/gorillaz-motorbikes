@@ -34,6 +34,7 @@
               <a class="btn-ghost btn-sm btn-square" href="/tienda">Tienda</a>
               <a class="btn-ghost btn-sm btn-square" href="/carrito">Carrito (<%= (cart && cart.count) || 0 %>)</a>
               <a class="btn-ghost btn-sm btn-square" href="/cursos">Cursos</a>
+              <a class="btn-ghost btn-sm btn-square" href="/club">Club</a>
               <a class="btn btn-sm" href="/servicios">Agendar servicio</a>
             <% if (user) { %>
               <form action="/club/logout" method="post">
@@ -53,6 +54,7 @@
         <a class="btn-ghost btn-sm btn-square" href="/tienda">Tienda</a>
   <a class="btn-ghost btn-sm btn-square" href="/carrito">Carrito (<%= (cart && cart.count) || 0 %>)</a>
         <a class="btn-ghost btn-sm btn-square" href="/cursos">Cursos</a>
+  <a class="btn-ghost btn-sm btn-square" href="/club">Club</a>
         <a class="btn btn-sm" href="/servicios">Agendar servicio</a>
       </div>
       </div>

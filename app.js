@@ -488,7 +488,7 @@ app.get('/terminos', (req, res) => {
 // Club
 app.get('/club', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
-  res.redirect('/club/login');
+  res.render('club/landing', { events });
 });
 
 app.get('/club/login', (req, res) => {

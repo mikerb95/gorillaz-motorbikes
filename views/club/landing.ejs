@@ -1,0 +1,89 @@
+<%- include('../partials/head', { title: 'Club — Gorillaz Motorbikes' }) %>
+
+<section class="hero" style="background:url('/images/download.png') center/cover no-repeat;min-height:68vh">
+  <div class="container" style="position:relative;z-index:1;padding:48px 16px;color:#fff">
+    <h1 style="margin:0 0 10px;font-size:42px;line-height:1.1">Únete al Club Gorillaz</h1>
+    <p style="max-width:720px;margin:0 0 16px;color:#e5e7eb">Rutas exclusivas, descuentos en el taller, cursos y una comunidad que vive la moto. Vive la experiencia premium de Gorillaz Motorbikes.</p>
+    <div class="btn-row">
+      <a class="btn" href="/club/registro">Quiero ser miembro</a>
+      <a class="btn btn-outline" href="/club/login">Ya tengo cuenta</a>
+    </div>
+  </div>
+</section>
+
+<main class="container">
+  <section>
+    <h2 class="section-title">Beneficios</h2>
+    <ul class="grid">
+      <li>
+        <h3>Descuentos en el taller</h3>
+        <p>Hasta 15% en mecánica rápida y beneficios por recurrencia.</p>
+      </li>
+      <li>
+        <h3>Rutas y eventos</h3>
+        <p>Rodadas organizadas y eventos exclusivos en Bogotá y alrededores.</p>
+      </li>
+      <li>
+        <h3>Cursos y formación</h3>
+        <p>Acceso prioritario y precios especiales en nuestros cursos técnicos.</p>
+      </li>
+      <li>
+        <h3>Prioridad en agenda</h3>
+        <p>Reserva de citas preferencial para miembros Premium.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="section-title">Próximos eventos</h2>
+    <% if (!events || events.length === 0) { %>
+      <p class="muted">Muy pronto anunciaremos nuevas actividades del club.</p>
+    <% } else { %>
+      <div class="grid products-grid">
+        <% events.slice(0, 6).forEach(ev => { %>
+          <article class="card">
+            <h3 style="margin:0 0 6px"><%= ev.title %></h3>
+            <div class="meta-row">
+              <span class="chip"><%= ev.date %></span>
+              <% if (ev.location) { %><span class="chip"><%= ev.location %></span><% } %>
+            </div>
+            <p><%= ev.description %></p>
+          </article>
+        <% }) %>
+      </div>
+      <div class="btn-row" style="margin-top:12px"><a class="btn btn-outline" href="/eventos">Ver todos</a></div>
+    <% } %>
+  </section>
+
+  <section>
+    <h2 class="section-title">Testimonios</h2>
+    <ul class="grid">
+      <li>
+        <p>“Excelente servicio y las rodadas del club son lo máximo.”</p>
+        <strong>— Ana, Miembro Premium</strong>
+      </li>
+      <li>
+        <p>“Aprendí muchísimo con el curso de electrónica. Recomendado.”</p>
+        <strong>— Carlos, Miembro</strong>
+      </li>
+      <li>
+        <p>“Ambiente increíble y atención profesional.”</p>
+        <strong>— David, Miembro</strong>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="section-title">Preguntas frecuentes</h2>
+    <ul class="list" style="max-width:900px;margin:0 auto">
+      <li><span>¿Cómo me inscribo?</span><strong>Regístrate y activa tu membresía desde tu panel.</strong></li>
+      <li><span>¿Cuánto cuesta?</span><strong>Tenemos niveles desde gratuita hasta Premium.</strong></li>
+      <li><span>¿Hay requisitos?</span><strong>Mayor de edad. Recomendamos experiencia básica en conducción.</strong></li>
+    </ul>
+    <div class="center">
+      <a class="btn" href="/club/registro">Únete hoy</a>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
