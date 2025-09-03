@@ -44,12 +44,24 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   // Initial and responsive checks
   updateNavCompact();
+  // Re-check after full load (images) and when web fonts are ready, as widths can change
+  window.addEventListener('load', updateNavCompact);
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => updateNavCompact()); } catch {}
   window.addEventListener('resize', () => {
     // throttle with rAF
     if (updateNavCompact._ticking) return;
     updateNavCompact._ticking = true;
     requestAnimationFrame(() => { updateNavCompact(); updateNavCompact._ticking = false; });
   });
+  // Observe layout changes in header regions to auto-toggle compact mode
+  try {
+    const ro = new ResizeObserver(() => updateNavCompact());
+    const headerInner = document.querySelector('.header-inner');
+    const navLeft = document.querySelector('.nav-left');
+    const navCenter = document.querySelector('.nav-center');
+    const headerRight = document.querySelector('.header-right');
+    [headerInner, navLeft, navCenter, headerRight].forEach(el => el && ro.observe(el));
+  } catch {}
 
   // If sub-bar exists (logged-in), add body class and recalc spacing
   if (document.querySelector('.sub-bar')){
