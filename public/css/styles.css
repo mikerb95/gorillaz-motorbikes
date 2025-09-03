@@ -326,11 +326,48 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   transition:transform .2s ease, filter .2s ease;
 }
 .whatsapp-fab:hover{transform:translateY(-2px);filter:brightness(1.05);text-decoration:none}
+/* Tooltip bubble on hover/focus */
+.whatsapp-fab::after{
+  content:"Escribenos por WhatsApp";
+  position:absolute;
+  top:50%;
+  right:calc(100% + 10px);
+  transform:translateY(-50%) scale(.98);
+  transform-origin:100% 50%;
+  background:#111;
+  color:#fff;
+  padding:8px 10px;
+  border-radius:10px;
+  white-space:nowrap;
+  box-shadow:0 8px 24px rgba(0,0,0,.24), 0 2px 8px rgba(0,0,0,.18);
+  opacity:0;
+  pointer-events:none;
+  z-index:150;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.whatsapp-fab::before{
+  content:"";
+  position:absolute;
+  top:50%;
+  right:100%;
+  transform:translateY(-50%);
+  border:6px solid transparent;
+  border-left-color:#111;
+  opacity:0;
+  transition:opacity .18s ease;
+  z-index:149;
+}
+.whatsapp-fab:hover::after,
+.whatsapp-fab:focus-visible::after{opacity:1;transform:translateY(-50%) scale(1)}
+.whatsapp-fab:hover::before,
+.whatsapp-fab:focus-visible::before{opacity:1}
 @supports(padding: max(0px)){
   .whatsapp-fab{bottom:calc(18px + env(safe-area-inset-bottom))}
 }
 @media (max-width:640px){
   .whatsapp-fab{width:52px;height:52px;right:14px;bottom:14px}
+  /* Hide tooltip on very small screens to avoid covering content */
+  .whatsapp-fab::after, .whatsapp-fab::before{display:none}
 }
 
 /* Shop */
