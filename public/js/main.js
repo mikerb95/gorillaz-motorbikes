@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // compute extra offset based on sub-bar inner height
     const sub = document.querySelector('.sub-inner');
     if (sub){
-      const h = Math.ceil(sub.getBoundingClientRect().height + 12); // include a bit of gap
+      const h = Math.ceil(sub.getBoundingClientRect().height + 12); // keep same margin logic; height will reflect thicker bar
       document.documentElement.style.setProperty('--subbar-offset', h + 'px');
     }
     setTimeout(setHeaderOffset, 0);
