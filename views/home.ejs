@@ -52,4 +52,26 @@
   <p class="muted">Ser parte del Club Gorillaz te da prioridad en agenda y sorpresas durante el año.</p>
 </section>
 
+<section class="newsletter">
+  <div class="newsletter-inner">
+    <h2>Suscríbete al boletín</h2>
+    <p class="muted">Lee nuestra <a href="/privacidad">política de privacidad</a> para conocer cómo tratamos tus datos.</p>
+    <p class="muted">Recibe novedades, cursos y actualizaciones de Gorillaz Motorbikes.</p>
+
+    <% if (newsletterStatus === 'ok') { %>
+      <p class="alert success" role="status">¡Gracias! Te hemos suscrito al boletín.</p>
+    <% } else if (newsletterStatus === 'error') { %>
+      <p class="alert error" role="alert">Ingresa un correo válido.</p>
+    <% } %>
+
+    <form class="newsletter-form" action="/newsletter" method="post" novalidate>
+      <label class="sr-only" for="nl-email">Correo electrónico</label>
+      <input id="nl-email" type="email" name="email" placeholder="TU CORREO ELECTRÓNICO" required />
+      <button type="submit" class="btn btn-square">Suscribirme</button>
+    </form>
+    <p class="muted tiny">Este sitio está protegido por reCAPTCHA y aplican la <a href="/privacidad">Política de Privacidad</a> y los <a href="/terminos">Términos del Servicio</a>.</p>
+  </div>
+  
+</section>
+
 <%- include('partials/footer') %>

@@ -97,8 +97,10 @@ const requireAdmin = (req, res, next) => {
 let events = [];
 let availability = { blockedDates: [] };
 let appointments = [];
+let newsletter = [];
 try { events = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'events.json'), 'utf8')); } catch {}
 try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'availability.json'), 'utf8')); } catch {}
+try { newsletter = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'newsletter.json'), 'utf8')); } catch {}
 
 const saveJSON = (file, data) => {
   fs.writeFileSync(path.join(__dirname, 'data', file), JSON.stringify(data, null, 2), 'utf8');
@@ -126,8 +128,10 @@ app.get('/', (req, res) => {
   }
   res.render('home', {
     user: users.find(u => u.id === req.session.userId),
-    slides
+    slides,
+    newsletterStatus: req.session.newsletterStatus || null
   });
+  req.session.newsletterStatus = null;
 });
 
 app.get('/servicios', (req, res) => {
@@ -441,6 +445,22 @@ app.post('/admin/cursos/eliminar', requireAuth, requireAdmin, (req, res) => {
   const idx = courses.findIndex(c => c.slug === slug);
   if (idx !== -1){ courses.splice(idx, 1); saveJSON('courses.json', courses); }
   res.redirect('/admin/cursos');
+});
+
+// Newsletter subscribe (simple)
+app.post('/newsletter', (req, res) => {
+  const email = (req.body.email || '').toString().trim().toLowerCase();
+  const isValid = /.+@.+\..+/.test(email);
+  if (!isValid){
+    req.session.newsletterStatus = 'error';
+    return res.redirect('/');
+  }
+  if (!newsletter.includes(email)){
+    newsletter.push(email);
+    try { fs.writeFileSync(path.join(__dirname, 'data', 'newsletter.json'), JSON.stringify(newsletter, null, 2), 'utf8'); } catch {}
+  }
+  req.session.newsletterStatus = 'ok';
+  res.redirect('/');
 });
 
 // Admin: tienda (productos) CRUD
