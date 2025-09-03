@@ -8,7 +8,7 @@
   --radius:12px;
   --radius-lg:14px;
   --radius-pill:999px;
-  --nav-gap:28px;
+  --nav-gap:clamp(12px, 2.4vw, 36px);
   --nav-center-gap:84px;
   --header-offset:96px;
 }
