@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Build and animate the orange blob under brand and nav items
+  // Build and animate the orange blob under brand and nav items (hidden by default)
   const headerInner = document.querySelector('.header-inner');
   const logo = document.querySelector('.nav-center .logo') || document.querySelector('.logo');
   const links = Array.from(document.querySelectorAll('.nav-links a'));
@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     blob.className = 'nav-blob';
     headerInner.appendChild(blob);
 
+    let lastEl = null;
     const setToEl = (el) => {
       const rect = el.getBoundingClientRect();
       const host = headerInner.getBoundingClientRect();
@@ -34,25 +35,32 @@ document.addEventListener('DOMContentLoaded', () => {
       blob.style.setProperty('--w', `${w}px`);
       blob.style.setProperty('--h', `${h}px`);
       blob.style.top = `${y}px`;
-  // default: gradient mode
-  blob.classList.remove('is-label');
-  blob.textContent = '';
-  logo.classList.remove('is-hidden');
+      // default: gradient mode
+      blob.classList.remove('is-label');
+      blob.textContent = '';
+      logo.classList.remove('is-hidden');
+      lastEl = el;
     };
-
-    // Default position under the brand text (or full logo)
-  const defaultTarget = logo;
-    setToEl(defaultTarget);
+    const showFor = (el) => {
+      setToEl(el);
+      blob.classList.add('is-visible');
+    };
+    const hideBlob = () => {
+      blob.classList.remove('is-visible');
+      blob.classList.remove('is-label');
+      blob.textContent = '';
+      logo.classList.remove('is-hidden');
+    };
 
     // Hover interactions (only on pointer-capable devices): move blob to hovered nav item
     const canHover = window.matchMedia && window.matchMedia('(pointer:fine)').matches;
     if (canHover) {
-      const hoverables = [defaultTarget, ...links, ...ctaLinks];
+      const hoverables = [logo, ...links, ...ctaLinks];
       hoverables.forEach((el) => {
-        el.addEventListener('mouseenter', () => setToEl(el));
-        el.addEventListener('focus', () => setToEl(el));
+        el.addEventListener('mouseenter', () => showFor(el));
+        el.addEventListener('focus', () => showFor(el));
       });
-      headerInner.addEventListener('mouseleave', () => setToEl(defaultTarget));
+      headerInner.addEventListener('mouseleave', hideBlob);
 
       // Special behavior for logo: show text label instead of blob
       logo.addEventListener('mouseenter', () => {
@@ -60,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const host = headerInner.getBoundingClientRect();
         const label = 'Gorillaz Motorbikes'.toUpperCase();
         blob.classList.add('is-label');
+        blob.classList.add('is-visible');
         blob.textContent = label;
         logo.classList.add('is-hidden');
         const measure = document.createElement('span');
@@ -78,11 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
         blob.style.setProperty('--w', `${textW}px`);
         blob.style.top = `${y}px`;
       });
-      logo.addEventListener('mouseleave', () => setToEl(defaultTarget));
+      logo.addEventListener('mouseleave', hideBlob);
     }
 
     // Keep blob responsive on resize
-    window.addEventListener('resize', () => setToEl(defaultTarget));
+    window.addEventListener('resize', () => {
+      if (blob.classList.contains('is-visible') && lastEl) setToEl(lastEl);
+    });
   }
 });
 

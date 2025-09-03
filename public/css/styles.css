@@ -75,8 +75,9 @@ a:hover{text-decoration:underline}
   filter:blur(8px);
   pointer-events:none;
   transition:transform .35s cubic-bezier(.2,.8,.2,1), width .35s, height .35s, opacity .3s;
-  opacity:.9;
+  opacity:0;
 }
+.nav-blob.is-visible{opacity:.9}
 .nav-blob.is-label{
   background:transparent;
   filter:none;
