@@ -310,20 +310,69 @@ document.addEventListener('DOMContentLoaded', () => {
       const branches = [];
       const n = pts.length;
       for (let i=0;i<count;i++){
-        const startIndex = Math.floor( (0.15 + Math.random()*0.6) * n );
+        const startIndex = Math.floor( (0.12 + Math.random()*0.7) * n );
         const start = pts[startIndex];
-        const len = 6 + Math.floor(Math.random()*8);
+        const len = 8 + Math.floor(Math.random()*10);
         const dir = (Math.random()<0.5?-1:1);
+        // Perpendicular to local tangent for natural spread
+        const i2 = Math.min(n-1, startIndex+1);
+        let tx = pts[i2].x - pts[startIndex].x;
+        let ty = pts[i2].y - pts[startIndex].y;
+        const tl = Math.hypot(tx,ty) || 1;
+        tx /= tl; ty /= tl;
+        // Perpendicular vector
+        const nx = -ty;
+        const ny = tx;
+        const spread = 14 + Math.random()*26; // stronger lateral separation (14–40px)
+        const vBias = (Math.random() - .5) * 16; // additional vertical tilt
         const seg = [start];
         for (let j=1;j<=len;j++){
           const base = pts[Math.min(n-1, startIndex+j)];
-          const x = base.x + dir * (2 + Math.random()*6) * (1 - j/len);
-          const y = base.y + (Math.random()-.5)*6 * (1 - j/len);
+          const t = j/len;
+          // Ease outward quickly then stabilize
+          const easeOut = 1 - Math.pow(1 - t, 2);
+          const mag = spread * easeOut * (1 - t*0.15);
+          const offX = nx * dir * mag;
+          const offY = ny * dir * mag + vBias * t + (Math.random()-.5) * 8 * (1 - t);
+          const x = base.x + offX;
+          const y = base.y + offY;
           seg.push({x,y});
         }
-        branches.push({startIndex, seg});
+        const lifeFrac = 0.35 + Math.random()*0.4; // branch disappears earlier (35%–75% of fade)
+        branches.push({startIndex, seg, lifeFrac});
       }
       return branches;
+    };
+    const drawBranchesDissipate = (ctx, branches, opts, fp) => {
+      branches.forEach((br) => {
+        const lf = br.lifeFrac || 0.5;
+        if (fp >= lf) return; // fully gone
+        const k = 1 - (fp/lf); // 1 -> 0 over its lifespan
+        const n = Math.max(2, Math.floor(br.seg.length * k));
+        const sub = br.seg.slice(0,n);
+        const prevAlpha = ctx.globalAlpha;
+        ctx.save();
+        ctx.globalAlpha = prevAlpha * Math.pow(k, 0.9);
+        // Glow
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.strokeStyle = opts.glow || 'rgba(0,0,0,0.16)';
+        ctx.lineWidth = (opts.width||1) * 2 * (0.85 + 0.3*k);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(sub[0].x, sub[0].y);
+        for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
+        ctx.stroke();
+        // Core
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = opts.color || 'rgba(0,0,0,0.7)';
+        ctx.lineWidth = (opts.width||1) * (0.8 + 0.4*k);
+        ctx.beginPath();
+        ctx.moveTo(sub[0].x, sub[0].y);
+        for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
+        ctx.stroke();
+        ctx.restore();
+        ctx.globalAlpha = prevAlpha;
+      });
     };
     const drawBranches = (ctx, branches, mainProgress, opts) => {
       branches.forEach(({startIndex, seg}) => {
@@ -421,10 +470,12 @@ document.addEventListener('DOMContentLoaded', () => {
           // Slight flicker on dissipate
           const flicker = prefersReduce ? 0 : (Math.random()*0.06);
           ctx.globalAlpha = Math.max(0, 1 - fp - flicker);
+          // Trunk fades fully with slight flicker
           drawPath(ctx, leftPts, 1, { width: 1.4, glowScale: 2.0 });
           drawPath(ctx, rightPts, 1, { width: 1.4, glowScale: 2.0 });
-          drawBranches(ctx, leftBranches, 1, { width: 1.0, totalPts: leftPts.length });
-          drawBranches(ctx, rightBranches, 1, { width: 1.0, totalPts: rightPts.length });
+          // Branches decay earlier and shorten over time
+          drawBranchesDissipate(ctx, leftBranches, { width: 1.0 }, fp);
+          drawBranchesDissipate(ctx, rightBranches, { width: 1.0 }, fp);
           ctx.globalAlpha = 1;
           if (fp < 1){ c._raf = requestAnimationFrame(fadeStep); return; }
           // Done
