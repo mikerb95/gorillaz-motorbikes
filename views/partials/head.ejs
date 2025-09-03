@@ -122,26 +122,26 @@
   <a class="btn-ghost btn-sm btn-square" href="/servicios">Agendar servicio</a>
       </div>
       </div>
+      <% if (user) { %>
+        <div class="sub-embed">
+          <div class="sub-inner">
+            <div class="sub-left">Hola, <strong><%= user.name %></strong>.</div>
+            <nav class="sub-right">
+              <% if (user && user.role === 'admin') { %>
+                <a class="sub-btn" href="/admin">Panel admin</a>
+              <% } %>
+              <a class="sub-btn" href="/club/panel">Ir al panel del club</a>
+              <a class="sub-btn" href="/club/panel#vehiculos">Gestionar mis vehículos</a>
+              <a class="sub-btn" href="/eventos<%= (typeof eventsFirstAnchor !== 'undefined' && eventsFirstAnchor) ? eventsFirstAnchor : '' %>">Eventos<% if (typeof eventsUpcoming !== 'undefined' && eventsUpcoming > 0) { %> <span class="sub-badge"><%= eventsUpcoming %></span><% } %></a>
+              <form action="/club/logout" method="post" style="display:inline">
+                <button class="sub-btn" type="submit">Cerrar sesión</button>
+              </form>
+            </nav>
+          </div>
+        </div>
+      <% } %>
     </div>
   </header>
-  <% if (user) { %>
-  <div class="sub-bar">
-    <div class="sub-inner">
-      <div class="sub-left">Hola, <strong><%= user.name %></strong>.</div>
-      <nav class="sub-right">
-        <% if (user && user.role === 'admin') { %>
-          <a class="sub-btn" href="/admin">Panel admin</a>
-        <% } %>
-    <a class="sub-btn" href="/club/panel">Ir al panel del club</a>
-    <a class="sub-btn" href="/club/panel#vehiculos">Gestionar mis vehículos</a>
-  <a class="sub-btn" href="/eventos<%= (typeof eventsFirstAnchor !== 'undefined' && eventsFirstAnchor) ? eventsFirstAnchor : '' %>">Eventos<% if (typeof eventsUpcoming !== 'undefined' && eventsUpcoming > 0) { %> <span class="sub-badge"><%= eventsUpcoming %></span><% } %></a>
-          <form action="/club/logout" method="post" style="display:inline">
-            <button class="sub-btn" type="submit">Cerrar sesión</button>
-          </form>
-      </nav>
-    </div>
-  </div>
-  <% } %>
   <main>
   <a class="whatsapp-fab" href="https://wa.me/573213204299" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
     <svg viewBox="0 0 32 32" width="26" height="26" fill="currentColor" aria-hidden="true">

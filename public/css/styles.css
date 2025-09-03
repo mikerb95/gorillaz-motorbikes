@@ -31,6 +31,11 @@ a:hover{text-decoration:underline}
   mix-blend-mode:multiply; /* intensify edge darkening on orange background */
 }
 .header-inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:var(--nav-center-gap);padding:12px 20px;position:relative}
+.sub-embed{padding:8px 20px 12px}
+.nav-bar:has(.sub-embed) .header-inner{padding-bottom:10px}
+.sub-embed .sub-inner{max-width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 12px;background:#FF6400;border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.nav-bar:has(.nav-item.has-submenu:hover) .sub-embed,
+.nav-bar:has(.nav-item.has-submenu .nav-submenu:hover) .sub-embed{margin-top:100px}
 .nav-left{display:flex;align-items:center;justify-content:flex-end;gap:var(--nav-gap)}
 .nav-center{display:flex;align-items:center;justify-content:center}
 .logo{display:inline-grid;grid-template-areas:'stack';align-items:center;justify-items:center}
@@ -181,9 +186,8 @@ main{min-height:60vh;padding-top:var(--header-offset)}
 body.has-hero main{padding-top:0}
 .container{max-width:1200px;margin:0 auto;padding:24px 16px}
 /* Slim sub navigation bar for logged-in users */
-.sub-bar{position:fixed;left:0;right:0;top:calc(var(--header-offset) + 4px);z-index:99;background:transparent}
-.sub-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 20px;background:#FF6400;border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.06);transition:transform .22s ease, opacity .18s ease}
-.sub-bar.is-hidden .sub-inner{transform:translateY(-140%);opacity:0;pointer-events:none}
+.sub-bar{display:none}
+.sub-inner{transition:transform .22s ease, opacity .18s ease}
 .sub-left{color:#fff;opacity:.95;font-weight:700;letter-spacing:.3px;font-size:.8rem}
 .sub-right{display:flex;gap:18px}
 .sub-right a{color:#fff;opacity:.95;font-weight:400;letter-spacing:.3px;font-size:.8rem;text-decoration:none}
@@ -196,11 +200,11 @@ body.has-hero main{padding-top:0}
 .sub-btn .sub-badge{background:#fff7f2;border:1px solid #ffd0b3}
 .sub-badge{display:inline-block;min-width:16px;padding:1px 6px;margin-left:6px;border-radius:999px;background:#fff;color:var(--brand);font-weight:900;font-size:.7rem;line-height:1.2}
 /* Add top padding when sub-bar is present via body attribute handled by JS */
-.has-subbar main{padding-top:calc(var(--header-offset) + var(--subbar-offset, 40px))}
+.has-subbar main{padding-top:var(--header-offset)}
 .has-subbar .hero{margin-top:0}
 /* Mobile: match sub navbar width to main navbar (12px side margins) */
 @media (max-width:900px){
-  .sub-inner{margin:0 12px}
+  .sub-inner{margin:0}
 }
 /* Admin only top action on dashboard */
 .admin-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;margin-bottom:-8px}
