@@ -223,6 +223,37 @@ app.post('/club/login', (req, res) => {
   res.redirect('/club/panel');
 });
 
+// Registro (mock)
+app.get('/club/registro', (req, res) => {
+  if (req.session.userId) return res.redirect('/club/panel');
+  res.render('club/register');
+});
+app.post('/club/registro', (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) return res.status(400).render('club/register');
+  const exists = users.find(u => u.email === email);
+  if (exists) return res.status(400).render('club/register');
+  const newUser = {
+    id: uuidv4(), name, email, password,
+    membership: { level: 'Básica', since: new Date().toISOString().slice(0,10), expires: null, benefits: ['Acceso al club'] },
+    visits: []
+  };
+  users.push(newUser);
+  req.session.userId = newUser.id;
+  res.redirect('/club/panel');
+});
+
+// Olvidé mi contraseña (mock)
+app.get('/club/olvide', (req, res) => {
+  if (req.session.userId) return res.redirect('/club/panel');
+  res.render('club/forgot', { message: null });
+});
+app.post('/club/olvide', (req, res) => {
+  const { email } = req.body;
+  // Simulamos envío de enlace
+  res.render('club/forgot', { message: 'Si el correo existe, te enviamos un enlace de restablecimiento.' });
+});
+
 app.post('/club/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/');

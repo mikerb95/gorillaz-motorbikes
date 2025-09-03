@@ -1,0 +1,25 @@
+<%- include('../partials/head', { title: 'Club — Recuperar contraseña' }) %>
+
+<section class="auth-wrap">
+  <div class="auth-header">
+    <a href="/" class="auth-logo" aria-label="Gorillaz Motorbikes">
+      <img src="/favicons/android-chrome-192x192.png" alt="Gorillaz Motorbikes" />
+    </a>
+    <h1 class="auth-title">Recuperar contraseña</h1>
+    <p class="muted" style="margin:-6px 0 0">Te enviaremos un enlace para restablecerla.</p>
+  </div>
+
+  <% if (message) { %>
+    <div class="alert"><%= message %></div>
+  <% } %>
+
+  <form method="post" action="/club/olvide" class="auth-card" novalidate>
+    <label for="email">Correo</label>
+    <input id="email" name="email" type="email" autocomplete="username" placeholder="tu@correo.com" required />
+    <button class="btn btn-primary" type="submit">Enviar enlace</button>
+  </form>
+
+  <div class="auth-alt">¿La recordaste? <a class="link" href="/club/login">Vuelve al inicio de sesión</a></div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -210,3 +210,19 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 @media (max-width:900px){
   .checkout-grid{grid-template-columns:1fr}
 }
+
+/* Auth (GitHub-like) */
+.auth-wrap{max-width:360px;margin:120px auto 80px;padding:0 16px}
+.auth-header{display:grid;justify-items:center;gap:16px;margin-bottom:12px}
+.auth-logo img{width:64px;height:64px;border-radius:12px}
+.auth-title{margin:0;font-size:22px}
+.auth-card{display:grid;gap:10px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;padding:16px}
+.auth-alt{margin-top:12px;border:1px solid #e5e7eb;border-radius:12px;padding:12px;text-align:center;background:#fff}
+.auth-alt .link{font-weight:800}
+.password-field{display:grid;gap:6px}
+.password-label-row{display:flex;justify-content:space-between;align-items:center}
+.password-input{position:relative}
+.password-input input{width:100%;padding-right:44px}
+.password-toggle{position:absolute;top:50%;right:8px;transform:translateY(-50%);border:1px solid #e5e7eb;background:#fff;color:#111;border-radius:10px;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.password-toggle:hover{filter:brightness(0.98)}
+.link{color:#111;font-weight:700}
