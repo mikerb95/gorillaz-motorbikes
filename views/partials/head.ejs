@@ -8,22 +8,34 @@
   <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
   <link rel="manifest" href="/favicons/site.webmanifest" />
   <link rel="stylesheet" href="/static/css/styles.css" />
+  <script defer src="/static/js/main.js"></script>
 </head>
 <body>
   <header class="site-header">
-    <a href="/" class="logo">
-      <img src="/favicons/favicon.svg" alt="Gorillaz Motorbikes" />
-      <span>Gorillaz Motorbikes</span>
-    </a>
-    <nav>
-      <a href="/">Inicio</a>
-      <a href="/servicios">Servicios</a>
-      <a href="/club">Club</a>
-      <% if (user) { %>
-        <form action="/club/logout" method="post" style="display:inline">
-          <button class="btn btn-outline" type="submit">Salir</button>
-        </form>
-      <% } %>
-    </nav>
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <img src="/favicons/favicon.svg" alt="Gorillaz Motorbikes" />
+        <span>Gorillaz Motorbikes</span>
+      </a>
+      <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+      <nav class="nav" data-nav>
+        <div class="nav-links">
+          <a href="/">Inicio</a>
+          <a href="/servicios">Servicios</a>
+          <a href="/club">Club</a>
+        </div>
+        <div class="nav-cta">
+          <a class="btn btn-sm" href="/servicios">Agendar servicio</a>
+          <% if (user) { %>
+            <form action="/club/logout" method="post">
+              <button class="btn btn-sm btn-outline" type="submit">Salir</button>
+            </form>
+          <% } %>
+        </div>
+      </nav>
+      <div class="header-right">
+        <a class="btn btn-sm btn-outline" href="/servicios">Agendar servicio</a>
+      </div>
+    </div>
   </header>
-  <main class="container">
+  <main>
