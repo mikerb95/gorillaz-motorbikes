@@ -219,6 +219,36 @@ document.addEventListener('DOMContentLoaded', () => {
       logo.classList.remove('is-hidden');
       lastEl = el;
     };
+    const ensureRays = () => {
+      if (headerInner.querySelector('.nav-ray')) return;
+      const left = document.createElement('div'); left.className='nav-ray nav-ray--left';
+      const right = document.createElement('div'); right.className='nav-ray nav-ray--right';
+      headerInner.appendChild(left); headerInner.appendChild(right);
+    };
+    const emitRays = () => {
+      ensureRays();
+      const left = headerInner.querySelector('.nav-ray--left');
+      const right = headerInner.querySelector('.nav-ray--right');
+      // Reset
+      [left,right].forEach(r=>{ r.classList.remove('is-on','is-fade'); r.style.transition='none'; r.style.transform='translate(-50%,-50%) scaleX(0)'; r.offsetHeight; r.style.transition=''; });
+      // Compute dynamic length based on available space to edges
+      const host = headerInner.getBoundingClientRect();
+      const center = logo.getBoundingClientRect();
+      const leftLen = Math.max(0, (center.left - host.left));
+      const rightLen = Math.max(0, (host.right - center.right));
+      left.style.width = Math.ceil(leftLen) + 'px';
+      right.style.width = Math.ceil(rightLen) + 'px';
+      // Turn on
+      requestAnimationFrame(()=>{
+        [left,right].forEach(r=>r.classList.add('is-on'));
+        left.style.transform='translate(-50%,-50%) scaleX(1)';
+        right.style.transform='translate(-50%,-50%) scaleX(1)';
+        clearTimeout(emitRays._t);
+        emitRays._t = setTimeout(()=>{
+          [left,right].forEach(r=>r.classList.add('is-fade'));
+        }, 520);
+      });
+    };
     const showFor = (el) => {
       // Determine travel direction for peel animation
       let dir = 'right';
@@ -236,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Neutralize skew/scale via CSS variables for precise centering
         blob.style.setProperty('--sx', '1');
         blob.style.setProperty('--skew', '0deg');
-      } else {
+  } else {
         // Clear overrides so main items keep the peel effect
         blob.style.removeProperty('--sx');
         blob.style.removeProperty('--skew');
@@ -247,6 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Remove peel after a short moment so subsequent moves can re-trigger
       clearTimeout(blob._peelT);
       blob._peelT = setTimeout(() => blob.classList.remove('is-peel'), 160);
+  // If hovering logo, emit rays outward; otherwise no-op
+  if (el === logo) emitRays();
     };
     const hideBlob = () => {
       blob.classList.remove('is-visible');
@@ -270,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideBlob();
         logo.classList.add('is-hidden');
         document.body.classList.add('logo-hover-dim');
+        emitRays();
       });
       logo.addEventListener('mouseleave', () => {
         hideBlob();
