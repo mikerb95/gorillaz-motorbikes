@@ -483,7 +483,9 @@ const verifyRecaptcha = (token, ip) => new Promise((resolve) => {
 app.post('/newsletter', async (req, res) => {
   const email = (req.body.email || '').toString().trim().toLowerCase();
   const isValid = /.+@.+\..+/.test(email);
+  const wantsJSON = (req.headers['x-requested-with'] === 'fetch') || ((req.headers.accept || '').includes('application/json'));
   if (!isValid){
+    if (wantsJSON) return res.status(400).json({ status: 'error', message: 'Correo inválido' });
     req.session.newsletterStatus = 'error';
     return res.redirect('/');
   }
@@ -492,6 +494,7 @@ app.post('/newsletter', async (req, res) => {
     const token = req.body['g-recaptcha-response'];
     const ok = await verifyRecaptcha(token, req.ip);
     if (!ok){
+      if (wantsJSON) return res.status(400).json({ status: 'captcha', message: 'Completa el reCAPTCHA' });
       req.session.newsletterStatus = 'captcha';
       return res.redirect('/');
     }
@@ -500,6 +503,7 @@ app.post('/newsletter', async (req, res) => {
     newsletter.push(email);
     try { fs.writeFileSync(path.join(__dirname, 'data', 'newsletter.json'), JSON.stringify(newsletter, null, 2), 'utf8'); } catch {}
   }
+  if (wantsJSON) return res.json({ status: 'ok' });
   req.session.newsletterStatus = 'ok';
   res.redirect('/');
 });

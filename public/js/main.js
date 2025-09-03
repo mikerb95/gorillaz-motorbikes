@@ -319,3 +319,56 @@ document.addEventListener('DOMContentLoaded', () => {
     maxThumb.addEventListener('input', clampUpdate);
   });
 });
+
+// AJAX newsletter submit (avoid page jump to top)
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('.newsletter-form');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = form.querySelector('input[name="email"]').value.trim();
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const captchaEl = document.querySelector('.g-recaptcha');
+    let captchaToken = '';
+    try { captchaToken = window.grecaptcha ? grecaptcha.getResponse() : ''; } catch {}
+
+    const body = new URLSearchParams();
+    body.set('email', email);
+    if (csrf) body.set('_csrf', csrf);
+    if (captchaToken) body.set('g-recaptcha-response', captchaToken);
+
+    const alertOk = (msg) => {
+      const p = document.createElement('p');
+      p.className = 'alert success';
+      p.textContent = msg || '¡Gracias! Te hemos suscrito al boletín.';
+      form.insertAdjacentElement('beforebegin', p);
+    };
+    const alertErr = (msg) => {
+      const p = document.createElement('p');
+      p.className = 'alert error';
+      p.textContent = msg || 'No pudimos procesar tu suscripción.';
+      form.insertAdjacentElement('beforebegin', p);
+    };
+    // Clear previous alerts
+    form.parentElement.querySelectorAll('.alert.success, .alert.error').forEach(n => n.remove());
+
+    try {
+      const resp = await fetch('/newsletter', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'fetch' },
+        body
+      });
+      if (!resp.ok){
+        const data = await resp.json().catch(() => ({}));
+        if (data.status === 'captcha') alertErr('Por favor completa la verificación reCAPTCHA.');
+        else alertErr(data.message || 'Ingresa un correo válido.');
+        return;
+      }
+      alertOk();
+      form.reset();
+      try { if (window.grecaptcha && captchaEl) grecaptcha.reset(); } catch {}
+    } catch (err) {
+      alertErr('Error de red. Intenta de nuevo.');
+    }
+  });
+});
