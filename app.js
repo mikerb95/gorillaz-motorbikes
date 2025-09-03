@@ -4,10 +4,13 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const csrf = require('csurf');
+const https = require('https');
 const catalog = require('./data/catalog');
 const courses = require('./data/courses.json');
 
 const app = express();
+const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '';
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '';
 
 // Demo users (in-memory)
 const users = [
@@ -129,7 +132,8 @@ app.get('/', (req, res) => {
   res.render('home', {
     user: users.find(u => u.id === req.session.userId),
     slides,
-    newsletterStatus: req.session.newsletterStatus || null
+  newsletterStatus: req.session.newsletterStatus || null,
+  recaptchaSiteKey: RECAPTCHA_SITE_KEY
   });
   req.session.newsletterStatus = null;
 });
@@ -448,12 +452,49 @@ app.post('/admin/cursos/eliminar', requireAuth, requireAdmin, (req, res) => {
 });
 
 // Newsletter subscribe (simple)
-app.post('/newsletter', (req, res) => {
+const verifyRecaptcha = (token, ip) => new Promise((resolve) => {
+  if (!RECAPTCHA_SECRET_KEY) return resolve(true); // If not configured, skip verification
+  const data = new URLSearchParams({
+    secret: RECAPTCHA_SECRET_KEY,
+    response: token || '',
+    remoteip: ip || ''
+  }).toString();
+  const reqOpts = {
+    hostname: 'www.google.com',
+    path: '/recaptcha/api/siteverify',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(data)
+    }
+  };
+  const r = https.request(reqOpts, (resp) => {
+    let body = '';
+    resp.on('data', (d) => body += d);
+    resp.on('end', () => {
+      try { const json = JSON.parse(body); resolve(!!json.success); }
+      catch { resolve(false); }
+    });
+  });
+  r.on('error', () => resolve(false));
+  r.write(data); r.end();
+});
+
+app.post('/newsletter', async (req, res) => {
   const email = (req.body.email || '').toString().trim().toLowerCase();
   const isValid = /.+@.+\..+/.test(email);
   if (!isValid){
     req.session.newsletterStatus = 'error';
     return res.redirect('/');
+  }
+  // Verify reCAPTCHA if configured
+  if (RECAPTCHA_SITE_KEY && RECAPTCHA_SECRET_KEY){
+    const token = req.body['g-recaptcha-response'];
+    const ok = await verifyRecaptcha(token, req.ip);
+    if (!ok){
+      req.session.newsletterStatus = 'captcha';
+      return res.redirect('/');
+    }
   }
   if (!newsletter.includes(email)){
     newsletter.push(email);

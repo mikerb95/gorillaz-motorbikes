@@ -62,6 +62,8 @@
       <p class="alert success" role="status">¡Gracias! Te hemos suscrito al boletín.</p>
     <% } else if (newsletterStatus === 'error') { %>
       <p class="alert error" role="alert">Ingresa un correo válido.</p>
+    <% } else if (newsletterStatus === 'captcha') { %>
+      <p class="alert error" role="alert">Por favor completa la verificación reCAPTCHA.</p>
     <% } %>
 
     <form class="newsletter-form" action="/newsletter" method="post" novalidate>
@@ -69,6 +71,12 @@
       <input id="nl-email" type="email" name="email" placeholder="TU CORREO ELECTRÓNICO" required />
       <button type="submit" class="btn btn-square">Suscribirme</button>
     </form>
+    <% if (recaptchaSiteKey) { %>
+      <div class="recaptcha-wrap">
+        <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
+      </div>
+      <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <% } %>
     <p class="muted tiny">Este sitio está protegido por reCAPTCHA y aplican la <a href="/privacidad">Política de Privacidad</a> y los <a href="/terminos">Términos del Servicio</a>.</p>
   </div>
   

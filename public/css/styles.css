@@ -242,6 +242,7 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 .newsletter-form{display:grid;grid-template-columns:1fr auto;gap:10px;max-width:720px;margin:18px auto 6px}
 .newsletter-form input{height:48px;padding:0 14px;border-radius:10px;border:1px solid #e5e7eb}
 .newsletter-form button{height:48px;border-radius:10px;padding:0 18px}
+.recaptcha-wrap{display:flex;justify-content:center;margin:8px auto 0}
 @media (max-width:640px){
   .newsletter-form{grid-template-columns:1fr}
   .newsletter-form button{width:100%}
