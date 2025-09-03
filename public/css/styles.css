@@ -88,7 +88,7 @@ a:hover{text-decoration:underline}
   /* Expand navbar thickness while submenu is visible */
   .nav-bar{transition:padding .22s ease}
   .nav-bar:has(.nav-item.has-submenu:hover),
-  .nav-bar:has(.nav-item.has-submenu .nav-submenu:hover){padding-bottom:max(200px, var(--submenu-depth, 0px))}
+  .nav-bar:has(.nav-item.has-submenu .nav-submenu:hover){padding-bottom:0}
 }
 
 /* Make right-side and mobile CTA items look like nav links */
