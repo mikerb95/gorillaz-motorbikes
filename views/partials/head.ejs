@@ -79,7 +79,7 @@
       <nav class="sub-right">
         <a href="/club/panel">Ir al panel del club</a>
         <a href="/club/panel#vehiculos">Gestionar mis vehículos</a>
-        <a href="/eventos">Eventos</a>
+        <a href="/eventos">Eventos<% if (typeof eventsUpcoming !== 'undefined' && eventsUpcoming > 0) { %> <span class="sub-badge"><%= eventsUpcoming %></span><% } %></a>
       </nav>
     </div>
   </div>

@@ -76,6 +76,18 @@ app.use((req, res, next) => {
     if (prod){ count += qty; subtotal += prod.price * qty; }
   }
   res.locals.cart = { items: c.items || {}, count, subtotal };
+  // Upcoming events badge for sub-bar
+  try {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const upcoming = (events || []).filter(ev => {
+      if (!ev || !ev.date) return false;
+      const t = Date.parse(ev.date);
+      if (!Number.isFinite(t)) return false;
+      const d = new Date(t); d.setHours(0,0,0,0);
+      return d >= today;
+    }).length;
+    res.locals.eventsUpcoming = upcoming;
+  } catch { res.locals.eventsUpcoming = 0; }
   next();
 });
 

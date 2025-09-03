@@ -135,6 +135,7 @@ body.has-hero main{padding-top:0}
 .sub-right{display:flex;gap:18px}
 .sub-right a{color:#fff;opacity:.95;font-weight:800;letter-spacing:.3px;font-size:.8rem;text-decoration:none}
 .sub-right a:hover{opacity:1}
+.sub-badge{display:inline-block;min-width:16px;padding:1px 6px;margin-left:6px;border-radius:999px;background:#fff;color:var(--brand);font-weight:900;font-size:.7rem;line-height:1.2}
 /* Add top padding when sub-bar is present via body attribute handled by JS */
 .has-subbar main{padding-top:calc(var(--header-offset) + 34px)}
 .has-subbar .hero{margin-top:calc(var(--header-offset) + 34px)}
