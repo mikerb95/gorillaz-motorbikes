@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 const app = express();
 
@@ -58,7 +59,23 @@ const requireAuth = (req, res, next) => {
 
 // Routes
 app.get('/', (req, res) => {
-  res.render('home', { user: users.find(u => u.id === req.session.userId) });
+  // Build slideshow images list from images/home_slideshow
+  const slidesDir = path.join(__dirname, 'images', 'home_slideshow');
+  let slides = [];
+  try {
+    const files = fs.readdirSync(slidesDir);
+    const allowed = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
+    slides = files
+      .filter(f => allowed.has(path.extname(f).toLowerCase()))
+      .sort()
+      .map(f => `/images/home_slideshow/${encodeURIComponent(f)}`);
+  } catch (e) {
+    // directory may not exist yet; keep slides empty
+  }
+  res.render('home', {
+    user: users.find(u => u.id === req.session.userId),
+    slides
+  });
 });
 
 app.get('/servicios', (req, res) => {

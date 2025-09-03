@@ -1,6 +1,7 @@
 <%- include('partials/head', { title: 'Inicio — Gorillaz Motorbikes', user }) %>
 
-<section class="hero">
+<section class="hero" data-slideshow='<%- JSON.stringify(slides||[]) %>'>
+  <div class="hero-slides" aria-hidden="true"></div>
   <div class="hero-content">
     <span class="kicker">Bogotá • Colombia</span>
     <h1>Servicio premium para tu moto.</h1>
@@ -10,7 +11,6 @@
       <a class="btn btn-outline" href="/club">Club de Moteros</a>
     </div>
   </div>
-  
 </section>
 
 <section class="container">
