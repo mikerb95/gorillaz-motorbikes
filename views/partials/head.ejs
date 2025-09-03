@@ -26,7 +26,8 @@
           <a href="/club">Club</a>
         </div>
         <div class="nav-cta">
-          <a class="btn btn-sm" href="/servicios">Agendar servicio</a>
+            <a class="btn btn-sm" href="/servicios">Agendar servicio</a>
+            <a class="btn btn-sm btn-outline" href="/tienda">Tienda</a>
           <% if (user) { %>
             <form action="/club/logout" method="post">
               <button class="btn btn-sm btn-outline" type="submit">Salir</button>
@@ -34,9 +35,10 @@
           <% } %>
         </div>
       </nav>
-      <div class="header-right">
-        <a class="btn btn-sm btn-outline" href="/servicios">Agendar servicio</a>
-      </div>
+        <div class="header-right">
+          <a class="btn btn-sm" href="/servicios">Agendar servicio</a>
+          <a class="btn btn-sm btn-outline" href="/tienda">Tienda</a>
+        </div>
       </div>
     </div>
   </header>

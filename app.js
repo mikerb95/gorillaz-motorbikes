@@ -91,6 +91,10 @@ app.get('/servicios', (req, res) => {
   res.render('services', { services, user: users.find(u => u.id === req.session.userId) });
 });
 
+app.get('/tienda', (req, res) => {
+  res.render('shop', { user: users.find(u => u.id === req.session.userId) });
+});
+
 // Club
 app.get('/club', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
