@@ -22,8 +22,36 @@ a:hover{text-decoration:underline}
 .logo img{width:28px;height:28px}
 .nav{display:flex;align-items:center;justify-content:center;gap:16px}
 .nav-links{display:flex;gap:18px;text-transform:uppercase;font-weight:800;letter-spacing:.6px}
-.nav a{color:#111;opacity:.9}
-.nav a:hover{opacity:1}
+.nav a{color:#111;opacity:.9;text-decoration:none}
+.nav a:hover{opacity:1;text-decoration:none}
+.site-header a:hover{text-decoration:none}
+.nav-links a{padding:8px 10px;border-radius:8px}
+
+/* Make right-side and mobile CTA items look like nav links */
+.site-header .header-right a,
+.site-header .nav-cta a,
+.site-header .header-right form button,
+.site-header .nav-cta form button{
+  background:transparent !important;
+  border:0 !important;
+  color:#111 !important;
+  text-transform:uppercase;
+  font-weight:800;
+  letter-spacing:.6px;
+  padding:8px 10px;
+  border-radius:8px;
+  opacity:.9;
+  text-decoration:none;
+  display:inline-block;
+  line-height:1.2;
+  cursor:pointer;
+}
+.site-header .header-right a:hover,
+.site-header .nav-cta a:hover,
+.site-header .header-right form button:hover,
+.site-header .nav-cta form button:hover{ opacity:1; text-decoration:none; background:transparent }
+.site-header .header-right form button,
+.site-header .nav-cta form button{ font-family:inherit; font-size:inherit; }
 .nav-cta{display:none;align-items:center;gap:10px}
 .nav form{display:inline}
 .header-right{display:flex;align-items:center}

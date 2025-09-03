@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const headerInner = document.querySelector('.header-inner');
   const logo = document.querySelector('.logo');
   const links = Array.from(document.querySelectorAll('.nav-links a'));
+  const ctaLinks = Array.from(document.querySelectorAll('.header-right a, .nav-cta a, .nav-cta form button, .header-right form button'));
   if (headerInner && logo) {
     const blob = document.createElement('div');
     blob.className = 'nav-blob';
@@ -34,13 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Default position under the brand text (or full logo)
-    const defaultTarget = document.querySelector('.logo-text') || logo;
+  const defaultTarget = document.querySelector('.logo-text') || logo;
     setToEl(defaultTarget);
 
     // Hover interactions (only on pointer-capable devices): move blob to hovered nav item
     const canHover = window.matchMedia && window.matchMedia('(pointer:fine)').matches;
     if (canHover) {
-      const hoverables = [defaultTarget, ...links];
+      const hoverables = [defaultTarget, ...links, ...ctaLinks];
       hoverables.forEach((el) => {
         el.addEventListener('mouseenter', () => setToEl(el));
         el.addEventListener('focus', () => setToEl(el));
