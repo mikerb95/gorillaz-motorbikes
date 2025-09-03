@@ -20,7 +20,7 @@ a:hover{text-decoration:underline}
 
 /* Header flotante centrado */
 .site-header{position:fixed;top:0;left:0;right:0;z-index:100}
-.top-fade{position:fixed;top:0;left:0;right:0;height:calc(var(--header-offset) + 14px);pointer-events:none;z-index:90;background:linear-gradient(180deg, var(--white) 0%, rgba(255,255,255,.98) 30%, rgba(255,255,255,0) 80%)}
+.top-fade{position:fixed;top:0;left:0;right:0;height:calc(var(--header-offset) + 4px);pointer-events:none;z-index:90;background:linear-gradient(180deg, rgba(255,255,255,.6) 0%, rgba(255,255,255,.2) 12%, rgba(255,255,255,0) 28%)}
 .nav-bar{max-width:1200px;margin:16px auto 0;background:#FF6400;border-top:0;border-bottom:0;box-shadow:0 8px 28px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);border-radius:var(--radius-lg);overflow:hidden;position:relative}
 .header-inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:var(--nav-center-gap);padding:12px 20px;position:relative}
 .nav-left{display:flex;align-items:center;justify-content:flex-end;gap:var(--nav-gap)}
