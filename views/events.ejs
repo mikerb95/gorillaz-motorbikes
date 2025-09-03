@@ -5,8 +5,8 @@
     <p class="muted">No hay eventos publicados aún.</p>
   <% } else { %>
     <div class="grid three">
-      <% events.forEach(ev => { %>
-        <article class="card stack">
+      <% events.forEach((ev, idx) => { %>
+        <article class="card stack" id="ev-<%= idx %>">
           <h3 class="tight"><%= ev.title %></h3>
           <div class="row gap">
             <span class="chip"><%= ev.date %></span>

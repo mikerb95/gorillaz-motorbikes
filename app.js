@@ -76,18 +76,26 @@ app.use((req, res, next) => {
     if (prod){ count += qty; subtotal += prod.price * qty; }
   }
   res.locals.cart = { items: c.items || {}, count, subtotal };
-  // Upcoming events badge for sub-bar
+  // Upcoming events badge and first anchor for sub-bar
   try {
     const today = new Date(); today.setHours(0,0,0,0);
-    const upcoming = (events || []).filter(ev => {
-      if (!ev || !ev.date) return false;
+    let count = 0; let firstIdx = -1;
+    (events || []).forEach((ev, i) => {
+      if (!ev || !ev.date) return;
       const t = Date.parse(ev.date);
-      if (!Number.isFinite(t)) return false;
+      if (!Number.isFinite(t)) return;
       const d = new Date(t); d.setHours(0,0,0,0);
-      return d >= today;
-    }).length;
-    res.locals.eventsUpcoming = upcoming;
-  } catch { res.locals.eventsUpcoming = 0; }
+      if (d >= today){
+        count++;
+        if (firstIdx === -1) firstIdx = i;
+      }
+    });
+    res.locals.eventsUpcoming = count;
+    res.locals.eventsFirstAnchor = firstIdx >= 0 ? ('#ev-' + firstIdx) : '';
+  } catch {
+    res.locals.eventsUpcoming = 0;
+    res.locals.eventsFirstAnchor = '';
+  }
   next();
 });
 
