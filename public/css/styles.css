@@ -44,6 +44,7 @@ main{min-height:60vh}
 .btn:hover{filter:brightness(1.05);text-decoration:none}
 .btn-outline{background:#fff;color:#111;border:1px solid #111}
 .btn-sm{padding:8px 12px;border-radius:10px}
+.btn-square{border-radius:8px !important}
 
 /* Secciones posteriores en claro */
 section{padding:36px 16px}
