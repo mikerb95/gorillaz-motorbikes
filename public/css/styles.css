@@ -227,6 +227,31 @@ body.has-hero main{padding-top:0}
 .admin-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;margin-bottom:-8px}
 @media (max-width:600px){.admin-top{flex-direction:column;align-items:flex-start}}
 
+/* Services page */
+.services-hero{position:relative;min-height:46vh;display:grid;place-items:end center;overflow:hidden}
+.services-hero-inner{padding:60px 16px 46px}
+.services-hero-bg{position:absolute;inset:0;background:url('/images/services/mecanica.webp') center/cover no-repeat;filter:grayscale(.1) contrast(1.05) brightness(.9);transform:scale(1.02)}
+.services-hero-gradient{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.45) 65%, rgba(0,0,0,.65) 100%)}
+.services-hero .section-title{color:#fff;margin:0 0 8px}
+.services-hero .section-subtitle{color:#fff;opacity:.9;max-width:720px}
+.services-hero .btn-row{margin-top:16px}
+.services-hero .btn-outline{background:#fff;color:#111;border:1px solid #fff}
+.services-hero .btn-outline:hover{background:#fff}
+.services-cue{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);color:#fff;text-decoration:none;opacity:.9}
+.services-cue:hover{opacity:1}
+.services-cue span{display:inline-block;border-bottom:1px dashed rgba(255,255,255,.5);padding-bottom:2px}
+
+.services-list{padding-top:32px;padding-bottom:32px}
+.service-row{display:grid;grid-template-columns: 220px 1fr;gap:24px;padding:22px 0;border-bottom:1px solid rgba(0,0,0,.08)}
+.service-row:first-child{border-top:1px solid rgba(0,0,0,.08)}
+@media (max-width:800px){ .service-row{grid-template-columns:1fr} }
+.service-title h2{margin:0;font-size:1.6rem;letter-spacing:.2px}
+.service-body p{margin:0 0 8px;opacity:.95}
+.service-meta{display:flex;gap:16px}
+.service-meta .link{color:#111;opacity:.85}
+.service-meta .link:hover{opacity:1}
+.services-cta{display:flex;justify-content:center;margin-top:28px}
+
 /* Hero de imagen a pantalla completa con overlay */
 .hero{position:relative;min-height:100vh;min-height:100svh;display:grid;align-items:end;margin-top:0;overflow:hidden}
 .hero-slides{position:absolute;inset:0}

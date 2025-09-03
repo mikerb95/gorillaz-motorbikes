@@ -175,23 +175,33 @@ app.get('/', (req, res) => {
   req.session.newsletterStatus = null;
 });
 
+// Servicios: página informativa
 app.get('/servicios', (req, res) => {
   const services = [
-    'Mecánica',
-    'Pintura',
-    'Alistamiento tecnomecánica',
-    'Electricidad',
-    'Torno',
-    'Prensa',
-    'Mecánica rápida'
+    { slug: 'mecanica', title: 'Mecánica', desc: 'Diagnóstico, mantenimiento preventivo y correctivo. Trabajamos con control de calidad para que tu moto siempre rinda al máximo.' },
+    { slug: 'pintura', title: 'Pintura', desc: 'Acabados profesionales, retoques y protección. Cuidamos el detalle y la durabilidad.' },
+    { slug: 'alistamiento-tecnomecanica', title: 'Alistamiento tecnomecánica', desc: 'Revisión integral y ajustes previos a la inspección para evitar sorpresas y rechazos.' },
+    { slug: 'electricidad', title: 'Electricidad', desc: 'Sistema de carga, arranque e iluminación. Diagnóstico electrónico confiable.' },
+    { slug: 'torno', title: 'Torno', desc: 'Fabricación y ajuste de componentes a medida según especificación.' },
+    { slug: 'prensa', title: 'Prensa', desc: 'Montaje y desmontaje seguro de rodamientos y piezas a presión.' },
+    { slug: 'mecanica-rapida', title: 'Mecánica rápida', desc: 'Servicios ágiles como cambios de aceite y ajustes menores con cita.' },
+    { slug: 'escaneo-de-motos', title: 'Escaneo de motos', desc: 'Diagnóstico computarizado para detectar fallas electrónicas con precisión.' },
   ];
-  res.render('services', { services, bookingMessage: null });
+  res.render('services', { services });
 });
 
-app.post('/servicios', (req, res) => {
+// Servicios: agendar cita (separado)
+app.get('/servicios/agendar', (req, res) => {
+  const services = [
+    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
+  ];
+  res.render('services_schedule', { services, bookingMessage: null });
+});
+
+app.post('/servicios/agendar', (req, res) => {
   const { name, phone, service, date } = req.body;
   const services = [
-    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida'
+    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
   ];
   const bookingMessage = (name && service && date)
     ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' })}. Te contactaremos al ${phone} para confirmar.`
@@ -199,7 +209,7 @@ app.post('/servicios', (req, res) => {
   if (name && service && date){
     appointments.unshift({ id: uuidv4(), name, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
   }
-  res.render('services', { services, bookingMessage });
+  res.render('services_schedule', { services, bookingMessage });
 });
 
 app.get('/tienda', (req, res) => {

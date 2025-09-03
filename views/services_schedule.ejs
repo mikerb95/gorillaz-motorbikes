@@ -1,0 +1,78 @@
+<%- include('partials/head', { title: 'Agendar servicio — Gorillaz Motorbikes' }) %>
+
+<main class="container schedule-layout">
+  <section class="schedule-main">
+    <h1 class="section-title">Agendar servicio</h1>
+    <p class="section-subtitle">Selecciona la fecha deseada y completa tus datos. Nuestro equipo confirmará la cita.</p>
+
+    <% if (bookingMessage) { %>
+      <div class="alert" style="border:1px solid #d1fae5;background:#ecfdf5;color:#065f46;border-radius:12px;padding:12px;margin:12px 0"><%= bookingMessage %></div>
+    <% } %>
+
+    <form class="card schedule-form" method="post" action="/servicios/agendar">
+      <div class="grid two">
+        <div>
+          <label for="name">Nombre</label>
+          <input id="name" name="name" placeholder="Tu nombre" required />
+        </div>
+        <div>
+          <label for="phone">Teléfono</label>
+          <input id="phone" name="phone" placeholder="Tu número de contacto" required />
+        </div>
+      </div>
+      <div class="grid two">
+        <div>
+          <label for="service">Servicio</label>
+          <select id="service" name="service" required>
+            <% services.forEach(s => { %>
+              <option value="<%= s %>"><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label for="date">Fecha</label>
+          <input id="date" name="date" type="hidden" required />
+          <div id="calendar" data-calendar aria-label="Calendario para seleccionar fecha"></div>
+          <div class="muted" id="selectedDateText" style="margin-top:6px">Selecciona una fecha disponible</div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button type="button" class="btn" data-modal-open="#modal-servicio">Aviso sobre tiempos de servicio</button>
+      </div>
+      <button class="btn btn-primary" type="submit">Solicitar cita</button>
+    </form>
+  </section>
+
+  <aside class="schedule-aside">
+    <div class="card">
+      <h3 style="margin:0 0 8px">Horarios del taller</h3>
+      <ul class="list">
+        <li><span>Lun - Vie</span><strong>9:00 am - 6:00 pm</strong></li>
+        <li><span>Sábados</span><strong>10:00 am - 4:00 pm</strong></li>
+        <li><span>Domingos</span><strong class="muted">Cerrado</strong></li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<!-- Modal: Aviso de tiempos de servicio -->
+<div class="modal" id="modal-servicio" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-servicio-title">
+  <div class="modal-backdrop" data-modal-close></div>
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 id="modal-servicio-title" class="modal-title">Aviso importante sobre tiempos</h3>
+      <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>×</button>
+    </div>
+    <div class="modal-body">
+      <p>
+        El tiempo de trabajo para cada motocicleta dependerá de sus condiciones particulares. Durante el proceso
+        pueden surgir novedades que alarguen o acorten el tiempo estimado del servicio. Agradecemos tu comprensión.
+      </p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" data-modal-close>Entendido</button>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
