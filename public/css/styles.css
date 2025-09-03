@@ -155,7 +155,8 @@ section h2, section h1{max-width:1200px;margin:0 auto 12px;padding:0 0}
 .stack{display:grid;gap:10px;margin-top:14px}
 label{display:grid;gap:6px;font-weight:700;color:#111}
 input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);padding:12px;color:#111}
-.schedule-layout{display:grid;grid-template-columns:1fr 320px;gap:16px}
+.schedule-layout{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:16px;align-items:start}
+.schedule-main,.schedule-aside{min-width:0}
 .schedule-aside{align-self:start;position:sticky;top:calc(var(--header-offset) + 12px)}
 .schedule-form select{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);padding:12px;color:#111;width:100%}
 #calendar{border:1px solid #e5e7eb;border-radius:var(--radius-lg);padding:10px;background:#fff}
