@@ -43,4 +43,52 @@
   </div>
 </section>
 
+<section>
+  <div class="grid two">
+    <div class="card">
+      <h2>Recordatorios SOAT y Tecnomecánica</h2>
+      <% if (!reminders || reminders.length === 0) { %>
+        <p class="muted">Aún no has registrado vehículos.</p>
+      <% } else { %>
+        <ul class="list">
+        <% reminders.forEach(r => { %>
+          <li>
+            <span><strong><%= r.plate %></strong></span>
+            <span>
+              SOAT: <%= r.soat === null ? '—' : (r.soat < 0 ? ('Vencido hace ' + Math.abs(r.soat) + ' días') : ('en ' + r.soat + ' días')) %>
+              &nbsp;|&nbsp;
+              Tecno: <%= r.tecno === null ? '—' : (r.tecno < 0 ? ('Vencida hace ' + Math.abs(r.tecno) + ' días') : ('en ' + r.tecno + ' días')) %>
+            </span>
+          </li>
+        <% }) %>
+        </ul>
+      <% } %>
+    </div>
+    <div class="card">
+      <h2>Mis vehículos</h2>
+      <form class="stack" method="post" action="/club/vehiculos">
+        <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required /></label>
+        <div class="grid two">
+          <label>Vence SOAT<input type="date" name="soatExpires" /></label>
+          <label>Vence Tecno<input type="date" name="tecnoExpires" /></label>
+        </div>
+        <button class="btn" type="submit">Agregar</button>
+      </form>
+      <% if (user.vehicles && user.vehicles.length) { %>
+        <ul class="list" style="margin-top:10px">
+          <% user.vehicles.forEach(v => { %>
+            <li>
+              <span><%= v.plate %></span>
+              <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Eliminar vehículo?">
+                <input type="hidden" name="plate" value="<%= v.plate %>" />
+                <button class="btn btn-sm btn-outline" type="submit">Eliminar</button>
+              </form>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+  </section>
+
 <%- include('../partials/footer') %>

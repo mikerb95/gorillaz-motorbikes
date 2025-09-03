@@ -30,6 +30,9 @@ const users = [
     visits: [
       { date: '2025-02-15', service: 'Mecánica rápida - cambio de aceite' },
       { date: '2025-05-22', service: 'Electricidad - revisión de batería' }
+    ],
+    vehicles: [
+      { plate: 'ABC123', soatExpires: '2025-10-10', tecnoExpires: '2025-09-15' }
     ]
   }
 ];
@@ -550,7 +553,14 @@ app.post('/club/logout', (req, res) => {
 
 app.get('/club/panel', requireAuth, (req, res) => {
   const user = users.find(u => u.id === req.session.userId);
-  res.render('club/dashboard', { user });
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysBetween = (a, b) => Math.ceil((a.getTime() - b.getTime()) / (1000*60*60*24));
+  const reminders = (user.vehicles || []).map(v => {
+    const soatD = v.soatExpires ? daysBetween(new Date(v.soatExpires + 'T00:00:00'), today) : null;
+    const tecD = v.tecnoExpires ? daysBetween(new Date(v.tecnoExpires + 'T00:00:00'), today) : null;
+    return { plate: v.plate, soat: soatD, tecno: tecD };
+  });
+  res.render('club/dashboard', { user, reminders });
 });
 
 app.post('/club/visitas', requireAuth, (req, res) => {
@@ -559,6 +569,23 @@ app.post('/club/visitas', requireAuth, (req, res) => {
   if (date && service) {
     user.visits.unshift({ date, service });
   }
+  res.redirect('/club/panel');
+});
+
+// Gestionar vehículos del usuario (para recordatorios SOAT y tecnicomecánica)
+app.post('/club/vehiculos', requireAuth, (req, res) => {
+  const user = users.find(u => u.id === req.session.userId);
+  const { plate, soatExpires, tecnoExpires } = req.body;
+  if (!user.vehicles) user.vehicles = [];
+  if (plate) {
+    user.vehicles.push({ plate: plate.trim().toUpperCase(), soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '' });
+  }
+  res.redirect('/club/panel');
+});
+app.post('/club/vehiculos/eliminar', requireAuth, (req, res) => {
+  const user = users.find(u => u.id === req.session.userId);
+  const { plate } = req.body;
+  user.vehicles = (user.vehicles || []).filter(v => v.plate !== plate);
   res.redirect('/club/panel');
 });
 
