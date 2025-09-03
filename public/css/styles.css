@@ -27,7 +27,7 @@ a:hover{text-decoration:underline}
 .logo{display:inline-grid;grid-template-areas:'stack';align-items:center;justify-items:center}
 .logo img{height:36px;width:auto;display:block;grid-area:stack;opacity:1;transition:opacity .18s ease}
 /* Header logo: swap base mark to name image on hover */
-.site-header .logo .logo-name{opacity:0;visibility:hidden;transition:opacity .18s ease, visibility .18s steps(1, end)}
+.site-header .logo .logo-name{opacity:0;visibility:hidden;transform:scale(.65);transform-origin:center;transition:opacity .18s ease, visibility .18s steps(1, end), transform .18s ease}
 .site-header .logo:hover .logo-base,
 .site-header .logo:active .logo-base,
 .site-header .logo.is-hidden .logo-base{opacity:0}
