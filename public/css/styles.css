@@ -24,11 +24,11 @@ a:hover{text-decoration:underline}
 .header-inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:var(--nav-center-gap);padding:12px 20px;position:relative}
 .nav-left{display:flex;align-items:center;justify-content:flex-end;gap:var(--nav-gap)}
 .nav-center{display:flex;align-items:center;justify-content:center}
-.logo{display:inline-flex;align-items:center;justify-content:center}
-.logo img{height:36px;width:auto;display:block}
-.logo .logo-text{display:none;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:.6px}
-.logo:hover img,.logo:active img{display:none}
-.logo:hover .logo-text,.logo:active .logo-text{display:inline}
+.logo{display:inline-grid;grid-template-areas:'stack';align-items:center;justify-items:center}
+.logo img{height:36px;width:auto;display:block;grid-area:stack;opacity:1;transition:opacity .18s ease}
+.logo .logo-text{grid-area:stack;opacity:0;visibility:hidden;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;transition:opacity .18s ease, visibility .18s steps(1, end)}
+.logo:hover .logo-text,.logo:active .logo-text,.logo.is-hidden .logo-text{opacity:1;visibility:visible}
+.logo:hover img,.logo:active img,.logo.is-hidden img{opacity:0}
 .nav{display:flex;align-items:center;justify-content:flex-start;gap:0}
 /* unified spacing for nav items */
 .nav-links{display:flex;gap:var(--nav-gap);text-transform:uppercase;font-weight:800;letter-spacing:.6px}
@@ -95,8 +95,7 @@ a:hover{text-decoration:underline}
   white-space:nowrap;
   z-index:2;
 }
-.logo.is-hidden img{opacity:0;transition:opacity .2s ease}
-.logo.is-hidden .logo-text{display:inline}
+.logo.is-hidden img{opacity:0}
 .logo, .nav-links a, .header-right a{position:relative;z-index:1}
 .cart-link{position:relative;display:inline-flex;align-items:center;justify-content:center}
 .cart-label{display:none}
