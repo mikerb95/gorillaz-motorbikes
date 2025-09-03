@@ -111,8 +111,8 @@ const writeCatalog = (obj) => {
 
 // Routes
 app.get('/', (req, res) => {
-  // Build slideshow images list from images/home_slideshow
-  const slidesDir = path.join(__dirname, 'images', 'home_slideshow');
+  // Build slideshow images list from images/slideshow
+  const slidesDir = path.join(__dirname, 'images', 'slideshow');
   let slides = [];
   try {
     const files = fs.readdirSync(slidesDir);
@@ -120,7 +120,7 @@ app.get('/', (req, res) => {
     slides = files
       .filter(f => allowed.has(path.extname(f).toLowerCase()))
       .sort()
-      .map(f => `/images/home_slideshow/${encodeURIComponent(f)}`);
+  .map(f => `/images/slideshow/${encodeURIComponent(f)}`);
   } catch (e) {
     // directory may not exist yet; keep slides empty
   }
