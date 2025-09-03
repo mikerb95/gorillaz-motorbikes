@@ -214,7 +214,7 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   width:56px;
   height:56px;
   border-radius:999px;
-  background:#25D366; /* WhatsApp brand */
+  background:var(--brand); /* Site brand color */
   color:#fff;
   display:inline-flex;
   align-items:center;
