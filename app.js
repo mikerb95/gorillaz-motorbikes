@@ -175,6 +175,28 @@ app.get('/', (req, res) => {
   req.session.newsletterStatus = null;
 });
 
+// Servicios: agendar (definir antes de /servicios para evitar conflictos de orden)
+app.get('/servicios/agendar', (req, res) => {
+  const services = [
+    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
+  ];
+  res.render('services_schedule', { services, bookingMessage: null });
+});
+
+app.post('/servicios/agendar', (req, res) => {
+  const { name, phone, service, date } = req.body;
+  const services = [
+    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
+  ];
+  const bookingMessage = (name && service && date)
+    ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' })}. Te contactaremos al ${phone} para confirmar.`
+    : 'Por favor completa todos los campos.';
+  if (name && service && date){
+    appointments.unshift({ id: uuidv4(), name, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
+  }
+  res.render('services_schedule', { services, bookingMessage });
+});
+
 // Servicios: página informativa
 app.get('/servicios', (req, res) => {
   const services = [
@@ -210,6 +232,11 @@ app.post('/servicios/agendar', (req, res) => {
     appointments.unshift({ id: uuidv4(), name, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
   }
   res.render('services_schedule', { services, bookingMessage });
+});
+
+// Fallback redirects for legacy/variant URLs
+app.get(['/agendar-servicio','/servicios/agenda','/agenda-servicio','/agenda'], (req, res) => {
+  res.redirect('/servicios/agendar');
 });
 
 app.get('/tienda', (req, res) => {
