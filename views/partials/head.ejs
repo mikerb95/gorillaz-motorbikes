@@ -30,7 +30,19 @@
   <nav class="nav" data-nav>
           <div class="nav-links">
             <a href="/">Inicio</a>
-            <a href="/servicios">Servicios</a>
+            <div class="nav-item has-submenu">
+              <a href="/servicios">Servicios</a>
+              <div class="nav-submenu" aria-label="Submenú Servicios">
+                <a href="/servicios#mecanica">Mecánica</a>
+                <a href="/servicios#pintura">Pintura</a>
+                <a href="/servicios#alistamiento-tecnomecanica">Alistamiento tecnomecánica</a>
+                <a href="/servicios#electricidad">Electricidad</a>
+                <a href="/servicios#torno">Torno</a>
+                <a href="/servicios#prensa">Prensa</a>
+                <a href="/servicios#mecanica-rapida">Mecánica rápida</a>
+                <a href="/servicios#escaneo-de-motos">Escaneo de motos</a>
+              </div>
+            </div>
             <a href="/club">Club</a>
             <a class="cart-link" href="/eventos<%= (typeof eventsFirstAnchor !== 'undefined' && eventsFirstAnchor) ? eventsFirstAnchor : '' %>" aria-label="Eventos">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
