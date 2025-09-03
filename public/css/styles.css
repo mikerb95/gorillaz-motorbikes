@@ -65,6 +65,7 @@ a:hover{text-decoration:underline}
 .nav-cta{display:none;align-items:center;gap:var(--nav-gap)}
 .nav form{display:inline}
 .header-right{display:flex;align-items:center;gap:var(--nav-gap)}
+.header-right .cart-link{margin-left:-8px}
 .header-right form{margin:0;display:inline}
 .nav-toggle{display:none;background:transparent;border:0;font-size:22px;color:#fff}
 
