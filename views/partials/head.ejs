@@ -79,7 +79,7 @@
               <a class="btn-ghost btn-sm btn-square" href="/servicios">Agendar servicio</a>
             <% if (user) { %>
               <form action="/club/logout" method="post">
-                <button class="btn btn-sm btn-outline" type="submit">Salir</button>
+                <button class="btn btn-sm btn-outline" type="submit">Cerrar sesión</button>
               </form>
             <% } %>
           </div>
@@ -131,7 +131,7 @@
     <a class="sub-btn" href="/club/panel#vehiculos">Gestionar mis vehículos</a>
   <a class="sub-btn" href="/eventos<%= (typeof eventsFirstAnchor !== 'undefined' && eventsFirstAnchor) ? eventsFirstAnchor : '' %>">Eventos<% if (typeof eventsUpcoming !== 'undefined' && eventsUpcoming > 0) { %> <span class="sub-badge"><%= eventsUpcoming %></span><% } %></a>
           <form action="/club/logout" method="post" style="display:inline">
-            <button class="sub-btn" type="submit">Salir</button>
+            <button class="sub-btn" type="submit">Cerrar sesión</button>
           </form>
       </nav>
     </div>
