@@ -24,22 +24,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const centerR = navCenter.getBoundingClientRect();
     const rightR = headerRight.getBoundingClientRect();
 
-    // Conditions for overflow: right side clipped by container OR overlaps center; similarly left overlaps center
-    const clipRight = rightR.right > host.right - 4;
+    // Gaps and clipping
+    const gapLeftToCenter = Math.max(0, centerR.left - leftR.right);
+    const gapCenterToRight = Math.max(0, rightR.left - centerR.right);
+    const edgeRight = host.right - rightR.right;
+
+    // Compact when overlapping or clipping
+    const clipRight = edgeRight < 4;
     const overlapRightCenter = rightR.left < centerR.right + 8;
     const overlapLeftCenter = leftR.right > centerR.left - 8;
     const shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter;
 
+    // Squeeze when near-overlap but not yet compact
+  const nearRightCenter = gapCenterToRight < 40; // earlier squeeze
+  const nearLeftCenter = gapLeftToCenter < 40;   // earlier squeeze
+  const nearEdgeRight = edgeRight < 24;          // earlier squeeze
+    const shouldSqueeze = !shouldCompact && (nearRightCenter || nearLeftCenter || nearEdgeRight);
+
     const wasCompact = document.body.classList.contains('nav-compact');
-    if (shouldCompact && !wasCompact){
-      document.body.classList.add('nav-compact');
-    } else if (!shouldCompact && wasCompact){
-      document.body.classList.remove('nav-compact');
-      // Ensure overlay menu is closed when returning to desktop
-      const nav = document.querySelector('[data-nav]');
-      const toggle = document.querySelector('.nav-toggle');
-      if (nav){ nav.setAttribute('data-open', 'false'); }
-      if (toggle){ toggle.setAttribute('aria-expanded', 'false'); }
+    const wasSqueeze = document.body.classList.contains('nav-squeeze');
+
+    if (shouldCompact){
+      if (!wasCompact){
+        document.body.classList.add('nav-compact');
+        document.body.classList.remove('nav-squeeze');
+      }
+    } else if (shouldSqueeze){
+      if (!wasSqueeze || wasCompact){
+        document.body.classList.remove('nav-compact');
+        document.body.classList.add('nav-squeeze');
+        // Re-measure on next frame since layout shrinks
+        requestAnimationFrame(() => updateNavCompact());
+      }
+    } else {
+      if (wasCompact || wasSqueeze){
+        document.body.classList.remove('nav-compact');
+        document.body.classList.remove('nav-squeeze');
+        // Ensure overlay menu is closed when returning to full desktop
+        const nav = document.querySelector('[data-nav]');
+        const toggle = document.querySelector('.nav-toggle');
+        if (nav){ nav.setAttribute('data-open', 'false'); }
+        if (toggle){ toggle.setAttribute('aria-expanded', 'false'); }
+      }
     }
   };
   // Initial and responsive checks

@@ -52,6 +52,18 @@ a:hover{text-decoration:underline}
 .site-header .nav a:hover{opacity:1;text-decoration:none}
 .site-header a:hover{text-decoration:none}
 .nav-links a{padding:8px 10px;border-radius:8px}
+/* Slight squeeze state before going full hamburger */
+.nav-squeeze .header-inner{padding:10px 14px}
+.nav-squeeze .nav-left{gap:calc(var(--nav-gap) - 10px)}
+.nav-squeeze .header-right{gap:calc(var(--nav-gap) - 10px)}
+.nav-squeeze .nav-links a,
+.nav-squeeze .header-right a,
+.nav-squeeze .nav-cta a,
+.nav-squeeze .header-right form button,
+.nav-squeeze .nav-cta form button{padding:7px 8px}
+.nav-squeeze .site-header .logo img{height:44px}
+.nav-squeeze .nav-center{column-gap:calc(var(--nav-center-gap) - 24px)}
+.nav-squeeze .cart-badge{right:-4px}
 /* Desktop submenu for navbar items (no changes to other items) */
 @media (min-width:901px){
   .nav-item{position:relative}
