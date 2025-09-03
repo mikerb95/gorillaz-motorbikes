@@ -156,7 +156,7 @@ body.has-hero main{padding-top:0}
 .container{max-width:1200px;margin:0 auto;padding:24px 16px}
 /* Slim sub navigation bar for logged-in users */
 .sub-bar{position:fixed;left:0;right:0;top:calc(var(--header-offset) + 4px);z-index:99;background:transparent}
-.sub-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 20px;background:#FF6400;border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.06);transition:transform .22s ease, opacity .18s ease}
+.sub-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 20px;background:#FF6400;border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.06);transition:transform .22s ease, opacity .18s ease}
 .sub-bar.is-hidden .sub-inner{transform:translateY(-140%);opacity:0;pointer-events:none}
 .sub-left{color:#fff;opacity:.95;font-weight:700;letter-spacing:.3px;font-size:.8rem}
 .sub-right{display:flex;gap:18px}
