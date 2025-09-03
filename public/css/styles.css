@@ -277,9 +277,6 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
   .nav-toggle{display:inline-flex}
   /* Hide center logo area on small screens */
   .nav-center{display:none}
-  /* Mobile brand row inside panel */
-  .nav-brand-mobile{display:flex;justify-content:flex-end;align-items:center;margin-bottom:4px}
-  .nav-brand-mobile .logo img{height:28px}
 }
 
 @media (max-width:640px){

@@ -96,14 +96,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       headerInner.addEventListener('mouseleave', hideBlob);
 
-      // Special behavior for logo: hide the image and show the inline text; no blob overlay
+      // Special behavior for logo: hide the image and show the inline text; also dim the rest of the navbar
       logo.addEventListener('mouseenter', () => {
         hideBlob();
         logo.classList.add('is-hidden');
+        document.body.classList.add('logo-hover-dim');
       });
       logo.addEventListener('mouseleave', () => {
         hideBlob();
         logo.classList.remove('is-hidden');
+        document.body.classList.remove('logo-hover-dim');
       });
     }
 
@@ -111,10 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
     logo.addEventListener('focus', () => {
       hideBlob();
       logo.classList.add('is-hidden');
+      document.body.classList.add('logo-hover-dim');
     });
     logo.addEventListener('blur', () => {
       hideBlob();
       logo.classList.remove('is-hidden');
+      document.body.classList.remove('logo-hover-dim');
     });
 
     // Keep blob responsive on resize
