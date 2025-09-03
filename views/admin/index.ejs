@@ -12,12 +12,87 @@
   <div class="grid two" style="margin-top:16px">
     <div class="card">
       <h3>Resumen</h3>
-      <ul class="list">
-        <li><span>Usuarios</span><strong><%= stats.users %></strong></li>
-        <li><span>Eventos</span><strong><%= stats.events %></strong></li>
-        <li><span>Citas</span><strong><%= stats.citas %></strong></li>
-        <li><span>Cursos</span><strong><%= stats.cursos %></strong></li>
-        <li><span>Productos</span><strong><%= stats.productos %></strong></li>
+      <ul class="admin-summary">
+        <li class="admin-row">
+          <details>
+            <summary>
+              <span class="title">Usuarios</span>
+              <span style="display:flex;align-items:center;gap:10px">
+                <span class="count"><%= stats.users %></span>
+                <span class="chev">▸</span>
+              </span>
+            </summary>
+            <div class="summary-content">
+              <div class="actions">
+                <a class="btn btn-sm" href="/admin/usuarios">Ir a CRUD</a>
+              </div>
+            </div>
+          </details>
+        </li>
+        <li class="admin-row">
+          <details>
+            <summary>
+              <span class="title">Eventos</span>
+              <span style="display:flex;align-items:center;gap:10px">
+                <span class="count"><%= stats.events %></span>
+                <span class="chev">▸</span>
+              </span>
+            </summary>
+            <div class="summary-content">
+              <div class="actions">
+                <a class="btn btn-sm" href="/admin/eventos">Ir a CRUD</a>
+              </div>
+            </div>
+          </details>
+        </li>
+        <li class="admin-row">
+          <details>
+            <summary>
+              <span class="title">Citas</span>
+              <span style="display:flex;align-items:center;gap:10px">
+                <span class="count"><%= stats.citas %></span>
+                <span class="chev">▸</span>
+              </span>
+            </summary>
+            <div class="summary-content">
+              <div class="actions">
+                <a class="btn btn-sm" href="/admin/citas">Ir a CRUD</a>
+              </div>
+            </div>
+          </details>
+        </li>
+        <li class="admin-row">
+          <details>
+            <summary>
+              <span class="title">Cursos</span>
+              <span style="display:flex;align-items:center;gap:10px">
+                <span class="count"><%= stats.cursos %></span>
+                <span class="chev">▸</span>
+              </span>
+            </summary>
+            <div class="summary-content">
+              <div class="actions">
+                <a class="btn btn-sm" href="/admin/cursos">Ir a CRUD</a>
+              </div>
+            </div>
+          </details>
+        </li>
+        <li class="admin-row">
+          <details>
+            <summary>
+              <span class="title">Productos</span>
+              <span style="display:flex;align-items:center;gap:10px">
+                <span class="count"><%= stats.productos %></span>
+                <span class="chev">▸</span>
+              </span>
+            </summary>
+            <div class="summary-content">
+              <div class="actions">
+                <a class="btn btn-sm" href="/admin/tienda">Ir a CRUD</a>
+              </div>
+            </div>
+          </details>
+        </li>
       </ul>
     </div>
   </div>

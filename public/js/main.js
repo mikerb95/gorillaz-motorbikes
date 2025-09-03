@@ -243,6 +243,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Admin summary: rotate chevron on open
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.admin-row details').forEach(d => {
+    const chev = d.querySelector('.chev');
+    if (!chev) return;
+    const sync = () => { chev.style.transform = d.open ? 'rotate(90deg)' : 'none'; };
+    d.addEventListener('toggle', sync);
+    sync();
+  });
+});
+
 // CSRF helper and destructive action confirms
 document.addEventListener('DOMContentLoaded', () => {
   // Inject CSRF token into all POST forms automatically
