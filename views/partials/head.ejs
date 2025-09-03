@@ -77,9 +77,9 @@
     <div class="sub-inner">
       <div class="sub-left">Hola, <strong><%= user.name %></strong>.</div>
       <nav class="sub-right">
-        <a href="/club/panel">Ir al panel del club</a>
-        <a href="/club/panel#vehiculos">Gestionar mis vehículos</a>
-  <a href="/eventos<%= (typeof eventsFirstAnchor !== 'undefined' && eventsFirstAnchor) ? eventsFirstAnchor : '' %>">Eventos<% if (typeof eventsUpcoming !== 'undefined' && eventsUpcoming > 0) { %> <span class="sub-badge"><%= eventsUpcoming %></span><% } %></a>
+    <a class="sub-btn" href="/club/panel">Ir al panel del club</a>
+    <a class="sub-btn" href="/club/panel#vehiculos">Gestionar mis vehículos</a>
+  <a class="sub-btn" href="/eventos<%= (typeof eventsFirstAnchor !== 'undefined' && eventsFirstAnchor) ? eventsFirstAnchor : '' %>">Eventos<% if (typeof eventsUpcoming !== 'undefined' && eventsUpcoming > 0) { %> <span class="sub-badge"><%= eventsUpcoming %></span><% } %></a>
       </nav>
     </div>
   </div>
