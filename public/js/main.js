@@ -22,6 +22,29 @@ document.addEventListener('DOMContentLoaded', () => {
       document.documentElement.style.setProperty('--subbar-offset', h + 'px');
     }
     setTimeout(setHeaderOffset, 0);
+
+    // Auto-hide/show subbar on scroll
+    const subBar = document.querySelector('.sub-bar');
+    let lastY = window.scrollY || 0;
+    let ticking = false;
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      const delta = y - lastY;
+      if (Math.abs(delta) < 4){ lastY = y; return; }
+      if (delta > 0 && y > 20){
+        subBar.classList.add('is-hidden');
+      } else {
+        subBar.classList.remove('is-hidden');
+      }
+      lastY = y;
+      ticking = false;
+    };
+    window.addEventListener('scroll', () => {
+      if (!ticking){
+        window.requestAnimationFrame(onScroll);
+        ticking = true;
+      }
+    }, { passive: true });
   }
 
   // Mark when page has a full-bleed hero to adjust layout via CSS
