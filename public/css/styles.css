@@ -183,6 +183,7 @@ body.has-hero main{padding-top:0}
   }
 }
 .btn-sm{padding:8px 12px;border-radius:10px}
+.btn-xs{padding:6px 10px;border-radius:9px;font-size:.9rem}
 .btn-square{border-radius:8px !important}
 .btn-ghost{background:transparent;border:0;color:#111;font-weight:800}
 .btn-ghost:hover{background:rgba(0,0,0,.04);text-decoration:none}
@@ -215,7 +216,21 @@ section h2, section h1{max-width:1200px;margin:0 auto 12px;padding:0 0}
 .club-promo{max-width:800px;margin:0 auto}
 .btn-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .list{list-style:none;padding:0;margin:0}
-.list li{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #e5e7eb;color:#111}
+/* Base row layout for dashboard lists */
+.list li{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px dashed #e5e7eb;
+  color:#111;
+}
+/* When a list includes action buttons/forms, enable truncation and pin actions */
+.list.list-actions li > span:first-child{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list.list-actions li > form:last-child{flex:0 0 auto}
+.list.list-actions li form{margin:0;display:inline}
+.list.list-actions li button{white-space:nowrap}
 .list li:last-child{border-bottom:none}
 .stack{display:grid;gap:10px;margin-top:14px}
 label{display:grid;gap:6px;font-weight:700;color:#111}

@@ -68,20 +68,20 @@
       <h2>Mis vehículos</h2>
       <form class="stack" method="post" action="/club/vehiculos">
         <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required /></label>
-        <div class="grid two">
-          <label>Vence SOAT<input type="date" name="soatExpires" /></label>
-          <label>Vence Tecno<input type="date" name="tecnoExpires" /></label>
+        <div class="grid two" style="align-items:end">
+          <label>Vence SOAT<input type="date" name="soatExpires" style="min-width:0" /></label>
+          <label>Vence Tecno<input type="date" name="tecnoExpires" style="min-width:0" /></label>
         </div>
         <button class="btn" type="submit">Agregar</button>
       </form>
       <% if (user.vehicles && user.vehicles.length) { %>
-        <ul class="list" style="margin-top:10px">
+        <ul class="list list-actions" style="margin-top:10px">
           <% user.vehicles.forEach(v => { %>
             <li>
               <span><%= v.plate %></span>
               <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Eliminar vehículo?">
                 <input type="hidden" name="plate" value="<%= v.plate %>" />
-                <button class="btn btn-sm btn-outline" type="submit">Eliminar</button>
+                <button class="btn btn-xs btn-outline" type="submit">Eliminar</button>
               </form>
             </li>
           <% }) %>
