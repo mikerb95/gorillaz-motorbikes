@@ -204,3 +204,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   render();
 });
+
+// Lightweight modal controller (open/close via data attributes)
+document.addEventListener('DOMContentLoaded', () => {
+  const openers = document.querySelectorAll('[data-modal-open]');
+  openers.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sel = btn.getAttribute('data-modal-open');
+      const modal = sel ? document.querySelector(sel) : null;
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'false');
+    });
+  });
+  const closers = document.querySelectorAll('[data-modal-close]');
+  closers.forEach(el => {
+    el.addEventListener('click', () => {
+      const modal = el.closest('.modal');
+      if (!modal) return;
+      modal.setAttribute('aria-hidden', 'true');
+    });
+  });
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape'){
+      document.querySelectorAll('.modal[aria-hidden="false"]').forEach(m => m.setAttribute('aria-hidden','true'));
+    }
+  });
+});

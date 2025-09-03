@@ -299,3 +299,15 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 /* Utility chips and meta rows */
 .chip{display:inline-block;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;background:#fff;color:#111;font-size:12px}
 .meta-row{display:flex;flex-wrap:wrap;gap:8px}
+
+/* Modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:160}
+.modal[aria-hidden="false"]{display:flex}
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.modal-dialog{position:relative;background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 18px 48px rgba(0,0,0,.22);width:min(560px,92vw);max-width:560px;padding:0;overflow:hidden}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e7eb}
+.modal-title{margin:0}
+.modal-close{background:transparent;border:0;font-size:22px;line-height:1;border-radius:10px;padding:6px 10px;cursor:pointer}
+.modal-close:hover{background:#f3f4f6}
+.modal-body{padding:16px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;padding:12px 16px;border-top:1px solid #e5e7eb}

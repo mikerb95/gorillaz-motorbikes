@@ -36,6 +36,9 @@
           <div class="muted" id="selectedDateText" style="margin-top:6px">Selecciona una fecha disponible</div>
         </div>
       </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button type="button" class="btn" data-modal-open="#modal-servicio">Aviso sobre tiempos de servicio</button>
+      </div>
       <button class="btn btn-primary" type="submit">Solicitar cita</button>
     </form>
 
@@ -60,5 +63,25 @@
     </div>
   </aside>
 </main>
+
+<!-- Modal: Aviso de tiempos de servicio -->
+<div class="modal" id="modal-servicio" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-servicio-title">
+  <div class="modal-backdrop" data-modal-close></div>
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 id="modal-servicio-title" class="modal-title">Aviso importante sobre tiempos</h3>
+      <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>×</button>
+    </div>
+    <div class="modal-body">
+      <p>
+        El tiempo de trabajo para cada motocicleta dependerá de sus condiciones particulares. Durante el proceso
+        pueden surgir novedades que alarguen o acorten el tiempo estimado del servicio. Agradecemos tu comprensión.
+      </p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" data-modal-close>Entendido</button>
+    </div>
+  </div>
+  </div>
 
 <%- include('partials/footer') %>
