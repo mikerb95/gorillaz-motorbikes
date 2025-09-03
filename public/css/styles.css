@@ -24,7 +24,9 @@ a:hover{text-decoration:underline}
 /* Subtle vignette: slightly darker edges, lighter center */
 .nav-bar::before{
   content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
-  background:radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,.05) 86%, rgba(0,0,0,.12) 100%);
+  /* Stronger vignette: keep center clear, darken edges more noticeably */
+  background:radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,0) 50%, rgba(0,0,0,.10) 82%, rgba(0,0,0,.22) 100%);
+  mix-blend-mode:multiply; /* intensify edge darkening on orange background */
 }
 .header-inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:var(--nav-center-gap);padding:12px 20px;position:relative}
 .nav-left{display:flex;align-items:center;justify-content:flex-end;gap:var(--nav-gap)}
