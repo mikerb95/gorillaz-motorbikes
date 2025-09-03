@@ -70,8 +70,8 @@ a:hover{text-decoration:underline}
   transform:translate(var(--x, 0px), -50%);
   width:var(--w, 140px);
   height:var(--h, 36px);
-  background:radial-gradient(120px 40px at 50% 50%, rgba(242,92,5,.25), rgba(242,92,5,.12) 60%, rgba(242,92,5,0) 70%);
-  filter:blur(6px);
+  background:radial-gradient(120px 40px at 50% 50%, rgba(255,255,255,.33), rgba(255,255,255,.16) 60%, rgba(255,255,255,0) 70%);
+  filter:blur(8px);
   pointer-events:none;
   transition:transform .35s cubic-bezier(.2,.8,.2,1), width .35s, height .35s, opacity .3s;
   opacity:.9;
