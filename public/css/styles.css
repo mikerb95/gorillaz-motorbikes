@@ -386,12 +386,8 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 .footer-bottom .footer-copy p{margin:0}
 .footer-payments{display:inline-flex;align-items:center;gap:8px}
 .footer-payments .payment-label{opacity:.9;margin-right:6px}
-.pay-item{display:inline-flex;align-items:center;gap:6px}
-.pay-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:20px;border-radius:6px;background:#fff;color:#111;border:1px solid rgba(255,255,255,.22);font-weight:900;font-size:.8rem}
-/* Brand-inspired stylings for Nequi & Daviplata (approximate, not official marks) */
-.pay-icon.nequi{background:linear-gradient(135deg,#1B004B 0%,#2B0B63 50%,#5A1EA6 100%);color:#FF3DB4;border-color:rgba(255,61,180,.5)}
-.pay-icon.daviplata{background:linear-gradient(135deg,#D90429 0%,#EF233C 100%);color:#fff;border-color:rgba(255,255,255,.35)}
-.pay-icon.card{background:#fff;color:#111;border-color:rgba(0,0,0,.1)}
+.pay-item{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;overflow:hidden}
+.pay-img{display:block;width:100%;height:100%;object-fit:cover}
 
 @media (max-width:700px){
   .footer-bottom{flex-direction:column;align-items:flex-start;text-align:left}
