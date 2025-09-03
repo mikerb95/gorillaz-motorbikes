@@ -278,14 +278,15 @@ section h2, section h1{max-width:1200px;margin:0 auto 16px;padding:0 0}
 .services-grid li{padding:0;border:0;background:transparent}
 .service-card{position:relative;border-radius:var(--radius-lg);overflow:hidden;min-height:160px;display:grid;align-items:end;background:#000}
 .service-card::before{content:"";position:absolute;inset:0;background:
+  linear-gradient(180deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.08) 100%),
   linear-gradient(180deg, rgba(0,0,0,.05) 20%, rgba(0,0,0,.45) 100%),
-  var(--bg) center/cover no-repeat;opacity:.9; background-position:center center, 50% 50%; will-change:background-position; animation:service-pan 16s ease-in-out infinite}
+  var(--bg) center/cover no-repeat;opacity:.9; background-position:center center, center center, 50% 50%; will-change:background-position; animation:service-pan 16s ease-in-out infinite}
 .service-card::after{content:"";position:absolute;inset:0;pointer-events:none}
 .service-content{position:relative;padding:14px;color:#fff;display:grid;gap:6px}
 .service-content h3{margin:0;font-size:18px}
 .service-content p{margin:0;color:rgba(255,255,255,.92)}
 .service-card:hover::before{opacity:1}
-@keyframes service-pan{0%,100%{background-position:center center,50% 50%}50%{background-position:center center,50% 53%}}
+@keyframes service-pan{0%,100%{background-position:center center, center center, 50% 50%}50%{background-position:center center, center center, 50% 53%}}
 
 /* Two fixed columns on desktop, single on mobile */
 .grid.halves{grid-template-columns:repeat(2,1fr)}
