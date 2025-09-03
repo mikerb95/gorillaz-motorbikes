@@ -1,5 +1,14 @@
 <%- include('../partials/head', { title: 'Club — Panel', user }) %>
 
+<% if (user && user.role === 'admin') { %>
+  <div class="container">
+    <div class="admin-top">
+      <span class="muted">Usuario administrador</span>
+      <a class="btn btn-sm" href="/admin">Ir al panel de administrador</a>
+    </div>
+  </div>
+<% } %>
+
 <section>
   <h1>Hola, <%= user.name %></h1>
   <div class="grid two">
