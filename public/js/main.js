@@ -15,6 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // If sub-bar exists (logged-in), add body class and recalc spacing
   if (document.querySelector('.sub-bar')){
     document.body.classList.add('has-subbar');
+    // compute extra offset based on sub-bar inner height
+    const sub = document.querySelector('.sub-inner');
+    if (sub){
+      const h = Math.ceil(sub.getBoundingClientRect().height + 12); // include a bit of gap
+      document.documentElement.style.setProperty('--subbar-offset', h + 'px');
+    }
     setTimeout(setHeaderOffset, 0);
   }
 
