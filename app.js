@@ -76,6 +76,14 @@ app.use((req, res, next) => {
     if (prod){ count += qty; subtotal += prod.price * qty; }
   }
   res.locals.cart = { items: c.items || {}, count, subtotal };
+  // Build a lightweight cart items array for header hover
+  try {
+    res.locals.cartItems = Object.entries(c.items || {}).map(([id, qty]) => {
+      const p = (catalog.products || []).find(pp => pp.id === id);
+      if (!p) return null;
+      return { id, name: p.name, qty, total: (p.price || 0) * qty };
+    }).filter(Boolean);
+  } catch { res.locals.cartItems = []; }
   // Upcoming events badge and first anchor for sub-bar
   try {
     const today = new Date(); today.setHours(0,0,0,0);
