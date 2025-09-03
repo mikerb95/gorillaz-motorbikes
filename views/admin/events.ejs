@@ -1,0 +1,43 @@
+<%- include('../partials/head', { title: 'Admin — Eventos' }) %>
+<main class="container section">
+  <h1 class="section-title">Eventos del Club</h1>
+
+  <section class="card stack">
+    <h3>Crear evento</h3>
+    <form class="stack" method="post" action="/admin/eventos/crear">
+      <label>Título<input name="title" required /></label>
+      <label>Fecha<input type="date" name="date" required /></label>
+      <label>Lugar (opcional)<input name="location" /></label>
+      <label>Descripción<textarea name="description" rows="3" required></textarea></label>
+      <button class="btn btn-primary" type="submit">Crear</button>
+    </form>
+  </section>
+
+  <section class="section">
+    <h3>Lista de eventos</h3>
+    <div class="grid three">
+      <% events.forEach(ev => { %>
+        <article class="card stack">
+          <h4 class="tight"><%= ev.title %></h4>
+          <div class="muted"><%= ev.date %></div>
+          <p><%= ev.description %></p>
+          <div class="row gap">
+            <form method="post" action="/admin/eventos/actualizar" class="stack compact">
+              <input type="hidden" name="id" value="<%= ev.id %>" />
+              <input name="title" value="<%= ev.title %>" />
+              <input type="date" name="date" value="<%= ev.date %>" />
+              <input name="location" value="<%= ev.location || '' %>" placeholder="Lugar" />
+              <textarea name="description" rows="2"><%= ev.description %></textarea>
+              <button class="btn" type="submit">Actualizar</button>
+            </form>
+            <form method="post" action="/admin/eventos/eliminar">
+              <input type="hidden" name="id" value="<%= ev.id %>" />
+              <button class="btn btn-danger" type="submit">Eliminar</button>
+            </form>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>

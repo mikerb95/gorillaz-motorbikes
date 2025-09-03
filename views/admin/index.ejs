@@ -1,0 +1,25 @@
+<%- include('../partials/head', { title: 'Admin — Panel' }) %>
+<main class="container section">
+  <h1 class="section-title">Panel de Administración</h1>
+  <ul class="grid">
+    <li class="card"><a href="/admin/calendario">Calendario de disponibilidad</a></li>
+    <li class="card"><a href="/admin/eventos">Eventos del club</a></li>
+    <li class="card"><a href="/admin/usuarios">Usuarios</a></li>
+    <li class="card"><a href="/admin/citas">Citas</a></li>
+    <li class="card"><a href="/admin/cursos">Cursos</a></li>
+    <li class="card"><a href="/admin/tienda">Artículos de la tienda</a></li>
+  </ul>
+  <div class="grid two" style="margin-top:16px">
+    <div class="card">
+      <h3>Resumen</h3>
+      <ul class="list">
+        <li><span>Usuarios</span><strong><%= stats.users %></strong></li>
+        <li><span>Eventos</span><strong><%= stats.events %></strong></li>
+        <li><span>Citas</span><strong><%= stats.citas %></strong></li>
+        <li><span>Cursos</span><strong><%= stats.cursos %></strong></li>
+        <li><span>Productos</span><strong><%= stats.productos %></strong></li>
+      </ul>
+    </div>
+  </div>
+</main>
+<%- include('../partials/footer') %>

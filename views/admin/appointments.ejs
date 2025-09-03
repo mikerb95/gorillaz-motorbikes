@@ -1,0 +1,45 @@
+<%- include('../partials/head', { title: 'Admin — Citas' }) %>
+<main class="container section">
+  <h1 class="section-title">Citas</h1>
+
+  <section class="card stack">
+    <h3>Crear cita</h3>
+  <form class="grid two" method="post" action="/admin/citas/crear">
+      <label>Cliente<input name="customer" required /></label>
+      <label>Fecha<input type="date" name="date" required /></label>
+      <label>Hora<input type="time" name="time" required /></label>
+      <label>Servicio<input name="service" required /></label>
+      <button class="btn btn-primary" type="submit">Crear</button>
+    </form>
+  </section>
+
+  <section class="section">
+    <h3>Lista</h3>
+    <div class="stack">
+      <% appointments.forEach(a => { %>
+        <article class="card stack">
+          <div class="row space-between">
+            <strong><%= a.customer %></strong>
+            <span class="chip"><%= a.date %> <%= a.time %></span>
+          </div>
+          <div class="muted"><%= a.service %></div>
+          <div class="row gap">
+            <form method="post" action="/admin/citas/actualizar" class="grid two compact">
+              <input type="hidden" name="id" value="<%= a.id %>" />
+              <input name="customer" value="<%= a.customer %>" />
+              <input type="date" name="date" value="<%= a.date %>" />
+              <input type="time" name="time" value="<%= a.time %>" />
+              <input name="service" value="<%= a.service %>" />
+              <button class="btn" type="submit">Actualizar</button>
+            </form>
+            <form method="post" action="/admin/citas/eliminar">
+              <input type="hidden" name="id" value="<%= a.id %>" />
+              <button class="btn btn-danger" type="submit">Eliminar</button>
+            </form>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>

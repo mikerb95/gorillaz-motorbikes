@@ -1,0 +1,18 @@
+<%- include('../partials/head', { title: 'Admin — Calendario' }) %>
+<main class="container section">
+  <h1 class="section-title">Calendario de disponibilidad</h1>
+  <p class="muted">Fechas bloqueadas: <%= availability.blockedDates.join(', ') || 'ninguna' %></p>
+  <div class="grid two">
+    <form class="card stack" method="post" action="/admin/calendario/bloquear">
+      <h3>Bloquear fecha</h3>
+      <label>Fecha<input type="date" name="date" required /></label>
+      <button class="btn btn-primary" type="submit">Bloquear</button>
+    </form>
+    <form class="card stack" method="post" action="/admin/calendario/desbloquear">
+      <h3>Desbloquear fecha</h3>
+      <label>Fecha<input type="date" name="date" required /></label>
+      <button class="btn" type="submit">Desbloquear</button>
+    </form>
+  </div>
+</main>
+<%- include('../partials/footer') %>

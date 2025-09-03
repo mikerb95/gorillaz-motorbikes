@@ -15,6 +15,7 @@ const users = [
     email: 'miembro@gorillaz.co',
     password: 'gorillaz123',
     name: 'Miembro del Club',
+  role: 'admin',
     membership: {
       level: 'Premium',
       since: '2024-06-01',
@@ -72,6 +73,27 @@ const requireAuth = (req, res, next) => {
   if (!req.session.userId) return res.redirect('/club/login');
   next();
 };
+const requireAdmin = (req, res, next) => {
+  const u = users.find(u => u.id === req.session.userId);
+  if (!u || u.role !== 'admin') return res.status(403).render('404');
+  next();
+};
+
+// Admin data stores
+let events = [];
+let availability = { blockedDates: [] };
+let appointments = [];
+try { events = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'events.json'), 'utf8')); } catch {}
+try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'availability.json'), 'utf8')); } catch {}
+
+const saveJSON = (file, data) => {
+  fs.writeFileSync(path.join(__dirname, 'data', file), JSON.stringify(data, null, 2), 'utf8');
+};
+const writeCatalog = (obj) => {
+  const file = path.join(__dirname, 'data', 'catalog.js');
+  const content = 'module.exports = ' + JSON.stringify(obj, null, 2) + ' ;\n';
+  fs.writeFileSync(file, content, 'utf8');
+};
 
 // Routes
 app.get('/', (req, res) => {
@@ -115,6 +137,9 @@ app.post('/servicios', (req, res) => {
   const bookingMessage = (name && service && date)
     ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' })}. Te contactaremos al ${phone} para confirmar.`
     : 'Por favor completa todos los campos.';
+  if (name && service && date){
+    appointments.unshift({ id: uuidv4(), name, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
+  }
   res.render('services', { services, bookingMessage });
 });
 
@@ -246,6 +271,190 @@ app.get('/cursos/:slug', (req, res) => {
   const course = courses.find(c => c.slug === req.params.slug);
   if (!course) return res.status(404).render('404');
   res.render('course', { course });
+});
+
+// Public events page
+app.get('/eventos', (req, res) => {
+  res.render('events', { events });
+});
+
+// Admin dashboard
+app.get('/admin', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/index', { stats: {
+    users: users.length,
+    events: events.length,
+    citas: appointments.length,
+    cursos: courses.length,
+    productos: (catalog.products || []).length
+  }});
+});
+
+// Admin: availability calendar
+app.get('/admin/calendario', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/calendar', { availability });
+});
+app.post('/admin/calendario/bloquear', requireAuth, requireAdmin, (req, res) => {
+  const { date } = req.body;
+  if (date && !availability.blockedDates.includes(date)){
+    availability.blockedDates.push(date);
+    saveJSON('availability.json', availability);
+  }
+  res.redirect('/admin/calendario');
+});
+app.post('/admin/calendario/desbloquear', requireAuth, requireAdmin, (req, res) => {
+  const { date } = req.body;
+  availability.blockedDates = availability.blockedDates.filter(d => d !== date);
+  saveJSON('availability.json', availability);
+  res.redirect('/admin/calendario');
+});
+
+// Admin: events CRUD
+app.get('/admin/eventos', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/events', { events });
+});
+app.post('/admin/eventos/crear', requireAuth, requireAdmin, (req, res) => {
+  const { title, date, location, description } = req.body;
+  if (title && date){
+    events.unshift({ id: uuidv4(), title, date, location, description });
+    saveJSON('events.json', events);
+  }
+  res.redirect('/admin/eventos');
+});
+app.post('/admin/eventos/actualizar', requireAuth, requireAdmin, (req, res) => {
+  const { id, title, date, location, description } = req.body;
+  const ev = events.find(e => e.id === id);
+  if (ev){
+    if (title) ev.title = title;
+    if (date) ev.date = date;
+    if (typeof location !== 'undefined') ev.location = location;
+    if (typeof description !== 'undefined') ev.description = description;
+    saveJSON('events.json', events);
+  }
+  res.redirect('/admin/eventos');
+});
+app.post('/admin/eventos/eliminar', requireAuth, requireAdmin, (req, res) => {
+  const { id } = req.body;
+  events = events.filter(e => e.id !== id);
+  saveJSON('events.json', events);
+  res.redirect('/admin/eventos');
+});
+
+// Admin: users (modify or delete)
+app.get('/admin/usuarios', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/users', { users });
+});
+app.post('/admin/usuarios/actualizar', requireAuth, requireAdmin, (req, res) => {
+  const { id, name, membershipLevel } = req.body;
+  const u = users.find(u => u.id === id);
+  if (u){
+    if (name) u.name = name;
+    if (membershipLevel) u.membership.level = membershipLevel;
+  }
+  res.redirect('/admin/usuarios');
+});
+app.post('/admin/usuarios/eliminar', requireAuth, requireAdmin, (req, res) => {
+  const { id } = req.body;
+  const i = users.findIndex(u => u.id === id);
+  if (i !== -1) users.splice(i, 1);
+  res.redirect('/admin/usuarios');
+});
+
+// Admin: citas CRUD
+app.get('/admin/citas', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/appointments', { appointments });
+});
+app.post('/admin/citas/crear', requireAuth, requireAdmin, (req, res) => {
+  const { customer, date, time, service } = req.body;
+  if (customer && date && time && service){
+    appointments.unshift({ id: uuidv4(), customer, date, time, service, status: 'pendiente', createdAt: new Date().toISOString() });
+  }
+  res.redirect('/admin/citas');
+});
+app.post('/admin/citas/actualizar', requireAuth, requireAdmin, (req, res) => {
+  const { id, customer, date, time, service, status } = req.body;
+  const a = appointments.find(x => x.id === id);
+  if (a){
+    if (customer) a.customer = customer;
+    if (date) a.date = date;
+    if (time) a.time = time;
+    if (service) a.service = service;
+    if (status) a.status = status;
+  }
+  res.redirect('/admin/citas');
+});
+app.post('/admin/citas/estado', requireAuth, requireAdmin, (req, res) => {
+  const { id, status } = req.body;
+  const a = appointments.find(x => x.id === id);
+  if (a) a.status = status || a.status;
+  res.redirect('/admin/citas');
+});
+app.post('/admin/citas/eliminar', requireAuth, requireAdmin, (req, res) => {
+  const { id } = req.body;
+  appointments = appointments.filter(x => x.id !== id);
+  res.redirect('/admin/citas');
+});
+
+// Admin: cursos CRUD
+app.get('/admin/cursos', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/courses', { list: courses });
+});
+app.post('/admin/cursos/crear', requireAuth, requireAdmin, (req, res) => {
+  const { slug, title, priceCOP } = req.body;
+  if (slug && title){
+    courses.push({ slug, title, short: '', category: 'Técnico', level: 'Inicial', durationHours: 0, readingMinutes: 0, modality: 'Presencial', location: 'Bogotá D.C.', priceCOP: parseInt(priceCOP||'0',10)||0, tags: [], syllabus: [], outcomes: [], requirements: [], schedule: '', nextIntake: '' });
+    saveJSON('courses.json', courses);
+  }
+  res.redirect('/admin/cursos');
+});
+app.post('/admin/cursos/actualizar', requireAuth, requireAdmin, (req, res) => {
+  const { slug, title, priceCOP } = req.body;
+  const c = courses.find(x => x.slug === slug);
+  if (c){
+    if (title) c.title = title;
+    if (typeof priceCOP !== 'undefined') c.priceCOP = parseInt(priceCOP||'0',10)||0;
+    saveJSON('courses.json', courses);
+  }
+  res.redirect('/admin/cursos');
+});
+app.post('/admin/cursos/eliminar', requireAuth, requireAdmin, (req, res) => {
+  const { slug } = req.body;
+  const idx = courses.findIndex(c => c.slug === slug);
+  if (idx !== -1){ courses.splice(idx, 1); saveJSON('courses.json', courses); }
+  res.redirect('/admin/cursos');
+});
+
+// Admin: tienda (productos) CRUD
+app.get('/admin/tienda', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/shop', { categories: catalog.categories || [], products: catalog.products || [] });
+});
+app.post('/admin/tienda/crear', requireAuth, requireAdmin, (req, res) => {
+  const { id, name, price, category, image, description } = req.body;
+  if (!catalog.products) catalog.products = [];
+  const prodId = id && id.trim() ? id.trim() : uuidv4();
+  if (name && category){
+    catalog.products.push({ id: prodId, name, price: parseInt(price||'0',10)||0, category, image: image || '', description: description || '' });
+    writeCatalog(catalog);
+  }
+  res.redirect('/admin/tienda');
+});
+app.post('/admin/tienda/actualizar', requireAuth, requireAdmin, (req, res) => {
+  const { id, name, price, category, image, description } = req.body;
+  const p = (catalog.products || []).find(x => x.id === id);
+  if (p){
+    if (name) p.name = name;
+    if (typeof price !== 'undefined') p.price = parseInt(price||'0',10)||0;
+    if (category) p.category = category;
+    if (typeof image !== 'undefined') p.image = image;
+    if (typeof description !== 'undefined') p.description = description;
+    writeCatalog(catalog);
+  }
+  res.redirect('/admin/tienda');
+});
+app.post('/admin/tienda/eliminar', requireAuth, requireAdmin, (req, res) => {
+  const { id } = req.body;
+  catalog.products = (catalog.products || []).filter(p => p.id !== id);
+  writeCatalog(catalog);
+  res.redirect('/admin/tienda');
 });
 
 // Legales

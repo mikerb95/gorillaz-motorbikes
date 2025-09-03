@@ -1,0 +1,40 @@
+<%- include('../partials/head', { title: 'Admin — Cursos' }) %>
+<main class="container section">
+  <h1 class="section-title">Cursos</h1>
+
+  <section class="card stack">
+    <h3>Crear curso</h3>
+    <form class="grid two" method="post" action="/admin/cursos/crear">
+      <label>Slug<input name="slug" required placeholder="mecanica-avanzada" /></label>
+      <label>Título<input name="title" required /></label>
+      <label>Precio (COP)<input type="number" step="1" name="priceCOP" required /></label>
+      <button class="btn btn-primary" type="submit">Crear</button>
+    </form>
+  </section>
+
+  <section class="section">
+    <h3>Lista</h3>
+    <div class="grid three">
+      <% list.forEach(c => { %>
+        <article class="card stack">
+          <h4 class="tight"><%= c.title %></h4>
+          <div class="row gap"><span class="chip">$<%= c.priceCOP %> COP</span></div>
+          <p><%= c.short %></p>
+          <div class="row gap">
+            <form method="post" action="/admin/cursos/actualizar" class="stack compact">
+              <input type="hidden" name="slug" value="<%= c.slug %>" />
+              <input name="title" value="<%= c.title %>" />
+              <input type="number" step="1" name="priceCOP" value="<%= c.priceCOP %>" />
+              <button class="btn" type="submit">Actualizar</button>
+            </form>
+            <form method="post" action="/admin/cursos/eliminar">
+              <input type="hidden" name="slug" value="<%= c.slug %>" />
+              <button class="btn btn-danger" type="submit">Eliminar</button>
+            </form>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>

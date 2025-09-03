@@ -1,0 +1,34 @@
+<%- include('../partials/head', { title: 'Admin — Usuarios' }) %>
+<main class="container section">
+  <h1 class="section-title">Usuarios</h1>
+  <table class="card table">
+    <thead>
+      <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+      <% users.forEach(u => { %>
+        <tr>
+          <td><%= u.id %></td>
+          <td><%= u.name %></td>
+          <td><%= u.email %></td>
+          <td><%= u.role || 'user' %></td>
+          <td>
+            <div class="row gap">
+              <form method="post" action="/admin/usuarios/actualizar" class="row gap compact">
+                <input type="hidden" name="id" value="<%= u.id %>" />
+                <input name="name" value="<%= u.name %>" placeholder="Nombre" />
+                <input name="membershipLevel" value="<%= (u.membership && u.membership.level) || '' %>" placeholder="Nivel membresía" />
+                <button class="btn" type="submit">Guardar</button>
+              </form>
+              <form method="post" action="/admin/usuarios/eliminar" onsubmit="return confirm('¿Eliminar usuario?');">
+                <input type="hidden" name="id" value="<%= u.id %>" />
+                <button class="btn btn-danger" type="submit">Eliminar</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</main>
+<%- include('../partials/footer') %>

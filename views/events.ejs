@@ -1,0 +1,21 @@
+<%- include('./partials/head', { title: 'Eventos' }) %>
+<main class="container section">
+  <h1 class="section-title">Eventos del Club</h1>
+  <% if (!events || events.length === 0) { %>
+    <p class="muted">No hay eventos publicados aún.</p>
+  <% } else { %>
+    <div class="grid three">
+      <% events.forEach(ev => { %>
+        <article class="card stack">
+          <h3 class="tight"><%= ev.title %></h3>
+          <div class="row gap">
+            <span class="chip"><%= ev.date %></span>
+            <% if (ev.location) { %><span class="chip"><%= ev.location %></span><% } %>
+          </div>
+          <p><%= ev.description %></p>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+</main>
+<%- include('./partials/footer') %>
