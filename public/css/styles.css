@@ -276,6 +276,23 @@ html{scroll-behavior:smooth}
 .btn-outline{background:#fff;color:#111;border:1px solid #111;position:relative;overflow:hidden;isolation:isolate;transition:box-shadow .15s ease, transform .15s ease}
 .btn-outline:hover{box-shadow:0 6px 18px rgba(242,92,5,.18);transform:translateY(-1px)}
 
+/* WhatsApp floating button (styling only; do not alter color) */
+.whatsapp-fab{
+  position:fixed; right:16px; bottom:18px; z-index:1000;
+  width:56px; height:56px; border-radius:999px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:2px solid currentColor; /* keep icon color; outline matches */
+  background:transparent;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+  transition:transform .15s ease, box-shadow .15s ease, background .15s ease, opacity .2s ease;
+}
+.whatsapp-fab svg{display:block; width:26px; height:26px; filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.whatsapp-fab:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.26);background:color-mix(in oklab, transparent 86%, currentColor 14%)}
+.whatsapp-fab:active{transform:translateY(0) scale(.98)}
+.whatsapp-fab:focus-visible{outline:3px solid rgba(255,255,255,.7); outline-offset:2px}
+@media (max-width:480px){ .whatsapp-fab{ width:52px; height:52px } .whatsapp-fab svg{ width:24px; height:24px } }
+@media (prefers-reduced-motion: reduce){ .whatsapp-fab{ transition:none } }
+
 /* Orange light beam sweep effect */
 .btn::before,
 .btn-outline::before{
