@@ -133,6 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
       depth = Math.max(depth, Math.ceil(r.height + 16)); // include a little breathing room
     });
     navBar.style.setProperty('--submenu-depth', depth > 0 ? depth + 'px' : '');
+  // Toggle a CSS class so we can style without :has()
+  navBar.classList.toggle('submenu-open', depth > 0);
   };
   // Hook events
   document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
