@@ -7,6 +7,7 @@ const csrf = require('csurf');
 const https = require('https');
 const catalog = require('./data/catalog');
 const courses = require('./data/courses.json');
+const QRCode = require('qrcode');
 
 const app = express();
 const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '';
@@ -722,7 +723,10 @@ app.post('/club/vehiculos', requireAuth, (req, res) => {
   const { plate, soatExpires, tecnoExpires } = req.body;
   if (!user.vehicles) user.vehicles = [];
   if (plate) {
-    user.vehicles.push({ plate: plate.trim().toUpperCase(), soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '' });
+  const plateUp = plate.trim().toUpperCase();
+  // Unique QR payload for this vehicle (could be a URL to future check-in endpoint)
+  const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
+  user.vehicles.push({ plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload });
   }
   res.redirect('/club/panel');
 });
@@ -741,8 +745,27 @@ app.post('/club/vehiculos/actualizar', requireAuth, (req, res) => {
   if (v){
     if (typeof soatExpires !== 'undefined') v.soatExpires = soatExpires || '';
     if (typeof tecnoExpires !== 'undefined') v.tecnoExpires = tecnoExpires || '';
+    // Ensure QR exists for older vehicles
+    if (!v.qr){ v.qr = JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id }); }
   }
   res.redirect('/club/panel');
+});
+
+// Serve vehicle QR as PNG data
+app.get('/club/vehiculos/:plate/qr.png', requireAuth, async (req, res) => {
+  const user = users.find(u => u.id === req.session.userId);
+  const plate = (req.params.plate || '').toUpperCase();
+  const v = (user.vehicles || []).find(x => x.plate === plate);
+  if (!v) return res.status(404).send('No encontrado');
+  const payload = v.qr || JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id });
+  try {
+    const png = await QRCode.toBuffer(payload, { type: 'png', errorCorrectionLevel: 'M', width: 384, margin: 2 });
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'no-store');
+    res.send(png);
+  } catch (e) {
+    res.status(500).send('Error generando QR');
+  }
 });
 
 // 404

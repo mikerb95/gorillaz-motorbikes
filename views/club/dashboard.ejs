@@ -117,12 +117,38 @@
         <ul class="list list-actions" style="margin-top:10px">
           <% user.vehicles.forEach(v => { %>
             <li>
-              <span><%= v.plate %></span>
-              <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Eliminar vehículo?">
-                <input type="hidden" name="plate" value="<%= v.plate %>" />
-                <button class="btn btn-xs btn-outline" type="submit">Eliminar</button>
-              </form>
+              <span>
+                <strong><%= v.plate %></strong>
+                <span class="muted" style="margin-left:8px;font-size:.86em">QR: identificación rápida</span>
+              </span>
+              <span style="display:inline-flex;align-items:center;gap:8px">
+                <a class="btn btn-xs btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png">Descargar QR</a>
+                <button class="btn btn-xs btn-outline" type="button" data-modal-open="#qr-<%= v.plate %>">Ver QR</button>
+                <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Eliminar vehículo?" style="display:inline">
+                  <input type="hidden" name="plate" value="<%= v.plate %>" />
+                  <button class="btn btn-xs btn-outline" type="submit">Eliminar</button>
+                </form>
+              </span>
             </li>
+
+            <!-- Modal QR preview -->
+            <div class="modal" id="qr-<%= v.plate %>" aria-hidden="true">
+              <div class="modal-backdrop" data-modal-close></div>
+              <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-qr-<%= v.plate %>">
+                <div class="modal-header">
+                  <h3 class="modal-title" id="title-qr-<%= v.plate %>">QR de <%= v.plate %></h3>
+                  <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
+                </div>
+                <div class="modal-body" style="display:grid;justify-items:center;gap:10px">
+                  <img src="/club/vehiculos/<%= v.plate %>/qr.png" alt="Código QR de <%= v.plate %>" style="width:260px;height:260px;image-rendering:pixelated;border:1px solid #e5e7eb;border-radius:12px;padding:8px;background:#fff" />
+                  <p class="muted" style="text-align:center;margin:0">Imprime o guarda este código para identificar tu moto en el taller, rodadas y actividades.</p>
+                </div>
+                <div class="modal-actions">
+                  <a class="btn btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png">Descargar</a>
+                  <button class="btn" type="button" data-modal-close>Cerrar</button>
+                </div>
+              </div>
+            </div>
           <% }) %>
         </ul>
       <% } %>
