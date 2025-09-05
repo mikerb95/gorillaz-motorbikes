@@ -244,8 +244,8 @@ body.has-hero main{padding-top:0}
 .service-meta .link:hover{opacity:1}
 .services-cta{display:flex;justify-content:center;margin-top:28px}
 
-/* Hero de imagen a pantalla completa con overlay */
-.hero{position:relative;min-height:100vh;min-height:100svh;display:grid;align-items:end;margin-top:0;overflow:hidden}
+/* Hero de imagen casi a pantalla completa (recortado 5% para sugerir más contenido) */
+.hero{position:relative;min-height:95vh;min-height:95svh;display:grid;align-items:end;margin-top:0;overflow:hidden}
 .hero-slides{position:absolute;inset:0}
 .hero-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1s ease}
 .hero-slide.is-active{opacity:1}
@@ -513,7 +513,8 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 }
 
 @media (max-width:640px){
-  .hero{min-height:78vh}
+  /* También recortamos ~5vh en móviles respecto a lo previo (78vh -> 73vh) */
+  .hero{min-height:73vh; min-height:73svh}
   .hero h1{font-size:36px}
 }
 
