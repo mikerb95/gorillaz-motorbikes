@@ -644,7 +644,22 @@ app.get('/faq', (req, res) => {
 // Club
 app.get('/club', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
-  res.render('club/landing', { events });
+  // Build club slideshow from /images/slideshow/club
+  const dir = path.join(__dirname, 'images', 'slideshow', 'club');
+  const allowed = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
+  let slidesClub = [];
+  try {
+    const files = fs.readdirSync(dir);
+    slidesClub = files
+      .filter(f => allowed.has(path.extname(f).toLowerCase()))
+      .sort()
+      .map(f => `/images/slideshow/club/${encodeURIComponent(f)}`);
+  } catch {}
+  if (!slidesClub.length) {
+    // Fallback to existing banner if no club slides found
+    slidesClub = ['/images/download.png'];
+  }
+  res.render('club/landing', { events, slidesClub });
 });
 
 app.get('/club/login', (req, res) => {

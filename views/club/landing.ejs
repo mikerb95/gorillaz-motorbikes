@@ -1,6 +1,7 @@
 <%- include('../partials/head', { title: 'Club — Gorillaz Motorbikes' }) %>
 
-<section class="hero" style="background:url('/images/download.png') center/cover no-repeat;min-height:68vh">
+<section class="hero" data-slideshow='<%- JSON.stringify(slidesClub||[]) %>' style="min-height:68vh">
+  <div class="hero-slides" aria-hidden="true"></div>
   <div class="container" style="position:relative;z-index:1;padding:48px 16px;color:#fff">
     <h1 style="margin:0 0 10px;font-size:42px;line-height:1.1">Únete al Club Gorillaz</h1>
     <p style="max-width:720px;margin:0 0 16px;color:#e5e7eb">Rutas exclusivas, descuentos en el taller, cursos y una comunidad que vive la moto. Vive la experiencia premium de Gorillaz Motorbikes.</p>
