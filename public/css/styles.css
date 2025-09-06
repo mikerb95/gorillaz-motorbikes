@@ -271,6 +271,23 @@ html{scroll-behavior:smooth}
   .mobile-landing{display:block}
   .desktop-landing{display:none}
 }
+
+/* Mobile landing theming: use brand color as full-screen background */
+@media (max-width:700px){
+  .mobile-landing{
+    background:var(--brand);
+    color:#fff;
+    min-height:100svh;
+  }
+  .mobile-landing .muted{ color:rgba(255,255,255,.9) }
+  .mobile-landing a{ color:#fff }
+  /* Buttons on orange background: invert primary, keep outline as white outline */
+  .mobile-landing .btn{ border-color:#fff }
+  .mobile-landing .btn:not(.btn-outline){ background:#fff; color:#111; border-color:#fff }
+  .mobile-landing .btn-outline{ background:transparent; color:#fff; border-color:#fff }
+  /* Cards remain white for readability */
+  .mobile-landing .card{ background:#fff; color:#111; border-color:#ffe0cc }
+}
 .btn{display:inline-block;background:var(--brand);color:#fff;border:1px solid var(--brand);border-radius:var(--radius-pill);padding:10px 14px;font-weight:700;letter-spacing:.3px;box-shadow:0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.06);transition:filter .15s ease, box-shadow .15s ease, transform .15s ease;position:relative;overflow:hidden;isolation:isolate}
 .btn:hover{filter:brightness(1.04);text-decoration:none;box-shadow:0 0 0 1px rgba(0,0,0,.08), 0 6px 18px rgba(242,92,5,.25);transform:translateY(-1px)}
 .btn-outline{background:#fff;color:#111;border:1px solid #111;position:relative;overflow:hidden;isolation:isolate;transition:box-shadow .15s ease, transform .15s ease}
