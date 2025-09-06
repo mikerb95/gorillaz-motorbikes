@@ -1,5 +1,49 @@
 <%- include('partials/head', { title: 'Gorillaz Motorbikes', user }) %>
 
+<!-- Mobile-only landing (separate design) -->
+<section class="mobile-landing" aria-labelledby="m-title" style="display:none">
+  <div class="container" style="padding:22px 16px">
+    <h1 id="m-title" style="margin:0 0 10px;font-size:28px;line-height:1.2">Taller premium en Bogotá</h1>
+    <p class="muted" style="margin:0 0 12px">Servicios, club, cursos y tienda para tu moto.</p>
+    <div class="btn-row">
+      <a class="btn btn-square" href="/servicios/agendar">Agendar servicio</a>
+      <a class="btn btn-outline btn-square" href="https://wa.me/573213204299" target="_blank" rel="noopener">WhatsApp</a>
+    </div>
+  </div>
+  <div class="container">
+    <ul class="grid" style="grid-template-columns:repeat(2,1fr)">
+      <li class="card">
+        <h3 style="margin:0 0 6px">Servicios</h3>
+        <p class="muted" style="margin:0 0 10px">Mecánica, pintura, electricidad y más.</p>
+        <a class="btn btn-xs btn-outline" href="/servicios">Ver servicios</a>
+      </li>
+      <li class="card">
+        <h3 style="margin:0 0 6px">Tienda</h3>
+        <p class="muted" style="margin:0 0 10px">Accesorios y repuestos.</p>
+        <a class="btn btn-xs btn-outline" href="/tienda">Ir a la tienda</a>
+      </li>
+      <li class="card">
+        <h3 style="margin:0 0 6px">Cursos</h3>
+        <p class="muted" style="margin:0 0 10px">Formación técnica y conducción.</p>
+        <a class="btn btn-xs btn-outline" href="/cursos">Ver cursos</a>
+      </li>
+      <li class="card">
+        <h3 style="margin:0 0 6px">Club</h3>
+        <p class="muted" style="margin:0 0 10px">Beneficios y rodadas.</p>
+        <a class="btn btn-xs btn-outline" href="/club">Conocer el club</a>
+      </li>
+    </ul>
+  </div>
+  <div class="container">
+    <div class="card" style="display:grid;gap:8px">
+      <h3 style="margin:0">¿Dónde estamos?</h3>
+      <a class="btn btn-outline btn-square" href="https://www.google.com/maps/place/GORILLAZ+MOTORBIKES/data=!4m2!3m1!1s0x0:0xbb0428b400709cf?sa=X&ved=1t:2428&ictx=111" target="_blank" rel="noopener">Abrir en Google Maps</a>
+    </div>
+  </div>
+</section>
+
+<!-- Desktop landing wrapper -->
+<div class="desktop-landing">
 <section class="hero" data-slideshow='<%- JSON.stringify(slides||[]) %>'>
   <div class="hero-slides" aria-hidden="true"></div>
   <button class="scroll-cue" aria-label="Desplázate para ver el contenido" title="Desplázate" onclick="(function(){var next=document.querySelector('main .container'); if(next){next.scrollIntoView({behavior:'smooth'});} else {window.scrollTo({top: window.innerHeight, behavior:'smooth'});} })()" >
@@ -141,5 +185,7 @@
   </div>
   
 </section>
+
+</div>
 
 <%- include('partials/footer') %>
