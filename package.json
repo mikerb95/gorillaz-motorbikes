@@ -14,7 +14,7 @@
     "bogota",
     "club"
   ],
-  "author": "",
+  "author": "Mike Rodríguez",
   "license": "ISC",
   "dependencies": {
     "csurf": "^1.11.0",
