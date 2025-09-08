@@ -348,6 +348,9 @@ section h2, section h1{max-width:1200px;margin:0 auto 16px;padding:0 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;list-style:none;padding:0;max-width:1200px;margin:0 auto}
 .grid li{background:#fff;border:1px solid #e5e7eb;padding:16px;border-radius:var(--radius-lg)}
 .grid.two{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.grid.four{grid-template-columns:repeat(4,1fr)}
+@media (max-width:1000px){ .grid.four{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:640px){ .grid.four{grid-template-columns:1fr} }
 /* Extra spacing after headings before grids on landing */
 .container > h2 + .grid,
 .container > h2 + .map-wrap,
