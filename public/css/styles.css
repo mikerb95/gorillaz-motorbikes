@@ -727,3 +727,14 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 .faq-item summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}
 .faq-item summary::-webkit-details-marker{display:none}
 .faq-body{margin-top:8px;color:#111}
+
+/* --- Desktop refinement: Newsletter spacing & readability --- */
+@media (min-width:901px){
+  .newsletter{padding:96px 32px}
+  .newsletter-inner{display:grid;gap:22px}
+  .newsletter h2{margin:0 0 14px;font-size:30px}
+  .newsletter .muted{margin:0 auto 4px;line-height:1.55;max-width:760px}
+  .newsletter-form{margin:28px auto 12px;gap:16px}
+  .newsletter-form input{line-height:1.3;font-size:15px}
+  .newsletter-form button{font-size:15px}
+}
