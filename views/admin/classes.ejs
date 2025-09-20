@@ -1,0 +1,26 @@
+<%- include('../partials/head', { title: 'Clases / Presentaciones', user }) %>
+
+<main class="container" style="padding-top:calc(var(--header-offset) + 16px);padding-bottom:24px">
+  <h1 style="margin:0 0 10px">Clases / Presentaciones</h1>
+  <p class="muted" style="margin:0 0 16px">Selecciona un curso y un tema para iniciar la presentación.</p>
+  <% Object.entries(classesData).forEach(([courseKey, course]) => { %>
+    <section class="card" style="margin-bottom:16px">
+      <h2 style="margin:0 0 10px"><%= course.title %></h2>
+      <% const topics = Object.entries(course.topics || {}); %>
+      <% if (!topics.length) { %>
+        <p class="muted">Sin temas disponibles.</p>
+      <% } else { %>
+        <ul class="list list-actions">
+          <% topics.forEach(([topicKey, topic]) => { %>
+            <li>
+              <span><strong><%= topic.title %></strong></span>
+              <a class="btn btn-sm btn-outline" href="/clases/<%= courseKey %>/<%= topicKey %>">Iniciar presentación</a>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </section>
+  <% }) %>
+</main>
+
+<%- include('../partials/footer') %>

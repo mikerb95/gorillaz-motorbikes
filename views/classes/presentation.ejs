@@ -1,0 +1,22 @@
+<%- include('../partials/head', { title: topicTitle + ' — ' + courseTitle, user }) %>
+
+<main class="presentation" data-slides='<%- JSON.stringify(slides || []) %>' style="padding-top:var(--header-offset)">
+  <header class="presentation-bar">
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <strong><%= courseTitle %></strong>
+        <span class="muted"> / <%= topicTitle %></span>
+      </div>
+      <div class="presentation-actions">
+        <button class="btn btn-sm btn-outline" type="button" data-pres="prev" title="Anterior (←)">Anterior</button>
+        <button class="btn btn-sm" type="button" data-pres="next" title="Siguiente (→)">Siguiente</button>
+        <button class="btn btn-sm btn-outline" type="button" data-pres="fs" title="Pantalla completa (F)">Pantalla completa</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="deck" id="deck"></section>
+</main>
+
+<script src="/static/js/presentation.js"></script>
+<!-- Omitimos el footer para evitar distracciones -->

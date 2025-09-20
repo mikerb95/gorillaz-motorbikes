@@ -1,0 +1,23 @@
+{
+  "mecanica_rapida": {
+    "title": "Mecánica rápida",
+    "topics": {
+      "Clase_1": {
+        "title": "Clase 1 - Fundamentos",
+        "slides": [
+          {"h1": "Mecánica rápida: Fundamentos", "p": "Objetivos del módulo y normas de seguridad."},
+          {"h2": "Herramientas esenciales", "ul": ["Juego de llaves", "Torquímetro", "Multímetro", "Lubricantes"]},
+          {"h2": "Chequeos rápidos", "ul": ["Niveles de fluidos", "Presión de llantas", "Limpieza de filtro de aire"]}
+        ]
+      },
+      "Clase_2": {
+        "title": "Clase 2 - Fluidos y filtros",
+        "slides": [
+          {"h1": "Fluidos y filtros", "p": "Tipos, intervalos y mejores prácticas."},
+          {"h2": "Aceite de motor", "ul": ["Viscosidades", "Intervalos", "Procedimiento de cambio"]},
+          {"h2": "Filtro de aire", "p": "Inspección y sustitución según uso."}
+        ]
+      }
+    }
+  }
+}

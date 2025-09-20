@@ -7,6 +7,7 @@ const csrf = require('csurf');
 const https = require('https');
 const catalog = require('./data/catalog');
 const courses = require('./data/courses.json');
+const classesData = require('./data/classes.json');
 const QRCode = require('qrcode');
 
 const app = express();
@@ -615,6 +616,27 @@ app.post('/admin/tienda/eliminar', requireAuth, requireAdmin, (req, res) => {
   catalog.products = (catalog.products || []).filter(p => p.id !== id);
   writeCatalog(catalog);
   res.redirect('/admin/tienda');
+});
+
+// Admin: selector de clases/presentaciones
+app.get('/admin/clases', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/classes', { classesData });
+});
+
+// Presentación en vivo (admin)
+app.get('/clases/:course/:topic', requireAuth, requireAdmin, (req, res) => {
+  const { course, topic } = req.params;
+  const courseObj = classesData[course];
+  if (!courseObj) return res.status(404).render('404');
+  const topicObj = (courseObj.topics || {})[topic];
+  if (!topicObj) return res.status(404).render('404');
+  res.render('classes/presentation', {
+    courseKey: course,
+    courseTitle: courseObj.title,
+    topicKey: topic,
+    topicTitle: topicObj.title,
+    slides: topicObj.slides || []
+  });
 });
 
 // Legales
