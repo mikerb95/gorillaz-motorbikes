@@ -54,8 +54,29 @@
           <% }) %>
         </ul>
         <div id="inscripcion" class="stack" style="margin-top:16px">
-          <a class="btn btn-primary" href="/servicios">Inscribirme</a>
-          <p class="muted">Completa tus datos y deja el curso en el mensaje. Te contactaremos.</p>
+          <h3>Inscripción</h3>
+          <% if (typeof enrollStatus !== 'undefined' && enrollStatus === 'ok') { %>
+            <p class="chip" style="background:#e6ffed;color:#065f46;border:1px solid #a7f3d0">¡Recibimos tu inscripción! Te contactaremos pronto.</p>
+          <% } else if (typeof enrollStatus !== 'undefined' && enrollStatus === 'error') { %>
+            <p class="chip" style="background:#fef2f2;color:#991b1b;border:1px solid #fecaca">Revisa tus datos e inténtalo de nuevo.</p>
+          <% } %>
+          <form class="stack" method="post" action="/cursos/<%= course.slug %>/inscripcion">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label>Nombre completo
+              <input type="text" name="name" required placeholder="Tu nombre" autocomplete="name">
+            </label>
+            <label>Correo electrónico
+              <input type="email" name="email" required placeholder="tu@correo.com" autocomplete="email">
+            </label>
+            <label>Celular (opcional)
+              <input type="tel" name="phone" placeholder="300 000 0000" autocomplete="tel">
+            </label>
+            <label>Notas (opcional)
+              <textarea name="notes" rows="3" placeholder="¿Tienes dudas o disponibilidad específica?"></textarea>
+            </label>
+            <button class="btn" type="submit">Inscribirme</button>
+            <p class="muted" style="margin:0">Al enviar aceptas nuestros <a href="/terminos">Términos</a> y <a href="/privacidad">Privacidad</a>.</p>
+          </form>
         </div>
       </aside>
     </div>

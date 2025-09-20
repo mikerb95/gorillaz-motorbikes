@@ -134,6 +134,8 @@ let newsletter = [];
 try { events = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'events.json'), 'utf8')); } catch {}
 try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'availability.json'), 'utf8')); } catch {}
 try { newsletter = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'newsletter.json'), 'utf8')); } catch {}
+let enrollments = [];
+try { enrollments = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'enrollments.json'), 'utf8')); } catch {}
 
 const saveJSON = (file, data) => {
   fs.writeFileSync(path.join(__dirname, 'data', file), JSON.stringify(data, null, 2), 'utf8');
@@ -374,7 +376,39 @@ app.get('/cursos', (req, res) => {
 app.get('/cursos/:slug', (req, res) => {
   const course = courses.find(c => c.slug === req.params.slug);
   if (!course) return res.status(404).render('404');
-  res.render('course', { course });
+  res.render('course', { course, enrollStatus: req.session.enrollStatus || null });
+  req.session.enrollStatus = null;
+});
+
+// Inscripción a curso: página directa (redirige al ancla del detalle)
+app.get('/cursos/:slug/inscripcion', (req, res) => {
+  const slug = req.params.slug;
+  const course = courses.find(c => c.slug === slug);
+  if (!course) return res.status(404).render('404');
+  res.redirect(`/cursos/${encodeURIComponent(slug)}#inscripcion`);
+});
+
+// Inscripción a curso: envío de formulario
+app.post('/cursos/:slug/inscripcion', (req, res) => {
+  const slug = req.params.slug;
+  const course = courses.find(c => c.slug === slug);
+  if (!course) return res.status(404).render('404');
+  const name = (req.body.name || '').toString().trim();
+  const email = (req.body.email || '').toString().trim().toLowerCase();
+  const phone = (req.body.phone || '').toString().trim();
+  const notes = (req.body.notes || '').toString().trim();
+  if (!name || !/.+@.+\..+/.test(email)){
+    req.session.enrollStatus = 'error';
+    return res.redirect(`/cursos/${encodeURIComponent(slug)}#inscripcion`);
+  }
+  enrollments.unshift({
+    id: uuidv4(), slug, courseTitle: course.title,
+    name, email, phone, notes,
+    createdAt: new Date().toISOString()
+  });
+  try { fs.writeFileSync(path.join(__dirname, 'data', 'enrollments.json'), JSON.stringify(enrollments, null, 2), 'utf8'); } catch {}
+  req.session.enrollStatus = 'ok';
+  res.redirect(`/cursos/${encodeURIComponent(slug)}#inscripcion`);
 });
 
 // Public events page
