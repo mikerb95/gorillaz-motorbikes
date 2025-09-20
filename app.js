@@ -136,6 +136,8 @@ try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'av
 try { newsletter = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'newsletter.json'), 'utf8')); } catch {}
 let enrollments = [];
 try { enrollments = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'enrollments.json'), 'utf8')); } catch {}
+let jobApplications = [];
+try { jobApplications = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'job_applications.json'), 'utf8')); } catch {}
 
 const saveJSON = (file, data) => {
   fs.writeFileSync(path.join(__dirname, 'data', file), JSON.stringify(data, null, 2), 'utf8');
@@ -682,6 +684,28 @@ app.get('/licencia', (req, res) => {
 });
 app.get('/terminos', (req, res) => {
   res.render('terms', { user: users.find(u => u.id === req.session.userId) });
+});
+
+// Trabaja con nosotros
+app.get('/trabaja', (req, res) => {
+  res.render('jobs', { status: req.session.jobStatus || null });
+  req.session.jobStatus = null;
+});
+app.post('/trabaja', (req, res) => {
+  const name = (req.body.name || '').toString().trim();
+  const email = (req.body.email || '').toString().trim().toLowerCase();
+  const phone = (req.body.phone || '').toString().trim();
+  const experience = (req.body.experience || '').toString().trim();
+  const skills = (req.body.skills || '').toString().trim();
+  const message = (req.body.message || '').toString().trim();
+  if (!name || !/.+@.+\..+/.test(email)){
+    req.session.jobStatus = 'error';
+    return res.redirect('/trabaja');
+  }
+  jobApplications.unshift({ id: uuidv4(), name, email, phone, experience, skills, message, createdAt: new Date().toISOString() });
+  try { fs.writeFileSync(path.join(__dirname, 'data', 'job_applications.json'), JSON.stringify(jobApplications, null, 2), 'utf8'); } catch {}
+  req.session.jobStatus = 'ok';
+  res.redirect('/trabaja');
 });
 
 // Misión y Visión

@@ -1,0 +1,54 @@
+<%- include('partials/head', { title: 'Trabaja con nosotros — Gorillaz Motorbikes' }) %>
+
+<main class="container">
+  <section class="section">
+    <h1 class="section-title">Trabaja con nosotros</h1>
+    <p class="section-subtitle">Buscamos técnicos de motos apasionados, responsables y orientados al detalle.</p>
+    <div class="grid two">
+      <div class="card">
+        <h3>¿Qué buscamos en un técnico?</h3>
+        <ul class="list">
+          <li>Experiencia en mecánica de motos (mantenimiento preventivo y correctivo).</li>
+          <li>Conocimiento en electricidad y diagnóstico básico con scanner (deseable).</li>
+          <li>Compromiso con la seguridad, orden y limpieza del puesto de trabajo.</li>
+          <li>Actitud de servicio y comunicación clara con el equipo y los clientes.</li>
+          <li>Puntualidad y responsabilidad con las entregas.</li>
+        </ul>
+        <p>Valoramos certificaciones, cursos y participación en clubes o rodadas.</p>
+      </div>
+      <aside class="card">
+        <h3>Postula tu perfil</h3>
+        <% if (status === 'ok') { %>
+          <p class="chip" style="background:#e6ffed;color:#065f46;border:1px solid #a7f3d0">¡Recibimos tu postulación! Te contactaremos si tu perfil se ajusta.</p>
+        <% } else if (status === 'error') { %>
+          <p class="chip" style="background:#fef2f2;color:#991b1b;border:1px solid #fecaca">Revisa los campos obligatorios e inténtalo de nuevo.</p>
+        <% } %>
+        <form class="stack" method="post" action="/trabaja">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label>Nombre completo
+            <input type="text" name="name" required placeholder="Tu nombre" autocomplete="name">
+          </label>
+          <label>Correo electrónico
+            <input type="email" name="email" required placeholder="tu@correo.com" autocomplete="email">
+          </label>
+          <label>Celular (opcional)
+            <input type="tel" name="phone" placeholder="300 000 0000" autocomplete="tel">
+          </label>
+          <label>Experiencia
+            <textarea name="experience" rows="3" required placeholder="Años de experiencia, marcas, talleres"></textarea>
+          </label>
+          <label>Habilidades
+            <textarea name="skills" rows="3" placeholder="Pintura, electricidad, scanner, torno, etc."></textarea>
+          </label>
+          <label>Mensaje (opcional)
+            <textarea name="message" rows="3" placeholder="Algo más que debamos saber"></textarea>
+          </label>
+          <button class="btn" type="submit">Enviar postulación</button>
+          <p class="muted" style="margin:0">Al enviar aceptas nuestros <a href="/terminos">Términos</a> y <a href="/privacidad">Privacidad</a>.</p>
+        </form>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>
