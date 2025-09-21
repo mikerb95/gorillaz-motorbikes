@@ -66,54 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const h = Math.ceil(rect.height);
     document.documentElement.style.setProperty('--header-offset', h + 'px');
   };
-  setHeaderOffset();
-  // Recalculate after layout settles and on resize
-  setTimeout(setHeaderOffset, 100);
-  window.addEventListener('resize', setHeaderOffset);
-
-  // Detect when nav items overflow and force compact (hamburger) mode regardless of fixed breakpoint
-  const updateNavCompact = () => {
-    if (updateNavCompact._measuring) return;
-    updateNavCompact._measuring = true;
-    const headerInner = document.querySelector('.header-inner');
-    const navLeft = document.querySelector('.nav-left');
-    const navCenter = document.querySelector('.nav-center');
-    const headerRight = document.querySelector('.header-right');
-    if (!headerInner || !navLeft || !navCenter || !headerRight) return;
-    // Temporarily remove classes to measure natural desktop layout
-    const body = document.body;
-    const hadCompact = body.classList.contains('nav-compact');
-    const hadSqueeze = body.classList.contains('nav-squeeze');
-    if (hadCompact || hadSqueeze){
-      body.classList.remove('nav-compact');
-      body.classList.remove('nav-squeeze');
-    }
-
-    const host = headerInner.getBoundingClientRect();
-    const leftR = navLeft.getBoundingClientRect();
-    const centerR = navCenter.getBoundingClientRect();
-    const rightR = headerRight.getBoundingClientRect();
-
-    // Gaps and clipping
-    const gapLeftToCenter = Math.max(0, centerR.left - leftR.right);
-    const gapCenterToRight = Math.max(0, rightR.left - centerR.right);
-    const edgeRight = host.right - rightR.right;
-
-    // Compact when overlapping or clipping (default evaluation)
-    const clipRight = edgeRight < 4;
-    const overlapRightCenter = rightR.left < centerR.right + 8;
-    const overlapLeftCenter = leftR.right > centerR.left - 8;
-    let shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter;
-
-    // Squeeze when near-overlap
-    const nearRightCenter = gapCenterToRight < 40;
-    const nearLeftCenter = gapLeftToCenter < 40;
-    const nearEdgeRight = edgeRight < 24;
-    let shouldSqueeze = !shouldCompact && (nearRightCenter || nearLeftCenter || nearEdgeRight);
-
-    // If compact is needed, try squeeze first and re-measure to see if it prevents overlap
-    if (shouldCompact){
-      document.body.classList.add('nav-squeeze');
+  // main.js - core site scripts
+  // (Dark mode logic removed as requested; file kept for other site scripts.)
       const host2 = headerInner.getBoundingClientRect();
       const left2 = navLeft.getBoundingClientRect();
       const center2 = navCenter.getBoundingClientRect();
