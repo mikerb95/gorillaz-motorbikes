@@ -1,4 +1,63 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Theme preference: 'light' | 'dark' | 'system'
+  const THEME_KEY = 'theme-preference';
+  const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const getStored = () => localStorage.getItem(THEME_KEY);
+  const applyTheme = (pref) => {
+    document.body.classList.remove('theme-light','theme-dark');
+    if (pref === 'light') document.body.classList.add('theme-light');
+    else if (pref === 'dark') document.body.classList.add('theme-dark');
+    // system = no class, CSS media query decides
+    refreshToggleUI(pref);
+  };
+  const computeCurrent = (pref) => {
+    if (pref === 'light' || pref === 'dark') return pref;
+    return prefersDark() ? 'dark' : 'light';
+  };
+  const iconFor = (mode) => {
+    // Minimal inline SVGs for sun/moon
+    if (mode === 'dark') return '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    return '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g></svg>';
+  };
+  const labelFor = (mode) => mode === 'dark' ? 'Modo claro' : 'Modo oscuro';
+  const refreshToggleUI = (pref) => {
+    const effective = computeCurrent(pref);
+    document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
+      btn.setAttribute('aria-pressed', effective === 'dark' ? 'true' : 'false');
+      // Desktop floating button shows icon only
+      if (btn.classList.contains('theme-toggle-fab')){
+        btn.innerHTML = iconFor(effective);
+        btn.setAttribute('aria-label', labelFor(effective));
+        btn.title = labelFor(effective);
+      }
+      // Mobile/desktop text buttons toggle label
+      if (btn.hasAttribute('data-theme-toggle-mobile')){
+        btn.textContent = labelFor(effective);
+      }
+    });
+  };
+  const initTheme = () => {
+    const pref = getStored() || 'system';
+    applyTheme(pref);
+  };
+  initTheme();
+  // Update if system scheme changes while in 'system' mode
+  try {
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    mql.addEventListener('change', () => {
+      const pref = getStored() || 'system';
+      if (pref === 'system') applyTheme(pref);
+    });
+  } catch {}
+  // Click handlers: cycle light <-> dark (ignore system for simplicity)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-theme-toggle]');
+    if (!btn) return;
+    const current = computeCurrent(getStored() || 'system');
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
   // Dynamically set header offset so content doesn't sit under the fixed header
   const setHeaderOffset = () => {
     const header = document.querySelector('.site-header');

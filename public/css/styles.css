@@ -587,6 +587,34 @@ input{background:#fff;border:1px solid #d1d5db;border-radius:var(--radius);paddi
 }
 
 /* Floating WhatsApp FAB */
+.theme-toggle-fab{
+  position:fixed;
+  right:18px;
+  bottom:86px; /* sits above WhatsApp button */
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  background:#111;
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 20px rgba(0,0,0,.18), 0 3px 8px rgba(0,0,0,.12);
+  z-index:140;
+  border:1px solid rgba(255,255,255,.1);
+  transition:transform .2s ease, filter .2s ease, background .2s ease, color .2s ease;
+}
+.theme-toggle-fab:hover{transform:translateY(-2px);filter:brightness(1.05)}
+/* In dark, invert to light surface for contrast */
+@media (prefers-color-scheme: dark){
+  body:not(.theme-light) .theme-toggle-fab{ background:#f5f5f6; color:#111; border-color:rgba(0,0,0,.2) }
+}
+/* If forced dark */
+body.theme-dark .theme-toggle-fab{ background:#f5f5f6; color:#111; border-color:rgba(0,0,0,.2) }
+@supports(padding: max(0px)){
+  .theme-toggle-fab{ bottom:calc(86px + env(safe-area-inset-bottom)) }
+}
+@media (max-width:700px){ .theme-toggle-fab{ display:none } }
 .whatsapp-fab{
   position:fixed;
   right:18px;
