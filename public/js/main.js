@@ -1,63 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Theme preference: 'light' | 'dark' | 'system'
-  const THEME_KEY = 'theme-preference';
-  const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const getStored = () => localStorage.getItem(THEME_KEY);
-  const applyTheme = (pref) => {
-    document.body.classList.remove('theme-light','theme-dark');
-    if (pref === 'light') document.body.classList.add('theme-light');
-    else if (pref === 'dark') document.body.classList.add('theme-dark');
-    // system = no class, CSS media query decides
-    refreshToggleUI(pref);
-  };
-  const computeCurrent = (pref) => {
-    if (pref === 'light' || pref === 'dark') return pref;
-    return prefersDark() ? 'dark' : 'light';
-  };
-  const iconFor = (mode) => {
-    // Minimal inline SVGs for sun/moon
-    if (mode === 'dark') return '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
-    return '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g></svg>';
-  };
-  const labelFor = (mode) => mode === 'dark' ? 'Modo claro' : 'Modo oscuro';
-  const refreshToggleUI = (pref) => {
-    const effective = computeCurrent(pref);
-    document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
-      btn.setAttribute('aria-pressed', effective === 'dark' ? 'true' : 'false');
-      // Desktop floating button shows icon only
-      if (btn.classList.contains('theme-toggle-fab')){
-        btn.innerHTML = iconFor(effective);
-        btn.setAttribute('aria-label', labelFor(effective));
-        btn.title = labelFor(effective);
-      }
-      // Mobile/desktop text buttons toggle label
-      if (btn.hasAttribute('data-theme-toggle-mobile')){
-        btn.textContent = labelFor(effective);
-      }
-    });
-  };
-  const initTheme = () => {
-    const pref = getStored() || 'system';
-    applyTheme(pref);
-  };
-  initTheme();
-  // Update if system scheme changes while in 'system' mode
-  try {
-    const mql = window.matchMedia('(prefers-color-scheme: dark)');
-    mql.addEventListener('change', () => {
-      const pref = getStored() || 'system';
-      if (pref === 'system') applyTheme(pref);
-    });
-  } catch {}
-  // Click handlers: cycle light <-> dark (ignore system for simplicity)
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-theme-toggle]');
-    if (!btn) return;
-    const current = computeCurrent(getStored() || 'system');
-    const next = current === 'dark' ? 'light' : 'dark';
-    localStorage.setItem(THEME_KEY, next);
-    applyTheme(next);
-  });
   // Dynamically set header offset so content doesn't sit under the fixed header
   const setHeaderOffset = () => {
     const header = document.querySelector('.site-header');
@@ -66,8 +7,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const h = Math.ceil(rect.height);
     document.documentElement.style.setProperty('--header-offset', h + 'px');
   };
-  // main.js - core site scripts
-  // (Dark mode logic removed as requested; file kept for other site scripts.)
+
+  // Decide when to use compact or squeeze nav layouts based on measurements
+  function updateNavCompact(){
+    const body = document.body;
+    const headerInner = document.querySelector('.header-inner');
+    const navLeft = document.querySelector('.nav-left');
+    const navCenter = document.querySelector('.nav-center');
+    const headerRight = document.querySelector('.header-right');
+    if (!headerInner || !navLeft || !navCenter || !headerRight) return;
+    if (updateNavCompact._measuring) return;
+    updateNavCompact._measuring = true;
+
+    const hadCompact = body.classList.contains('nav-compact');
+    const hadSqueeze = body.classList.contains('nav-squeeze');
+    // Remove to measure natural state
+    body.classList.remove('nav-compact', 'nav-squeeze');
+
+    // Base measurement
+    const host = headerInner.getBoundingClientRect();
+    const left = navLeft.getBoundingClientRect();
+    const center = navCenter.getBoundingClientRect();
+    const right = headerRight.getBoundingClientRect();
+    const clipRight = (host.right - right.right) < 2;
+    const overlapRightCenter = right.left < center.right + 2;
+    const overlapLeftCenter = left.right > center.left - 2;
+
+    let shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter;
+    let shouldSqueeze = false;
+
+    if (shouldCompact){
+      // Try a gentler squeeze before going full compact
+      body.classList.add('nav-squeeze');
       const host2 = headerInner.getBoundingClientRect();
       const left2 = navLeft.getBoundingClientRect();
       const center2 = navCenter.getBoundingClientRect();
@@ -104,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (prevState === 'squeeze') body.classList.add('nav-squeeze');
     }
     updateNavCompact._measuring = false;
-  };
+  }
+
   // Initial and responsive checks
   updateNavCompact();
   // Re-check after full load (images) and when web fonts are ready, as widths can change
@@ -146,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
       depth = Math.max(depth, Math.ceil(r.height + 16)); // include a little breathing room
     });
     navBar.style.setProperty('--submenu-depth', depth > 0 ? depth + 'px' : '');
-  // Toggle a CSS class so we can style without :has()
-  navBar.classList.toggle('submenu-open', depth > 0);
+    // Toggle a CSS class so we can style without :has()
+    navBar.classList.toggle('submenu-open', depth > 0);
   };
   // Hook events
   document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
@@ -440,12 +412,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const yMid = (center.top + center.bottom)/2 - host.top;
       const leftPts = makePath(xMid, yMid, 8, yMid);
       const rightPts = makePath(xMid, yMid, host.width-8, yMid);
-  const leftBranches = buildBranches(leftPts, 3 + Math.floor(Math.random()*3));
-  const rightBranches = buildBranches(rightPts, 3 + Math.floor(Math.random()*3));
+      const leftBranches = buildBranches(leftPts, 3 + Math.floor(Math.random()*3));
+      const rightBranches = buildBranches(rightPts, 3 + Math.floor(Math.random()*3));
       let start = performance.now();
-  const travel = prefersReduce ? 60 : 90;
-  const preflash = prefersReduce ? 0 : 40;
-  const dissipate = prefersReduce ? 100 : 180;
+      const travel = prefersReduce ? 60 : 90;
+      const preflash = prefersReduce ? 0 : 40;
+      const dissipate = prefersReduce ? 100 : 180;
       cancelAnimationFrame(c._raf || 0);
       clearTimeout(c._fadeT1); clearTimeout(c._fadeT2);
       c.classList.add('is-on');
@@ -461,11 +433,11 @@ document.addEventListener('DOMContentLoaded', () => {
           drawCorona(ctx, xMid, yMid, 16 + t*0.15, a);
         }
         // Draw main bolts
-  drawPath(ctx, leftPts, p, { width: 1.4, glowScale: 2.0 });
-  drawPath(ctx, rightPts, p, { width: 1.4, glowScale: 2.0 });
+        drawPath(ctx, leftPts, p, { width: 1.4, glowScale: 2.0 });
+        drawPath(ctx, rightPts, p, { width: 1.4, glowScale: 2.0 });
         // Draw branches as the head passes
-  drawBranches(ctx, leftBranches, p, { width: 1.0, totalPts: leftPts.length });
-  drawBranches(ctx, rightBranches, p, { width: 1.0, totalPts: rightPts.length });
+        drawBranches(ctx, leftBranches, p, { width: 1.0, totalPts: leftPts.length });
+        drawBranches(ctx, rightBranches, p, { width: 1.0, totalPts: rightPts.length });
         // Head corona for a hot tip
         if (p > 0 && p < 1){
           const li = Math.max(1, Math.floor(leftPts.length * p));
@@ -518,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Neutralize skew/scale via CSS variables for precise centering
         blob.style.setProperty('--sx', '1');
         blob.style.setProperty('--skew', '0deg');
-  } else {
+      } else {
         // Clear overrides so main items keep the peel effect
         blob.style.removeProperty('--sx');
         blob.style.removeProperty('--skew');
@@ -526,10 +498,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       setToEl(el);
       blob.classList.add('is-visible');
-  // Remove peel after a short moment so subsequent moves can re-trigger
+      // Remove peel after a short moment so subsequent moves can re-trigger
       clearTimeout(blob._peelT);
       blob._peelT = setTimeout(() => blob.classList.remove('is-peel'), 160);
-  // Lightning emit is handled in the dedicated logo mouseenter handler to avoid double triggers
+      // Lightning emit is handled in the dedicated logo mouseenter handler to avoid double triggers
     };
     const hideBlob = () => {
       blob.classList.remove('is-visible');
