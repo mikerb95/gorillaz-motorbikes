@@ -534,6 +534,82 @@ app.post('/admin/citas/eliminar', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/citas');
 });
 
+// Admin: agenda de servicios (calendar view)
+app.get('/admin/agenda-servicios', requireAuth, requireAdmin, (req, res) => {
+  const services = [
+    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
+  ];
+  
+  // Get current month or from query
+  const now = new Date();
+  const monthParam = req.query.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const [year, month] = monthParam.split('-').map(Number);
+  
+  const selectedService = req.query.service || '';
+  
+  // Build calendar
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDay = new Date(year, month, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = firstDay.getDay();
+  
+  const calendarDays = [];
+  
+  // Add previous month's days
+  const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
+  for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+    calendarDays.push({
+      date: prevMonthLastDay - i,
+      isCurrentMonth: false,
+      appointments: []
+    });
+  }
+  
+  // Add current month's days
+  for (let i = 1; i <= daysInMonth; i++) {
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    const dayAppointments = appointments.filter(apt => apt.date === dateStr && (!selectedService || apt.service === selectedService));
+    calendarDays.push({
+      date: i,
+      isCurrentMonth: true,
+      appointments: dayAppointments,
+      dateStr: dateStr
+    });
+  }
+  
+  // Add next month's days to complete the grid
+  const remainingDays = 42 - calendarDays.length;
+  for (let i = 1; i <= remainingDays; i++) {
+    calendarDays.push({
+      date: i,
+      isCurrentMonth: false,
+      appointments: []
+    });
+  }
+  
+  // Filter appointments for the list below
+  const filteredAppointments = appointments.filter(apt => {
+    const aptDate = new Date(apt.date);
+    const aptMonth = aptDate.getMonth() + 1;
+    const aptYear = aptDate.getFullYear();
+    return aptYear === year && aptMonth === month && (!selectedService || apt.service === selectedService);
+  }).sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Format month year
+  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const monthYear = `${monthNames[month - 1]} ${year}`;
+  
+  res.render('admin/services-schedule', {
+    services,
+    calendarDays,
+    filteredAppointments,
+    currentMonth: monthParam,
+    selectedService,
+    monthYear,
+    appointments
+  });
+});
+
 // Admin: cursos CRUD
 app.get('/admin/cursos', requireAuth, requireAdmin, (req, res) => {
   res.render('admin/courses', { list: courses });
