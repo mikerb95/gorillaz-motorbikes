@@ -38,12 +38,12 @@
       <div class="calendar-day-header">Sábado</div>
       
       <% calendarDays.forEach(day => { %>
-        <div class="calendar-day <%= day.isCurrentMonth ? '' : 'other-month' %> <%= day.hasAppointments ? 'has-appointments' : '' %>">
+          <div class="calendar-day <%= day.isCurrentMonth ? '' : 'other-month' %> <%= day.appointments && day.appointments.length > 0 ? 'has-appointments' : '' %>">
           <div class="day-number"><%= day.date %></div>
           <% if (day.isCurrentMonth && day.appointments.length > 0) { %>
             <div class="appointments-list">
               <% day.appointments.slice(0, 2).forEach(apt => { %>
-                <div class="appointment-badge" title="<%= apt.name %> - <%= apt.service %>">
+                <div class="appointment-badge" title="<%= apt.customer %> - <%= apt.service %>">
                   <small><%= apt.service.substring(0, 8) %></small>
                 </div>
               <% }) %>
@@ -80,10 +80,14 @@
             </div>
             <div class="col-time"><%= apt.time || '—' %></div>
             <div class="col-customer">
-              <strong><%= apt.name %></strong>
+              <strong><%= apt.customer %></strong>
             </div>
             <div class="col-phone">
-              <a href="tel:<%= apt.phone %>"><%= apt.phone %></a>
+              <% if (apt.phone) { %>
+                <a href="tel:<%= apt.phone %>"><%= apt.phone %></a>
+              <% } else { %>
+                <span class="muted">—</span>
+              <% } %>
             </div>
             <div class="col-service">
               <span class="chip"><%= apt.service %></span>
