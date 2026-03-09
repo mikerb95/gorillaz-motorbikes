@@ -1,9 +1,11 @@
 const express = require('express');
-const session = require('express-session');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const { csrfSync } = require('tiny-csrf');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
-const csrf = require('csurf');
+const mongoose = require('mongoose');
 const https = require('https');
 const catalog = require('./data/catalog');
 const courses = require('./data/courses.json');
@@ -13,6 +15,16 @@ const QRCode = require('qrcode');
 const app = express();
 const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '';
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '';
+const JWT_SECRET = process.env.JWT_SECRET || 'gorillaz-ultra-secret';
+
+// Connect to MongoDB
+/*
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/gorillaz', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
+*/
 
 // Demo users (in-memory)
 const users = [
@@ -45,17 +57,31 @@ const users = [
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'gorillaz-ultra-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 }
-  })
-);
+app.use(cookieParser('gorillaz-cookie-secret'));
 
-// CSRF protection (cookie-less, session-based secret)
-app.use(csrf());
+// CSRF protection (cookie-based)
+const { csrfSync } = require('tiny-csrf');
+app.use(csrfSync(['POST', 'PUT', 'DELETE'], 'gorillaz-crsf-secret-32-chars-long!'));
+
+// JWT Verification Middleware
+app.use((req, res, next) => {
+  const token = req.cookies.jwt;
+  req.session = req.session || {}; // Fallback empty object
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.userId = decoded.id;
+    } catch (err) {
+      req.userId = null;
+    }
+  }
+  
+  // Fake cart object temporarily until DB cart is added:
+  const cartCookie = req.cookies.cart ? JSON.parse(req.cookies.cart) : { items: {}, count: 0, subtotal: 0 };
+  req.session.cart = cartCookie;
+  
+  next();
+});
 
 // Static files
 app.use('/static', express.static(path.join(__dirname, 'public')));
@@ -68,8 +94,8 @@ app.set('view engine', 'ejs');
 
 // Locals for templates
 app.use((req, res, next) => {
-  res.locals.user = users.find(u => u.id === req.session.userId);
-  res.locals.csrfToken = req.csrfToken ? req.csrfToken() : null;
+  res.locals.user = users.find(u => u.id === req.userId); // userId instead of session.userId
+  res.locals.csrfToken = req.csrfToken();
   const c = req.session.cart || { items: {}, count: 0, subtotal: 0 };
   // compute totals defensively without relying on other helpers
   let count = 0, subtotal = 0;
@@ -117,11 +143,11 @@ app.use((err, req, res, next) => {
 
 // Helpers
 const requireAuth = (req, res, next) => {
-  if (!req.session.userId) return res.redirect('/club/login');
+  if (!req.userId) return res.redirect('/club/login');
   next();
 };
 const requireAdmin = (req, res, next) => {
-  const u = users.find(u => u.id === req.session.userId);
+  const u = users.find(u => u.id === req.userId);
   if (!u || u.role !== 'admin') return res.status(403).render('404');
   next();
 };
