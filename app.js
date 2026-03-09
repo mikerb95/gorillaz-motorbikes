@@ -33,7 +33,7 @@ const users = [
     email: 'miembro@gorillaz.co',
     password: 'gorillaz123',
     name: 'Miembro del Club',
-  role: 'admin',
+    role: 'admin',
     membership: {
       level: 'Premium',
       since: '2024-06-01',
@@ -75,11 +75,11 @@ app.use((req, res, next) => {
       req.userId = null;
     }
   }
-  
+
   // Fake cart object temporarily until DB cart is added:
   const cartCookie = req.cookies.cart ? JSON.parse(req.cookies.cart) : { items: {}, count: 0, subtotal: 0 };
   req.session.cart = cartCookie;
-  
+
   next();
 });
 
@@ -99,9 +99,9 @@ app.use((req, res, next) => {
   const c = req.session.cart || { items: {}, count: 0, subtotal: 0 };
   // compute totals defensively without relying on other helpers
   let count = 0, subtotal = 0;
-  for (const [id, qty] of Object.entries(c.items || {})){
+  for (const [id, qty] of Object.entries(c.items || {})) {
     const prod = (catalog.products || []).find(p => p.id === id);
-    if (prod){ count += qty; subtotal += prod.price * qty; }
+    if (prod) { count += qty; subtotal += prod.price * qty; }
   }
   res.locals.cart = { items: c.items || {}, count, subtotal };
   // Build a lightweight cart items array for header hover
@@ -114,14 +114,14 @@ app.use((req, res, next) => {
   } catch { res.locals.cartItems = []; }
   // Upcoming events badge and first anchor for sub-bar
   try {
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     let count = 0; let firstIdx = -1;
     (events || []).forEach((ev, i) => {
       if (!ev || !ev.date) return;
       const t = Date.parse(ev.date);
       if (!Number.isFinite(t)) return;
-      const d = new Date(t); d.setHours(0,0,0,0);
-      if (d >= today){
+      const d = new Date(t); d.setHours(0, 0, 0, 0);
+      if (d >= today) {
         count++;
         if (firstIdx === -1) firstIdx = i;
       }
@@ -157,13 +157,13 @@ let events = [];
 let availability = { blockedDates: [] };
 let appointments = [];
 let newsletter = [];
-try { events = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'events.json'), 'utf8')); } catch {}
-try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'availability.json'), 'utf8')); } catch {}
-try { newsletter = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'newsletter.json'), 'utf8')); } catch {}
+try { events = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'events.json'), 'utf8')); } catch { }
+try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'availability.json'), 'utf8')); } catch { }
+try { newsletter = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'newsletter.json'), 'utf8')); } catch { }
 let enrollments = [];
-try { enrollments = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'enrollments.json'), 'utf8')); } catch {}
+try { enrollments = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'enrollments.json'), 'utf8')); } catch { }
 let jobApplications = [];
-try { jobApplications = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'job_applications.json'), 'utf8')); } catch {}
+try { jobApplications = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'job_applications.json'), 'utf8')); } catch { }
 
 const saveJSON = (file, data) => {
   fs.writeFileSync(path.join(__dirname, 'data', file), JSON.stringify(data, null, 2), 'utf8');
@@ -201,8 +201,8 @@ app.get('/', (req, res) => {
   res.render('home', {
     user: users.find(u => u.id === req.session.userId),
     slides,
-  newsletterStatus: req.session.newsletterStatus || null,
-  recaptchaSiteKey: RECAPTCHA_SITE_KEY
+    newsletterStatus: req.session.newsletterStatus || null,
+    recaptchaSiteKey: RECAPTCHA_SITE_KEY
   });
   req.session.newsletterStatus = null;
 });
@@ -221,9 +221,9 @@ app.post('/servicios/agendar', (req, res) => {
     'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
   ];
   const bookingMessage = (name && service && date)
-    ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' })}. Te contactaremos al ${phone} para confirmar.`
+    ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}. Te contactaremos al ${phone} para confirmar.`
     : 'Por favor completa todos los campos.';
-  if (name && service && date){
+  if (name && service && date) {
     appointments.unshift({ id: uuidv4(), name, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
   }
   res.render('services_schedule', { services, bookingMessage });
@@ -258,16 +258,16 @@ app.post('/servicios/agendar', (req, res) => {
     'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
   ];
   const bookingMessage = (name && service && date)
-    ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' })}. Te contactaremos al ${phone} para confirmar.`
+    ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}. Te contactaremos al ${phone} para confirmar.`
     : 'Por favor completa todos los campos.';
-  if (name && service && date){
+  if (name && service && date) {
     appointments.unshift({ id: uuidv4(), name, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
   }
   res.render('services_schedule', { services, bookingMessage });
 });
 
 // Fallback redirects for legacy/variant URLs
-app.get(['/agendar-servicio','/servicios/agenda','/agenda-servicio','/agenda'], (req, res) => {
+app.get(['/agendar-servicio', '/servicios/agenda', '/agenda-servicio', '/agenda'], (req, res) => {
   res.redirect('/servicios/agendar');
 });
 
@@ -322,8 +322,8 @@ app.get('/tienda', (req, res) => {
     min: min ?? '',
     max: max ?? '',
     sort,
-  baseQuery,
-  priceStats
+    baseQuery,
+    priceStats
   });
 });
 
@@ -334,9 +334,9 @@ const getCart = (req) => {
 };
 const recalc = (cart) => {
   let count = 0, subtotal = 0;
-  for (const [id, qty] of Object.entries(cart.items)){
+  for (const [id, qty] of Object.entries(cart.items)) {
     const prod = catalog.products.find(p => p.id === id);
-    if (prod){ count += qty; subtotal += prod.price * qty; }
+    if (prod) { count += qty; subtotal += prod.price * qty; }
   }
   cart.count = count; cart.subtotal = subtotal; return cart;
 };
@@ -425,7 +425,7 @@ app.post('/cursos/:slug/inscripcion', (req, res) => {
   const email = (req.body.email || '').toString().trim().toLowerCase();
   const phone = (req.body.phone || '').toString().trim();
   const notes = (req.body.notes || '').toString().trim();
-  if (!name || !/.+@.+\..+/.test(email)){
+  if (!name || !/.+@.+\..+/.test(email)) {
     req.session.enrollStatus = 'error';
     return res.redirect(`/cursos/${encodeURIComponent(slug)}#inscripcion`);
   }
@@ -434,7 +434,7 @@ app.post('/cursos/:slug/inscripcion', (req, res) => {
     name, email, phone, notes,
     createdAt: new Date().toISOString()
   });
-  try { fs.writeFileSync(path.join(__dirname, 'data', 'enrollments.json'), JSON.stringify(enrollments, null, 2), 'utf8'); } catch {}
+  try { fs.writeFileSync(path.join(__dirname, 'data', 'enrollments.json'), JSON.stringify(enrollments, null, 2), 'utf8'); } catch { }
   req.session.enrollStatus = 'ok';
   res.redirect(`/cursos/${encodeURIComponent(slug)}#inscripcion`);
 });
@@ -446,13 +446,15 @@ app.get('/eventos', (req, res) => {
 
 // Admin dashboard
 app.get('/admin', requireAuth, requireAdmin, (req, res) => {
-  res.render('admin/index', { stats: {
-    users: users.length,
-    events: events.length,
-    citas: appointments.length,
-    cursos: courses.length,
-    productos: (catalog.products || []).length
-  }});
+  res.render('admin/index', {
+    stats: {
+      users: users.length,
+      events: events.length,
+      citas: appointments.length,
+      cursos: courses.length,
+      productos: (catalog.products || []).length
+    }
+  });
 });
 
 // Admin: availability calendar
@@ -461,7 +463,7 @@ app.get('/admin/calendario', requireAuth, requireAdmin, (req, res) => {
 });
 app.post('/admin/calendario/bloquear', requireAuth, requireAdmin, (req, res) => {
   const { date } = req.body;
-  if (date && !availability.blockedDates.includes(date)){
+  if (date && !availability.blockedDates.includes(date)) {
     availability.blockedDates.push(date);
     saveJSON('availability.json', availability);
   }
@@ -480,7 +482,7 @@ app.get('/admin/eventos', requireAuth, requireAdmin, (req, res) => {
 });
 app.post('/admin/eventos/crear', requireAuth, requireAdmin, (req, res) => {
   const { title, date, location, description } = req.body;
-  if (title && date){
+  if (title && date) {
     events.unshift({ id: uuidv4(), title, date, location, description });
     saveJSON('events.json', events);
   }
@@ -489,7 +491,7 @@ app.post('/admin/eventos/crear', requireAuth, requireAdmin, (req, res) => {
 app.post('/admin/eventos/actualizar', requireAuth, requireAdmin, (req, res) => {
   const { id, title, date, location, description } = req.body;
   const ev = events.find(e => e.id === id);
-  if (ev){
+  if (ev) {
     if (title) ev.title = title;
     if (date) ev.date = date;
     if (typeof location !== 'undefined') ev.location = location;
@@ -512,7 +514,7 @@ app.get('/admin/usuarios', requireAuth, requireAdmin, (req, res) => {
 app.post('/admin/usuarios/actualizar', requireAuth, requireAdmin, (req, res) => {
   const { id, name, membershipLevel } = req.body;
   const u = users.find(u => u.id === id);
-  if (u){
+  if (u) {
     if (name) u.name = name;
     if (membershipLevel) u.membership.level = membershipLevel;
   }
@@ -531,7 +533,7 @@ app.get('/admin/citas', requireAuth, requireAdmin, (req, res) => {
 });
 app.post('/admin/citas/crear', requireAuth, requireAdmin, (req, res) => {
   const { customer, date, time, service } = req.body;
-  if (customer && date && time && service){
+  if (customer && date && time && service) {
     appointments.unshift({ id: uuidv4(), customer, date, time, service, status: 'pendiente', createdAt: new Date().toISOString() });
   }
   res.redirect('/admin/citas');
@@ -539,7 +541,7 @@ app.post('/admin/citas/crear', requireAuth, requireAdmin, (req, res) => {
 app.post('/admin/citas/actualizar', requireAuth, requireAdmin, (req, res) => {
   const { id, customer, date, time, service, status } = req.body;
   const a = appointments.find(x => x.id === id);
-  if (a){
+  if (a) {
     if (customer) a.customer = customer;
     if (date) a.date = date;
     if (time) a.time = time;
@@ -565,22 +567,22 @@ app.get('/admin/agenda-servicios', requireAuth, requireAdmin, (req, res) => {
   const services = [
     'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
   ];
-  
+
   // Get current month or from query
   const now = new Date();
   const monthParam = req.query.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const [year, month] = monthParam.split('-').map(Number);
-  
+
   const selectedService = req.query.service || '';
-  
+
   // Build calendar
   const firstDay = new Date(year, month - 1, 1);
   const lastDay = new Date(year, month, 0);
   const daysInMonth = lastDay.getDate();
   const startingDayOfWeek = firstDay.getDay();
-  
+
   const calendarDays = [];
-  
+
   // Add previous month's days
   const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
   for (let i = startingDayOfWeek - 1; i >= 0; i--) {
@@ -590,7 +592,7 @@ app.get('/admin/agenda-servicios', requireAuth, requireAdmin, (req, res) => {
       appointments: []
     });
   }
-  
+
   // Add current month's days
   for (let i = 1; i <= daysInMonth; i++) {
     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
@@ -602,7 +604,7 @@ app.get('/admin/agenda-servicios', requireAuth, requireAdmin, (req, res) => {
       dateStr: dateStr
     });
   }
-  
+
   // Add next month's days to complete the grid
   const remainingDays = 42 - calendarDays.length;
   for (let i = 1; i <= remainingDays; i++) {
@@ -612,7 +614,7 @@ app.get('/admin/agenda-servicios', requireAuth, requireAdmin, (req, res) => {
       appointments: []
     });
   }
-  
+
   // Filter appointments for the list below
   const filteredAppointments = appointments.filter(apt => {
     const aptDate = new Date(apt.date);
@@ -620,11 +622,11 @@ app.get('/admin/agenda-servicios', requireAuth, requireAdmin, (req, res) => {
     const aptYear = aptDate.getFullYear();
     return aptYear === year && aptMonth === month && (!selectedService || apt.service === selectedService);
   }).sort((a, b) => new Date(a.date) - new Date(b.date));
-  
+
   // Format month year
   const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const monthYear = `${monthNames[month - 1]} ${year}`;
-  
+
   res.render('admin/services-schedule', {
     services,
     calendarDays,
@@ -642,8 +644,8 @@ app.get('/admin/cursos', requireAuth, requireAdmin, (req, res) => {
 });
 app.post('/admin/cursos/crear', requireAuth, requireAdmin, (req, res) => {
   const { slug, title, priceCOP } = req.body;
-  if (slug && title){
-    courses.push({ slug, title, short: '', category: 'Técnico', level: 'Inicial', durationHours: 0, readingMinutes: 0, modality: 'Presencial', location: 'Bogotá D.C.', priceCOP: parseInt(priceCOP||'0',10)||0, tags: [], syllabus: [], outcomes: [], requirements: [], schedule: '', nextIntake: '' });
+  if (slug && title) {
+    courses.push({ slug, title, short: '', category: 'Técnico', level: 'Inicial', durationHours: 0, readingMinutes: 0, modality: 'Presencial', location: 'Bogotá D.C.', priceCOP: parseInt(priceCOP || '0', 10) || 0, tags: [], syllabus: [], outcomes: [], requirements: [], schedule: '', nextIntake: '' });
     saveJSON('courses.json', courses);
   }
   res.redirect('/admin/cursos');
@@ -651,9 +653,9 @@ app.post('/admin/cursos/crear', requireAuth, requireAdmin, (req, res) => {
 app.post('/admin/cursos/actualizar', requireAuth, requireAdmin, (req, res) => {
   const { slug, title, priceCOP } = req.body;
   const c = courses.find(x => x.slug === slug);
-  if (c){
+  if (c) {
     if (title) c.title = title;
-    if (typeof priceCOP !== 'undefined') c.priceCOP = parseInt(priceCOP||'0',10)||0;
+    if (typeof priceCOP !== 'undefined') c.priceCOP = parseInt(priceCOP || '0', 10) || 0;
     saveJSON('courses.json', courses);
   }
   res.redirect('/admin/cursos');
@@ -661,7 +663,7 @@ app.post('/admin/cursos/actualizar', requireAuth, requireAdmin, (req, res) => {
 app.post('/admin/cursos/eliminar', requireAuth, requireAdmin, (req, res) => {
   const { slug } = req.body;
   const idx = courses.findIndex(c => c.slug === slug);
-  if (idx !== -1){ courses.splice(idx, 1); saveJSON('courses.json', courses); }
+  if (idx !== -1) { courses.splice(idx, 1); saveJSON('courses.json', courses); }
   res.redirect('/admin/cursos');
 });
 
@@ -698,24 +700,24 @@ app.post('/newsletter', async (req, res) => {
   const email = (req.body.email || '').toString().trim().toLowerCase();
   const isValid = /.+@.+\..+/.test(email);
   const wantsJSON = (req.headers['x-requested-with'] === 'fetch') || ((req.headers.accept || '').includes('application/json'));
-  if (!isValid){
+  if (!isValid) {
     if (wantsJSON) return res.status(400).json({ status: 'error', message: 'Correo inválido' });
     req.session.newsletterStatus = 'error';
     return res.redirect('/');
   }
   // Verify reCAPTCHA if configured
-  if (RECAPTCHA_SITE_KEY && RECAPTCHA_SECRET_KEY){
+  if (RECAPTCHA_SITE_KEY && RECAPTCHA_SECRET_KEY) {
     const token = req.body['g-recaptcha-response'];
     const ok = await verifyRecaptcha(token, req.ip);
-    if (!ok){
+    if (!ok) {
       if (wantsJSON) return res.status(400).json({ status: 'captcha', message: 'Completa el reCAPTCHA' });
       req.session.newsletterStatus = 'captcha';
       return res.redirect('/');
     }
   }
-  if (!newsletter.includes(email)){
+  if (!newsletter.includes(email)) {
     newsletter.push(email);
-    try { fs.writeFileSync(path.join(__dirname, 'data', 'newsletter.json'), JSON.stringify(newsletter, null, 2), 'utf8'); } catch {}
+    try { fs.writeFileSync(path.join(__dirname, 'data', 'newsletter.json'), JSON.stringify(newsletter, null, 2), 'utf8'); } catch { }
   }
   if (wantsJSON) return res.json({ status: 'ok' });
   req.session.newsletterStatus = 'ok';
@@ -730,8 +732,8 @@ app.post('/admin/tienda/crear', requireAuth, requireAdmin, (req, res) => {
   const { id, name, price, category, image, description } = req.body;
   if (!catalog.products) catalog.products = [];
   const prodId = id && id.trim() ? id.trim() : uuidv4();
-  if (name && category){
-    catalog.products.push({ id: prodId, name, price: parseInt(price||'0',10)||0, category, image: image || '', description: description || '' });
+  if (name && category) {
+    catalog.products.push({ id: prodId, name, price: parseInt(price || '0', 10) || 0, category, image: image || '', description: description || '' });
     writeCatalog(catalog);
   }
   res.redirect('/admin/tienda');
@@ -739,9 +741,9 @@ app.post('/admin/tienda/crear', requireAuth, requireAdmin, (req, res) => {
 app.post('/admin/tienda/actualizar', requireAuth, requireAdmin, (req, res) => {
   const { id, name, price, category, image, description } = req.body;
   const p = (catalog.products || []).find(x => x.id === id);
-  if (p){
+  if (p) {
     if (name) p.name = name;
-    if (typeof price !== 'undefined') p.price = parseInt(price||'0',10)||0;
+    if (typeof price !== 'undefined') p.price = parseInt(price || '0', 10) || 0;
     if (category) p.category = category;
     if (typeof image !== 'undefined') p.image = image;
     if (typeof description !== 'undefined') p.description = description;
@@ -800,12 +802,12 @@ app.post('/trabaja', (req, res) => {
   const experience = (req.body.experience || '').toString().trim();
   const skills = (req.body.skills || '').toString().trim();
   const message = (req.body.message || '').toString().trim();
-  if (!name || !/.+@.+\..+/.test(email)){
+  if (!name || !/.+@.+\..+/.test(email)) {
     req.session.jobStatus = 'error';
     return res.redirect('/trabaja');
   }
   jobApplications.unshift({ id: uuidv4(), name, email, phone, experience, skills, message, createdAt: new Date().toISOString() });
-  try { fs.writeFileSync(path.join(__dirname, 'data', 'job_applications.json'), JSON.stringify(jobApplications, null, 2), 'utf8'); } catch {}
+  try { fs.writeFileSync(path.join(__dirname, 'data', 'job_applications.json'), JSON.stringify(jobApplications, null, 2), 'utf8'); } catch { }
   req.session.jobStatus = 'ok';
   res.redirect('/trabaja');
 });
@@ -836,7 +838,7 @@ app.get('/club', (req, res) => {
       .filter(f => allowed.has(path.extname(f).toLowerCase()))
       .sort()
       .map(f => `/images/slideshow/club/${encodeURIComponent(f)}`);
-  } catch {}
+  } catch { }
   if (!slidesClub.length) {
     // Fallback to existing banner if no club slides found
     slidesClub = ['/images/download.png'];
@@ -868,7 +870,7 @@ app.post('/club/registro', (req, res) => {
   if (exists) return res.status(400).render('club/register');
   const newUser = {
     id: uuidv4(), name, email, password,
-    membership: { level: 'Básica', since: new Date().toISOString().slice(0,10), expires: null, benefits: ['Acceso al club'] },
+    membership: { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Acceso al club'] },
     visits: []
   };
   users.push(newUser);
@@ -895,8 +897,8 @@ app.post('/club/logout', (req, res) => {
 
 app.get('/club/panel', requireAuth, (req, res) => {
   const user = users.find(u => u.id === req.session.userId);
-  const today = new Date(); today.setHours(0,0,0,0);
-  const daysBetween = (a, b) => Math.ceil((a.getTime() - b.getTime()) / (1000*60*60*24));
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const daysBetween = (a, b) => Math.ceil((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
   const reminders = (user.vehicles || []).map(v => {
     const soatD = v.soatExpires ? daysBetween(new Date(v.soatExpires + 'T00:00:00'), today) : null;
     const tecD = v.tecnoExpires ? daysBetween(new Date(v.tecnoExpires + 'T00:00:00'), today) : null;
@@ -920,10 +922,10 @@ app.post('/club/vehiculos', requireAuth, (req, res) => {
   const { plate, soatExpires, tecnoExpires } = req.body;
   if (!user.vehicles) user.vehicles = [];
   if (plate) {
-  const plateUp = plate.trim().toUpperCase();
-  // Unique QR payload for this vehicle (could be a URL to future check-in endpoint)
-  const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
-  user.vehicles.push({ plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload });
+    const plateUp = plate.trim().toUpperCase();
+    // Unique QR payload for this vehicle (could be a URL to future check-in endpoint)
+    const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
+    user.vehicles.push({ plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload });
   }
   res.redirect('/club/panel');
 });
@@ -939,11 +941,11 @@ app.post('/club/vehiculos/actualizar', requireAuth, (req, res) => {
   const user = users.find(u => u.id === req.session.userId);
   const { plate, soatExpires, tecnoExpires } = req.body;
   const v = (user.vehicles || []).find(x => x.plate === (plate || '').toUpperCase());
-  if (v){
+  if (v) {
     if (typeof soatExpires !== 'undefined') v.soatExpires = soatExpires || '';
     if (typeof tecnoExpires !== 'undefined') v.tecnoExpires = tecnoExpires || '';
     // Ensure QR exists for older vehicles
-    if (!v.qr){ v.qr = JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id }); }
+    if (!v.qr) { v.qr = JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id }); }
   }
   res.redirect('/club/panel');
 });
