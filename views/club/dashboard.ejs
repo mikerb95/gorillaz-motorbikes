@@ -10,7 +10,7 @@
 <% } %>
 
 <section>
-  <h1>Hola, <%= user.name %></h1>
+  <h1>Hola, <%= user.nickname ? user.nickname : user.name %></h1>
   <div class="grid two">
     <div class="card">
       <h2>Tu membresía</h2>
