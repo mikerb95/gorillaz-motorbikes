@@ -818,9 +818,9 @@ app.post('/newsletter', async (req, res) => {
       return res.redirect('/');
     }
   }
-  if (!newsletter.includes(email)) {
-    newsletter.push(email);
-    try { fs.writeFileSync(path.join(__dirname, 'data', 'newsletter.json'), JSON.stringify(newsletter, null, 2), 'utf8'); } catch { }
+  const exist = await Newsletter.findOne({ email });
+  if (!exist) {
+    await Newsletter.create({ email });
   }
   if (wantsJSON) return res.json({ status: 'ok' });
   req.session.newsletterStatus = 'ok';
@@ -996,8 +996,7 @@ app.post('/trabaja', (req, res) => {
     req.session.jobStatus = 'error';
     return res.redirect('/trabaja');
   }
-  jobApplications.unshift({ id: uuidv4(), name, email, phone, experience, skills, message, createdAt: new Date().toISOString() });
-  try { fs.writeFileSync(path.join(__dirname, 'data', 'job_applications.json'), JSON.stringify(jobApplications, null, 2), 'utf8'); } catch { }
+  await JobApplication.create({ id: uuidv4(), name, email, phone, experience, skills, message, createdAt: new Date() });
   req.session.jobStatus = 'ok';
   res.redirect('/trabaja');
 });
