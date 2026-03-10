@@ -859,7 +859,8 @@ app.post('/club/login', async (req, res) => {
     if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
-    res.redirect('/club/panel');
+    await user.save();
+  res.redirect('/club/panel');
   } catch(e) {
     res.status(500).render('club/login', { error: 'Error del servidor' });
   }
@@ -884,7 +885,8 @@ app.post('/club/registro', async (req, res) => {
     await newUser.save();
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
-    res.redirect('/club/panel');
+    await user.save();
+  res.redirect('/club/panel');
   } catch(e) {
     res.status(500).render('club/register', { error: 'Error del servidor' });
   }
@@ -906,8 +908,8 @@ app.post('/club/logout', (req, res) => {
   res.redirect('/');
 });
 
-app.get('/club/panel', requireAuth, (req, res) => {
-  const user = users.find(u => u.id === req.session.userId);
+app.get('/club/panel', requireAuth, async (req, res) => {
+  const user = await User.findById(req.userId);
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const daysBetween = (a, b) => Math.ceil((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
   const reminders = (user.vehicles || []).map(v => {
@@ -918,18 +920,19 @@ app.get('/club/panel', requireAuth, (req, res) => {
   res.render('club/dashboard', { user, reminders });
 });
 
-app.post('/club/visitas', requireAuth, (req, res) => {
-  const user = users.find(u => u.id === req.session.userId);
+app.post('/club/visitas', requireAuth, async (req, res) => {
+  const user = await User.findById(req.userId);
   const { date, service } = req.body;
   if (date && service) {
     user.visits.unshift({ date, service });
   }
+  await user.save();
   res.redirect('/club/panel');
 });
 
 // Gestionar vehículos del usuario (para recordatorios SOAT y tecnicomecánica)
-app.post('/club/vehiculos', requireAuth, (req, res) => {
-  const user = users.find(u => u.id === req.session.userId);
+app.post('/club/vehiculos', requireAuth, async (req, res) => {
+  const user = await User.findById(req.userId);
   const { plate, soatExpires, tecnoExpires } = req.body;
   if (!user.vehicles) user.vehicles = [];
   if (plate) {
@@ -938,18 +941,20 @@ app.post('/club/vehiculos', requireAuth, (req, res) => {
     const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
     user.vehicles.push({ plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload });
   }
+  await user.save();
   res.redirect('/club/panel');
 });
-app.post('/club/vehiculos/eliminar', requireAuth, (req, res) => {
-  const user = users.find(u => u.id === req.session.userId);
+app.post('/club/vehiculos/eliminar', requireAuth, async (req, res) => {
+  const user = await User.findById(req.userId);
   const { plate } = req.body;
   user.vehicles = (user.vehicles || []).filter(v => v.plate !== plate);
+  await user.save();
   res.redirect('/club/panel');
 });
 
 // Actualizar fechas de SOAT/Tecno de un vehículo
-app.post('/club/vehiculos/actualizar', requireAuth, (req, res) => {
-  const user = users.find(u => u.id === req.session.userId);
+app.post('/club/vehiculos/actualizar', requireAuth, async (req, res) => {
+  const user = await User.findById(req.userId);
   const { plate, soatExpires, tecnoExpires } = req.body;
   const v = (user.vehicles || []).find(x => x.plate === (plate || '').toUpperCase());
   if (v) {
@@ -958,12 +963,13 @@ app.post('/club/vehiculos/actualizar', requireAuth, (req, res) => {
     // Ensure QR exists for older vehicles
     if (!v.qr) { v.qr = JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id }); }
   }
+  await user.save();
   res.redirect('/club/panel');
 });
 
 // Serve vehicle QR as PNG data
 app.get('/club/vehiculos/:plate/qr.png', requireAuth, async (req, res) => {
-  const user = users.find(u => u.id === req.session.userId);
+  const user = await User.findById(req.userId);
   const plate = (req.params.plate || '').toUpperCase();
   const v = (user.vehicles || []).find(x => x.plate === plate);
   if (!v) return res.status(404).send('No encontrado');
