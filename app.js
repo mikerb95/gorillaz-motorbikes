@@ -509,7 +509,7 @@ app.get('/cursos/:slug/inscripcion', (req, res) => {
 });
 
 // Inscripción a curso: envío de formulario
-app.post('/cursos/:slug/inscripcion', (req, res) => {
+app.post('/cursos/:slug/inscripcion', async (req, res) => {
   const slug = req.params.slug;
   const course = courses.find(c => c.slug === slug);
   if (!course) return res.status(404).render('404');
