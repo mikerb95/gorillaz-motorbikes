@@ -981,7 +981,7 @@ app.get('/trabaja', (req, res) => {
   res.render('jobs', { status: req.session.jobStatus || null });
   req.session.jobStatus = null;
 });
-app.post('/trabaja', (req, res) => {
+app.post('/trabaja', async (req, res) => {
   const name = (req.body.name || '').toString().trim();
   const email = (req.body.email || '').toString().trim().toLowerCase();
   const phone = (req.body.phone || '').toString().trim();
