@@ -859,7 +859,6 @@ app.post('/club/login', async (req, res) => {
     if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
-    await user.save();
   res.redirect('/club/panel');
   } catch(e) {
     res.status(500).render('club/login', { error: 'Error del servidor' });
