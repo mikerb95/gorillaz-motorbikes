@@ -178,16 +178,9 @@ const requireAdmin = (req, res, next) => {
 
 // Admin data stores
 let events = [];
-let availability = { blockedDates: [] };
-let appointments = [];
-let newsletter = [];
 try { events = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'events.json'), 'utf8')); } catch { }
+let availability = { blockedDates: [] };
 try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'availability.json'), 'utf8')); } catch { }
-try { newsletter = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'newsletter.json'), 'utf8')); } catch { }
-let enrollments = [];
-try { enrollments = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'enrollments.json'), 'utf8')); } catch { }
-let jobApplications = [];
-try { jobApplications = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'job_applications.json'), 'utf8')); } catch { }
 
 const saveJSON = (file, data) => {
   fs.writeFileSync(path.join(__dirname, 'data', file), JSON.stringify(data, null, 2), 'utf8');
@@ -527,12 +520,11 @@ app.post('/cursos/:slug/inscripcion', (req, res) => {
     req.session.enrollStatus = 'error';
     return res.redirect(`/cursos/${encodeURIComponent(slug)}#inscripcion`);
   }
-  enrollments.unshift({
+  await Enrollment.create({
     id: uuidv4(), slug, courseTitle: course.title,
     name, email, phone, notes,
-    createdAt: new Date().toISOString()
+    createdAt: new Date()
   });
-  try { fs.writeFileSync(path.join(__dirname, 'data', 'enrollments.json'), JSON.stringify(enrollments, null, 2), 'utf8'); } catch { }
   req.session.enrollStatus = 'ok';
   res.redirect(`/cursos/${encodeURIComponent(slug)}#inscripcion`);
 });
