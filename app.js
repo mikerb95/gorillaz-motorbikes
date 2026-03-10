@@ -1049,7 +1049,6 @@ app.post('/club/registro', async (req, res) => {
   } catch(e) {
     res.status(500).render('club/register', { error: 'Error del servidor' });
   }
-  }
 });
 
 // Olvidé mi contraseña (mock)
