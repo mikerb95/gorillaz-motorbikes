@@ -5,13 +5,21 @@
     <form class="shop-filters" method="get" action="/tienda">
       <div class="filter-group">
         <label for="q">Buscar</label>
-        <input id="q" name="q" placeholder="Producto o categoría" value="<%= q %>" />
+        <div class="shop-search-wrap">
+          <input id="q" name="q" placeholder="Producto, marca o categoría" value="<%= q %>" />
+          <button type="submit" class="shop-search-btn" aria-label="Buscar">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="filter-group">
         <div class="filter-title">Categorías</div>
         <ul class="filter-list">
-          <li><a class="<%= !selectedCat ? 'is-active' : '' %>" href="/tienda<%= baseQuery ? ('?' + baseQuery) : '' %>">Todas</a></li>
+          <li><a class="<%= !selectedCat ? 'is-active' : '' %>" href="/tienda<%= baseQuery ? ('?' + baseQuery) : '' %>">
+            <span>Todas</span>
+            <small class="muted"><%= allProductsCount %></small>
+          </a></li>
           <% categories.forEach(c => { %>
             <li>
               <a class="<%= selectedCat === c.slug ? 'is-active' : '' %>" href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %>cat=<%= c.slug %>">
@@ -22,6 +30,18 @@
           <% }) %>
         </ul>
       </div>
+
+      <% if (brands && brands.length > 1) { %>
+        <div class="filter-group">
+          <div class="filter-title">Marca</div>
+          <ul class="filter-list">
+            <li><a class="<%= !selectedBrand ? 'is-active' : '' %>" href="/tienda?<%= baseQuery ? baseQuery : '' %><%= selectedCat ? ('&cat=' + selectedCat) : '' %>">Todas</a></li>
+            <% brands.forEach(b => { %>
+              <li><a class="<%= selectedBrand === b ? 'is-active' : '' %>" href="/tienda?<%= baseQuery ? (baseQuery + '&') : '' %><%= selectedCat ? ('cat=' + selectedCat + '&') : '' %>brand=<%= encodeURIComponent(b) %>"><%= b %></a></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
 
       <div class="filter-group">
         <div class="filter-title">Precio</div>
@@ -56,39 +76,92 @@
   </aside>
 
   <section class="shop-content">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="/">Inicio</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="/tienda">Tienda</a>
+      <% if (selectedCat) { %>
+        <span class="breadcrumb-sep">›</span>
+        <span><%= (categories.find(c => c.slug === selectedCat) || {}).name %></span>
+      <% } %>
+    </nav>
+
     <div class="shop-header">
       <h1 class="section-title">Tienda</h1>
       <% if (selectedCat) { %>
         <div class="muted">Categoría: <strong><%= (categories.find(c => c.slug === selectedCat) || {}).name %></strong></div>
       <% } %>
+      <span class="muted"><%= allProductsCount %> producto(s)</span>
     </div>
 
     <% if (products.length === 0) { %>
-      <p>No hay resultados para tu búsqueda.</p>
+      <div class="shop-empty">
+        <p>No hay resultados para tu búsqueda.</p>
+        <a class="btn btn-ghost" href="/tienda">Ver todos los productos</a>
+      </div>
     <% } else { %>
       <div class="grid products-grid">
         <% products.forEach(p => { %>
           <article class="card product-card">
-            <div class="card-media" aria-hidden="true" style="background-image:url('<%= p.image %>');background-size:cover;background-position:center"></div>
-            <div class="card-body">
-              <h3 class="card-title"><%= p.name %></h3>
-              <% if (p.description) { %>
-                <p class="card-text"><%= p.description %></p>
-              <% } %>
-              <div class="price-row">
-                <span class="price">$<%= (p.price).toLocaleString('es-CO') %></span>
-                <form method="post" action="/cart/add">
-                  <input type="hidden" name="id" value="<%= p.id %>" />
-                  <button type="submit" class="btn btn-primary">Añadir</button>
-                </form>
+            <a href="/tienda/<%= p.id %>" class="product-card-link">
+              <div class="card-media" aria-hidden="true" style="background-image:url('<%= p.image %>');background-size:cover;background-position:center">
+                <% if (p.discount > 0) { %>
+                  <span class="product-discount-chip">-<%= p.discount %>%</span>
+                <% } %>
+                <% if (typeof p.stock === 'number' && p.stock === 0) { %>
+                  <span class="product-soldout-chip">Agotado</span>
+                <% } %>
               </div>
+              <div class="card-body">
+                <% if (p.brand) { %><span class="product-brand"><%= p.brand %></span><% } %>
+                <h3 class="card-title"><%= p.name %></h3>
+                <% if (p.description) { %>
+                  <p class="card-text"><%= p.description.substring(0, 80) %><%= p.description.length > 80 ? '...' : '' %></p>
+                <% } %>
+                <div class="price-row">
+                  <div>
+                    <% if (p.discount > 0) { %>
+                      <span class="price">$<%= Math.round(p.price * (1 - p.discount / 100)).toLocaleString('es-CO') %></span>
+                      <span class="price-old">$<%= p.price.toLocaleString('es-CO') %></span>
+                    <% } else { %>
+                      <span class="price">$<%= (p.price).toLocaleString('es-CO') %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </a>
+            <div class="product-card-actions">
+              <a href="/tienda/<%= p.id %>" class="btn btn-ghost btn-sm">Ver producto</a>
+              <button type="button" class="btn btn-primary btn-sm btn-add-cart"
+                data-id="<%= p.id %>"
+                <%= (typeof p.stock === 'number' && p.stock === 0) ? 'disabled' : '' %>>
+                Añadir
+              </button>
             </div>
           </article>
         <% }) %>
       </div>
+
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <nav class="shop-pagination">
+          <% if (page > 1) { %>
+            <a href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %><%= selectedCat ? ('cat=' + selectedCat + '&') : '' %>page=<%= page - 1 %>" class="btn btn-ghost btn-sm">← Anterior</a>
+          <% } %>
+          <div class="shop-pagination-pages">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <a href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %><%= selectedCat ? ('cat=' + selectedCat + '&') : '' %>page=<%= i %>"
+                class="shop-pagination-page <%= i === page ? 'is-active' : '' %>"><%= i %></a>
+            <% } %>
+          </div>
+          <% if (page < totalPages) { %>
+            <a href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %><%= selectedCat ? ('cat=' + selectedCat + '&') : '' %>page=<%= page + 1 %>" class="btn btn-ghost btn-sm">Siguiente →</a>
+          <% } %>
+        </nav>
+      <% } %>
     <% } %>
   </section>
 </main>
 
 <%- include('partials/footer') %>
-
