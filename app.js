@@ -3,6 +3,8 @@ require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const User = require('./models/User');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
@@ -23,34 +25,6 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/gorillaz')
   .then(() => console.log('✅ MongoDB connected successfully'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-
-// Demo users (in-memory)
-const users = [
-  {
-    id: uuidv4(),
-    email: 'miembro@gorillaz.co',
-    password: 'gorillaz123',
-    name: 'Miembro del Club',
-    role: 'admin',
-    membership: {
-      level: 'Premium',
-      since: '2024-06-01',
-      expires: '2026-06-01',
-      benefits: [
-        'Descuento 15% en mecánica rápida',
-        'Lavado gratis cada 3 visitas',
-        'Eventos y rutas exclusivas en Bogotá'
-      ]
-    },
-    visits: [
-      { date: '2025-02-15', service: 'Mecánica rápida - cambio de aceite' },
-      { date: '2025-05-22', service: 'Electricidad - revisión de batería' }
-    ],
-    vehicles: [
-      { plate: 'ABC123', soatExpires: '2025-10-10', tecnoExpires: '2025-09-15' }
-    ]
-  }
-];
 
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
@@ -99,8 +73,14 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // Locals for templates
-app.use((req, res, next) => {
-  res.locals.user = users.find(u => u.id === req.userId); // userId instead of session.userId
+app.use(async (req, res, next) => {
+  if (req.userId) {
+    try {
+      res.locals.user = await User.findById(req.userId).lean();
+    } catch(e) { res.locals.user = null; }
+  } else {
+    res.locals.user = null;
+  }
   const c = req.session.cart || { items: {}, count: 0, subtotal: 0 };
   // compute totals defensively without relying on other helpers
   let count = 0, subtotal = 0;
@@ -161,7 +141,7 @@ const requireAuth = (req, res, next) => {
   next();
 };
 const requireAdmin = (req, res, next) => {
-  const u = users.find(u => u.id === req.userId);
+  const u = res.locals.user;
   if (!u || u.role !== 'admin') return res.status(403).render('404');
   next();
 };
@@ -213,7 +193,7 @@ app.get('/', (req, res) => {
     slides = readSlides(slidesDir, '/images/slideshow');
   }
   res.render('home', {
-    user: users.find(u => u.id === req.session.userId),
+   
     slides,
     newsletterStatus: req.session.newsletterStatus || null,
     recaptchaSiteKey: RECAPTCHA_SITE_KEY
@@ -395,14 +375,14 @@ app.get('/carrito', (req, res) => {
     const p = catalog.products.find(x => x.id === id);
     return { ...p, qty, total: p.price * qty };
   });
-  res.render('cart', { user: users.find(u => u.id === req.session.userId), items, cart });
+  res.render('cart', { items, cart });
 });
 
 // Checkout (mock)
 app.get('/checkout', (req, res) => {
   const cart = recalc(getCart(req));
   if (cart.count === 0) return res.redirect('/tienda');
-  res.render('checkout', { user: users.find(u => u.id === req.session.userId), cart });
+  res.render('checkout', { cart });
 });
 
 // Mock payment gateway
@@ -413,7 +393,7 @@ app.post('/pagar', (req, res) => {
   const orderId = uuidv4();
   const total = cart.subtotal;
   req.session.cart = { items: {}, count: 0, subtotal: 0 };
-  res.render('payment/success', { user: users.find(u => u.id === req.session.userId), orderId, total });
+  res.render('payment/success', { orderId, total });
 });
 
 app.get('/cursos', (req, res) => {
@@ -464,10 +444,11 @@ app.get('/eventos', (req, res) => {
 });
 
 // Admin dashboard
-app.get('/admin', requireAuth, requireAdmin, (req, res) => {
+app.get('/admin', requireAuth, requireAdmin, async (req, res) => {
+  const usersCount = await User.countDocuments();
   res.render('admin/index', {
     stats: {
-      users: users.length,
+      users: usersCount,
       events: events.length,
       citas: appointments.length,
       cursos: courses.length,
@@ -527,22 +508,22 @@ app.post('/admin/eventos/eliminar', requireAuth, requireAdmin, (req, res) => {
 });
 
 // Admin: users (modify or delete)
-app.get('/admin/usuarios', requireAuth, requireAdmin, (req, res) => {
+app.get('/admin/usuarios', requireAuth, requireAdmin, async (req, res) => {
+  const usersList = await User.find().lean();
   res.render('admin/users', { users });
 });
 app.post('/admin/usuarios/actualizar', requireAuth, requireAdmin, (req, res) => {
   const { id, name, membershipLevel } = req.body;
-  const u = users.find(u => u.id === id);
+  const u = await User.findById(id);
   if (u) {
     if (name) u.name = name;
     if (membershipLevel) u.membership.level = membershipLevel;
   }
   res.redirect('/admin/usuarios');
 });
-app.post('/admin/usuarios/eliminar', requireAuth, requireAdmin, (req, res) => {
+app.post('/admin/usuarios/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.body;
-  const i = users.findIndex(u => u.id === id);
-  if (i !== -1) users.splice(i, 1);
+  await User.findByIdAndDelete(id);
   res.redirect('/admin/usuarios');
 });
 
@@ -800,13 +781,13 @@ app.get('/clases/:course/:topic', requireAuth, requireAdmin, (req, res) => {
 
 // Legales
 app.get('/privacidad', (req, res) => {
-  res.render('privacy', { user: users.find(u => u.id === req.session.userId) });
+  res.render('privacy', {});
 });
 app.get('/licencia', (req, res) => {
-  res.render('license', { user: users.find(u => u.id === req.session.userId) });
+  res.render('license', {});
 });
 app.get('/terminos', (req, res) => {
-  res.render('terms', { user: users.find(u => u.id === req.session.userId) });
+  res.render('terms', {});
 });
 
 // Trabaja con nosotros
@@ -869,12 +850,19 @@ app.get('/club/login', (req, res) => {
   res.render('club/login', { error: null });
 });
 
-app.post('/club/login', (req, res) => {
+app.post('/club/login', async (req, res) => {
   const { email, password } = req.body;
-  const user = users.find(u => u.email === email && u.password === password);
-  if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
-  req.session.userId = user.id;
-  res.redirect('/club/panel');
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    res.redirect('/club/panel');
+  } catch(e) {
+    res.status(500).render('club/login', { error: 'Error del servidor' });
+  }
 });
 
 // Registro (mock)
@@ -882,19 +870,24 @@ app.get('/club/registro', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
   res.render('club/register');
 });
-app.post('/club/registro', (req, res) => {
+app.post('/club/registro', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) return res.status(400).render('club/register');
-  const exists = users.find(u => u.email === email);
-  if (exists) return res.status(400).render('club/register');
-  const newUser = {
-    id: uuidv4(), name, email, password,
-    membership: { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Acceso al club'] },
-    visits: []
-  };
-  users.push(newUser);
-  req.session.userId = newUser.id;
-  res.redirect('/club/panel');
+  try {
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).render('club/register', { error: 'El correo ya está en uso' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      name, email, password: hashedPassword,
+      membership: { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Acceso premium próximamente'] },
+    });
+    await newUser.save();
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    res.redirect('/club/panel');
+  } catch(e) {
+    res.status(500).render('club/register', { error: 'Error del servidor' });
+  }
 });
 
 // Olvidé mi contraseña (mock)
@@ -909,9 +902,8 @@ app.post('/club/olvide', (req, res) => {
 });
 
 app.post('/club/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/');
-  });
+  res.clearCookie('jwt');
+  res.redirect('/');
 });
 
 app.get('/club/panel', requireAuth, (req, res) => {
