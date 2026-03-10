@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
+const multer = require('multer');
 const mongoose = require('mongoose');
 const https = require('https');
 const catalog = require('./data/catalog');
@@ -16,6 +17,28 @@ const classesData = require('./data/classes.json');
 const QRCode = require('qrcode');
 
 const app = express();
+
+// Multer config for product image uploads
+const productStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, 'images', 'products');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, Date.now() + '-' + Math.round(Math.random() * 1e6) + ext);
+  }
+});
+const uploadProduct = multer({
+  storage: productStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /\.(jpg|jpeg|png|webp|avif)$/i;
+    cb(null, allowed.test(path.extname(file.originalname)));
+  }
+}).array('images', 5);
+
 const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '';
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '';
 const JWT_SECRET = process.env.JWT_SECRET || 'gorillaz-ultra-secret';
@@ -313,17 +336,49 @@ app.get('/tienda', (req, res) => {
   if (sort) qp.set('sort', sort);
   const baseQuery = qp.toString();
 
+  // Pagination
+  const page = Math.max(1, parseInt(req.query.page || '1', 10));
+  const perPage = 12;
+  const totalPages = Math.ceil(products.length / perPage);
+  const paginated = products.slice((page - 1) * perPage, page * perPage);
+
+  // Collect unique brands for filter
+  const brands = [...new Set((allProds || []).map(p => p.brand).filter(Boolean))].sort();
+  const selectedBrand = (req.query.brand || '').toString();
+  if (selectedBrand) {
+    paginated.length = 0; // clear
+    const brandFiltered = products.filter(p => p.brand === selectedBrand);
+    const bf = brandFiltered.slice((page - 1) * perPage, page * perPage);
+    bf.forEach(p => paginated.push(p));
+  }
+
   res.render('shop', {
     categories,
-    products,
+    products: paginated,
+    allProductsCount: products.length,
     selectedCat,
     q,
     min: min ?? '',
     max: max ?? '',
     sort,
     baseQuery,
-    priceStats
+    priceStats,
+    page,
+    totalPages,
+    brands,
+    selectedBrand
   });
+});
+
+// Product detail page
+app.get('/tienda/:id', (req, res) => {
+  const product = (catalog.products || []).find(p => p.id === req.params.id);
+  if (!product) return res.status(404).render('404');
+  const cat = (catalog.categories || []).find(c => c.slug === product.category);
+  const related = (catalog.products || [])
+    .filter(p => p.category === product.category && p.id !== product.id)
+    .slice(0, 4);
+  res.render('shop-product', { product, category: cat, related });
 });
 
 // Cart helpers
@@ -347,8 +402,23 @@ app.post('/cart/add', (req, res) => {
   if (!product) return res.status(400).send('Producto no encontrado');
   const cart = getCart(req);
   const q = Math.max(1, parseInt(qty || '1', 10));
-  cart.items[id] = (cart.items[id] || 0) + q;
+  // Enforce stock limit
+  const maxStock = typeof product.stock === 'number' ? product.stock : Infinity;
+  const current = cart.items[id] || 0;
+  cart.items[id] = Math.min(current + q, maxStock);
+  if (maxStock === 0) {
+    // Cannot add out-of-stock item
+    const wantsJSON = (req.headers['x-requested-with'] === 'fetch') || ((req.headers.accept || '').includes('application/json'));
+    if (wantsJSON) return res.status(400).json({ ok: false, message: 'Producto agotado' });
+    return res.redirect('/carrito');
+  }
   recalc(cart);
+  // Save cart to cookie
+  res.cookie('cart', JSON.stringify(cart), { maxAge: 7 * 24 * 3600 * 1000, httpOnly: false, sameSite: 'lax' });
+  const wantsJSON = (req.headers['x-requested-with'] === 'fetch') || ((req.headers.accept || '').includes('application/json'));
+  if (wantsJSON) {
+    return res.json({ ok: true, cartCount: cart.count, message: `${product.name} añadido al carrito` });
+  }
   res.redirect('/carrito');
 });
 
@@ -726,36 +796,123 @@ app.post('/newsletter', async (req, res) => {
 
 // Admin: tienda (productos) CRUD
 app.get('/admin/tienda', requireAuth, requireAdmin, (req, res) => {
-  res.render('admin/shop', { categories: catalog.categories || [], products: catalog.products || [] });
+  const search = (req.query.q || '').toString().trim().toLowerCase();
+  const filterCat = (req.query.cat || '').toString();
+  let prods = catalog.products || [];
+  if (search) prods = prods.filter(p => p.name.toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search));
+  if (filterCat) prods = prods.filter(p => p.category === filterCat);
+  res.render('admin/shop', { categories: catalog.categories || [], products: prods, search, filterCat });
 });
+
+// Admin: edit single product page
+app.get('/admin/tienda/:id/editar', requireAuth, requireAdmin, (req, res) => {
+  const product = (catalog.products || []).find(p => p.id === req.params.id);
+  if (!product) return res.redirect('/admin/tienda');
+  res.render('admin/shop-edit', { product, categories: catalog.categories || [] });
+});
+
+// Admin: create product
 app.post('/admin/tienda/crear', requireAuth, requireAdmin, (req, res) => {
-  const { id, name, price, category, image, description } = req.body;
-  if (!catalog.products) catalog.products = [];
-  const prodId = id && id.trim() ? id.trim() : uuidv4();
-  if (name && category) {
-    catalog.products.push({ id: prodId, name, price: parseInt(price || '0', 10) || 0, category, image: image || '', description: description || '' });
-    writeCatalog(catalog);
-  }
-  res.redirect('/admin/tienda');
+  uploadProduct(req, res, (err) => {
+    if (err) return res.status(400).send('Error subiendo imágenes');
+    const { id, name, price, category, description, brand, sku, stock, discount, tags } = req.body;
+    if (!catalog.products) catalog.products = [];
+    const prodId = id && id.trim() ? id.trim() : uuidv4();
+    const gallery = (req.files || []).map(f => '/images/products/' + f.filename);
+    // Use first gallery image or fallback
+    const mainImage = gallery.length > 0 ? gallery[0] : '/images/download.png';
+    if (name && category) {
+      catalog.products.push({
+        id: prodId,
+        name,
+        price: parseInt(price || '0', 10) || 0,
+        category,
+        image: mainImage,
+        gallery: gallery.length > 0 ? gallery : ['/images/download.png'],
+        brand: (brand || '').trim(),
+        sku: (sku || '').trim(),
+        stock: parseInt(stock || '0', 10),
+        discount: Math.min(100, Math.max(0, parseInt(discount || '0', 10))),
+        tags: (tags || '').split(',').map(t => t.trim()).filter(Boolean),
+        description: description || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      writeCatalog(catalog);
+    }
+    res.redirect('/admin/tienda');
+  });
 });
+
+// Admin: update product
 app.post('/admin/tienda/actualizar', requireAuth, requireAdmin, (req, res) => {
-  const { id, name, price, category, image, description } = req.body;
-  const p = (catalog.products || []).find(x => x.id === id);
-  if (p) {
-    if (name) p.name = name;
-    if (typeof price !== 'undefined') p.price = parseInt(price || '0', 10) || 0;
-    if (category) p.category = category;
-    if (typeof image !== 'undefined') p.image = image;
-    if (typeof description !== 'undefined') p.description = description;
-    writeCatalog(catalog);
-  }
-  res.redirect('/admin/tienda');
+  uploadProduct(req, res, (err) => {
+    if (err) return res.status(400).send('Error subiendo imágenes');
+    const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
+    const p = (catalog.products || []).find(x => x.id === id);
+    if (p) {
+      if (name) p.name = name;
+      if (typeof price !== 'undefined') p.price = parseInt(price || '0', 10) || 0;
+      if (category) p.category = category;
+      if (typeof description !== 'undefined') p.description = description;
+      if (typeof brand !== 'undefined') p.brand = (brand || '').trim();
+      if (typeof sku !== 'undefined') p.sku = (sku || '').trim();
+      if (typeof stock !== 'undefined') p.stock = parseInt(stock || '0', 10);
+      if (typeof discount !== 'undefined') p.discount = Math.min(100, Math.max(0, parseInt(discount || '0', 10)));
+      if (typeof tags !== 'undefined') p.tags = (tags || '').split(',').map(t => t.trim()).filter(Boolean);
+      // Rebuild gallery: keep existing + add new uploads
+      let kept = [];
+      if (existingImages) {
+        kept = Array.isArray(existingImages) ? existingImages : [existingImages];
+      }
+      const newUploads = (req.files || []).map(f => '/images/products/' + f.filename);
+      const gallery = [...kept, ...newUploads];
+      if (gallery.length > 0) {
+        p.gallery = gallery;
+        p.image = gallery[0];
+      }
+      p.updatedAt = new Date().toISOString();
+      writeCatalog(catalog);
+    }
+    res.redirect('/admin/tienda');
+  });
 });
+
+// Admin: delete product
 app.post('/admin/tienda/eliminar', requireAuth, requireAdmin, (req, res) => {
   const { id } = req.body;
   catalog.products = (catalog.products || []).filter(p => p.id !== id);
   writeCatalog(catalog);
   res.redirect('/admin/tienda');
+});
+
+// Admin: upload images endpoint (AJAX)
+app.post('/admin/tienda/upload-image', requireAuth, requireAdmin, (req, res) => {
+  uploadProduct(req, res, (err) => {
+    if (err) return res.status(400).json({ ok: false, message: 'Error subiendo imágenes' });
+    const urls = (req.files || []).map(f => '/images/products/' + f.filename);
+    res.json({ ok: true, urls });
+  });
+});
+
+// Admin: delete a product image from gallery
+app.post('/admin/tienda/delete-image', requireAuth, requireAdmin, (req, res) => {
+  const { productId, imageUrl } = req.body;
+  const p = (catalog.products || []).find(x => x.id === productId);
+  if (p && p.gallery) {
+    p.gallery = p.gallery.filter(img => img !== imageUrl);
+    if (p.gallery.length > 0) {
+      p.image = p.gallery[0];
+    } else {
+      p.image = '/images/download.png';
+      p.gallery = ['/images/download.png'];
+    }
+    p.updatedAt = new Date().toISOString();
+    writeCatalog(catalog);
+  }
+  const wantsJSON = (req.headers.accept || '').includes('application/json');
+  if (wantsJSON) return res.json({ ok: true });
+  res.redirect('/admin/tienda/' + productId + '/editar');
 });
 
 // Admin: selector de clases/presentaciones
@@ -827,6 +984,7 @@ app.get('/faq', (req, res) => {
 
 // Club
 app.get('/club', (req, res) => {
+  await user.save();
   if (req.session.userId) return res.redirect('/club/panel');
   // Build club slideshow from /images/slideshow/club
   const dir = path.join(__dirname, 'images', 'slideshow', 'club');
@@ -859,6 +1017,17 @@ app.post('/club/login', async (req, res) => {
     if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    res.redirect('/club/panel');
+  } catch(e) {
+    res.status(500).render('club/login', { error: 'Error del servidor' });
+  }
+});
+    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
+  await user.save();
   res.redirect('/club/panel');
   } catch(e) {
     res.status(500).render('club/login', { error: 'Error del servidor' });
@@ -884,7 +1053,21 @@ app.post('/club/registro', async (req, res) => {
     await newUser.save();
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
-    await user.save();
+    res.redirect('/club/panel');
+  } catch(e) {
+    res.status(500).render('club/register', { error: 'Error del servidor' });
+  }
+});
+    if (exists) return res.status(400).render('club/register', { error: 'El correo ya está en uso' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      name, email, password: hashedPassword,
+      membership: { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Acceso premium próximamente'] },
+    });
+    await newUser.save();
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
+  await user.save();
   res.redirect('/club/panel');
   } catch(e) {
     res.status(500).render('club/register', { error: 'Error del servidor' });
@@ -893,6 +1076,7 @@ app.post('/club/registro', async (req, res) => {
 
 // Olvidé mi contraseña (mock)
 app.get('/club/olvide', (req, res) => {
+  await user.save();
   if (req.session.userId) return res.redirect('/club/panel');
   res.render('club/forgot', { message: null });
 });

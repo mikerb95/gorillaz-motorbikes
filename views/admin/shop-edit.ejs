@@ -1,0 +1,161 @@
+<%- include('../partials/head', { title: 'Editar Producto — Admin' }) %>
+<main class="container section">
+  <nav class="breadcrumb">
+    <a href="/admin">Admin</a>
+    <span class="breadcrumb-sep">›</span>
+    <a href="/admin/tienda">Tienda</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Editar: <%= product.name %></span>
+  </nav>
+
+  <h1 class="section-title">Editar Producto</h1>
+
+  <form method="post" action="/admin/tienda/actualizar" enctype="multipart/form-data" class="admin-edit-form">
+    <input type="hidden" name="id" value="<%= product.id %>" />
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+    <!-- Basic Info Section -->
+    <section class="admin-edit-section card">
+      <h3 class="admin-edit-section-title">Información básica</h3>
+      <div class="grid two">
+        <label>
+          Nombre del producto <span class="required">*</span>
+          <input name="name" value="<%= product.name %>" required />
+        </label>
+        <label>
+          SKU
+          <input name="sku" value="<%= product.sku || '' %>" placeholder="Ej: NK-CAS-001" />
+        </label>
+        <label>
+          Marca
+          <input name="brand" value="<%= product.brand || '' %>" placeholder="Ej: Gorillaz" />
+        </label>
+        <label>
+          Categoría <span class="required">*</span>
+          <select name="category" required>
+            <option value="">— Seleccionar —</option>
+            <% categories.forEach(c => { %>
+              <option value="<%= c.slug %>" <%= product.category === c.slug ? 'selected' : '' %>><%= c.name %></option>
+            <% }) %>
+          </select>
+        </label>
+      </div>
+      <label class="full">
+        Descripción
+        <textarea name="description" rows="4" placeholder="Describe el producto..."><%= product.description || '' %></textarea>
+      </label>
+    </section>
+
+    <!-- Price & Inventory Section -->
+    <section class="admin-edit-section card">
+      <h3 class="admin-edit-section-title">Precio e inventario</h3>
+      <div class="grid three">
+        <label>
+          Precio (COP) <span class="required">*</span>
+          <input type="number" name="price" value="<%= product.price %>" min="0" required />
+        </label>
+        <label>
+          Descuento (%)
+          <input type="number" name="discount" value="<%= product.discount || 0 %>" min="0" max="100" />
+        </label>
+        <label>
+          Stock
+          <input type="number" name="stock" value="<%= typeof product.stock === 'number' ? product.stock : 0 %>" min="0" />
+        </label>
+      </div>
+      <% if (product.discount > 0) { %>
+        <div class="admin-price-preview">
+          <span class="muted">Precio con descuento:</span>
+          <strong class="price">$<%= Math.round(product.price * (1 - product.discount / 100)).toLocaleString('es-CO') %></strong>
+          <span class="price-old">$<%= product.price.toLocaleString('es-CO') %></span>
+        </div>
+      <% } %>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="admin-edit-section card">
+      <h3 class="admin-edit-section-title">Galería de imágenes</h3>
+      <p class="muted" style="margin:0 0 12px">Máximo 5 imágenes. La primera será la imagen principal.</p>
+      <div class="admin-gallery" id="galleryPreview">
+        <% (product.gallery || [product.image]).forEach((img, i) => { %>
+          <div class="admin-gallery-item">
+            <img src="<%= img %>" alt="Imagen <%= i + 1 %>" />
+            <input type="hidden" name="existingImages" value="<%= img %>" />
+            <button type="button" class="admin-gallery-remove" onclick="this.closest('.admin-gallery-item').remove()" title="Quitar imagen">✕</button>
+            <% if (i === 0) { %>
+              <span class="admin-gallery-badge">Principal</span>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+      <div class="admin-gallery-upload">
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Agregar imágenes
+          <input type="file" name="images" accept="image/*" multiple style="display:none" onchange="previewNewImages(this)" />
+        </label>
+      </div>
+    </section>
+
+    <!-- Tags Section -->
+    <section class="admin-edit-section card">
+      <h3 class="admin-edit-section-title">Etiquetas</h3>
+      <label>
+        Tags (separadas por coma)
+        <input name="tags" value="<%= (product.tags || []).join(', ') %>" placeholder="casco, protección, naked" />
+      </label>
+      <div class="admin-tags-preview">
+        <% (product.tags || []).forEach(tag => { %>
+          <span class="chip"><%= tag %></span>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="admin-edit-actions">
+      <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      <a href="/admin/tienda" class="btn btn-ghost">Cancelar</a>
+      <form method="post" action="/admin/tienda/eliminar" data-confirm="¿Seguro que quieres eliminar este producto?" style="margin-left:auto">
+        <input type="hidden" name="id" value="<%= product.id %>" />
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button type="submit" class="btn btn-danger">Eliminar producto</button>
+      </form>
+    </div>
+  </form>
+
+  <!-- Product Metadata -->
+  <div class="admin-meta card" style="margin-top:16px">
+    <div class="row gap">
+      <span class="muted">ID: <code><%= product.id %></code></span>
+      <% if (product.createdAt) { %>
+        <span class="muted">Creado: <%= new Date(product.createdAt).toLocaleDateString('es-CO') %></span>
+      <% } %>
+      <% if (product.updatedAt) { %>
+        <span class="muted">Actualizado: <%= new Date(product.updatedAt).toLocaleDateString('es-CO') %></span>
+      <% } %>
+    </div>
+  </div>
+</main>
+
+<script>
+function previewNewImages(input) {
+  const gallery = document.getElementById('galleryPreview');
+  const currentCount = gallery.querySelectorAll('.admin-gallery-item').length;
+  const files = Array.from(input.files).slice(0, 5 - currentCount);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const div = document.createElement('div');
+      div.className = 'admin-gallery-item admin-gallery-new';
+      div.innerHTML = `
+        <img src="${e.target.result}" alt="Nueva imagen" />
+        <button type="button" class="admin-gallery-remove" onclick="this.closest('.admin-gallery-item').remove()" title="Quitar imagen">✕</button>
+      `;
+      gallery.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+
+<%- include('../partials/footer') %>
