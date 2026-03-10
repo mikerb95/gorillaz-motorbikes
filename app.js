@@ -541,7 +541,7 @@ app.get('/admin', requireAuth, requireAdmin, async (req, res) => {
   const usersCount = await User.countDocuments();
   const eventsCount = await Event.countDocuments();
   const citasCount = await Appointment.countDocuments();
-  
+
   res.render('admin/index', {
     stats: {
       users: usersCount,

@@ -1456,6 +1456,7 @@ input {
   border-bottom: 1px solid #2d2d2d;
   padding: 10px 0;
 }
+
 .schedule-hours-inner {
   display: flex;
   flex-wrap: wrap;
@@ -1464,18 +1465,40 @@ input {
   font-size: 13px;
   color: #d1d5db;
 }
+
 .schedule-hours-title {
   font-weight: 700;
   color: #fff;
   font-size: 13px;
 }
-.schedule-hours-item { color: #d1d5db; }
-.schedule-hours-item strong { color: #fff; }
-.schedule-hours-closed strong { color: #9ca3af; }
-.schedule-hours-sep { color: #4b5563; font-size: 16px; }
+
+.schedule-hours-item {
+  color: #d1d5db;
+}
+
+.schedule-hours-item strong {
+  color: #fff;
+}
+
+.schedule-hours-closed strong {
+  color: #9ca3af;
+}
+
+.schedule-hours-sep {
+  color: #4b5563;
+  font-size: 16px;
+}
+
 @media (max-width: 640px) {
-  .schedule-hours-sep { display: none; }
-  .schedule-hours-inner { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .schedule-hours-sep {
+    display: none;
+  }
+
+  .schedule-hours-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
 
 /* ── Three-column grid ── */
@@ -1484,8 +1507,11 @@ input {
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
+
 @media (max-width: 700px) {
-  .grid.three { grid-template-columns: 1fr; }
+  .grid.three {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Demand legend ── */
@@ -1498,6 +1524,7 @@ input {
   color: var(--muted);
   margin: 10px 0 14px;
 }
+
 .demand-dot {
   display: inline-block;
   width: 9px;
@@ -1505,9 +1532,18 @@ input {
   border-radius: 50%;
   flex-shrink: 0;
 }
-.demand-dot.demand-low    { background: #22c55e; }
-.demand-dot.demand-medium { background: #f59e0b; }
-.demand-dot.demand-high   { background: #ef4444; }
+
+.demand-dot.demand-low {
+  background: #22c55e;
+}
+
+.demand-dot.demand-medium {
+  background: #f59e0b;
+}
+
+.demand-dot.demand-high {
+  background: #ef4444;
+}
 
 /* ── Calendar demand indicators ── */
 .cal-demand-dot {
@@ -1517,11 +1553,27 @@ input {
   border-radius: 50%;
   margin: 2px auto 0;
 }
-.cal-day.demand-low    .cal-demand-dot { background: #22c55e; }
-.cal-day.demand-medium .cal-demand-dot { background: #f59e0b; }
-.cal-day.demand-high   .cal-demand-dot { background: #ef4444; }
-.cal-day.demand-medium { border-color: #fcd34d; }
-.cal-day.demand-high   { border-color: #fca5a5; background: #fff5f5; }
+
+.cal-day.demand-low .cal-demand-dot {
+  background: #22c55e;
+}
+
+.cal-day.demand-medium .cal-demand-dot {
+  background: #f59e0b;
+}
+
+.cal-day.demand-high .cal-demand-dot {
+  background: #ef4444;
+}
+
+.cal-day.demand-medium {
+  border-color: #fcd34d;
+}
+
+.cal-day.demand-high {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
 
 .schedule-layout {
   display: grid;
@@ -5897,7 +5949,7 @@ input {
   overflow: hidden;
   background: #f5f5f5;
   aspect-ratio: 1 / 1;
-  box-shadow: 0 2px 16px rgba(0,0,0,.06)
+  box-shadow: 0 2px 16px rgba(0, 0, 0, .06)
 }
 
 .pdp-main-image img {
@@ -5924,14 +5976,14 @@ input {
   padding: 5px 12px;
   border-radius: var(--radius-pill);
   letter-spacing: .4px;
-  box-shadow: 0 2px 8px rgba(242,92,5,.35)
+  box-shadow: 0 2px 8px rgba(242, 92, 5, .35)
 }
 
 .pdp-soldout-badge {
   position: absolute;
   top: 14px;
   right: 14px;
-  background: rgba(0,0,0,.72);
+  background: rgba(0, 0, 0, .72);
   color: #fff;
   font-weight: 700;
   font-size: .8rem;
@@ -5972,7 +6024,7 @@ input {
 
 .pdp-thumb.is-active {
   border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(242,92,5,.18)
+  box-shadow: 0 0 0 3px rgba(242, 92, 5, .18)
 }
 
 .pdp-thumb:hover {
@@ -6580,6 +6632,7 @@ label.full,
 .row.gap.space-between {
   justify-content: space-between
 }
+
 /* Custom overrides for service media */
 .service-media {
   width: 100%;
@@ -6589,4 +6642,8 @@ label.full,
   border-radius: var(--radius);
   background-color: var(--card);
 }
-.service-row { align-items: center; gap: 32px; }
+
+.service-row {
+  align-items: center;
+  gap: 32px;
+}
