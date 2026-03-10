@@ -730,11 +730,32 @@ body.has-hero main {
 .services-cue {
   position: absolute;
   left: 50%;
-  bottom: 16px;
+  bottom: 24px;
   transform: translateX(-50%);
-  color: #fff;
   text-decoration: none;
-  opacity: .9
+  z-index: 10;
+  transition: transform 0.3s ease
+}
+
+.services-cue:hover {
+  transform: translateX(-50%) translateY(5px)
+}
+
+.scroll-cue-circle {
+  width: 64px;
+  height: 64px;
+  background: var(--brand, #F25C05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3)
+}
+
+.scroll-cue-circle svg {
+  width: 28px;
+  height: 28px
 }
 
 .services-cue:hover {
@@ -3418,11 +3439,32 @@ body.has-hero main {
 .services-cue {
   position: absolute;
   left: 50%;
-  bottom: 16px;
+  bottom: 24px;
   transform: translateX(-50%);
-  color: #fff;
   text-decoration: none;
-  opacity: .9
+  z-index: 10;
+  transition: transform 0.3s ease
+}
+
+.services-cue:hover {
+  transform: translateX(-50%) translateY(5px)
+}
+
+.scroll-cue-circle {
+  width: 64px;
+  height: 64px;
+  background: var(--brand, #F25C05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3)
+}
+
+.scroll-cue-circle svg {
+  width: 28px;
+  height: 28px
 }
 
 .services-cue:hover {
