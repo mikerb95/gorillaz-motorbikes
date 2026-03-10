@@ -232,8 +232,9 @@ app.get('/', (req, res) => {
 });
 
 // Helper: compute demand map { 'YYYY-MM-DD': 'low'|'medium'|'high' }
-function computeDemandMap() {
+async function computeDemandMap() {
   const demand = {};
+  const appointments = await Appointment.find({}, 'date').lean();
   appointments.forEach(a => {
     if (!a.date) return;
     const d = a.date.slice(0, 10);
@@ -256,11 +257,11 @@ function computeDemandMap() {
 }
 
 // Servicios: agendar (definir antes de /servicios para evitar conflictos de orden)
-app.get('/servicios/agendar', (req, res) => {
+app.get('/servicios/agendar', async (req, res) => {
   const services = [
     'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
   ];
-  res.render('services_schedule', { services, bookingMessage: null, demandMap: computeDemandMap() });
+  res.render('services_schedule', { services, bookingMessage: null, demandMap: await computeDemandMap() });
 });
 
 app.post('/servicios/agendar', async (req, res) => {
@@ -268,13 +269,12 @@ app.post('/servicios/agendar', async (req, res) => {
   const services = [
     'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
   ];
-  const demandMap = computeDemandMap();
+  const demandMap = await computeDemandMap();
   if (!name || !service || !date || !email) {
     return res.render('services_schedule', { services, bookingMessage: 'Por favor completa todos los campos.', demandMap });
   }
   const formattedDate = new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
-  appointments.unshift({ id: uuidv4(), name, email, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
-  saveJSON('appointments.json', appointments);
+  await Appointment.create({ id: uuidv4(), name, email, phone, service, date, status: 'pendiente' });
   // Send confirmation emails via Resend
   try {
     if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_TU_API_KEY_AQUI') {
