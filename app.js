@@ -60,7 +60,6 @@ app.use(express.json());
 app.use(cookieParser('gorillaz-cookie-secret'));
 
 // CSRF protection (cookie-based)
-const { csrfSync } = require('tiny-csrf');
 app.use(csrfSync(['POST', 'PUT', 'DELETE'], 'gorillaz-crsf-secret-32-chars-long!'));
 
 // JWT Verification Middleware
