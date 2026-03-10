@@ -1,26 +1,28 @@
 <%- include('../partials/head', { title: 'Club — Cambiar contraseña' }) %>
 
-<section class="auth-wrap">
-  <div class="auth-header">
-    <a href="/" class="auth-logo" aria-label="Gorillaz Motorbikes">
-      <img src="/favicons/android-chrome-192x192.png" alt="Gorillaz Motorbikes" />
-    </a>
-    <h1 class="auth-title">Nueva contraseña</h1>
-    <p class="muted" style="margin:-6px 0 0">Ingresa tu nueva contraseña</p>
-  </div>
+    <section class="auth-wrap">
+        <div class="auth-header">
+            <a href="/" class="auth-logo" aria-label="Gorillaz Motorbikes">
+                <img src="/favicons/android-chrome-192x192.png" alt="Gorillaz Motorbikes" />
+            </a>
+            <h1 class="auth-title">Nueva contraseña</h1>
+            <p class="muted" style="margin:-6px 0 0">Ingresa tu nueva contraseña</p>
+        </div>
 
-  <% if (error) { %>
-    <div class="alert alert-danger" style="color:var(--danger)"><%= error %></div>
-  <% } %>
+        <% if (error) { %>
+            <div class="alert alert-danger" style="color:var(--danger)">
+                <%= error %>
+            </div>
+            <% } %>
 
-  <form method="post" action="/club/reset-password" class="auth-card" novalidate>
-    <input type="hidden" name="token" value="<%= token %>" />
-    <label for="password">Nueva contraseña</label>
-    <input id="password" name="password" type="password" required />
-    <label for="confirm">Confirma contraseña</label>
-    <input id="confirm" name="confirm" type="password" required />
-    <button class="btn btn-primary" type="submit">Actualizar Contraseña</button>
-  </form>
-</section>
+                <form method="post" action="/club/reset-password" class="auth-card" novalidate>
+                    <input type="hidden" name="token" value="<%= token %>" />
+                    <label for="password">Nueva contraseña</label>
+                    <input id="password" name="password" type="password" required />
+                    <label for="confirm">Confirma contraseña</label>
+                    <input id="confirm" name="confirm" type="password" required />
+                    <button class="btn btn-primary" type="submit">Actualizar Contraseña</button>
+                </form>
+    </section>
 
-<%- include('../partials/footer') %>
+    <%- include('../partials/footer') %>
