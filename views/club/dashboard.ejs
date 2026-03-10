@@ -1,159 +1,190 @@
-<%- include('../partials/head', { title: 'Club — Panel', user }) %>
+<%- include('../partials/head', { title: 'Club — Panel' , user }) %>
 
-<% if (user && user.role === 'admin') { %>
-  <div class="container">
-    <div class="admin-top">
-      <span class="muted">Usuario administrador</span>
-      <a class="btn btn-sm" href="/admin">Ir al panel de administrador</a>
+  <% if (user && user.role==='admin' ) { %>
+    <div class="container">
+      <div class="admin-top">
+        <span class="muted">Usuario administrador</span>
+        <a class="btn btn-sm" href="/admin">Ir al panel de administrador</a>
+      </div>
     </div>
-  </div>
-<% } %>
+    <% } %>
 
-<section>
-  <h1>Hola, <%= user.nickname ? user.nickname : user.name %></h1>
-  <div class="grid two">
-    <div class="card">
-      <h2>Tu membresía</h2>
-      <p><strong>Nivel:</strong> <%= user.membership.level %></p>
-      <p><strong>Desde:</strong> <%= user.membership.since %></p>
-      <p><strong>Vence:</strong> <%= user.membership.expires %></p>
-      <h3>Beneficios</h3>
-      <ul>
-        <% user.membership.benefits.forEach(b => { %>
-          <li><%= b %></li>
-        <% }) %>
-      </ul>
-    </div>
-    <div class="card">
-      <h2>Historial de visitas</h2>
-      <ul class="list">
-        <% if (user.visits.length === 0) { %>
-          <li class="muted">Sin registros aún.</li>
-        <% } %>
-        <% user.visits.forEach(v => { %>
-          <li>
-            <span><strong><%= v.date %></strong></span>
-            <span><%= v.service %></span>
-          </li>
-        <% }) %>
-      </ul>
-      <form class="stack" method="post" action="/club/visitas">
-        <label>
-          Fecha
-          <input type="date" name="date" required />
-        </label>
-        <label>
-          Servicio
-          <input type="text" name="service" placeholder="Descripción del servicio" required />
-        </label>
-        <button class="btn" type="submit">Agregar visita</button>
-      </form>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="grid two">
-    <div class="card">
-      <h2>Recordatorios SOAT y Tecnomecánica</h2>
-      <% if (!reminders || reminders.length === 0) { %>
-        <p class="muted">Aún no has registrado vehículos.</p>
-      <% } else { %>
-        <ul class="reminders-list">
-        <% reminders.forEach(r => { %>
-          <% const soatState = (r.soat === null) ? 'none' : (r.soat < 0 ? 'expired' : (r.soat <= 30 ? 'soon' : 'ok')); %>
-          <% const tecState = (r.tecno === null) ? 'none' : (r.tecno < 0 ? 'expired' : (r.tecno <= 30 ? 'soon' : 'ok')); %>
-          <li>
-            <div class="rem-row">
-              <div class="rem-plate"><%= r.plate %></div>
-              <div class="rem-stats">
-                <span class="stat <%= soatState %>">SOAT: <%= r.soat === null ? '—' : (r.soat < 0 ? ('hace ' + Math.abs(r.soat) + ' días') : ('en ' + r.soat + ' días')) %></span>
-                <span class="stat <%= tecState %>">Tecno: <%= r.tecno === null ? '—' : (r.tecno < 0 ? ('hace ' + Math.abs(r.tecno) + ' días') : ('en ' + r.tecno + ' días')) %></span>
-              </div>
-              <div class="rem-actions">
-                <button class="btn btn-xs btn-outline" type="button" data-modal-open="#edit-<%= r.plate %>">Editar fechas</button>
-              </div>
-            </div>
-          </li>
-
-          <!-- Modal editar fechas -->
-          <div class="modal" id="edit-<%= r.plate %>" aria-hidden="true">
-            <div class="modal-backdrop" data-modal-close></div>
-            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-edit-<%= r.plate %>">
-              <div class="modal-header">
-                <h3 class="modal-title" id="title-edit-<%= r.plate %>">Editar fechas — <%= r.plate %></h3>
-                <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
-              </div>
-              <form method="post" action="/club/vehiculos/actualizar">
-                <div class="modal-body">
-                  <input type="hidden" name="plate" value="<%= r.plate %>" />
-                  <div class="grid two">
-                    <label>Vence SOAT<input type="date" name="soatExpires" /></label>
-                    <label>Vence Tecno<input type="date" name="tecnoExpires" /></label>
-                  </div>
-                </div>
-                <div class="modal-actions">
-                  <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
-                  <button class="btn" type="submit">Guardar</button>
-                </div>
-              </form>
-            </div>
+      <section>
+        <h1>Hola, <%= user.nickname ? user.nickname : user.name %>
+        </h1>
+        <div class="grid two">
+          <div class="card">
+            <h2>Tu membresía</h2>
+            <p><strong>Nivel:</strong>
+              <%= user.membership.level %>
+            </p>
+            <p><strong>Desde:</strong>
+              <%= user.membership.since %>
+            </p>
+            <p><strong>Vence:</strong>
+              <%= user.membership.expires %>
+            </p>
+            <h3>Beneficios</h3>
+            <ul>
+              <% user.membership.benefits.forEach(b=> { %>
+                <li>
+                  <%= b %>
+                </li>
+                <% }) %>
+            </ul>
           </div>
-        <% }) %>
-        </ul>
-      <% } %>
-    </div>
-  <div class="card" id="vehiculos">
-      <h2>Mis vehículos</h2>
-      <form class="stack" method="post" action="/club/vehiculos">
-        <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required /></label>
-        <div class="grid two" style="align-items:end">
-          <label>Vence SOAT<input type="date" name="soatExpires" style="min-width:0" /></label>
-          <label>Vence Tecno<input type="date" name="tecnoExpires" style="min-width:0" /></label>
+          <div class="card">
+            <h2>Historial de visitas</h2>
+            <ul class="list">
+              <% if (user.visits.length===0) { %>
+                <li class="muted">Sin registros aún.</li>
+                <% } %>
+                  <% user.visits.forEach(v=> { %>
+                    <li>
+                      <span><strong>
+                          <%= v.date %>
+                        </strong></span>
+                      <span>
+                        <%= v.service %>
+                      </span>
+                    </li>
+                    <% }) %>
+            </ul>
+            <form class="stack" method="post" action="/club/visitas">
+              <label>
+                Fecha
+                <input type="date" name="date" required />
+              </label>
+              <label>
+                Servicio
+                <input type="text" name="service" placeholder="Descripción del servicio" required />
+              </label>
+              <button class="btn" type="submit">Agregar visita</button>
+            </form>
+          </div>
         </div>
-        <button class="btn" type="submit">Agregar</button>
-      </form>
-      <% if (user.vehicles && user.vehicles.length) { %>
-        <ul class="list list-actions" style="margin-top:10px">
-          <% user.vehicles.forEach(v => { %>
-            <li>
-              <span>
-                <strong><%= v.plate %></strong>
-                <span class="muted" style="margin-left:8px;font-size:.86em">QR: identificación rápida</span>
-              </span>
-              <span style="display:inline-flex;align-items:center;gap:8px">
-                <a class="btn btn-xs btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png">Descargar QR</a>
-                <button class="btn btn-xs btn-outline" type="button" data-modal-open="#qr-<%= v.plate %>">Ver QR</button>
-                <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Eliminar vehículo?" style="display:inline">
-                  <input type="hidden" name="plate" value="<%= v.plate %>" />
-                  <button class="btn btn-xs btn-outline" type="submit">Eliminar</button>
-                </form>
-              </span>
-            </li>
+      </section>
 
-            <!-- Modal QR preview -->
-            <div class="modal" id="qr-<%= v.plate %>" aria-hidden="true">
-              <div class="modal-backdrop" data-modal-close></div>
-              <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-qr-<%= v.plate %>">
-                <div class="modal-header">
-                  <h3 class="modal-title" id="title-qr-<%= v.plate %>">QR de <%= v.plate %></h3>
-                  <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
-                </div>
-                <div class="modal-body" style="display:grid;justify-items:center;gap:10px">
-                  <img src="/club/vehiculos/<%= v.plate %>/qr.png" alt="Código QR de <%= v.plate %>" style="width:260px;height:260px;image-rendering:pixelated;border:1px solid #e5e7eb;border-radius:12px;padding:8px;background:#fff" />
-                  <p class="muted" style="text-align:center;margin:0">Imprime o guarda este código para identificar tu moto en el taller, rodadas y actividades.</p>
-                </div>
-                <div class="modal-actions">
-                  <a class="btn btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png">Descargar</a>
-                  <button class="btn" type="button" data-modal-close>Cerrar</button>
-                </div>
+      <section>
+        <div class="grid two">
+          <div class="card">
+            <h2>Recordatorios SOAT y Tecnomecánica</h2>
+            <% if (!reminders || reminders.length===0) { %>
+              <p class="muted">Aún no has registrado vehículos.</p>
+              <% } else { %>
+                <ul class="reminders-list">
+                  <% reminders.forEach(r=> { %>
+                    <% const soatState=(r.soat===null) ? 'none' : (r.soat < 0 ? 'expired' : (r.soat <=30 ? 'soon' : 'ok'
+                      )); %>
+                      <% const tecState=(r.tecno===null) ? 'none' : (r.tecno < 0 ? 'expired' : (r.tecno <=30 ? 'soon'
+                        : 'ok' )); %>
+                        <li>
+                          <div class="rem-row">
+                            <div class="rem-plate">
+                              <%= r.plate %>
+                            </div>
+                            <div class="rem-stats">
+                              <span class="stat <%= soatState %>">SOAT: <%= r.soat===null ? '—' : (r.soat < 0 ?
+                                  ('hace ' + Math.abs(r.soat) + ' días') : ('en ' + r.soat + ' días')) %></span>
+                              <span class="stat <%= tecState %>">Tecno: <%= r.tecno===null ? '—' : (r.tecno < 0 ?
+                                  ('hace ' + Math.abs(r.tecno) + ' días') : ('en ' + r.tecno + ' días')) %></span>
+                            </div>
+                            <div class="rem-actions">
+                              <button class="btn btn-xs btn-outline" type="button"
+                                data-modal-open="#edit-<%= r.plate %>">Editar fechas</button>
+                            </div>
+                          </div>
+                        </li>
+
+                        <!-- Modal editar fechas -->
+                        <div class="modal" id="edit-<%= r.plate %>" aria-hidden="true">
+                          <div class="modal-backdrop" data-modal-close></div>
+                          <div class="modal-dialog" role="dialog" aria-modal="true"
+                            aria-labelledby="title-edit-<%= r.plate %>">
+                            <div class="modal-header">
+                              <h3 class="modal-title" id="title-edit-<%= r.plate %>">Editar fechas — <%= r.plate %>
+                              </h3>
+                              <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
+                            </div>
+                            <form method="post" action="/club/vehiculos/actualizar">
+                              <div class="modal-body">
+                                <input type="hidden" name="plate" value="<%= r.plate %>" />
+                                <div class="grid two">
+                                  <label>Vence SOAT<input type="date" name="soatExpires" /></label>
+                                  <label>Vence Tecno<input type="date" name="tecnoExpires" /></label>
+                                </div>
+                              </div>
+                              <div class="modal-actions">
+                                <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
+                                <button class="btn" type="submit">Guardar</button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                        <% }) %>
+                </ul>
+                <% } %>
+          </div>
+          <div class="card" id="vehiculos">
+            <h2>Mis vehículos</h2>
+            <form class="stack" method="post" action="/club/vehiculos">
+              <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required /></label>
+              <div class="grid two" style="align-items:end">
+                <label>Vence SOAT<input type="date" name="soatExpires" style="min-width:0" /></label>
+                <label>Vence Tecno<input type="date" name="tecnoExpires" style="min-width:0" /></label>
               </div>
-            </div>
-          <% }) %>
-        </ul>
-      <% } %>
-    </div>
-  </div>
-  </section>
+              <button class="btn" type="submit">Agregar</button>
+            </form>
+            <% if (user.vehicles && user.vehicles.length) { %>
+              <ul class="list list-actions" style="margin-top:10px">
+                <% user.vehicles.forEach(v=> { %>
+                  <li>
+                    <span>
+                      <strong>
+                        <%= v.plate %>
+                      </strong>
+                      <span class="muted" style="margin-left:8px;font-size:.86em">QR: identificación rápida</span>
+                    </span>
+                    <span style="display:inline-flex;align-items:center;gap:8px">
+                      <a class="btn btn-xs btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png"
+                        download="QR-<%= v.plate %>.png">Descargar QR</a>
+                      <button class="btn btn-xs btn-outline" type="button" data-modal-open="#qr-<%= v.plate %>">Ver
+                        QR</button>
+                      <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Eliminar vehículo?"
+                        style="display:inline">
+                        <input type="hidden" name="plate" value="<%= v.plate %>" />
+                        <button class="btn btn-xs btn-outline" type="submit">Eliminar</button>
+                      </form>
+                    </span>
+                  </li>
 
-<%- include('../partials/footer') %>
+                  <!-- Modal QR preview -->
+                  <div class="modal" id="qr-<%= v.plate %>" aria-hidden="true">
+                    <div class="modal-backdrop" data-modal-close></div>
+                    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-qr-<%= v.plate %>">
+                      <div class="modal-header">
+                        <h3 class="modal-title" id="title-qr-<%= v.plate %>">QR de <%= v.plate %>
+                        </h3>
+                        <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
+                      </div>
+                      <div class="modal-body" style="display:grid;justify-items:center;gap:10px">
+                        <img src="/club/vehiculos/<%= v.plate %>/qr.png" alt="Código QR de <%= v.plate %>"
+                          style="width:260px;height:260px;image-rendering:pixelated;border:1px solid #e5e7eb;border-radius:12px;padding:8px;background:#fff" />
+                        <p class="muted" style="text-align:center;margin:0">Imprime o guarda este código para
+                          identificar tu moto en el taller, rodadas y actividades.</p>
+                      </div>
+                      <div class="modal-actions">
+                        <a class="btn btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png"
+                          download="QR-<%= v.plate %>.png">Descargar</a>
+                        <button class="btn" type="button" data-modal-close>Cerrar</button>
+                      </div>
+                    </div>
+                  </div>
+                  <% }) %>
+              </ul>
+              <% } %>
+          </div>
+        </div>
+      </section>
+
+      <%- include('../partials/footer') %>
