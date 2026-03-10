@@ -8,3 +8,7 @@ const JobApplicationSchema = new mongoose.Schema({
     experience: { type: String },
     skills: { type: String },
     message: { type: String },
+    createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model('JobApplication', JobApplicationSchema);
