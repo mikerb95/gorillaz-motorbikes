@@ -9,12 +9,14 @@ const UserSchema = new mongoose.Schema({
 
   // Datos personales
   name: { type: String, required: true },
+  nickname: { type: String },
   cedula: { type: String },
   phone: { type: String },
   birthdate: { type: String },
   bloodType: { type: String },
   city: { type: String },
-  address: { type: String },
+  address: { type: String }, // Legacy
+  clubNotifications: { type: Boolean, default: true },
 
   // Contacto de emergencia
   emergencyName: { type: String },
@@ -43,7 +45,8 @@ const UserSchema = new mongoose.Schema({
     cc: { type: String },
     color: { type: String },
     soatExpires: { type: String },
-    tecnoExpires: { type: String }
+    tecnoExpires: { type: String },
+    qr: { type: String }
   }],
 
   createdAt: { type: Date, default: Date.now }

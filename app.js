@@ -1057,7 +1057,8 @@ app.get('/club/registro', (req, res) => {
 });
 app.post('/club/registro', async (req, res) => {
   const {
-    name, cedula, phone, birthdate, bloodType, city, address,
+    name, cedula, phone, birthdate, bloodType, city, 
+    nickname, clubNotifications,
     emergencyName, emergencyPhone,
     vehicleBrand, vehicleModel, vehicleYear, vehiclePlate, vehicleCC, vehicleColor,
     soatExpires, tecnoExpires,
@@ -1072,6 +1073,12 @@ app.post('/club/registro', async (req, res) => {
   try {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).render('club/register', { error: 'El correo ya está en uso' });
+    
+    // Check cedula to prevent duplicates if provided
+    if (cedula) {
+      const cedulaExists = await User.findOne({ cedula });
+      if (cedulaExists) return res.status(400).render('club/register', { error: 'La cédula ya está en uso' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -1083,7 +1090,8 @@ app.post('/club/registro', async (req, res) => {
 
     const newUser = new User({
       name, email, password: hashedPassword,
-      cedula, phone, birthdate, bloodType, city, address,
+      cedula, phone, birthdate, bloodType, city, 
+      nickname, clubNotifications: clubNotifications === 'true',
       emergencyName, emergencyPhone,
       vehicles: vehicle,
       membership: {
