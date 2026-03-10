@@ -42,8 +42,19 @@
                 <label for="birthdate">Fecha de nacimiento</label>
                 <input id="birthdate" name="birthdate" type="date" />
               </div>
+            </div>
+          </fieldset>
+
+          <!-- ── 2. SECCIÓN CLUB ─────────────────────────────── -->
+          <fieldset class="register-section">
+            <legend class="register-legend">Club</legend>
+            <div class="register-grid">
               <div class="field">
-                <label for="bloodType">Tipo de sangre</label>
+                <label for="nickname">Nickname / Apodo</label>
+                <input id="nickname" name="nickname" placeholder="Ej. El Rayo" />
+              </div>
+              <div class="field">
+                <label for="bloodType">RH (Grupo sanguíneo)</label>
                 <select id="bloodType" name="bloodType">
                   <option value="">— Seleccionar —</option>
                   <option>O+</option>
@@ -55,15 +66,16 @@
                   <option>AB+</option>
                   <option>AB-</option>
                 </select>
+                <p class="field-hint" style="font-size: 0.8rem; opacity: 0.8; margin-top: 4px;">Información necesaria por seguridad durante las rodadas.</p>
               </div>
-              <div class="field field--full">
-                <label for="address">Dirección / Barrio</label>
-                <input id="address" name="address" placeholder="Ej. Cra 7 #45-12, Chapinero" />
+              <div class="field field--full checkbox-field" style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="clubNotifications" name="clubNotifications" value="true" checked style="width: auto; margin: 0;">
+                <label for="clubNotifications" style="margin: 0; cursor: pointer;">Deseo recibir notificaciones del club vía correo electrónico</label>
               </div>
             </div>
           </fieldset>
 
-          <!-- ── 2. CONTACTO DE EMERGENCIA ─────────────────────── -->
+          <!-- ── 3. CONTACTO DE EMERGENCIA ─────────────────────── -->
           <fieldset class="register-section">
             <legend class="register-legend">Contacto de emergencia</legend>
             <div class="register-grid">
