@@ -19,13 +19,10 @@ const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '';
 const JWT_SECRET = process.env.JWT_SECRET || 'gorillaz-ultra-secret';
 
 // Connect to MongoDB
-/*
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/gorillaz', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
-*/
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/gorillaz')
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+
 
 // Demo users (in-memory)
 const users = [
