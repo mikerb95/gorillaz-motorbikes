@@ -2,7 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-const { csrfSync } = require('tiny-csrf');
+const crypto = require('crypto');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
@@ -57,8 +57,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser('gorillaz-cookie-secret'));
 
-// CSRF protection (cookie-based)
-app.use(csrfSync(['POST', 'PUT', 'DELETE'], 'gorillaz-crsf-secret-32-chars-long!'));
+// CSRF token generation middleware
+app.use((req, res, next) => {
+  if (!req.cookies._csrf) {
+    const token = crypto.randomBytes(32).toString('hex');
+    res.cookie('_csrf', token, { httpOnly: false, sameSite: 'strict', maxAge: 3600000 });
+    res.locals.csrfToken = token;
+  } else {
+    res.locals.csrfToken = req.cookies._csrf;
+  }
+  next();
+});
 
 // JWT Verification Middleware
 app.use((req, res, next) => {
@@ -92,7 +101,6 @@ app.set('view engine', 'ejs');
 // Locals for templates
 app.use((req, res, next) => {
   res.locals.user = users.find(u => u.id === req.userId); // userId instead of session.userId
-  res.locals.csrfToken = req.csrfToken();
   const c = req.session.cart || { items: {}, count: 0, subtotal: 0 };
   // compute totals defensively without relying on other helpers
   let count = 0, subtotal = 0;
@@ -132,11 +140,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// CSRF error handler
-app.use((err, req, res, next) => {
-  if (err.code !== 'EBADCSRFTOKEN') return next(err);
-  res.status(403).render('403', { message: 'Token inválido. Actualiza la página e inténtalo de nuevo.' });
-});
+// CSRF validation middleware
+const validateCsrf = (req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
+  const token = req.body._csrf || req.headers['x-csrf-token'];
+  const cookieToken = req.cookies._csrf;
+  if (!token || token !== cookieToken) {
+    return res.status(403).render('403', { message: 'Token CSRF inválido. Actualiza la página e inténtalo de nuevo.' });
+  }
+  next();
+};
+
+app.use(validateCsrf);
 
 // Helpers
 const requireAuth = (req, res, next) => {
