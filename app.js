@@ -595,11 +595,6 @@ app.post('/admin/usuarios/actualizar', requireAuth, requireAdmin, async (req, re
   }
   res.redirect('/admin/usuarios');
 });
-    if (name) u.name = name;
-    if (membershipLevel) u.membership.level = membershipLevel;
-  }
-  res.redirect('/admin/usuarios');
-});
 app.post('/admin/usuarios/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.body;
   await User.findByIdAndDelete(id);
@@ -993,7 +988,6 @@ app.get('/faq', (req, res) => {
 
 // Club
 app.get('/club', (req, res) => {
-  await user.save();
   if (req.session.userId) return res.redirect('/club/panel');
   // Build club slideshow from /images/slideshow/club
   const dir = path.join(__dirname, 'images', 'slideshow', 'club');
@@ -1037,7 +1031,6 @@ app.post('/club/login', async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
   await user.save();
-  res.redirect('/club/panel');
   } catch(e) {
     res.status(500).render('club/login', { error: 'Error del servidor' });
   }
