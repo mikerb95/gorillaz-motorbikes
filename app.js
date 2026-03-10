@@ -243,6 +243,11 @@ app.post('/servicios/agendar', (req, res) => {
   res.render('services_schedule', { services, bookingMessage });
 });
 
+// Servicios: Nuevas páginas "Próximamente"
+app.get('/servicios/lavado-motos', (req, res) => res.render('services/lavado-motos'));
+app.get('/servicios/lavado-cascos', (req, res) => res.render('services/lavado-cascos'));
+app.get('/servicios/detailing-motos', (req, res) => res.render('services/detailing-motos'));
+
 // Servicios: página informativa
 app.get('/servicios', (req, res) => {
   const services = [
