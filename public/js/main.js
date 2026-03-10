@@ -808,3 +808,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+/* ===== AJAX Add to Cart from listing cards ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  // Toast helper
+  function showToast(msg, isError) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'toast';
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.className = 'toast ' + (isError ? 'toast-error' : 'toast-success') + ' toast-show';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => { toast.classList.remove('toast-show'); }, 3000);
+  }
+  window.showToast = showToast;
+
+  // Attach to all .btn-add-cart buttons on shop listing
+  document.querySelectorAll('.btn-add-cart').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      const id = this.dataset.id;
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      this.disabled = true;
+      try {
+        const res = await fetch('/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': csrf },
+          body: JSON.stringify({ id, qty: 1, _csrf: csrf })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          document.querySelectorAll('.cart-badge').forEach(b => b.textContent = data.cartCount);
+          showToast(data.message || 'Añadido al carrito');
+        } else {
+          showToast(data.message || 'Error al añadir', true);
+        }
+      } catch {
+        showToast('Error de conexión', true);
+      }
+      this.disabled = false;
+    });
+  });
+});

@@ -580,12 +580,21 @@ app.post('/admin/eventos/eliminar', requireAuth, requireAdmin, (req, res) => {
 // Admin: users (modify or delete)
 app.get('/admin/usuarios', requireAuth, requireAdmin, async (req, res) => {
   const usersList = await User.find().lean();
-  res.render('admin/users', { users });
+  res.render('admin/users', { users: usersList });
 });
-app.post('/admin/usuarios/actualizar', requireAuth, requireAdmin, (req, res) => {
+app.post('/admin/usuarios/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { id, name, membershipLevel } = req.body;
   const u = await User.findById(id);
   if (u) {
+    if (name) u.name = name;
+    if (membershipLevel) {
+       if (!u.membership) u.membership = {};
+       u.membership.level = membershipLevel;
+    }
+    await u.save();
+  }
+  res.redirect('/admin/usuarios');
+});
     if (name) u.name = name;
     if (membershipLevel) u.membership.level = membershipLevel;
   }
