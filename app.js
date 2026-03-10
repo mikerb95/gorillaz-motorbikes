@@ -1122,7 +1122,7 @@ app.get('/club/olvide', (req, res) => {
 app.post('/club/olvide', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.render('club/forgot', { error: 'Por favor, ingresa tu correo.', message: null });
-  
+
   try {
     const user = await User.findOne({ email });
     if (user) {
@@ -1130,9 +1130,9 @@ app.post('/club/olvide', async (req, res) => {
       user.resetToken = resetToken;
       user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
       await user.save();
-      
+
       const resetLink = `${req.protocol}://${req.get('host')}/club/reset-password?token=${resetToken}`;
-      
+
       if (process.env.RESEND_API_KEY) {
         await resendClient.emails.send({
           from: 'booking@gorillazmotorbikes.com',
@@ -1154,33 +1154,33 @@ app.post('/club/olvide', async (req, res) => {
 app.get('/club/reset-password', async (req, res) => {
   const { token } = req.query;
   if (!token) return res.redirect('/club/olvide');
-  
+
   const user = await User.findOne({ resetToken: token, resetTokenExpiry: { $gt: Date.now() } });
   if (!user) {
     return res.render('club/reset', { error: 'El enlace es inválido o ha expirado.', token: '' });
   }
-  
+
   res.render('club/reset', { error: null, token: req.query.token });
 });
 
 app.post('/club/reset-password', async (req, res) => {
   const { token, password, confirm } = req.body;
-  
+
   if (password !== confirm) {
     return res.render('club/reset', { error: 'Las contraseñas no coinciden.', token });
   }
-  
+
   const user = await User.findOne({ resetToken: token, resetTokenExpiry: { $gt: Date.now() } });
   if (!user) {
     return res.render('club/reset', { error: 'El enlace es inválido o ha expirado.', token: '' });
   }
-  
+
   const bcryptjs = require('bcryptjs');
   user.password = await bcryptjs.hash(password, 10);
   user.resetToken = undefined;
   user.resetTokenExpiry = undefined;
   await user.save();
-  
+
   res.redirect('/club/login');
 });
 
