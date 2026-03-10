@@ -6439,3 +6439,13 @@ label.full,
 .row.gap.space-between {
   justify-content: space-between
 }
+/* Custom overrides for service media */
+.service-media {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius);
+  background-color: var(--card);
+}
+.service-row { align-items: center; gap: 32px; }
