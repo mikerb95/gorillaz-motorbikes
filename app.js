@@ -130,6 +130,7 @@ app.use(async (req, res, next) => {
   // Upcoming events badge and first anchor for sub-bar
   try {
     const today = new Date(); today.setHours(0, 0, 0, 0);
+    const events = await Event.find().sort({ date: 1 }).lean();
     let count = 0; let firstIdx = -1;
     (events || []).forEach((ev, i) => {
       if (!ev || !ev.date) return;
@@ -530,18 +531,22 @@ app.post('/cursos/:slug/inscripcion', (req, res) => {
 });
 
 // Public events page
-app.get('/eventos', (req, res) => {
+app.get('/eventos', async (req, res) => {
+  const events = await Event.find().sort({ date: 1 }).lean();
   res.render('events', { events });
 });
 
 // Admin dashboard
 app.get('/admin', requireAuth, requireAdmin, async (req, res) => {
   const usersCount = await User.countDocuments();
+  const eventsCount = await Event.countDocuments();
+  const citasCount = await Appointment.countDocuments();
+  
   res.render('admin/index', {
     stats: {
       users: usersCount,
-      events: events.length,
-      citas: appointments.length,
+      events: eventsCount,
+      citas: citasCount,
       cursos: courses.length,
       productos: (catalog.products || []).length
     }
@@ -568,33 +573,32 @@ app.post('/admin/calendario/desbloquear', requireAuth, requireAdmin, (req, res) 
 });
 
 // Admin: events CRUD
-app.get('/admin/eventos', requireAuth, requireAdmin, (req, res) => {
+app.get('/admin/eventos', requireAuth, requireAdmin, async (req, res) => {
+  const events = await Event.find().sort({ createdAt: -1 }).lean();
   res.render('admin/events', { events });
 });
-app.post('/admin/eventos/crear', requireAuth, requireAdmin, (req, res) => {
+app.post('/admin/eventos/crear', requireAuth, requireAdmin, async (req, res) => {
   const { title, date, location, description } = req.body;
   if (title && date) {
-    events.unshift({ id: uuidv4(), title, date, location, description });
-    saveJSON('events.json', events);
+    await Event.create({ id: uuidv4(), title, date, location, description });
   }
   res.redirect('/admin/eventos');
 });
-app.post('/admin/eventos/actualizar', requireAuth, requireAdmin, (req, res) => {
+app.post('/admin/eventos/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { id, title, date, location, description } = req.body;
-  const ev = events.find(e => e.id === id);
+  const ev = await Event.findOne({ id });
   if (ev) {
     if (title) ev.title = title;
     if (date) ev.date = date;
     if (typeof location !== 'undefined') ev.location = location;
     if (typeof description !== 'undefined') ev.description = description;
-    saveJSON('events.json', events);
+    await ev.save();
   }
   res.redirect('/admin/eventos');
 });
-app.post('/admin/eventos/eliminar', requireAuth, requireAdmin, (req, res) => {
+app.post('/admin/eventos/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.body;
-  events = events.filter(e => e.id !== id);
-  saveJSON('events.json', events);
+  await Event.deleteOne({ id });
   res.redirect('/admin/eventos');
 });
 
