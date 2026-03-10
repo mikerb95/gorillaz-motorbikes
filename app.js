@@ -1049,20 +1049,6 @@ app.post('/club/registro', async (req, res) => {
   } catch(e) {
     res.status(500).render('club/register', { error: 'Error del servidor' });
   }
-});
-    if (exists) return res.status(400).render('club/register', { error: 'El correo ya está en uso' });
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({
-      name, email, password: hashedPassword,
-      membership: { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Acceso premium próximamente'] },
-    });
-    await newUser.save();
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
-    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
-  await user.save();
-  res.redirect('/club/panel');
-  } catch(e) {
-    res.status(500).render('club/register', { error: 'Error del servidor' });
   }
 });
 
