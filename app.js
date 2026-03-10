@@ -1053,7 +1053,6 @@ app.post('/club/registro', async (req, res) => {
 
 // Olvidé mi contraseña (mock)
 app.get('/club/olvide', (req, res) => {
-  await user.save();
   if (req.session.userId) return res.redirect('/club/panel');
   res.render('club/forgot', { message: null });
 });
