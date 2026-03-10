@@ -1,178 +1,284 @@
 <%- include('../partials/head', { title: 'Club — Registro' }) %>
 
-<section class="auth-wrap auth-wrap--wide">
-  <div class="auth-header">
-    <a href="/" class="auth-logo" aria-label="Gorillaz Motorbikes">
-      <img src="/favicons/android-chrome-192x192.png" alt="Gorillaz Motorbikes" />
-    </a>
-    <h1 class="auth-title">Únete al Club</h1>
-    <p class="auth-subtitle">Taller y comunidad Gorillaz Motorbikes</p>
-  </div>
+  <section class="auth-wrap auth-wrap--wide">
+    <div class="auth-header">
+      <a href="/" class="auth-logo" aria-label="Gorillaz Motorbikes">
+        <img src="/favicons/android-chrome-192x192.png" alt="Gorillaz Motorbikes" />
+      </a>
+      <h1 class="auth-title">Únete al Club</h1>
+      <p class="auth-subtitle">Taller y comunidad Gorillaz Motorbikes</p>
+    </div>
 
-  <% if (typeof error !== 'undefined' && error) { %>
-    <div class="form-error-banner"><%= error %></div>
-  <% } %>
-
-  <form method="post" action="/club/registro" class="auth-card register-form" novalidate>
-
-    <!-- ── 1. DATOS PERSONALES ─────────────────────────────── -->
-    <fieldset class="register-section">
-      <legend class="register-legend">Datos personales</legend>
-
-      <div class="register-grid">
-        <div class="field">
-          <label for="name">Nombre completo <span class="req">*</span></label>
-          <input id="name" name="name" placeholder="Ej. Carlos Rodríguez" required />
-        </div>
-        <div class="field">
-          <label for="cedula">Cédula de ciudadanía <span class="req">*</span></label>
-          <input id="cedula" name="cedula" placeholder="Ej. 1020304050" required />
-        </div>
-        <div class="field">
-          <label for="phone">Celular <span class="req">*</span></label>
-          <input id="phone" name="phone" type="tel" placeholder="Ej. 3201234567" required />
-        </div>
-        <div class="field">
-          <label for="city">Ciudad <span class="req">*</span></label>
-          <input id="city" name="city" placeholder="Ej. Bogotá" required />
-        </div>
-        <div class="field">
-          <label for="birthdate">Fecha de nacimiento</label>
-          <input id="birthdate" name="birthdate" type="date" />
-        </div>
-        <div class="field">
-          <label for="bloodType">Tipo de sangre</label>
-          <select id="bloodType" name="bloodType">
-            <option value="">— Seleccionar —</option>
-            <option>O+</option><option>O-</option>
-            <option>A+</option><option>A-</option>
-            <option>B+</option><option>B-</option>
-            <option>AB+</option><option>AB-</option>
-          </select>
-        </div>
-        <div class="field field--full">
-          <label for="address">Dirección / Barrio</label>
-          <input id="address" name="address" placeholder="Ej. Cra 7 #45-12, Chapinero" />
-        </div>
+    <% if (typeof error !=='undefined' && error) { %>
+      <div class="form-error-banner">
+        <%= error %>
       </div>
-    </fieldset>
+      <% } %>
 
-    <!-- ── 2. CONTACTO DE EMERGENCIA ─────────────────────── -->
-    <fieldset class="register-section">
-      <legend class="register-legend">Contacto de emergencia</legend>
-      <div class="register-grid">
-        <div class="field">
-          <label for="emergencyName">Nombre</label>
-          <input id="emergencyName" name="emergencyName" placeholder="Ej. Ana Martínez" />
-        </div>
-        <div class="field">
-          <label for="emergencyPhone">Celular</label>
-          <input id="emergencyPhone" name="emergencyPhone" type="tel" placeholder="Ej. 3109876543" />
-        </div>
-      </div>
-    </fieldset>
+        <form method="post" action="/club/registro" class="auth-card register-form" novalidate>
 
-    <!-- ── 3. DATOS DE LA MOTO ───────────────────────────── -->
-    <fieldset class="register-section">
-      <legend class="register-legend">Mi moto <span class="legend-note">(opcional)</span></legend>
-      <div class="register-grid">
-        <div class="field">
-          <label for="vehicleBrand">Marca</label>
-          <input id="vehicleBrand" name="vehicleBrand" placeholder="Ej. Yamaha, Honda, Bajaj…" />
-        </div>
-        <div class="field">
-          <label for="vehicleModel">Modelo</label>
-          <input id="vehicleModel" name="vehicleModel" placeholder="Ej. MT-07, CB500F…" />
-        </div>
-        <div class="field">
-          <label for="vehicleYear">Año</label>
-          <input id="vehicleYear" name="vehicleYear" type="number" min="1990" max="2030" placeholder="Ej. 2022" />
-        </div>
-        <div class="field">
-          <label for="vehiclePlate">Placa</label>
-          <input id="vehiclePlate" name="vehiclePlate" placeholder="Ej. ABC12D" style="text-transform:uppercase" />
-        </div>
-        <div class="field">
-          <label for="vehicleCC">Cilindraje (cc)</label>
-          <input id="vehicleCC" name="vehicleCC" type="number" min="50" max="2500" placeholder="Ej. 600" />
-        </div>
-        <div class="field">
-          <label for="vehicleColor">Color</label>
-          <input id="vehicleColor" name="vehicleColor" placeholder="Ej. Negro mate" />
-        </div>
-      </div>
-    </fieldset>
+          <!-- ── 1. DATOS PERSONALES ─────────────────────────────── -->
+          <fieldset class="register-section">
+            <legend class="register-legend">Datos personales</legend>
 
-    <!-- ── 4. SOAT Y TECNOMECÁNICA ───────────────────────── -->
-    <fieldset class="register-section">
-      <legend class="register-legend">Documentos del vehículo <span class="legend-note">(opcional)</span></legend>
-      <p class="section-hint">Esta información nos ayuda a recordarte cuando vencen tus documentos.</p>
-      <div class="register-grid">
-        <div class="field">
-          <label for="soatExpires">Vencimiento SOAT</label>
-          <input id="soatExpires" name="soatExpires" type="date" />
-        </div>
-        <div class="field">
-          <label for="tecnoExpires">Vencimiento Tecnomecánica</label>
-          <input id="tecnoExpires" name="tecnoExpires" type="date" />
-        </div>
-      </div>
-    </fieldset>
+            <div class="register-grid">
+              <div class="field">
+                <label for="name">Nombre completo <span class="req">*</span></label>
+                <input id="name" name="name" placeholder="Ej. Carlos Rodríguez" required />
+              </div>
+              <div class="field">
+                <label for="cedula">Cédula de ciudadanía <span class="req">*</span></label>
+                <input id="cedula" name="cedula" placeholder="Ej. 1020304050" required />
+              </div>
+              <div class="field">
+                <label for="phone">Celular <span class="req">*</span></label>
+                <input id="phone" name="phone" type="tel" placeholder="Ej. 3201234567" required />
+              </div>
+              <div class="field">
+                <label for="city">Ciudad <span class="req">*</span></label>
+                <input id="city" name="city" placeholder="Ej. Bogotá" required />
+              </div>
+              <div class="field">
+                <label for="birthdate">Fecha de nacimiento</label>
+                <input id="birthdate" name="birthdate" type="date" />
+              </div>
+              <div class="field">
+                <label for="bloodType">Tipo de sangre</label>
+                <select id="bloodType" name="bloodType">
+                  <option value="">— Seleccionar —</option>
+                  <option>O+</option>
+                  <option>O-</option>
+                  <option>A+</option>
+                  <option>A-</option>
+                  <option>B+</option>
+                  <option>B-</option>
+                  <option>AB+</option>
+                  <option>AB-</option>
+                </select>
+              </div>
+              <div class="field field--full">
+                <label for="address">Dirección / Barrio</label>
+                <input id="address" name="address" placeholder="Ej. Cra 7 #45-12, Chapinero" />
+              </div>
+            </div>
+          </fieldset>
 
-    <!-- ── 5. ACCESO ─────────────────────────────────────── -->
-    <fieldset class="register-section">
-      <legend class="register-legend">Acceso a tu cuenta</legend>
-      <div class="register-grid">
-        <div class="field">
-          <label for="email">Correo electrónico <span class="req">*</span></label>
-          <input id="email" name="email" type="email" autocomplete="username" placeholder="tu@correo.com" required />
-        </div>
-        <div class="field">
-          <label for="password">Contraseña <span class="req">*</span></label>
-          <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" required minlength="8" />
-        </div>
-        <div class="field">
-          <label for="confirmPassword">Confirmar contraseña <span class="req">*</span></label>
-          <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Repite tu contraseña" required minlength="8" />
-        </div>
-      </div>
-    </fieldset>
+          <!-- ── 2. CONTACTO DE EMERGENCIA ─────────────────────── -->
+          <fieldset class="register-section">
+            <legend class="register-legend">Contacto de emergencia</legend>
+            <div class="register-grid">
+              <div class="field">
+                <label for="emergencyName">Nombre</label>
+                <input id="emergencyName" name="emergencyName" placeholder="Ej. Ana Martínez" />
+              </div>
+              <div class="field">
+                <label for="emergencyPhone">Celular</label>
+                <input id="emergencyPhone" name="emergencyPhone" type="tel" placeholder="Ej. 3109876543" />
+              </div>
+            </div>
+          </fieldset>
 
-    <p class="form-legal">
-      Al registrarte aceptas nuestros
-      <a class="link" href="/terminos" target="_blank">Términos y condiciones</a> y
-      <a class="link" href="/privacidad" target="_blank">Política de privacidad</a>.
-    </p>
+          <!-- ── 3. DATOS DE LA MOTO ───────────────────────────── -->
+          <fieldset class="register-section">
+            <legend class="register-legend">Mi moto <span class="legend-note">(opcional)</span></legend>
+            <div class="register-grid">
+              <div class="field">
+                <label for="vehicleBrand">Marca</label>
+                <input id="vehicleBrand" name="vehicleBrand" placeholder="Ej. Yamaha, Honda, Bajaj…" />
+              </div>
+              <div class="field">
+                <label for="vehicleModel">Modelo</label>
+                <input id="vehicleModel" name="vehicleModel" placeholder="Ej. MT-07, CB500F…" />
+              </div>
+              <div class="field">
+                <label for="vehicleYear">Año</label>
+                <input id="vehicleYear" name="vehicleYear" type="number" min="1990" max="2030" placeholder="Ej. 2022" />
+              </div>
+              <div class="field">
+                <label for="vehiclePlate">Placa</label>
+                <input id="vehiclePlate" name="vehiclePlate" placeholder="Ej. ABC12D"
+                  style="text-transform:uppercase" />
+              </div>
+              <div class="field">
+                <label for="vehicleCC">Cilindraje (cc)</label>
+                <input id="vehicleCC" name="vehicleCC" type="number" min="50" max="2500" placeholder="Ej. 600" />
+              </div>
+              <div class="field">
+                <label for="vehicleColor">Color</label>
+                <input id="vehicleColor" name="vehicleColor" placeholder="Ej. Negro mate" />
+              </div>
+            </div>
+          </fieldset>
 
-    <button class="btn btn-primary btn--full" type="submit">Crear cuenta</button>
-  </form>
+          <!-- ── 4. SOAT Y TECNOMECÁNICA ───────────────────────── -->
+          <fieldset class="register-section">
+            <legend class="register-legend">Documentos del vehículo <span class="legend-note">(opcional)</span></legend>
+            <p class="section-hint">Esta información nos ayuda a recordarte cuando vencen tus documentos.</p>
+            <div class="register-grid">
+              <div class="field">
+                <label for="soatExpires">Vencimiento SOAT</label>
+                <input id="soatExpires" name="soatExpires" type="date" />
+              </div>
+              <div class="field">
+                <label for="tecnoExpires">Vencimiento Tecnomecánica</label>
+                <input id="tecnoExpires" name="tecnoExpires" type="date" />
+              </div>
+            </div>
+          </fieldset>
 
-  <div class="auth-alt">¿Ya tienes cuenta? <a class="link" href="/club/login">Inicia sesión</a></div>
-</section>
+          <!-- ── 5. ACCESO ─────────────────────────────────────── -->
+          <fieldset class="register-section">
+            <legend class="register-legend">Acceso a tu cuenta</legend>
+            <div class="register-grid">
+              <div class="field">
+                <label for="email">Correo electrónico <span class="req">*</span></label>
+                <input id="email" name="email" type="email" autocomplete="username" placeholder="tu@correo.com"
+                  required />
+              </div>
+              <div class="field">
+                <label for="password">Contraseña <span class="req">*</span></label>
+                <input id="password" name="password" type="password" autocomplete="new-password"
+                  placeholder="Mínimo 8 caracteres" required minlength="8" />
+              </div>
+              <div class="field">
+                <label for="confirmPassword">Confirmar contraseña <span class="req">*</span></label>
+                <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password"
+                  placeholder="Repite tu contraseña" required minlength="8" />
+              </div>
+            </div>
+          </fieldset>
 
-<style>
-.auth-wrap--wide { max-width: 780px; }
-.auth-subtitle   { color: var(--muted, #888); font-size: .9rem; margin-top: -.4rem; margin-bottom: 1rem; }
+          <p class="form-legal">
+            Al registrarte aceptas nuestros
+            <a class="link" href="/terminos" target="_blank">Términos y condiciones</a> y
+            <a class="link" href="/privacidad" target="_blank">Política de privacidad</a>.
+          </p>
 
-.register-form   { display: flex; flex-direction: column; gap: 0; }
-.register-section{ border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius); padding: 1.4rem 1.6rem; margin-bottom: 1.4rem; }
-.register-legend { font-weight: 800; font-size: 1rem; color: var(--brand); padding: 0 .4rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: .04em; }
-.legend-note     { font-weight: 400; font-size: .8rem; color: var(--muted,#888); text-transform: none; }
-.register-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem 1.2rem; }
-@media(max-width:560px){ .register-grid{ grid-template-columns: 1fr; } }
-.field           { display: flex; flex-direction: column; gap: .3rem; }
-.field--full     { grid-column: 1 / -1; }
-.field label     { font-size: .82rem; font-weight: 700; color: #ccc; }
-.field input,
-.field select    { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: .58rem .8rem; color: #fff; font-size: .95rem; }
-.field input:focus,
-.field select:focus { outline: none; border-color: var(--brand); }
-.field select option { background: #1a1a1a; }
-.req             { color: var(--brand); }
-.section-hint    { font-size: .8rem; color: var(--muted,#888); margin: -.4rem 0 .8rem; }
-.form-error-banner{ background: rgba(220,50,50,.15); border: 1px solid rgba(220,50,50,.4); color: #ff7f7f; border-radius: 8px; padding: .7rem 1rem; margin-bottom: 1rem; font-size: .9rem; }
-.form-legal      { font-size: .78rem; color: var(--muted,#888); margin: .4rem 0 1rem; }
-.btn--full       { width: 100%; }
-</style>
+          <button class="btn btn-primary btn--full" type="submit">Crear cuenta</button>
+        </form>
 
-<%- include('../partials/footer') %>
+        <div class="auth-alt">¿Ya tienes cuenta? <a class="link" href="/club/login">Inicia sesión</a></div>
+  </section>
+
+  <style>
+    .auth-wrap--wide {
+      max-width: 780px;
+    }
+
+    .auth-subtitle {
+      color: var(--muted, #888);
+      font-size: .9rem;
+      margin-top: -.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .register-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .register-section {
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .register-legend {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--brand);
+      padding: 0 .4rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .legend-note {
+      font-weight: 400;
+      font-size: .8rem;
+      color: var(--muted, #888);
+      text-transform: none;
+    }
+
+    .register-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .9rem 1.2rem;
+    }
+
+    @media(max-width:560px) {
+      .register-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+    }
+
+    .field--full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      font-size: .82rem;
+      font-weight: 700;
+      color: #ccc;
+    }
+
+    .field input,
+    .field select {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 8px;
+      padding: .58rem .8rem;
+      color: #fff;
+      font-size: .95rem;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+
+    .field select option {
+      background: #1a1a1a;
+    }
+
+    .req {
+      color: var(--brand);
+    }
+
+    .section-hint {
+      font-size: .8rem;
+      color: var(--muted, #888);
+      margin: -.4rem 0 .8rem;
+    }
+
+    .form-error-banner {
+      background: rgba(220, 50, 50, .15);
+      border: 1px solid rgba(220, 50, 50, .4);
+      color: #ff7f7f;
+      border-radius: 8px;
+      padding: .7rem 1rem;
+      margin-bottom: 1rem;
+      font-size: .9rem;
+    }
+
+    .form-legal {
+      font-size: .78rem;
+      color: var(--muted, #888);
+      margin: .4rem 0 1rem;
+    }
+
+    .btn--full {
+      width: 100%;
+    }
+  </style>
+
+  <%- include('../partials/footer') %>
