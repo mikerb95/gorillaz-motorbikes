@@ -1,231 +1,260 @@
-<%- include('partials/head', { title: 'Gorillaz Motorbikes', user }) %>
+<%- include('partials/head', { title: 'Gorillaz Motorbikes' , user }) %>
 
-<!-- Mobile-only landing (separate design) -->
-<section class="mobile-landing" aria-labelledby="m-title" style="display:none">
-  <div class="container" style="padding:22px 16px">
-    <h1 id="m-title" style="margin:0 0 10px;font-size:28px;line-height:1.2">Taller premium en Bogotá</h1>
-    <p class="muted" style="margin:0 0 12px">Servicios, club, cursos y tienda para tu moto.</p>
-    <div class="btn-row">
-      <a class="btn btn-square" href="/servicios/agendar">Agendar servicio</a>
-      <a class="btn btn-outline btn-square" href="https://wa.me/573213204299" target="_blank" rel="noopener">WhatsApp</a>
+  <!-- Mobile-only landing (separate design) -->
+  <section class="mobile-landing" aria-labelledby="m-title" style="display:none">
+    <div class="container" style="padding:22px 16px">
+      <h1 id="m-title" style="margin:0 0 10px;font-size:28px;line-height:1.2">Taller premium en Bogotá</h1>
+      <p class="muted" style="margin:0 0 12px">Servicios, club, cursos y tienda para tu moto.</p>
+      <div class="btn-row">
+        <a class="btn btn-square" href="/servicios/agendar">Agendar servicio</a>
+        <a class="btn btn-outline btn-square" href="https://wa.me/573213204299" target="_blank"
+          rel="noopener">WhatsApp</a>
+      </div>
     </div>
-  </div>
-  <div class="container">
-    <ul class="grid" style="grid-template-columns:repeat(2,1fr)">
-      <li class="card">
-        <h3 style="margin:0 0 6px">Servicios</h3>
-        <p class="muted" style="margin:0 0 10px">Mecánica, pintura, electricidad y más.</p>
-        <a class="btn btn-xs btn-outline" href="/servicios">Ver servicios</a>
-      </li>
-      <li class="card">
-        <h3 style="margin:0 0 6px">Tienda</h3>
-        <p class="muted" style="margin:0 0 10px">Accesorios y repuestos.</p>
-        <a class="btn btn-xs btn-outline" href="/tienda">Ir a la tienda</a>
-      </li>
-      <li class="card">
-        <h3 style="margin:0 0 6px">Cursos</h3>
-        <p class="muted" style="margin:0 0 10px">Formación técnica y conducción.</p>
-        <a class="btn btn-xs btn-outline" href="/cursos">Ver cursos</a>
-      </li>
-      <li class="card">
-        <h3 style="margin:0 0 6px">Club</h3>
-        <p class="muted" style="margin:0 0 10px">Beneficios y rodadas.</p>
-        <a class="btn btn-xs btn-outline" href="/club">Conocer el club</a>
-      </li>
-    </ul>
-  </div>
-  <div class="container">
-    <div class="card" style="display:grid;gap:8px">
-      <h3 style="margin:0">¿Dónde estamos?</h3>
-      <a class="btn btn-outline btn-square" href="https://www.google.com/maps/place/GORILLAZ+MOTORBIKES/data=!4m2!3m1!1s0x0:0xbb0428b400709cf?sa=X&ved=1t:2428&ictx=111" target="_blank" rel="noopener">Abrir en Google Maps</a>
+    <div class="container">
+      <ul class="grid" style="grid-template-columns:repeat(2,1fr)">
+        <li class="card">
+          <h3 style="margin:0 0 6px">Servicios</h3>
+          <p class="muted" style="margin:0 0 10px">Mecánica, pintura, electricidad y más.</p>
+          <a class="btn btn-xs btn-outline" href="/servicios">Ver servicios</a>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Tienda</h3>
+          <p class="muted" style="margin:0 0 10px">Accesorios y repuestos.</p>
+          <a class="btn btn-xs btn-outline" href="/tienda">Ir a la tienda</a>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Cursos</h3>
+          <p class="muted" style="margin:0 0 10px">Formación técnica y conducción.</p>
+          <a class="btn btn-xs btn-outline" href="/cursos">Ver cursos</a>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Club</h3>
+          <p class="muted" style="margin:0 0 10px">Beneficios y rodadas.</p>
+          <a class="btn btn-xs btn-outline" href="/club">Conocer el club</a>
+        </li>
+      </ul>
     </div>
-  </div>
-</section>
+    <div class="container">
+      <div class="card" style="display:grid;gap:8px">
+        <h3 style="margin:0">¿Dónde estamos?</h3>
+        <a class="btn btn-outline btn-square"
+          href="https://www.google.com/maps/place/GORILLAZ+MOTORBIKES/data=!4m2!3m1!1s0x0:0xbb0428b400709cf?sa=X&ved=1t:2428&ictx=111"
+          target="_blank" rel="noopener">Abrir en Google Maps</a>
+      </div>
+    </div>
+  </section>
 
-<!-- Desktop landing wrapper -->
-<div class="desktop-landing">
-<section class="hero" data-slideshow='<%- JSON.stringify(slides||[]) %>'>
-  <div class="hero-slides" aria-hidden="true"></div>
-  <button class="scroll-cue" aria-label="Desplázate para ver el contenido" title="Desplázate" onclick="(function(){var next=document.querySelector('main .container'); if(next){next.scrollIntoView({behavior:'smooth'});} else {window.scrollTo({top: window.innerHeight, behavior:'smooth'});} })()" >
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 16.5c-.3 0-.6-.1-.8-.3l-6-6a1.1 1.1 0 0 1 1.6-1.6L12 13.8l5.2-5.2a1.1 1.1 0 0 1 1.6 1.6l-6 6c-.2.2-.5.3-.8.3Z"/></svg>
-  </button>
-</section>
+  <!-- Desktop landing wrapper -->
+  <div class="desktop-landing">
+    <section class="hero" data-slideshow='<%- JSON.stringify(slides||[]) %>'>
+      <div class="hero-slides" aria-hidden="true"></div>
+      <button class="scroll-cue" aria-label="Desplázate para ver el contenido" title="Desplázate"
+        onclick="(function(){var next=document.querySelector('main .container'); if(next){next.scrollIntoView({behavior:'smooth'});} else {window.scrollTo({top: window.innerHeight, behavior:'smooth'});} })()">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path fill="currentColor"
+            d="M12 16.5c-.3 0-.6-.1-.8-.3l-6-6a1.1 1.1 0 0 1 1.6-1.6L12 13.8l5.2-5.2a1.1 1.1 0 0 1 1.6 1.6l-6 6c-.2.2-.5.3-.8.3Z" />
+        </svg>
+      </button>
+    </section>
 
-<section class="container">
-  <h2>Servicios destacados</h2>
-  <ul class="grid halves services-grid">
-    <li>
-      <div class="service-card" style="--bg:url('/images/services/mecanica.webp')" aria-label="Mecánica — diagnóstico y mantenimiento preventivo">
-        <div class="service-content">
-          <h3>Mecánica</h3>
-          <p>Diagnóstico, mantenimiento preventivo y correctivo con control de calidad.</p>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="service-card" style="--bg:url('/images/services/pintura.webp')" aria-label="Pintura — acabados y protección">
-        <div class="service-content">
-          <h3>Pintura</h3>
-          <p>Acabados profesionales, retoques y protección de superficies.</p>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="service-card" style="--bg:url('/images/services/alisamiento.webp')" aria-label="Alistamiento tecnomecánica — revisión para inspección">
-        <div class="service-content">
-          <h3>Alistamiento tecnomecánica</h3>
-          <p>Revisión integral y ajustes previos a la inspección.</p>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="service-card" style="--bg:url('/images/services/electricidad.webp')" aria-label="Electricidad — sistema de carga e iluminación">
-        <div class="service-content">
-          <h3>Electricidad</h3>
-          <p>Diagnóstico eléctrico, sistema de carga, arranque e iluminación.</p>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="service-card" style="--bg:url('/images/services/torno.webp')" aria-label="Torno — fabricación y ajuste de piezas">
-        <div class="service-content">
-          <h3>Torno</h3>
-          <p>Fabricación y ajuste de componentes según especificación.</p>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="service-card" style="--bg:url('/images/services/prensa.webp')" aria-label="Prensa — montaje y desmontaje seguro">
-        <div class="service-content">
-          <h3>Prensa</h3>
-          <p>Montaje y desmontaje seguro de rodamientos y piezas a presión.</p>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="service-card" style="--bg:url('/images/services/mecanica-rapida.webp')" aria-label="Mecánica rápida — servicios ágiles">
-        <div class="service-content">
-          <h3>Mecánica rápida</h3>
-          <p>Cambios de aceite, filtros y ajustes ágiles con cita.</p>
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="service-card" style="--bg:url('/images/services/scaneo.webp')" aria-label="Escaneo de motos — diagnóstico computarizado">
-        <div class="service-content">
-          <h3>Escaneo de motos</h3>
-          <p>Diagnóstico computarizado para detectar fallas electrónicas con precisión.</p>
-        </div>
-      </div>
-    </li>
-    <li>
-      <a href="/servicios/lavado-motos" style="text-decoration:none; color:inherit; display:block; height:100%;">
-        <div class="service-card" style="--bg:url('/images/services/lavado-motos.webp')" aria-label="Lavado de motos — limpieza profunda">
-          <div class="service-content">
-            <h3>Lavado de motos <span style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span></h3>
-            <p>Limpieza profunda para tu motocicleta, cuidando cada detalle para que luzca impecable y protegida.</p>
+    <section class="container">
+      <h2>Servicios destacados</h2>
+      <ul class="grid halves services-grid">
+        <li>
+          <div class="service-card" style="--bg:url('/images/services/mecanica.webp')"
+            aria-label="Mecánica — diagnóstico y mantenimiento preventivo">
+            <div class="service-content">
+              <h3>Mecánica</h3>
+              <p>Diagnóstico, mantenimiento preventivo y correctivo con control de calidad.</p>
+            </div>
           </div>
-        </div>
-      </a>
-    </li>
-    <li>
-      <a href="/servicios/lavado-cascos" style="text-decoration:none; color:inherit; display:block; height:100%;">
-        <div class="service-card" style="--bg:url('/images/services/lavado-cascos.webp')" aria-label="Lavado de cascos — desinfección total">
-          <div class="service-content">
-            <h3>Lavado de cascos <span style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span></h3>
-            <p>Desinfección y limpieza interior y exterior de tu casco, eliminando olores e impurezas acumuladas.</p>
+        </li>
+        <li>
+          <div class="service-card" style="--bg:url('/images/services/pintura.webp')"
+            aria-label="Pintura — acabados y protección">
+            <div class="service-content">
+              <h3>Pintura</h3>
+              <p>Acabados profesionales, retoques y protección de superficies.</p>
+            </div>
           </div>
-        </div>
-      </a>
-    </li>
-    <li>
-      <a href="/servicios/detailing-motos" style="text-decoration:none; color:inherit; display:block; height:100%;">
-        <div class="service-card" style="--bg:url('/images/services/detailing.webp')" aria-label="Detailing de motos — restauración premium">
-          <div class="service-content">
-            <h3>Detailing de motos <span style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span></h3>
-            <p>Restauración y protección estética paso a paso con productos premium para dejar tu moto como nueva.</p>
+        </li>
+        <li>
+          <div class="service-card" style="--bg:url('/images/services/alisamiento.webp')"
+            aria-label="Alistamiento tecnomecánica — revisión para inspección">
+            <div class="service-content">
+              <h3>Alistamiento tecnomecánica</h3>
+              <p>Revisión integral y ajustes previos a la inspección.</p>
+            </div>
           </div>
-        </div>
-      </a>
-    </li>
-  </ul>
-</section>
+        </li>
+        <li>
+          <div class="service-card" style="--bg:url('/images/services/electricidad.webp')"
+            aria-label="Electricidad — sistema de carga e iluminación">
+            <div class="service-content">
+              <h3>Electricidad</h3>
+              <p>Diagnóstico eléctrico, sistema de carga, arranque e iluminación.</p>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="service-card" style="--bg:url('/images/services/torno.webp')"
+            aria-label="Torno — fabricación y ajuste de piezas">
+            <div class="service-content">
+              <h3>Torno</h3>
+              <p>Fabricación y ajuste de componentes según especificación.</p>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="service-card" style="--bg:url('/images/services/prensa.webp')"
+            aria-label="Prensa — montaje y desmontaje seguro">
+            <div class="service-content">
+              <h3>Prensa</h3>
+              <p>Montaje y desmontaje seguro de rodamientos y piezas a presión.</p>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="service-card" style="--bg:url('/images/services/mecanica-rapida.webp')"
+            aria-label="Mecánica rápida — servicios ágiles">
+            <div class="service-content">
+              <h3>Mecánica rápida</h3>
+              <p>Cambios de aceite, filtros y ajustes ágiles con cita.</p>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="service-card" style="--bg:url('/images/services/scaneo.webp')"
+            aria-label="Escaneo de motos — diagnóstico computarizado">
+            <div class="service-content">
+              <h3>Escaneo de motos</h3>
+              <p>Diagnóstico computarizado para detectar fallas electrónicas con precisión.</p>
+            </div>
+          </div>
+        </li>
+        <li>
+          <a href="/servicios/lavado-motos" style="text-decoration:none; color:inherit; display:block; height:100%;">
+            <div class="service-card" style="--bg:url('/images/services/lavado-motos.webp')"
+              aria-label="Lavado de motos — limpieza profunda">
+              <div class="service-content">
+                <h3>Lavado de motos <span
+                    style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span>
+                </h3>
+                <p>Limpieza profunda para tu motocicleta, cuidando cada detalle para que luzca impecable y protegida.
+                </p>
+              </div>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="/servicios/lavado-cascos" style="text-decoration:none; color:inherit; display:block; height:100%;">
+            <div class="service-card" style="--bg:url('/images/services/lavado-cascos.webp')"
+              aria-label="Lavado de cascos — desinfección total">
+              <div class="service-content">
+                <h3>Lavado de cascos <span
+                    style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span>
+                </h3>
+                <p>Desinfección y limpieza interior y exterior de tu casco, eliminando olores e impurezas acumuladas.
+                </p>
+              </div>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="/servicios/detailing-motos" style="text-decoration:none; color:inherit; display:block; height:100%;">
+            <div class="service-card" style="--bg:url('/images/services/detailing.webp')"
+              aria-label="Detailing de motos — restauración premium">
+              <div class="service-content">
+                <h3>Detailing de motos <span
+                    style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span>
+                </h3>
+                <p>Restauración y protección estética paso a paso con productos premium para dejar tu moto como nueva.
+                </p>
+              </div>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </section>
 
-<section class="container">
-  <h2>¿Dónde estamos?</h2>
-  <div class="map-wrap">
-    <iframe
-      class="map-embed"
-      title="Ubicación Gorillaz Motorbikes"
-      loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade"
-  src="https://www.google.com/maps?q=GORILLAZ%20MOTORBIKES%20Bogot%C3%A1&hl=es&z=17&output=embed">
-    </iframe>
-  </div>
-  <p class="muted">Bogotá, Colombia — <a href="https://www.google.com/maps/place/GORILLAZ+MOTORBIKES/data=!4m2!3m1!1s0x0:0xbb0428b400709cf?sa=X&ved=1t:2428&ictx=111" target="_blank" rel="noopener">Abrir en Google Maps</a></p>
-</section>
-
-<section class="container">
-  <h2>Club Gorillaz</h2>
-  <ul class="grid four" style="margin-top:8px">
-    <li class="card">
-      <h3 style="margin:0 0 6px">Descuento en mecánica rápida</h3>
-      <p class="muted" style="margin:0">Ahorra en servicios ágiles y mantenimiento esencial.</p>
-    </li>
-    <li class="card">
-      <h3 style="margin:0 0 6px">Recordatorios de SOAT y Tecnomecánica</h3>
-      <p class="muted" style="margin:0">Evita vencimientos y mantén tus documentos al día.</p>
-    </li>
-    <li class="card">
-      <h3 style="margin:0 0 6px">Descuentos en repuestos y consumibles</h3>
-      <p class="muted" style="margin:0">Mejores precios en lo que tu moto necesita.</p>
-    </li>
-    <li class="card">
-      <h3 style="margin:0 0 6px">Historial detallado de servicios</h3>
-      <p class="muted" style="margin:0">Consulta trabajos, fechas y recomendaciones.</p>
-    </li>
-  </ul>
-  <div class="btn-row" style="margin-top:12px">
-    <a class="btn btn-sm" href="/club">Conoce el Club</a>
-    <% if (!user) { %>
-      <a class="btn btn-sm btn-outline" href="/club/login">Iniciar sesión</a>
-    <% } else { %>
-      <a class="btn btn-sm btn-outline" href="/club/panel">Mi panel</a>
-    <% } %>
-  </div>
-  <p class="muted">Ser parte del Club Gorillaz te da prioridad en agenda y sorpresas durante el año.</p>
-</section>
-
-<section class="newsletter">
-  <div class="newsletter-inner">
-    <h2>Suscríbete al boletín</h2>
-    <p class="muted">Lee nuestra <a href="/privacidad">política de privacidad</a> para conocer cómo tratamos tus datos.</p>
-    <p class="muted">Recibe novedades, cursos y actualizaciones de Gorillaz Motorbikes.</p>
-
-    <% if (newsletterStatus === 'ok') { %>
-      <p class="alert success" role="status">¡Gracias! Te hemos suscrito al boletín.</p>
-    <% } else if (newsletterStatus === 'error') { %>
-      <p class="alert error" role="alert">Ingresa un correo válido.</p>
-    <% } else if (newsletterStatus === 'captcha') { %>
-      <p class="alert error" role="alert">Por favor completa la verificación reCAPTCHA.</p>
-    <% } %>
-
-    <form class="newsletter-form" action="/newsletter" method="post" novalidate>
-      <label class="sr-only" for="nl-email">Correo electrónico</label>
-      <input id="nl-email" type="email" name="email" placeholder="TU CORREO ELECTRÓNICO" required />
-      <button type="submit" class="btn btn-square">Suscribirme</button>
-    </form>
-    <% if (recaptchaSiteKey) { %>
-      <div class="recaptcha-wrap">
-        <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
+    <section class="container">
+      <h2>¿Dónde estamos?</h2>
+      <div class="map-wrap">
+        <iframe class="map-embed" title="Ubicación Gorillaz Motorbikes" loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q=GORILLAZ%20MOTORBIKES%20Bogot%C3%A1&hl=es&z=17&output=embed">
+        </iframe>
       </div>
-      <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <% } %>
-    <p class="muted tiny">Este sitio está protegido por reCAPTCHA y aplican la <a href="/privacidad">Política de Privacidad</a> y los <a href="/terminos">Términos del Servicio</a>.</p>
+      <p class="muted">Bogotá, Colombia — <a
+          href="https://www.google.com/maps/place/GORILLAZ+MOTORBIKES/data=!4m2!3m1!1s0x0:0xbb0428b400709cf?sa=X&ved=1t:2428&ictx=111"
+          target="_blank" rel="noopener">Abrir en Google Maps</a></p>
+    </section>
+
+    <section class="container">
+      <h2>Club Gorillaz</h2>
+      <ul class="grid four" style="margin-top:8px">
+        <li class="card">
+          <h3 style="margin:0 0 6px">Descuento en mecánica rápida</h3>
+          <p class="muted" style="margin:0">Ahorra en servicios ágiles y mantenimiento esencial.</p>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Recordatorios de SOAT y Tecnomecánica</h3>
+          <p class="muted" style="margin:0">Evita vencimientos y mantén tus documentos al día.</p>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Descuentos en repuestos y consumibles</h3>
+          <p class="muted" style="margin:0">Mejores precios en lo que tu moto necesita.</p>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Historial detallado de servicios</h3>
+          <p class="muted" style="margin:0">Consulta trabajos, fechas y recomendaciones.</p>
+        </li>
+      </ul>
+      <div class="btn-row" style="margin-top:12px">
+        <a class="btn btn-sm" href="/club">Conoce el Club</a>
+        <% if (!user) { %>
+          <a class="btn btn-sm btn-outline" href="/club/login">Iniciar sesión</a>
+          <% } else { %>
+            <a class="btn btn-sm btn-outline" href="/club/panel">Mi panel</a>
+            <% } %>
+      </div>
+      <p class="muted">Ser parte del Club Gorillaz te da prioridad en agenda y sorpresas durante el año.</p>
+    </section>
+
+    <section class="newsletter">
+      <div class="newsletter-inner">
+        <h2>Suscríbete al boletín</h2>
+        <p class="muted">Lee nuestra <a href="/privacidad">política de privacidad</a> para conocer cómo tratamos tus
+          datos.</p>
+        <p class="muted">Recibe novedades, cursos y actualizaciones de Gorillaz Motorbikes.</p>
+
+        <% if (newsletterStatus==='ok' ) { %>
+          <p class="alert success" role="status">¡Gracias! Te hemos suscrito al boletín.</p>
+          <% } else if (newsletterStatus==='error' ) { %>
+            <p class="alert error" role="alert">Ingresa un correo válido.</p>
+            <% } else if (newsletterStatus==='captcha' ) { %>
+              <p class="alert error" role="alert">Por favor completa la verificación reCAPTCHA.</p>
+              <% } %>
+
+                <form class="newsletter-form" action="/newsletter" method="post" novalidate>
+                  <label class="sr-only" for="nl-email">Correo electrónico</label>
+                  <input id="nl-email" type="email" name="email" placeholder="TU CORREO ELECTRÓNICO" required />
+                  <button type="submit" class="btn btn-square">Suscribirme</button>
+                </form>
+                <% if (recaptchaSiteKey) { %>
+                  <div class="recaptcha-wrap">
+                    <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
+                  </div>
+                  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+                  <% } %>
+                    <p class="muted tiny">Este sitio está protegido por reCAPTCHA y aplican la <a
+                        href="/privacidad">Política de Privacidad</a> y los <a href="/terminos">Términos del
+                        Servicio</a>.</p>
+      </div>
+
+    </section>
+
   </div>
-  
-</section>
 
-</div>
-
-<%- include('partials/footer') %>
+  <%- include('partials/footer') %>
