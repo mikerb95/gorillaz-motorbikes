@@ -1,6 +1,6 @@
 <%- include('partials/head', { title: product.name + ' — Tienda' }) %>
 
-<main class="container pdp">
+    <main class="container pdp">
         <!-- Breadcrumb -->
         <nav class="breadcrumb">
             <a href="/">Inicio</a>
@@ -63,7 +63,7 @@
                                         <span class="pdp-price">$<%= Math.round(product.price * (1 - product.discount /
                                                 100)).toLocaleString('es-CO') %></span>
                                         <span class="pdp-price-original">$<%= product.price.toLocaleString('es-CO') %>
-                                                </span>
+                                        </span>
                                         <span class="pdp-discount-tag">
                                             <%= product.discount %>% OFF
                                         </span>
@@ -171,10 +171,10 @@
                                                     <span class="price">$<%= Math.round(p.price * (1 - p.discount /
                                                             100)).toLocaleString('es-CO') %></span>
                                                     <span class="price-old">$<%= p.price.toLocaleString('es-CO') %>
-                                                            </span>
+                                                    </span>
                                                     <% } else { %>
                                                         <span class="price">$<%= p.price.toLocaleString('es-CO') %>
-                                                                </span>
+                                                        </span>
                                                         <% } %>
                                             </div>
                                 </div>
