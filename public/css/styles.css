@@ -754,7 +754,7 @@ body.has-hero main {
 
 .service-row {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 24px;
   padding: 22px 0;
   border-bottom: 1px solid rgba(0, 0, 0, .08)
@@ -770,7 +770,7 @@ body.has-hero main {
   }
 }
 
-.service-title h2 {
+.service-body h2 {
   margin: 0;
   font-size: 1.6rem;
   letter-spacing: .2px
@@ -3442,7 +3442,7 @@ body.has-hero main {
 
 .service-row {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 24px;
   padding: 22px 0;
   border-bottom: 1px solid rgba(0, 0, 0, .08)
@@ -3458,7 +3458,7 @@ body.has-hero main {
   }
 }
 
-.service-title h2 {
+.service-body h2 {
   margin: 0;
   font-size: 1.6rem;
   letter-spacing: .2px

@@ -16,10 +16,9 @@
 <section id="lista-servicios" class="services-list container">
   <% (services || []).forEach(function(s){ %>
     <article id="<%= s.slug %>" class="service-row">
-      <div class="service-title">
-        <h2><%= s.title %></h2>
-      </div>
+      <div class="service-media" style="background-image: url('<%= s.img %>');"></div>
       <div class="service-body">
+        <h2><%= s.title %></h2>
         <p><%= s.desc %></p>
         <div class="service-meta">
           <a class="link" href="/servicios/agendar?servicio=<%= encodeURIComponent(s.title) %>">Agendar</a>
