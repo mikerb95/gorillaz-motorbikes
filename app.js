@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');
+const { Resend } = require('resend');
+const resendClient = new Resend(process.env.RESEND_API_KEY || '');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
@@ -100,7 +102,7 @@ app.use(async (req, res, next) => {
   if (req.userId) {
     try {
       res.locals.user = await User.findById(req.userId).lean();
-    } catch(e) { res.locals.user = null; }
+    } catch (e) { res.locals.user = null; }
   } else {
     res.locals.user = null;
   }
@@ -216,7 +218,7 @@ app.get('/', (req, res) => {
     slides = readSlides(slidesDir, '/images/slideshow');
   }
   res.render('home', {
-   
+
     slides,
     newsletterStatus: req.session.newsletterStatus || null,
     recaptchaSiteKey: RECAPTCHA_SITE_KEY
@@ -224,26 +226,65 @@ app.get('/', (req, res) => {
   req.session.newsletterStatus = null;
 });
 
+// Helper: compute demand map { 'YYYY-MM-DD': 'low'|'medium'|'high' }
+function computeDemandMap() {
+  const demand = {};
+  appointments.forEach(a => {
+    if (!a.date) return;
+    const d = a.date.slice(0, 10);
+    demand[d] = (demand[d] || 0) + 1;
+  });
+  // Also read admin-set occupation levels from availability
+  if (availability && availability.occupationLevels) {
+    Object.entries(availability.occupationLevels).forEach(([d, lvl]) => {
+      if (lvl === 'high') demand[d] = Math.max(demand[d] || 0, 8);
+      else if (lvl === 'medium') demand[d] = Math.max(demand[d] || 0, 4);
+    });
+  }
+  const result = {};
+  Object.entries(demand).forEach(([d, count]) => {
+    if (count >= 6) result[d] = 'high';
+    else if (count >= 3) result[d] = 'medium';
+    else result[d] = 'low';
+  });
+  return result;
+}
+
 // Servicios: agendar (definir antes de /servicios para evitar conflictos de orden)
 app.get('/servicios/agendar', (req, res) => {
   const services = [
     'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
   ];
-  res.render('services_schedule', { services, bookingMessage: null });
+  res.render('services_schedule', { services, bookingMessage: null, demandMap: computeDemandMap() });
 });
 
-app.post('/servicios/agendar', (req, res) => {
-  const { name, phone, service, date } = req.body;
+app.post('/servicios/agendar', async (req, res) => {
+  const { name, email, phone, service, date } = req.body;
   const services = [
     'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
   ];
-  const bookingMessage = (name && service && date)
-    ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}. Te contactaremos al ${phone} para confirmar.`
-    : 'Por favor completa todos los campos.';
-  if (name && service && date) {
-    appointments.unshift({ id: uuidv4(), name, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
+  const demandMap = computeDemandMap();
+  if (!name || !service || !date || !email) {
+    return res.render('services_schedule', { services, bookingMessage: 'Por favor completa todos los campos.', demandMap });
   }
-  res.render('services_schedule', { services, bookingMessage });
+  const formattedDate = new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+  appointments.unshift({ id: uuidv4(), name, email, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
+  saveJSON('appointments.json', appointments);
+  // Send confirmation emails via Resend
+  try {
+    if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_TU_API_KEY_AQUI') {
+      const clientMailHtml = `<p>Hola <strong>${name}</strong>,</p><p>Hemos recibido tu solicitud de cita para <strong>${service}</strong> el <strong>${formattedDate}</strong>.</p><p>Nuestro equipo te contactará al número <strong>${phone}</strong> para confirmar la cita.</p><p>Gracias por confiar en Gorillaz Motorbikes.</p>`;
+      const bookingMailHtml = `<p><strong>Nueva solicitud de cita</strong></p><ul><li><strong>Cliente:</strong> ${name}</li><li><strong>Email:</strong> ${email}</li><li><strong>Teléfono:</strong> ${phone}</li><li><strong>Servicio:</strong> ${service}</li><li><strong>Fecha solicitada:</strong> ${formattedDate}</li></ul>`;
+      await Promise.allSettled([
+        resendClient.emails.send({ from: 'citas@gorillazmotorbikes.com', to: email, subject: `Confirmación de cita — ${service}`, html: clientMailHtml }),
+        resendClient.emails.send({ from: 'citas@gorillazmotorbikes.com', to: process.env.BOOKING_EMAIL || 'booking@gorillazmotorbikes.com', subject: `Nueva cita: ${service} — ${name}`, html: bookingMailHtml })
+      ]);
+    }
+  } catch (e) {
+    console.error('Resend error:', e.message);
+  }
+  const bookingMessage = `Gracias ${name}. Confirmación enviada a ${email}. Te contactaremos al ${phone}.`;
+  res.render('services_schedule', { services, bookingMessage, demandMap: computeDemandMap() });
 });
 
 // Servicios: Nuevas páginas "Próximamente"
@@ -266,27 +307,7 @@ app.get('/servicios', (req, res) => {
   res.render('services', { services });
 });
 
-// Servicios: agendar cita (separado)
-app.get('/servicios/agendar', (req, res) => {
-  const services = [
-    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
-  ];
-  res.render('services_schedule', { services, bookingMessage: null });
-});
-
-app.post('/servicios/agendar', (req, res) => {
-  const { name, phone, service, date } = req.body;
-  const services = [
-    'Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'
-  ];
-  const bookingMessage = (name && service && date)
-    ? `Gracias ${name}. Hemos recibido tu solicitud para ${service} el ${new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}. Te contactaremos al ${phone} para confirmar.`
-    : 'Por favor completa todos los campos.';
-  if (name && service && date) {
-    appointments.unshift({ id: uuidv4(), name, phone, service, date, status: 'pendiente', createdAt: new Date().toISOString() });
-  }
-  res.render('services_schedule', { services, bookingMessage });
-});
+// Servicios: agendar cita — alias (ya definido arriba, sólo redirige por si queda algún link antiguo)
 
 // Fallback redirects for legacy/variant URLs
 app.get(['/agendar-servicio', '/servicios/agenda', '/agenda-servicio', '/agenda'], (req, res) => {
@@ -426,12 +447,14 @@ app.post('/cart/update', (req, res) => {
   const q = Math.max(0, parseInt(qty || '0', 10));
   if (q === 0) delete cart.items[id]; else cart.items[id] = q;
   recalc(cart);
+  res.cookie('cart', JSON.stringify(cart), { maxAge: 7 * 24 * 3600 * 1000, httpOnly: false, sameSite: 'lax' });
   res.redirect('/carrito');
 });
 
 // Clear cart
 app.post('/cart/clear', (req, res) => {
   req.session.cart = { items: {}, count: 0, subtotal: 0 };
+  res.cookie('cart', JSON.stringify(req.session.cart), { maxAge: 7 * 24 * 3600 * 1000, httpOnly: false, sameSite: 'lax' });
   res.redirect('/carrito');
 });
 
@@ -460,6 +483,7 @@ app.post('/pagar', (req, res) => {
   const orderId = uuidv4();
   const total = cart.subtotal;
   req.session.cart = { items: {}, count: 0, subtotal: 0 };
+  res.cookie('cart', JSON.stringify(req.session.cart), { maxAge: 7 * 24 * 3600 * 1000, httpOnly: false, sameSite: 'lax' });
   res.render('payment/success', { orderId, total });
 });
 
@@ -585,8 +609,8 @@ app.post('/admin/usuarios/actualizar', requireAuth, requireAdmin, async (req, re
   if (u) {
     if (name) u.name = name;
     if (membershipLevel) {
-       if (!u.membership) u.membership = {};
-       u.membership.level = membershipLevel;
+      if (!u.membership) u.membership = {};
+      u.membership.level = membershipLevel;
     }
     await u.save();
   }
@@ -1018,7 +1042,7 @@ app.post('/club/login', async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
     res.redirect('/club/panel');
-  } catch(e) {
+  } catch (e) {
     res.status(500).render('club/login', { error: 'Error del servidor' });
   }
 });
@@ -1029,21 +1053,50 @@ app.get('/club/registro', (req, res) => {
   res.render('club/register');
 });
 app.post('/club/registro', async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) return res.status(400).render('club/register');
+  const {
+    name, cedula, phone, birthdate, bloodType, city, address,
+    emergencyName, emergencyPhone,
+    vehicleBrand, vehicleModel, vehicleYear, vehiclePlate, vehicleCC, vehicleColor,
+    soatExpires, tecnoExpires,
+    email, password, confirmPassword
+  } = req.body;
+
+  if (!name || !email || !password)
+    return res.status(400).render('club/register', { error: 'Nombre, correo y contraseña son obligatorios' });
+  if (password !== confirmPassword)
+    return res.status(400).render('club/register', { error: 'Las contraseñas no coinciden' });
+
   try {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).render('club/register', { error: 'El correo ya está en uso' });
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    const vehicle = (vehicleBrand || vehiclePlate) ? [{
+      brand: vehicleBrand, model: vehicleModel, year: vehicleYear,
+      plate: vehiclePlate, cc: vehicleCC, color: vehicleColor,
+      soatExpires: soatExpires || null, tecnoExpires: tecnoExpires || null
+    }] : [];
+
     const newUser = new User({
       name, email, password: hashedPassword,
-      membership: { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Acceso premium próximamente'] },
+      cedula, phone, birthdate, bloodType, city, address,
+      emergencyName, emergencyPhone,
+      vehicles: vehicle,
+      membership: {
+        level: 'Básica',
+        since: new Date().toISOString().slice(0, 10),
+        expires: null,
+        benefits: ['Descuentos en taller', 'Acceso al club']
+      },
     });
     await newUser.save();
+
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET || 'gorillaz-ultra-secret', { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
     res.redirect('/club/panel');
-  } catch(e) {
+  } catch (e) {
+    console.error(e);
     res.status(500).render('club/register', { error: 'Error del servidor' });
   }
 });

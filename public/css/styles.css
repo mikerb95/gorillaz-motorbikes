@@ -1422,6 +1422,86 @@ input {
   }
 }
 
+/* ── Schedule full-width layout ── */
+.schedule-full {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+/* ── Schedule hours horizontal banner ── */
+.schedule-hours-banner {
+  background: #1a1a1a;
+  border-bottom: 1px solid #2d2d2d;
+  padding: 10px 0;
+}
+.schedule-hours-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  font-size: 13px;
+  color: #d1d5db;
+}
+.schedule-hours-title {
+  font-weight: 700;
+  color: #fff;
+  font-size: 13px;
+}
+.schedule-hours-item { color: #d1d5db; }
+.schedule-hours-item strong { color: #fff; }
+.schedule-hours-closed strong { color: #9ca3af; }
+.schedule-hours-sep { color: #4b5563; font-size: 16px; }
+@media (max-width: 640px) {
+  .schedule-hours-sep { display: none; }
+  .schedule-hours-inner { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+
+/* ── Three-column grid ── */
+.grid.three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 700px) {
+  .grid.three { grid-template-columns: 1fr; }
+}
+
+/* ── Demand legend ── */
+.demand-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 10px 0 14px;
+}
+.demand-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.demand-dot.demand-low    { background: #22c55e; }
+.demand-dot.demand-medium { background: #f59e0b; }
+.demand-dot.demand-high   { background: #ef4444; }
+
+/* ── Calendar demand indicators ── */
+.cal-demand-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin: 2px auto 0;
+}
+.cal-day.demand-low    .cal-demand-dot { background: #22c55e; }
+.cal-day.demand-medium .cal-demand-dot { background: #f59e0b; }
+.cal-day.demand-high   .cal-demand-dot { background: #ef4444; }
+.cal-day.demand-medium { border-color: #fcd34d; }
+.cal-day.demand-high   { border-color: #fca5a5; background: #fff5f5; }
+
 .schedule-layout {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
