@@ -328,6 +328,13 @@ app.get('/tienda', (req, res) => {
   if (sort === 'price-asc') products = products.slice().sort((a, b) => a.price - b.price);
   if (sort === 'price-desc') products = products.slice().sort((a, b) => b.price - a.price);
 
+  // Collect unique brands for filter
+  const brands = [...new Set((allProds || []).map(p => p.brand).filter(Boolean))].sort();
+  const selectedBrand = (req.query.brand || '').toString();
+  if (selectedBrand) {
+    products = products.filter(p => p.brand === selectedBrand);
+  }
+
   // Build base query string (without category) to reuse in links
   const qp = new URLSearchParams();
   if (q) qp.set('q', q);
@@ -341,16 +348,6 @@ app.get('/tienda', (req, res) => {
   const perPage = 12;
   const totalPages = Math.ceil(products.length / perPage);
   const paginated = products.slice((page - 1) * perPage, page * perPage);
-
-  // Collect unique brands for filter
-  const brands = [...new Set((allProds || []).map(p => p.brand).filter(Boolean))].sort();
-  const selectedBrand = (req.query.brand || '').toString();
-  if (selectedBrand) {
-    paginated.length = 0; // clear
-    const brandFiltered = products.filter(p => p.brand === selectedBrand);
-    const bf = brandFiltered.slice((page - 1) * perPage, page * perPage);
-    bf.forEach(p => paginated.push(p));
-  }
 
   res.render('shop', {
     categories,
