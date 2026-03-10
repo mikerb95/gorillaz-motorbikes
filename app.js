@@ -178,8 +178,6 @@ const requireAdmin = (req, res, next) => {
 };
 
 // Admin data stores
-let events = [];
-try { events = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'events.json'), 'utf8')); } catch { }
 let availability = { blockedDates: [] };
 try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'availability.json'), 'utf8')); } catch { }
 
@@ -1011,7 +1009,7 @@ app.get('/faq', (req, res) => {
 });
 
 // Club
-app.get('/club', (req, res) => {
+app.get('/club', async (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
   // Build club slideshow from /images/slideshow/club
   const dir = path.join(__dirname, 'images', 'slideshow', 'club');
@@ -1028,6 +1026,7 @@ app.get('/club', (req, res) => {
     // Fallback to existing banner if no club slides found
     slidesClub = ['/images/download.png'];
   }
+  const events = await Event.find().sort({ date: 1 }).lean();
   res.render('club/landing', { events, slidesClub });
 });
 

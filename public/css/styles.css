@@ -5903,6 +5903,14 @@ input {
   font-weight: 400
 }
 
+/* ── Button primary variant (alias for .btn with brand color) ── */
+.btn.btn-primary,
+button.btn-primary {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand)
+}
+
 /* ═══════════════════════════════════════════════════════════════
    PRODUCT DETAIL PAGE (PDP) — Impeccable Marketplace Style
    ═══════════════════════════════════════════════════════════════ */
