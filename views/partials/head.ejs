@@ -97,22 +97,20 @@
               </a>
               <div class="nav-item has-submenu">
                 <a class="btn-ghost btn-sm btn-square" href="/tienda">Tienda</a>
-                <div class="nav-submenu nav-megamenu" aria-label="Categorías de tienda">
-                  <div class="megamenu-cols">
-                    <div class="megamenu-col">
-                      <strong class="megamenu-heading">Categorías</strong>
-                      <a href="/tienda?cat=naked">Naked</a>
-                      <a href="/tienda?cat=adventure">Adventure</a>
-                      <a href="/tienda?cat=sport">Sport</a>
-                      <a href="/tienda?cat=scooter">Scooter</a>
-                      <a href="/tienda?cat=enduro">Enduro</a>
-                    </div>
-                    <div class="megamenu-col">
-                      <strong class="megamenu-heading">Acceso rápido</strong>
-                      <a href="/tienda?sort=price-asc">Más baratos</a>
-                      <a href="/tienda?sort=price-desc">Más caros</a>
-                      <a href="/tienda">Ver todo</a>
-                    </div>
+                <div class="nav-submenu nav-mega" aria-label="Submenú Tienda">
+                  <div class="nav-mega-col">
+                    <span class="nav-mega-heading">Categorías</span>
+                    <a href="/tienda?cat=naked">Naked</a>
+                    <a href="/tienda?cat=adventure">Adventure</a>
+                    <a href="/tienda?cat=sport">Sport</a>
+                    <a href="/tienda?cat=scooter">Scooter</a>
+                    <a href="/tienda?cat=enduro">Enduro</a>
+                  </div>
+                  <div class="nav-mega-col">
+                    <span class="nav-mega-heading">Acceso rápido</span>
+                    <a href="/tienda">Todos los productos</a>
+                    <a href="/tienda?sort=price-asc">Precio: menor a mayor</a>
+                    <a href="/tienda?sort=price-desc">Precio: mayor a menor</a>
                   </div>
                 </div>
               </div>
@@ -164,22 +162,20 @@
           </div>
           <div class="nav-item has-submenu">
             <a class="btn-ghost btn-sm btn-square" href="/tienda">Tienda</a>
-            <div class="nav-submenu nav-megamenu" aria-label="Categorías de tienda">
-              <div class="megamenu-cols">
-                <div class="megamenu-col">
-                  <strong class="megamenu-heading">Categorías</strong>
-                  <a href="/tienda?cat=naked">Naked</a>
-                  <a href="/tienda?cat=adventure">Adventure</a>
-                  <a href="/tienda?cat=sport">Sport</a>
-                  <a href="/tienda?cat=scooter">Scooter</a>
-                  <a href="/tienda?cat=enduro">Enduro</a>
-                </div>
-                <div class="megamenu-col">
-                  <strong class="megamenu-heading">Acceso rápido</strong>
-                  <a href="/tienda?sort=price-asc">Más baratos</a>
-                  <a href="/tienda?sort=price-desc">Más caros</a>
-                  <a href="/tienda">Ver todo</a>
-                </div>
+            <div class="nav-submenu nav-mega" aria-label="Submenú Tienda">
+              <div class="nav-mega-col">
+                <span class="nav-mega-heading">Categorías</span>
+                <a href="/tienda?cat=naked">Naked</a>
+                <a href="/tienda?cat=adventure">Adventure</a>
+                <a href="/tienda?cat=sport">Sport</a>
+                <a href="/tienda?cat=scooter">Scooter</a>
+                <a href="/tienda?cat=enduro">Enduro</a>
+              </div>
+              <div class="nav-mega-col">
+                <span class="nav-mega-heading">Acceso rápido</span>
+                <a href="/tienda">Todos los productos</a>
+                <a href="/tienda?sort=price-asc">Precio: menor a mayor</a>
+                <a href="/tienda?sort=price-desc">Precio: mayor a menor</a>
               </div>
             </div>
           </div>
@@ -204,8 +200,7 @@
                     <% if (typeof eventsUpcoming !=='undefined' && eventsUpcoming> 0) { %> <span class="sub-badge">
                         <%= eventsUpcoming %>
                       </span>
-                      <% } %>
-                  </a>
+                      <% } %></a>
                   <form action="/club/logout" method="post" style="display:inline">
                     <button class="sub-btn" type="submit">Cerrar sesión</button>
                   </form>

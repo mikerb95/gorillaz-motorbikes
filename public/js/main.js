@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Decide when to use compact or squeeze nav layouts based on measurements
-  function updateNavCompact() {
+  function updateNavCompact(){
     const body = document.body;
     const headerInner = document.querySelector('.header-inner');
     const navLeft = document.querySelector('.nav-left');
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter;
     let shouldSqueeze = false;
 
-    if (shouldCompact) {
+    if (shouldCompact){
       // Try a gentler squeeze before going full compact
       body.classList.add('nav-squeeze');
       const host2 = headerInner.getBoundingClientRect();
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const clipRight2 = (host2.right - right2.right) < 4;
       const overlapRightCenter2 = right2.left < center2.right + 4; // tighter threshold under squeeze
       const overlapLeftCenter2 = left2.right > center2.left - 4;
-      if (!(clipRight2 || overlapRightCenter2 || overlapLeftCenter2)) {
+      if (!(clipRight2 || overlapRightCenter2 || overlapLeftCenter2)){
         // Squeeze rescued layout; prefer squeeze over compact
         shouldCompact = false;
         shouldSqueeze = true;
@@ -59,15 +59,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (shouldCompact) nextState = 'compact';
     else if (shouldSqueeze) nextState = 'squeeze';
 
-    if (nextState !== prevState) {
+    if (nextState !== prevState){
       body.classList.toggle('nav-compact', nextState === 'compact');
       body.classList.toggle('nav-squeeze', nextState === 'squeeze');
-      if (prevState === 'compact' && nextState !== 'compact') {
+      if (prevState === 'compact' && nextState !== 'compact'){
         // Ensure overlay menu is closed when returning from compact
         const nav = document.querySelector('[data-nav]');
         const toggle = document.querySelector('.nav-toggle');
-        if (nav) { nav.setAttribute('data-open', 'false'); }
-        if (toggle) { toggle.setAttribute('aria-expanded', 'false'); }
+        if (nav){ nav.setAttribute('data-open', 'false'); }
+        if (toggle){ toggle.setAttribute('aria-expanded', 'false'); }
       }
     } else {
       // No state change: if we removed classes for measuring, reapply the same
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateNavCompact();
   // Re-check after full load (images) and when web fonts are ready, as widths can change
   window.addEventListener('load', updateNavCompact);
-  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => updateNavCompact()); } catch { }
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => updateNavCompact()); } catch {}
   window.addEventListener('resize', () => {
     // throttle with rAF
     if (updateNavCompact._ticking) return;
@@ -96,10 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const navCenter = document.querySelector('.nav-center');
     const headerRight = document.querySelector('.header-right');
     [headerInner, navLeft, navCenter, headerRight].forEach(el => el && ro.observe(el));
-  } catch { }
+  } catch {}
 
   // If sub content exists inside navbar, mark body for any CSS adjustments
-  if (document.querySelector('.sub-embed')) {
+  if (document.querySelector('.sub-embed')){
     document.body.classList.add('has-subbar');
     setTimeout(setHeaderOffset, 0);
   }
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const rects = range.getClientRects();
           txtRect = rects.length ? rects[0] : range.getBoundingClientRect();
           range.detach && range.detach();
-        } catch { }
+        } catch {}
         centerX = txtRect.left - host.left + (txtRect.width / 2);
         baseW = Math.max(64, txtRect.width + 8); // tight around text, slight breathing room
         h = Math.max(24, rect.height + 6);
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Small fine-tune bias for submenu (visual centering) – far less than before
       const leftBias = isSub ? 2 : 0;
       const x = centerX - (w / 2) - leftBias;
-      const y = rect.top - host.top + rect.height / 2;
+      const y = rect.top - host.top + rect.height/2;
       blob.style.setProperty('--x', `${x}px`);
       blob.style.setProperty('--w', `${w}px`);
       blob.style.setProperty('--h', `${h}px`);
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
       headerInner.appendChild(c);
       return c;
     };
-    const drawLightning = (ctx, x0, y0, x1, y1, options = {}) => {
+    const drawLightning = (ctx, x0, y0, x1, y1, options={}) => {
       const steps = options.steps || 18;
       const amp = options.amp || 16;
       const branchPct = options.branchPct || 0.25;
@@ -224,64 +224,64 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(x0, y0);
-      for (let i = 1; i <= steps; i++) {
-        const t = i / steps;
-        const x = x0 + (x1 - x0) * t;
-        const y = y0 + (y1 - y0) * t + (Math.sin(t * 6 * Math.PI) + (Math.random() - .5)) * amp * (1 - t);
-        ctx.lineTo(x, y);
+      for (let i=1;i<=steps;i++){
+        const t = i/steps;
+        const x = x0 + (x1-x0)*t;
+        const y = y0 + (y1-y0)*t + (Math.sin(t*6*Math.PI)+ (Math.random()-.5))*amp*(1-t);
+        ctx.lineTo(x,y);
         // occasional tiny branch
-        if (Math.random() < branchPct * t * 0.5) {
-          const bx = x + (Math.random() > .5 ? 1 : -1) * 8;
-          const by = y + (Math.random() - .5) * 12;
-          ctx.moveTo(x, y);
-          ctx.lineTo(bx, by);
-          ctx.moveTo(x, y);
+        if (Math.random()<branchPct*t*0.5){
+          const bx = x + (Math.random()>.5?1:-1)*8;
+          const by = y + (Math.random()-.5)*12;
+          ctx.moveTo(x,y);
+          ctx.lineTo(bx,by);
+          ctx.moveTo(x,y);
         }
       }
       ctx.stroke();
       // Outer glow
       ctx.strokeStyle = options.colorOuter || 'rgba(0,0,0,0.25)';
-      ctx.lineWidth = (options.width || 2.2) * 3;
+      ctx.lineWidth = (options.width||2.2)*3;
       ctx.globalCompositeOperation = 'multiply';
       ctx.beginPath();
-      ctx.moveTo(x0, y0);
-      for (let i = 1; i <= steps; i++) {
-        const t = i / steps;
-        const x = x0 + (x1 - x0) * t;
-        const y = y0 + (y1 - y0) * t + (Math.sin(t * 6 * Math.PI) + (Math.random() - .5)) * amp * (1 - t);
-        ctx.lineTo(x, y);
+      ctx.moveTo(x0,y0);
+      for (let i=1;i<=steps;i++){
+        const t = i/steps;
+        const x = x0 + (x1-x0)*t;
+        const y = y0 + (y1-y0)*t + (Math.sin(t*6*Math.PI)+ (Math.random()-.5))*amp*(1-t);
+        ctx.lineTo(x,y);
       }
       ctx.stroke();
       ctx.restore();
     };
-    const makePath = (x0, y0, x1, y1) => {
-      const dx = x1 - x0, dy = y1 - y0;
-      const len = Math.hypot(dx, dy);
-      const steps = Math.max(14, Math.min(48, Math.floor(len / 18)));
-      const amp = Math.max(10, Math.min(22, len / 18));
-      const pts = [{ x: x0, y: y0 }];
-      for (let i = 1; i <= steps; i++) {
-        const t = i / steps;
-        const x = x0 + dx * t;
-        const y = y0 + dy * t + (Math.sin(t * 6 * Math.PI) + (Math.random() - .5)) * amp * (1 - t);
-        pts.push({ x, y });
+    const makePath = (x0,y0,x1,y1) => {
+      const dx = x1-x0, dy = y1-y0;
+      const len = Math.hypot(dx,dy);
+      const steps = Math.max(14, Math.min(48, Math.floor(len/18)));
+      const amp = Math.max(10, Math.min(22, len/18));
+      const pts = [{x:x0,y:y0}];
+      for (let i=1;i<=steps;i++){
+        const t = i/steps;
+        const x = x0 + dx*t;
+        const y = y0 + dy*t + (Math.sin(t*6*Math.PI) + (Math.random()-.5))*amp*(1-t);
+        pts.push({x,y});
       }
       return pts;
     };
     const drawPath = (ctx, pts, progress, opts) => {
-      const n = Math.max(2, Math.floor(pts.length * progress));
+      const n = Math.max(2, Math.floor(pts.length*progress));
       if (n < 2) return;
-      const sub = pts.slice(0, n);
+      const sub = pts.slice(0,n);
       // Glow
       ctx.save();
       ctx.globalCompositeOperation = 'multiply';
       ctx.strokeStyle = opts.glow || 'rgba(0,0,0,0.25)';
       const glowScale = opts.glowScale || 2.4;
-      ctx.lineWidth = (opts.width || 2.2) * glowScale;
+      ctx.lineWidth = (opts.width||2.2)*glowScale;
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(sub[0].x, sub[0].y);
-      for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i].x, sub[i].y);
+      for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
       ctx.stroke();
       // Core
       ctx.globalCompositeOperation = 'source-over';
@@ -289,44 +289,44 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.lineWidth = opts.width || 2.2;
       ctx.beginPath();
       ctx.moveTo(sub[0].x, sub[0].y);
-      for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i].x, sub[i].y);
+      for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
       ctx.stroke();
       ctx.restore();
     };
-    const buildBranches = (pts, count = 3) => {
+    const buildBranches = (pts, count=3) => {
       const branches = [];
       const n = pts.length;
-      for (let i = 0; i < count; i++) {
-        const startIndex = Math.floor((0.12 + Math.random() * 0.7) * n);
+      for (let i=0;i<count;i++){
+        const startIndex = Math.floor( (0.12 + Math.random()*0.7) * n );
         const start = pts[startIndex];
-        const len = 8 + Math.floor(Math.random() * 10);
-        const dir = (Math.random() < 0.5 ? -1 : 1);
+        const len = 8 + Math.floor(Math.random()*10);
+        const dir = (Math.random()<0.5?-1:1);
         // Perpendicular to local tangent for natural spread
-        const i2 = Math.min(n - 1, startIndex + 1);
+        const i2 = Math.min(n-1, startIndex+1);
         let tx = pts[i2].x - pts[startIndex].x;
         let ty = pts[i2].y - pts[startIndex].y;
-        const tl = Math.hypot(tx, ty) || 1;
+        const tl = Math.hypot(tx,ty) || 1;
         tx /= tl; ty /= tl;
         // Perpendicular vector
         const nx = -ty;
         const ny = tx;
-        const spread = 14 + Math.random() * 26; // stronger lateral separation (14–40px)
+        const spread = 14 + Math.random()*26; // stronger lateral separation (14–40px)
         const vBias = (Math.random() - .5) * 16; // additional vertical tilt
         const seg = [start];
-        for (let j = 1; j <= len; j++) {
-          const base = pts[Math.min(n - 1, startIndex + j)];
-          const t = j / len;
+        for (let j=1;j<=len;j++){
+          const base = pts[Math.min(n-1, startIndex+j)];
+          const t = j/len;
           // Ease outward quickly then stabilize
           const easeOut = 1 - Math.pow(1 - t, 2);
-          const mag = spread * easeOut * (1 - t * 0.15);
+          const mag = spread * easeOut * (1 - t*0.15);
           const offX = nx * dir * mag;
-          const offY = ny * dir * mag + vBias * t + (Math.random() - .5) * 8 * (1 - t);
+          const offY = ny * dir * mag + vBias * t + (Math.random()-.5) * 8 * (1 - t);
           const x = base.x + offX;
           const y = base.y + offY;
-          seg.push({ x, y });
+          seg.push({x,y});
         }
-        const lifeFrac = 0.35 + Math.random() * 0.4; // branch disappears earlier (35%–75% of fade)
-        branches.push({ startIndex, seg, lifeFrac });
+        const lifeFrac = 0.35 + Math.random()*0.4; // branch disappears earlier (35%–75% of fade)
+        branches.push({startIndex, seg, lifeFrac});
       }
       return branches;
     };
@@ -334,86 +334,86 @@ document.addEventListener('DOMContentLoaded', () => {
       branches.forEach((br) => {
         const lf = br.lifeFrac || 0.5;
         if (fp >= lf) return; // fully gone
-        const k = 1 - (fp / lf); // 1 -> 0 over its lifespan
+        const k = 1 - (fp/lf); // 1 -> 0 over its lifespan
         const n = Math.max(2, Math.floor(br.seg.length * k));
-        const sub = br.seg.slice(0, n);
+        const sub = br.seg.slice(0,n);
         const prevAlpha = ctx.globalAlpha;
         ctx.save();
         ctx.globalAlpha = prevAlpha * Math.pow(k, 0.9);
         // Glow
         ctx.globalCompositeOperation = 'multiply';
         ctx.strokeStyle = opts.glow || 'rgba(0,0,0,0.16)';
-        ctx.lineWidth = (opts.width || 1) * 2 * (0.85 + 0.3 * k);
+        ctx.lineWidth = (opts.width||1) * 2 * (0.85 + 0.3*k);
         ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(sub[0].x, sub[0].y);
-        for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i].x, sub[i].y);
+        for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
         ctx.stroke();
         // Core
         ctx.globalCompositeOperation = 'source-over';
         ctx.strokeStyle = opts.color || 'rgba(0,0,0,0.7)';
-        ctx.lineWidth = (opts.width || 1) * (0.8 + 0.4 * k);
+        ctx.lineWidth = (opts.width||1) * (0.8 + 0.4*k);
         ctx.beginPath();
         ctx.moveTo(sub[0].x, sub[0].y);
-        for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i].x, sub[i].y);
+        for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
         ctx.stroke();
         ctx.restore();
         ctx.globalAlpha = prevAlpha;
       });
     };
     const drawBranches = (ctx, branches, mainProgress, opts) => {
-      branches.forEach(({ startIndex, seg }) => {
-        const startT = startIndex / Math.max(1, (opts.totalPts || 1));
+      branches.forEach(({startIndex, seg}) => {
+        const startT = startIndex / Math.max(1, (opts.totalPts||1));
         if (mainProgress <= startT) return;
         const local = Math.min(1, (mainProgress - startT) / (1 - startT));
         const n = Math.max(2, Math.floor(seg.length * local));
-        const sub = seg.slice(0, n);
+        const sub = seg.slice(0,n);
         ctx.save();
         ctx.globalCompositeOperation = 'multiply';
         ctx.strokeStyle = 'rgba(0,0,0,0.18)';
-        ctx.lineWidth = (opts.width || 2.2) * 2;
+        ctx.lineWidth = (opts.width||2.2)*2;
         ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(sub[0].x, sub[0].y);
-        for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i].x, sub[i].y);
+        for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
         ctx.stroke();
         ctx.globalCompositeOperation = 'source-over';
         ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-        ctx.lineWidth = (opts.width || 2.2) * 0.9;
+        ctx.lineWidth = (opts.width||2.2)*0.9;
         ctx.beginPath();
         ctx.moveTo(sub[0].x, sub[0].y);
-        for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i].x, sub[i].y);
+        for (let i=1;i<sub.length;i++) ctx.lineTo(sub[i].x, sub[i].y);
         ctx.stroke();
         ctx.restore();
       });
     };
-    const drawCorona = (ctx, x, y, r, alpha = 0.25) => {
+    const drawCorona = (ctx, x, y, r, alpha=0.25) => {
       ctx.save();
       ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = `rgba(0,0,0,${alpha})`;
       ctx.beginPath();
-      ctx.arc(x, y, Math.max(1, r), 0, Math.PI * 2);
+      ctx.arc(x, y, Math.max(1,r), 0, Math.PI*2);
       ctx.fill();
       ctx.restore();
     };
     const emitRays = () => {
       const c = ensureRayCanvas();
       const prefersReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio||1, 2);
       const host = headerInner.getBoundingClientRect();
-      c.width = Math.ceil(host.width * dpr);
-      c.height = Math.ceil(host.height * dpr);
-      c.style.width = host.width + 'px';
-      c.style.height = host.height + 'px';
+      c.width = Math.ceil(host.width*dpr);
+      c.height = Math.ceil(host.height*dpr);
+      c.style.width = host.width+'px';
+      c.style.height = host.height+'px';
       const ctx = c.getContext('2d');
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
       const center = logo.getBoundingClientRect();
-      const xMid = (center.left + center.right) / 2 - host.left;
-      const yMid = (center.top + center.bottom) / 2 - host.top;
+      const xMid = (center.left + center.right)/2 - host.left;
+      const yMid = (center.top + center.bottom)/2 - host.top;
       const leftPts = makePath(xMid, yMid, 8, yMid);
-      const rightPts = makePath(xMid, yMid, host.width - 8, yMid);
-      const leftBranches = buildBranches(leftPts, 3 + Math.floor(Math.random() * 3));
-      const rightBranches = buildBranches(rightPts, 3 + Math.floor(Math.random() * 3));
+      const rightPts = makePath(xMid, yMid, host.width-8, yMid);
+      const leftBranches = buildBranches(leftPts, 3 + Math.floor(Math.random()*3));
+      const rightBranches = buildBranches(rightPts, 3 + Math.floor(Math.random()*3));
       let start = performance.now();
       const travel = prefersReduce ? 60 : 90;
       const preflash = prefersReduce ? 0 : 40;
@@ -424,13 +424,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
       const step = (now) => {
         const t = now - start;
-        const pLin = Math.max(0, Math.min(1, (t - preflash) / Math.max(1, travel)));
-        const p = easeOutCubic(Math.max(0, pLin));
-        ctx.clearRect(0, 0, host.width, host.height);
+        const pLin = Math.max(0, Math.min(1, (t - preflash)/Math.max(1,travel)));
+        const p = easeOutCubic(Math.max(0,pLin));
+        ctx.clearRect(0,0,host.width,host.height);
         // Preflash corona around logo center
-        if (t < preflash) {
-          const a = 0.18 + 0.22 * (0.5 + 0.5 * Math.sin(t * 0.06));
-          drawCorona(ctx, xMid, yMid, 16 + t * 0.15, a);
+        if (t < preflash){
+          const a = 0.18 + 0.22 * (0.5 + 0.5*Math.sin(t*0.06));
+          drawCorona(ctx, xMid, yMid, 16 + t*0.15, a);
         }
         // Draw main bolts
         drawPath(ctx, leftPts, p, { width: 1.4, glowScale: 2.0 });
@@ -439,23 +439,23 @@ document.addEventListener('DOMContentLoaded', () => {
         drawBranches(ctx, leftBranches, p, { width: 1.0, totalPts: leftPts.length });
         drawBranches(ctx, rightBranches, p, { width: 1.0, totalPts: rightPts.length });
         // Head corona for a hot tip
-        if (p > 0 && p < 1) {
+        if (p > 0 && p < 1){
           const li = Math.max(1, Math.floor(leftPts.length * p));
           const ri = Math.max(1, Math.floor(rightPts.length * p));
-          const lh = leftPts[Math.min(leftPts.length - 1, li)];
-          const rh = rightPts[Math.min(rightPts.length - 1, ri)];
+          const lh = leftPts[Math.min(leftPts.length-1, li)];
+          const rh = rightPts[Math.min(rightPts.length-1, ri)];
           drawCorona(ctx, lh.x, lh.y, 6, 0.2);
           drawCorona(ctx, rh.x, rh.y, 6, 0.2);
         }
-        if (p < 1) { c._raf = requestAnimationFrame(step); return; }
+        if (p < 1){ c._raf = requestAnimationFrame(step); return; }
         // Hold a tick then fade by reducing global alpha over dissipate time
         const fadeStart = performance.now();
         const fadeStep = (now2) => {
           const ft = now2 - fadeStart;
-          const fp = Math.max(0, Math.min(1, ft / dissipate));
-          ctx.clearRect(0, 0, host.width, host.height);
+          const fp = Math.max(0, Math.min(1, ft/dissipate));
+          ctx.clearRect(0,0,host.width,host.height);
           // Slight flicker on dissipate
-          const flicker = prefersReduce ? 0 : (Math.random() * 0.06);
+          const flicker = prefersReduce ? 0 : (Math.random()*0.06);
           ctx.globalAlpha = Math.max(0, 1 - fp - flicker);
           // Trunk fades fully with slight flicker
           drawPath(ctx, leftPts, 1, { width: 1.4, glowScale: 2.0 });
@@ -464,10 +464,10 @@ document.addEventListener('DOMContentLoaded', () => {
           drawBranchesDissipate(ctx, leftBranches, { width: 1.0 }, fp);
           drawBranchesDissipate(ctx, rightBranches, { width: 1.0 }, fp);
           ctx.globalAlpha = 1;
-          if (fp < 1) { c._raf = requestAnimationFrame(fadeStep); return; }
+          if (fp < 1){ c._raf = requestAnimationFrame(fadeStep); return; }
           // Done
           c.classList.remove('is-on');
-          ctx.clearRect(0, 0, host.width, host.height);
+          ctx.clearRect(0,0,host.width,host.height);
         };
         c._raf = requestAnimationFrame(fadeStep);
       };
@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const prevRect = lastEl ? lastEl.getBoundingClientRect() : null;
         const nextRect = el.getBoundingClientRect();
         if (prevRect) dir = nextRect.left >= prevRect.left ? 'right' : 'left';
-      } catch { }
+      } catch {}
       blob.setAttribute('data-dir', dir);
 
       const isSub = !!el.closest('.nav-submenu');
@@ -588,10 +588,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const selectedText = document.getElementById('selectedDateText');
 
   const state = { date: new Date() };
-  state.date.setHours(0, 0, 0, 0);
+  state.date.setHours(0,0,0,0);
   let current = new Date(state.date);
 
-  const fmt = (d) => d.toISOString().slice(0, 10);
+  const fmt = (d) => d.toISOString().slice(0,10);
   const wk = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
   const render = () => {
@@ -599,43 +599,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const head = document.createElement('div');
     head.className = 'cal-head';
     const month = current.toLocaleString('es-CO', { month: 'long', year: 'numeric' });
-    const prev = document.createElement('button'); prev.type = 'button'; prev.textContent = '‹';
-    const next = document.createElement('button'); next.type = 'button'; next.textContent = '›';
+    const prev = document.createElement('button'); prev.type='button'; prev.textContent='‹';
+    const next = document.createElement('button'); next.type='button'; next.textContent='›';
     const title = document.createElement('div'); title.textContent = month.charAt(0).toUpperCase() + month.slice(1);
     head.append(prev, title, next);
     calHost.appendChild(head);
 
     const grid = document.createElement('div');
     grid.className = 'cal-grid';
-    wk.forEach(w => { const el = document.createElement('div'); el.className = 'cal-weekday'; el.textContent = w; grid.appendChild(el); });
+    wk.forEach(w => { const el = document.createElement('div'); el.className='cal-weekday'; el.textContent=w; grid.appendChild(el); });
 
     const first = new Date(current.getFullYear(), current.getMonth(), 1);
     const startDay = (first.getDay() + 6) % 7; // make Monday=0
-    const daysInMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
-    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const daysInMonth = new Date(current.getFullYear(), current.getMonth()+1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
     const minDate = today; // no past dates
 
-    for (let i = 0; i < startDay; i++) {
-      const blank = document.createElement('div'); blank.className = 'cal-day is-disabled'; blank.textContent = ''; grid.appendChild(blank);
+    for (let i=0;i<startDay;i++) {
+      const blank = document.createElement('div'); blank.className='cal-day is-disabled'; blank.textContent=''; grid.appendChild(blank);
     }
-    for (let d = 1; d <= daysInMonth; d++) {
+    for (let d=1; d<=daysInMonth; d++){
       const date = new Date(current.getFullYear(), current.getMonth(), d);
-      const el = document.createElement('button'); el.type = 'button'; el.className = 'cal-day'; el.textContent = String(d);
+      const el = document.createElement('button'); el.type='button'; el.className='cal-day'; el.textContent=String(d);
       if (fmt(date) === fmt(today)) el.classList.add('is-today');
       const isPast = date < minDate;
       if (isPast) { el.classList.add('is-disabled'); el.disabled = true; }
       if (input.value && fmt(date) === input.value) el.classList.add('is-selected');
       el.addEventListener('click', () => {
         input.value = fmt(date);
-        selectedText.textContent = 'Fecha seleccionada: ' + date.toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        selectedText.textContent = 'Fecha seleccionada: ' + date.toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
         render();
       });
       grid.appendChild(el);
     }
     calHost.appendChild(grid);
 
-    prev.addEventListener('click', () => { current.setMonth(current.getMonth() - 1); render(); });
-    next.addEventListener('click', () => { current.setMonth(current.getMonth() + 1); render(); });
+    prev.addEventListener('click', () => { current.setMonth(current.getMonth()-1); render(); });
+    next.addEventListener('click', () => { current.setMonth(current.getMonth()+1); render(); });
   };
 
   render();
@@ -662,8 +662,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   // Close on Escape
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      document.querySelectorAll('.modal[aria-hidden="false"]').forEach(m => m.setAttribute('aria-hidden', 'true'));
+    if (e.key === 'Escape'){
+      document.querySelectorAll('.modal[aria-hidden="false"]').forEach(m => m.setAttribute('aria-hidden','true'));
     }
   });
 });
@@ -686,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const token = meta && meta.getAttribute('content');
   if (token) {
     document.querySelectorAll('form[method="post" i]').forEach(form => {
-      if (!form.querySelector('input[name="_csrf"]')) {
+      if (!form.querySelector('input[name="_csrf"]')){
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = '_csrf';
@@ -766,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     const captchaEl = document.querySelector('.g-recaptcha');
     let captchaToken = '';
-    try { captchaToken = window.grecaptcha ? grecaptcha.getResponse() : ''; } catch { }
+    try { captchaToken = window.grecaptcha ? grecaptcha.getResponse() : ''; } catch {}
 
     const body = new URLSearchParams();
     body.set('email', email);
@@ -794,7 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Accept': 'application/json', 'X-Requested-With': 'fetch' },
         body
       });
-      if (!resp.ok) {
+      if (!resp.ok){
         const data = await resp.json().catch(() => ({}));
         if (data.status === 'captcha') alertErr('Por favor completa la verificación reCAPTCHA.');
         else alertErr(data.message || 'Ingresa un correo válido.');
@@ -802,16 +802,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       alertOk();
       form.reset();
-      try { if (window.grecaptcha && captchaEl) grecaptcha.reset(); } catch { }
+      try { if (window.grecaptcha && captchaEl) grecaptcha.reset(); } catch {}
     } catch (err) {
       alertErr('Error de red. Intenta de nuevo.');
     }
   });
-});
 
-/* ===== AJAX Add to Cart from listing cards ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  // Toast helper
+  // ── Toast notification system ──
   function showToast(msg, isError) {
     let toast = document.getElementById('toast');
     if (!toast) {
@@ -825,19 +822,22 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(toast._timer);
     toast._timer = setTimeout(() => { toast.classList.remove('toast-show'); }, 3000);
   }
-  window.showToast = showToast;
 
-  // Attach to all .btn-add-cart buttons on shop listing
+  // ── AJAX Add-to-cart for shop listing buttons ──
   document.querySelectorAll('.btn-add-cart').forEach(btn => {
-    btn.addEventListener('click', async function (e) {
+    btn.addEventListener('click', async function(e) {
       e.preventDefault();
       const id = this.dataset.id;
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
       this.disabled = true;
       try {
         const res = await fetch('/cart/add', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': csrf },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-Token': csrf
+          },
           body: JSON.stringify({ id, qty: 1, _csrf: csrf })
         });
         const data = await res.json();
@@ -847,10 +847,30 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           showToast(data.message || 'Error al añadir', true);
         }
-      } catch {
+      } catch(err) {
         showToast('Error de conexión', true);
       }
       this.disabled = false;
+    });
+  });
+
+  // ── Price slider sync ──
+  document.querySelectorAll('[data-price-slider]').forEach(slider => {
+    const minInput = slider.querySelector('[data-price-min]');
+    const maxInput = slider.querySelector('[data-price-max]');
+    const minText = slider.querySelector('[data-price-min-text]');
+    const maxText = slider.querySelector('[data-price-max-text]');
+    const minHidden = slider.querySelector('[name="min"]');
+    const maxHidden = slider.querySelector('[name="max"]');
+    if (!minInput || !maxInput) return;
+    const fmt = v => parseInt(v).toLocaleString('es-CO');
+    minInput.addEventListener('input', () => {
+      if (minText) minText.textContent = fmt(minInput.value);
+      if (minHidden) minHidden.value = minInput.value;
+    });
+    maxInput.addEventListener('input', () => {
+      if (maxText) maxText.textContent = fmt(maxInput.value);
+      if (maxHidden) maxHidden.value = maxInput.value;
     });
   });
 });
