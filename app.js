@@ -9,6 +9,8 @@ const Event = require('./models/Event');
 const Newsletter = require('./models/Newsletter');
 const Enrollment = require('./models/Enrollment');
 const JobApplication = require('./models/JobApplication');
+const Course = require('./models/Course');
+const Settings = require('./models/Settings');
 const bcrypt = require('bcryptjs');
 const { Resend } = require('resend');
 const resendClient = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_to_prevent_crash_123');
@@ -1114,12 +1116,72 @@ app.post('/club/registro', async (req, res) => {
 // Olvidé mi contraseña (mock)
 app.get('/club/olvide', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
-  res.render('club/forgot', { message: null });
+  res.render('club/forgot', { message: null, error: null });
 });
-app.post('/club/olvide', (req, res) => {
+
+app.post('/club/olvide', async (req, res) => {
   const { email } = req.body;
-  // Simulamos envío de enlace
-  res.render('club/forgot', { message: 'Si el correo existe, te enviamos un enlace de restablecimiento.' });
+  if (!email) return res.render('club/forgot', { error: 'Por favor, ingresa tu correo.', message: null });
+  
+  try {
+    const user = await User.findOne({ email });
+    if (user) {
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      user.resetToken = resetToken;
+      user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
+      await user.save();
+      
+      const resetLink = `${req.protocol}://${req.get('host')}/club/reset-password?token=${resetToken}`;
+      
+      if (process.env.RESEND_API_KEY) {
+        await resendClient.emails.send({
+          from: 'booking@gorillazmotorbikes.com',
+          to: user.email,
+          subject: 'Recuperar contraseña - Gorillaz Motorbikes',
+          html: `<p>Hola ${user.name || 'Motociclista'},</p><p>Para restablecer tu contraseña, haz clic en el siguiente enlace. Este enlace caducará en 1 hora.</p><p><a href="${resetLink}">[Restablecer contraseña]</a></p><p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>`
+        });
+      } else {
+        console.log(`[DEV ONLY] Reset Link sent: ${resetLink}`); // For debugging without API key
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  // Always return the same message whether user found or not for security
+  res.render('club/forgot', { message: 'Si el correo existe, te enviamos un enlace de restablecimiento al correo.', error: null });
+});
+
+app.get('/club/reset-password', async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.redirect('/club/olvide');
+  
+  const user = await User.findOne({ resetToken: token, resetTokenExpiry: { $gt: Date.now() } });
+  if (!user) {
+    return res.render('club/reset', { error: 'El enlace es inválido o ha expirado.', token: '' });
+  }
+  
+  res.render('club/reset', { error: null, token: req.query.token });
+});
+
+app.post('/club/reset-password', async (req, res) => {
+  const { token, password, confirm } = req.body;
+  
+  if (password !== confirm) {
+    return res.render('club/reset', { error: 'Las contraseñas no coinciden.', token });
+  }
+  
+  const user = await User.findOne({ resetToken: token, resetTokenExpiry: { $gt: Date.now() } });
+  if (!user) {
+    return res.render('club/reset', { error: 'El enlace es inválido o ha expirado.', token: '' });
+  }
+  
+  const bcryptjs = require('bcryptjs');
+  user.password = await bcryptjs.hash(password, 10);
+  user.resetToken = undefined;
+  user.resetTokenExpiry = undefined;
+  await user.save();
+  
+  res.redirect('/club/login');
 });
 
 app.post('/club/logout', (req, res) => {

@@ -12,6 +12,9 @@
   <% if (message) { %>
     <div class="alert"><%= message %></div>
   <% } %>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger" style="color:var(--danger)"><%= error %></div>
+  <% } %>
 
   <form method="post" action="/club/olvide" class="auth-card" novalidate>
     <label for="email">Correo</label>
