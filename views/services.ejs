@@ -1,50 +1,50 @@
 <%- include('partials/head', { title: 'Servicios — Gorillaz Motorbikes' }) %>
 
-<main>
-  <section class="services-hero">
-    <div class="services-hero-inner container">
-      <h1 class="section-title">Servicios</h1>
-      <p class="section-subtitle">Especialistas en mantenimiento, performance y estética para tu moto. Calidad
-        certificada y pasión por cada detalle.</p>
-      <div class="btn-row">
-        <a class="btn btn-outline" href="/servicios/agendar">Agendar servicio</a>
+  <main>
+    <section class="services-hero">
+      <div class="services-hero-inner container">
+        <h1 class="section-title">Servicios</h1>
+        <p class="section-subtitle">Especialistas en mantenimiento, performance y estética para tu moto. Calidad
+          certificada y pasión por cada detalle.</p>
+        <div class="btn-row">
+          <a class="btn btn-outline" href="/servicios/agendar">Agendar servicio</a>
+        </div>
       </div>
-    </div>
-    <div class="services-hero-bg" aria-hidden="true"></div>
-    <div class="services-hero-gradient" aria-hidden="true"></div>
-    <a href="#lista-servicios" class="services-cue" aria-label="Ver servicios">
-      <div class="scroll-cue-circle">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
-        </svg>
-      </div>
-    </a>
-  </section>
+      <div class="services-hero-bg" aria-hidden="true"></div>
+      <div class="services-hero-gradient" aria-hidden="true"></div>
+      <a href="#lista-servicios" class="services-cue" aria-label="Ver servicios">
+        <div class="scroll-cue-circle">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+          </svg>
+        </div>
+      </a>
+    </section>
 
-  <section id="lista-servicios" class="services-list container">
-    <% (services || []).forEach(function(s){ %>
-      <article id="<%= s.slug %>" class="service-row">
-        <div class="service-media" style="background-image: url('<%= s.img %>');"></div>
-        <div class="service-body">
-          <h2>
-            <%= s.title %>
-          </h2>
-          <p>
-            <%= s.desc %>
-          </p>
-          <div class="service-meta">
-            <a class="link" href="/servicios/agendar?servicio=<%= encodeURIComponent(s.title) %>">Agendar</a>
-            <a class="link" href="#<%= s.slug %>">#</a>
+    <section id="lista-servicios" class="services-list container">
+      <% (services || []).forEach(function(s){ %>
+        <article id="<%= s.slug %>" class="service-row">
+          <div class="service-media" style="background-image: url('<%= s.img %>');"></div>
+          <div class="service-body">
+            <h2>
+              <%= s.title %>
+            </h2>
+            <p>
+              <%= s.desc %>
+            </p>
+            <div class="service-meta">
+              <a class="link" href="/servicios/agendar?servicio=<%= encodeURIComponent(s.title) %>">Agendar</a>
+              <a class="link" href="#<%= s.slug %>">#</a>
+            </div>
           </div>
-        </div>
-      </article>
-      <% }) %>
+        </article>
+        <% }) %>
 
-        <div class="services-cta">
-          <a class="btn" href="/servicios/agendar">Agendar servicio</a>
-        </div>
-  </section>
-</main>
+          <div class="services-cta">
+            <a class="btn" href="/servicios/agendar">Agendar servicio</a>
+          </div>
+    </section>
+  </main>
 
   <%- include('partials/footer') %>
