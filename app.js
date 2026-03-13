@@ -132,7 +132,10 @@ app.use(async (req, res, next) => {
   // Upcoming events badge and first anchor for sub-bar
   try {
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    const events = await Event.find().sort({ date: 1 }).lean();
+    let events = [];
+    if (mongoose.connection.readyState === 1) {
+      events = await Event.find().sort({ date: 1 }).lean();
+    }
     let count = 0; let firstIdx = -1;
     (events || []).forEach((ev, i) => {
       if (!ev || !ev.date) return;
