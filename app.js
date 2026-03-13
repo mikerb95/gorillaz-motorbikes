@@ -1012,7 +1012,7 @@ app.get('/faq', (req, res) => {
 
 // Club
 app.get('/club', async (req, res) => {
-  if (req.session.userId) return res.redirect('/club/panel');
+  if (req.userId) return res.redirect('/club/panel');
   // Build club slideshow from /images/slideshow/club
   const dir = path.join(__dirname, 'images', 'slideshow', 'club');
   const allowed = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
@@ -1028,7 +1028,14 @@ app.get('/club', async (req, res) => {
     // Fallback to existing banner if no club slides found
     slidesClub = ['/images/download.png'];
   }
-  const events = await Event.find().sort({ date: 1 }).lean();
+  let events = [];
+  if (mongoose.connection.readyState === 1) {
+    try {
+      events = await Event.find().sort({ date: 1 }).lean();
+    } catch {
+      events = [];
+    }
+  }
   res.render('club/landing', { events, slidesClub });
 });
 
