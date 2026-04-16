@@ -109,6 +109,7 @@
                             </div>
                             <form method="post" action="/club/vehiculos/actualizar">
                               <div class="modal-body">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                                 <input type="hidden" name="plate" value="<%= r.plate %>" />
                                 <div class="grid two">
                                   <label>Vence SOAT<input type="date" name="soatExpires" /></label>
@@ -129,6 +130,7 @@
           <div class="card" id="vehiculos">
             <h2>Mis vehículos</h2>
             <form class="stack" method="post" action="/club/vehiculos">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required /></label>
               <div class="grid two" style="align-items:end">
                 <label>Vence SOAT<input type="date" name="soatExpires" style="min-width:0" /></label>
