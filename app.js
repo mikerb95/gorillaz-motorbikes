@@ -296,7 +296,7 @@ app.post('/servicios/agendar', async (req, res) => {
     console.error('Resend error:', e.message);
   }
   const bookingMessage = `Gracias ${name}. Confirmación enviada a ${email}. Te contactaremos al ${phone}.`;
-  res.render('services_schedule', { services, bookingMessage, demandMap: computeDemandMap() });
+  res.render('services_schedule', { services, bookingMessage, demandMap: await computeDemandMap() });
 });
 
 // Servicios: Nuevas páginas "Próximamente"
