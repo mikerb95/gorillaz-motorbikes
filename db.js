@@ -334,8 +334,8 @@ async function countEvents() {
 async function createEvent(data) {
   const id = data.id || uuidv4();
   await db.execute({
-    sql: 'INSERT INTO events (id, title, date, location, description, level) VALUES (?,?,?,?,?,?)',
-    args: [id, data.title, data.date, data.location || null, data.description || null, data.level || null],
+    sql: 'INSERT INTO events (id, title, date, location, description, level, type) VALUES (?,?,?,?,?,?,?)',
+    args: [id, data.title, data.date, data.location || null, data.description || null, data.level || null, data.type || 'evento'],
   });
   return id;
 }
