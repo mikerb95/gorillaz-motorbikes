@@ -5,6 +5,7 @@
   <section class="card stack">
     <h3>Crear cita</h3>
   <form class="grid two" method="post" action="/admin/citas/crear">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <label>Cliente<input name="customer" required /></label>
       <label>Fecha<input type="date" name="date" required /></label>
       <label>Hora<input type="time" name="time" required /></label>

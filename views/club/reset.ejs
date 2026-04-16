@@ -16,6 +16,7 @@
             <% } %>
 
                 <form method="post" action="/club/reset-password" class="auth-card" novalidate>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                     <input type="hidden" name="token" value="<%= token %>" />
                     <label for="password">Nueva contraseña</label>
                     <input id="password" name="password" type="password" required />
