@@ -8,7 +8,7 @@ if (!process.env.TURSO_URL || !process.env.TURSO_TOKEN) {
 
 const db = createClient({
   url: process.env.TURSO_URL || '',
-  authToken: process.env.TURSO_TOKEN || '',
+  authToken: (process.env.TURSO_TOKEN || '').replace(/^Bearer\s+/i, ''),
 });
 
 // ── Schema ────────────────────────────────────────────────────────────────
