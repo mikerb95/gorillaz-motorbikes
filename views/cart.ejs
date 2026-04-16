@@ -28,6 +28,7 @@
 
       <div class="cart-summary">
         <form method="post" action="/cart/clear">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <button class="btn btn-ghost" type="submit">Vaciar carrito</button>
         </form>
         <div class="totals">
