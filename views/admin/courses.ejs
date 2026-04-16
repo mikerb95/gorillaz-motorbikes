@@ -23,6 +23,7 @@
           <p><%= c.short %></p>
           <div class="row gap">
             <form method="post" action="/admin/cursos/actualizar" class="stack compact">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="slug" value="<%= c.slug %>" />
               <input name="title" value="<%= c.title %>" />
               <input type="number" step="1" name="priceCOP" value="<%= c.priceCOP %>" />
