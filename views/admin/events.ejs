@@ -7,9 +7,18 @@
     <form class="stack" method="post" action="/admin/eventos/crear">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <label>Título<input name="title" required /></label>
-      <label>Fecha<input type="date" name="date" required /></label>
+      <div class="grid two">
+        <label>Fecha<input type="date" name="date" required /></label>
+        <label>
+          Tipo
+          <select name="type">
+            <option value="evento">Evento del club (+25 pts)</option>
+            <option value="rodada">Rodada (+30 pts)</option>
+          </select>
+        </label>
+      </div>
       <label>Lugar (opcional)<input name="location" /></label>
-      <label>Descripción<textarea name="description" rows="3" required></textarea></label>
+      <label>Descripción<textarea name="description" rows="3"></textarea></label>
       <button class="btn btn-primary" type="submit">Crear</button>
     </form>
   </section>
@@ -19,16 +28,30 @@
     <div class="grid three">
       <% events.forEach(ev => { %>
         <article class="card stack">
-          <h4 class="tight"><%= ev.title %></h4>
-          <div class="muted"><%= ev.date %></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <h4 class="tight" style="margin:0"><%= ev.title %></h4>
+            <% if (ev.type === 'rodada') { %>
+              <span class="chip" style="background:#e0f2fe;color:#0891b2;font-size:.75em">🏍️ Rodada</span>
+            <% } else { %>
+              <span class="chip" style="background:#ede9fe;color:#7c3aed;font-size:.75em">🎉 Evento</span>
+            <% } %>
+          </div>
+          <div class="muted"><%= ev.date %><% if (ev.location) { %> · <%= ev.location %><% } %></div>
           <p><%= ev.description %></p>
-          <div class="row gap">
+
+          <a class="btn btn-sm btn-outline" href="/admin/eventos/<%= ev.id %>/asistencias">Ver asistencias</a>
+
+          <div class="row gap" style="margin-top:8px">
             <form method="post" action="/admin/eventos/actualizar" class="stack compact">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="id" value="<%= ev.id %>" />
               <input name="title" value="<%= ev.title %>" />
               <input type="date" name="date" value="<%= ev.date %>" />
               <input name="location" value="<%= ev.location || '' %>" placeholder="Lugar" />
+              <select name="type">
+                <option value="evento" <%= ev.type !== 'rodada' ? 'selected' : '' %>>Evento (+25 pts)</option>
+                <option value="rodada" <%= ev.type === 'rodada' ? 'selected' : '' %>>Rodada (+30 pts)</option>
+              </select>
               <textarea name="description" rows="2"><%= ev.description %></textarea>
               <button class="btn" type="submit">Actualizar</button>
             </form>
