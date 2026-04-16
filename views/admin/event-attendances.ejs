@@ -1,0 +1,61 @@
+<%- include('../partials/head', { title: 'Admin — Asistencias' }) %>
+<main class="container section">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a class="btn btn-outline btn-sm" href="/admin/eventos">← Eventos</a>
+    <div>
+      <h1 style="margin:0"><%= ev.title %></h1>
+      <p class="muted" style="margin:2px 0 0"><%= ev.date %><% if (ev.location) { %> · <%= ev.location %><% } %> &nbsp;|&nbsp; Tipo: <strong><%= ev.type %></strong></p>
+    </div>
+  </div>
+
+  <% if (!attendances || attendances.length === 0) { %>
+    <p class="muted">Ningún miembro se ha inscrito aún a este evento.</p>
+  <% } else { %>
+    <p class="muted" style="margin-bottom:16px"><%= attendances.length %> inscripción<%= attendances.length !== 1 ? 'es' : '' %></p>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--surface,#f9fafb);border-bottom:2px solid #e5e7eb">
+            <th style="padding:10px 16px;text-align:left;font-size:.85em">Miembro</th>
+            <th style="padding:10px 16px;text-align:left;font-size:.85em">Inscrito</th>
+            <th style="padding:10px 16px;text-align:center;font-size:.85em">Estado</th>
+            <th style="padding:10px 16px;text-align:right;font-size:.85em">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% attendances.forEach(a => { %>
+            <tr style="border-bottom:1px solid #f3f4f6">
+              <td style="padding:12px 16px">
+                <strong><%= a.nickname || a.name %></strong>
+                <% if (a.nickname) { %><span class="muted" style="font-size:.82em;margin-left:6px"><%= a.name %></span><% } %>
+              </td>
+              <td style="padding:12px 16px;color:var(--muted,#6b7280);font-size:.88em"><%= a.registeredAt.slice(0,10) %></td>
+              <td style="padding:12px 16px;text-align:center">
+                <% if (a.status === 'confirmed') { %>
+                  <span class="chip" style="background:#dcfce7;color:#16a34a">✓ Confirmada</span>
+                <% } else { %>
+                  <span class="chip" style="background:#fef9c3;color:#854d0e">⏳ Pendiente</span>
+                <% } %>
+              </td>
+              <td style="padding:12px 16px;text-align:right">
+                <% if (a.status !== 'confirmed') { %>
+                  <form method="post" action="/admin/eventos/asistencia/confirmar" style="display:inline">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <input type="hidden" name="attendanceId" value="<%= a.id %>" />
+                    <input type="hidden" name="eventId" value="<%= ev.id %>" />
+                    <input type="hidden" name="userId" value="<%= a.userId %>" />
+                    <input type="hidden" name="eventType" value="<%= ev.type %>" />
+                    <button class="btn btn-sm" type="submit">Confirmar y otorgar puntos</button>
+                  </form>
+                <% } else { %>
+                  <span class="muted" style="font-size:.85em">Puntos otorgados</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>
