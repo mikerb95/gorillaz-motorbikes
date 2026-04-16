@@ -33,6 +33,7 @@
               <button class="btn" type="submit">Actualizar</button>
             </form>
             <form method="post" action="/admin/eventos/eliminar" data-confirm="¿Eliminar este evento?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="id" value="<%= ev.id %>" />
               <button class="btn btn-danger" type="submit">Eliminar</button>
             </form>
