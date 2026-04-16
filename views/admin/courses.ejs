@@ -30,6 +30,7 @@
               <button class="btn" type="submit">Actualizar</button>
             </form>
             <form method="post" action="/admin/cursos/eliminar" data-confirm="¿Eliminar este curso?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="slug" value="<%= c.slug %>" />
               <button class="btn btn-danger" type="submit">Eliminar</button>
             </form>
