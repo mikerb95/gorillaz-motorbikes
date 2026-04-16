@@ -3,6 +3,7 @@ require('dotenv').config();
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('./models/User');
