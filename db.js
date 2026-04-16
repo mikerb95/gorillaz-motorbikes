@@ -136,6 +136,8 @@ function rowToUser(row) {
     membership: safeJson(row.membership, { level: 'Básica', since: '', expires: null, benefits: [] }),
     visits: safeJson(row.visits, []),
     vehicles: safeJson(row.vehicles, []),
+    score: Number(row.score) || 0,
+    scoreHistory: safeJson(row.score_history, []),
     emergencyName: row.emergency_name,
     emergencyPhone: row.emergency_phone,
     resetToken: row.reset_token,
@@ -153,6 +155,7 @@ function rowToEvent(row) {
     location: row.location,
     description: row.description,
     level: row.level,
+    type: row.type || 'evento',
     createdAt: row.created_at,
   };
 }
