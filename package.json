@@ -18,11 +18,13 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "connect-mongo": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "csrf": "^3.1.0",
     "dotenv": "^17.3.1",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.4",
     "multer": "^2.1.1",

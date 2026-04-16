@@ -55,6 +55,10 @@ if (!process.env.JWT_SECRET) {
 }
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-insecure-fallback';
 
+if (!process.env.COOKIE_SECRET) {
+  console.warn('[WARN] COOKIE_SECRET not set — falling back to JWT_SECRET');
+}
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/gorillaz')
   .then(() => console.log('✅ MongoDB connected successfully'))
@@ -95,7 +99,12 @@ app.use((req, res, next) => {
   let cartCookie = { items: {}, count: 0, subtotal: 0 };
   if (req.cookies.cart) {
     try {
-      cartCookie = JSON.parse(req.cookies.cart);
+      const parsed = JSON.parse(req.cookies.cart);
+      if (parsed && typeof parsed.items === 'object' && !Array.isArray(parsed.items)) {
+        cartCookie = parsed;
+      } else {
+        res.clearCookie('cart');
+      }
     } catch (_) {
       res.clearCookie('cart');
     }
