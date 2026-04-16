@@ -51,11 +51,7 @@ const uploadProduct = multer({
 const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '';
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '';
 if (!process.env.JWT_SECRET) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('JWT_SECRET environment variable is required in production');
-  } else {
-    console.warn('[WARN] JWT_SECRET not set — using insecure dev-only fallback');
-  }
+  console.warn('[WARN] JWT_SECRET not set — using insecure fallback. Set this env var in production.');
 }
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-insecure-fallback';
 
