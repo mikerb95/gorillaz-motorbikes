@@ -16,6 +16,7 @@
       <% } %>
 
         <form method="post" action="/club/registro" class="auth-card register-form" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
           <!-- ── 1. DATOS PERSONALES ─────────────────────────────── -->
           <fieldset class="register-section">
