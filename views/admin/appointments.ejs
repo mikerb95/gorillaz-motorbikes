@@ -26,6 +26,7 @@
           <div class="muted"><%= a.service %></div>
           <div class="row gap">
             <form method="post" action="/admin/citas/actualizar" class="grid two compact">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="id" value="<%= a.id %>" />
               <input name="customer" value="<%= a.customer %>" />
               <input type="date" name="date" value="<%= a.date %>" />
@@ -34,6 +35,7 @@
               <button class="btn" type="submit">Actualizar</button>
             </form>
             <form method="post" action="/admin/citas/eliminar" data-confirm="¿Eliminar esta cita?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="id" value="<%= a.id %>" />
               <button class="btn btn-danger" type="submit">Eliminar</button>
             </form>

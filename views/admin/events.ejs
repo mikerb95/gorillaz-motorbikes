@@ -24,6 +24,7 @@
           <p><%= ev.description %></p>
           <div class="row gap">
             <form method="post" action="/admin/eventos/actualizar" class="stack compact">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="id" value="<%= ev.id %>" />
               <input name="title" value="<%= ev.title %>" />
               <input type="date" name="date" value="<%= ev.date %>" />
