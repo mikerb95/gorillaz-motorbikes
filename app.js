@@ -68,7 +68,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/gorillaz')
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cookieParser('gorillaz-cookie-secret'));
+app.use(cookieParser(process.env.COOKIE_SECRET || JWT_SECRET));
 
 // CSRF token generation middleware
 app.use((req, res, next) => {
