@@ -1909,14 +1909,23 @@ input {
     margin: 12px auto 0
   }
 
-  /* Left = hamburger, Right = (hidden on mobile) header-right */
+  /* Left = hamburger, Center = logo */
   .header-inner {
-    grid-template-columns: auto auto;
+    grid-template-columns: auto 1fr;
     column-gap: 12px
   }
 
   .header-right {
     display: none
+  }
+
+  /* Show logo on mobile even in compact mode */
+  .nav-center,
+  .nav-compact .nav-center {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 12px
   }
 
   .nav {
@@ -1976,7 +1985,7 @@ input {
   }
 
   /* Hide floating badge in the mobile panel to keep rows uniform */
-  .nav[data-open="true"] .cart-badge {
+  .nav[data-open=”true”] .cart-badge {
     display: none
   }
 
@@ -2004,17 +2013,12 @@ input {
     text-align: left
   }
 
-  .nav[data-open="true"] {
+  .nav[data-open=”true”] {
     display: flex
   }
 
   .nav-toggle {
     display: inline-flex
-  }
-
-  /* Hide center logo area on small screens */
-  .nav-center {
-    display: none
   }
 }
 
