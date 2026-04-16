@@ -16,6 +16,7 @@
               <span class="muted">$<%= item.price.toLocaleString('es-CO') %> c/u</span>
             </div>
             <form method="post" action="/cart/update" class="cart-actions">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <input type="hidden" name="id" value="<%= item.id %>" />
               <input type="number" min="0" name="qty" value="<%= item.qty %>" />
               <span class="line-total">$<%= item.total.toLocaleString('es-CO') %></span>
