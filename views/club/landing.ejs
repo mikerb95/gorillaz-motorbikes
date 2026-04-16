@@ -5,7 +5,7 @@
     <div class="container" style="position:relative;z-index:1;padding:48px 16px;color:#fff">
       <h1 style="margin:0 0 10px;font-size:42px;line-height:1.1">Únete al Club Gorillaz</h1>
       <p style="max-width:720px;margin:0 0 16px;color:#e5e7eb">Rutas exclusivas, descuentos en el taller, cursos y una
-        comunidad que vive la moto. Vive la experiencia premium de Gorillaz Motorbikes.</p>
+        comunidad que vive la moto. Acumula puntos con cada actividad y escala de nivel.</p>
       <div class="btn-row">
         <a class="btn" href="/club/registro">Quiero ser miembro</a>
         <a class="btn btn-outline" href="/club/login">Ya tengo cuenta</a>
@@ -14,88 +14,201 @@
   </section>
 
   <main class="container">
+
+    <!-- Beneficios -->
     <section>
-      <h2 class="section-title">Beneficios</h2>
+      <h2 class="section-title">Beneficios del club</h2>
       <ul class="grid">
-        <li>
+        <li class="card">
+          <div style="font-size:2rem;margin-bottom:8px">🔧</div>
           <h3>Descuentos en el taller</h3>
-          <p>Hasta 15% en mecánica rápida y beneficios por recurrencia.</p>
+          <p>Hasta 15% en mecánica rápida y beneficios adicionales según tu nivel de membresía.</p>
         </li>
-        <li>
-          <h3>Rutas y eventos</h3>
-          <p>Rodadas organizadas y eventos exclusivos en Bogotá y alrededores.</p>
+        <li class="card">
+          <div style="font-size:2rem;margin-bottom:8px">🏍️</div>
+          <h3>Rodadas y eventos</h3>
+          <p>Rodadas organizadas, paseos de fin de semana y eventos exclusivos en Bogotá y alrededores.</p>
         </li>
-        <li>
+        <li class="card">
+          <div style="font-size:2rem;margin-bottom:8px">📚</div>
           <h3>Cursos y formación</h3>
-          <p>Acceso prioritario y precios especiales en nuestros cursos técnicos.</p>
+          <p>Acceso prioritario y precios especiales en cursos técnicos de mecánica, seguridad vial y más.</p>
         </li>
-        <li>
+        <li class="card">
+          <div style="font-size:2rem;margin-bottom:8px">📅</div>
           <h3>Prioridad en agenda</h3>
-          <p>Reserva de citas preferencial para miembros Premium.</p>
+          <p>Reserva de citas preferencial para miembros activos y recordatorios automáticos de SOAT y tecno.</p>
+        </li>
+        <li class="card">
+          <div style="font-size:2rem;margin-bottom:8px">🏆</div>
+          <h3>Sistema de puntos</h3>
+          <p>Acumula puntos con cada visita, rodada o evento y desbloquea beneficios exclusivos por nivel.</p>
+        </li>
+        <li class="card">
+          <div style="font-size:2rem;margin-bottom:8px">🤝</div>
+          <h3>Comunidad activa</h3>
+          <p>Red de motociclistas en Bogotá. Comparte experiencias, rutas y conocimiento con la hermandad Gorillaz.</p>
         </li>
       </ul>
     </section>
 
+    <!-- Sistema de puntos y niveles -->
+    <section style="background:var(--surface,#f9fafb);border-radius:16px;padding:32px 24px;margin:0 -8px">
+      <h2 class="section-title">Sistema de puntos</h2>
+      <p style="text-align:center;color:var(--muted,#6b7280);max-width:600px;margin:0 auto 28px">
+        Cada actividad con Gorillaz suma puntos a tu perfil. Mientras más activo seas, más alto será tu nivel y mayores tus beneficios.
+      </p>
+
+      <!-- Cómo ganar puntos -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:36px">
+        <div class="card" style="text-align:center;border-top:3px solid #0891b2">
+          <div style="font-size:2.2rem">🏍️</div>
+          <div style="font-size:1.6rem;font-weight:700;color:#0891b2">+30 pts</div>
+          <div style="font-weight:600;margin:4px 0">Rodada</div>
+          <p class="muted" style="font-size:.85em;margin:0">Participa en una rodada organizada por el club.</p>
+        </div>
+        <div class="card" style="text-align:center;border-top:3px solid #7c3aed">
+          <div style="font-size:2.2rem">🎉</div>
+          <div style="font-size:1.6rem;font-weight:700;color:#7c3aed">+25 pts</div>
+          <div style="font-weight:600;margin:4px 0">Evento del club</div>
+          <p class="muted" style="font-size:.85em;margin:0">Asiste a eventos, reuniones y actividades del club.</p>
+        </div>
+        <div class="card" style="text-align:center;border-top:3px solid #d97706">
+          <div style="font-size:2.2rem">🔩</div>
+          <div style="font-size:1.6rem;font-weight:700;color:#d97706">+20 pts</div>
+          <div style="font-weight:600;margin:4px 0">Mantenimiento</div>
+          <p class="muted" style="font-size:.85em;margin:0">Realiza un mantenimiento o servicio en el taller.</p>
+        </div>
+        <div class="card" style="text-align:center;border-top:3px solid #16a34a">
+          <div style="font-size:2.2rem">🏪</div>
+          <div style="font-size:1.6rem;font-weight:700;color:#16a34a">+10 pts</div>
+          <div style="font-weight:600;margin:4px 0">Visita al taller</div>
+          <p class="muted" style="font-size:.85em;margin:0">Cualquier visita o consulta en Gorillaz Motorbikes.</p>
+        </div>
+      </div>
+
+      <!-- Niveles -->
+      <h3 style="text-align:center;margin:0 0 20px">Niveles del club</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+        <div class="card" style="text-align:center;padding:16px 12px">
+          <div style="font-size:1.8rem">🌱</div>
+          <div style="font-weight:700;margin:6px 0 2px">Prospecto</div>
+          <div class="muted" style="font-size:.82em">0 – 99 pts</div>
+        </div>
+        <div class="card" style="text-align:center;padding:16px 12px;border-color:#16a34a">
+          <div style="font-size:1.8rem">✅</div>
+          <div style="font-weight:700;margin:6px 0 2px;color:#16a34a">Miembro</div>
+          <div class="muted" style="font-size:.82em">100 – 299 pts</div>
+        </div>
+        <div class="card" style="text-align:center;padding:16px 12px;border-color:#0891b2">
+          <div style="font-size:1.8rem">🏍️</div>
+          <div style="font-weight:700;margin:6px 0 2px;color:#0891b2">Rider</div>
+          <div class="muted" style="font-size:.82em">300 – 699 pts</div>
+        </div>
+        <div class="card" style="text-align:center;padding:16px 12px;border-color:#d97706">
+          <div style="font-size:1.8rem">🏆</div>
+          <div style="font-weight:700;margin:6px 0 2px;color:#d97706">Gorilla</div>
+          <div class="muted" style="font-size:.82em">700 – 1499 pts</div>
+        </div>
+        <div class="card" style="text-align:center;padding:16px 12px;border-color:#7c3aed">
+          <div style="font-size:1.8rem">🦍</div>
+          <div style="font-weight:700;margin:6px 0 2px;color:#7c3aed">Gorilla Legend</div>
+          <div class="muted" style="font-size:.82em">1500+ pts</div>
+        </div>
+      </div>
+
+      <div class="center" style="margin-top:20px">
+        <a class="btn btn-outline" href="/club/tabla">Ver tabla de posiciones</a>
+      </div>
+    </section>
+
+    <!-- Próximos eventos -->
     <section>
       <h2 class="section-title">Próximos eventos</h2>
       <% if (!events || events.length===0) { %>
-        <p class="muted">Muy pronto anunciaremos nuevas actividades del club.</p>
-        <% } else { %>
-          <div class="grid products-grid">
-            <% events.slice(0, 6).forEach(ev=> { %>
-              <article class="card">
-                <h3 style="margin:0 0 6px">
-                  <%= ev.title %>
-                </h3>
-                <div class="meta-row">
-                  <span class="chip">
-                    <%= ev.date %>
-                  </span>
-                  <% if (ev.location) { %><span class="chip">
-                      <%= ev.location %>
-                    </span>
-                    <% } %>
-                </div>
-                <p>
-                  <%= ev.desc || ev.description || '' %>
-                </p>
-              </article>
-              <% }) %>
-          </div>
-          <div class="btn-row" style="margin-top:12px"><a class="btn btn-outline" href="/eventos">Ver todos</a></div>
-          <% } %>
+        <p class="muted" style="text-align:center">Muy pronto anunciaremos nuevas actividades del club.</p>
+      <% } else { %>
+        <div class="grid products-grid">
+          <% events.slice(0,6).forEach(ev => { %>
+            <article class="card">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <% if (ev.type === 'rodada') { %>
+                  <span style="font-size:1.3rem">🏍️</span>
+                  <span class="chip" style="background:#e0f2fe;color:#0891b2">Rodada</span>
+                <% } else { %>
+                  <span style="font-size:1.3rem">🎉</span>
+                  <span class="chip" style="background:#ede9fe;color:#7c3aed">Evento</span>
+                <% } %>
+              </div>
+              <h3 style="margin:0 0 6px"><%= ev.title %></h3>
+              <div class="meta-row">
+                <span class="chip"><%= ev.date %></span>
+                <% if (ev.location) { %><span class="chip"><%= ev.location %></span><% } %>
+              </div>
+              <p><%= ev.desc || ev.description || '' %></p>
+            </article>
+          <% }) %>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <a class="btn btn-outline" href="/eventos">Ver todos los eventos</a>
+          <a class="btn" href="/club/registro">Únete para apuntarte</a>
+        </div>
+      <% } %>
     </section>
 
+    <!-- Cómo funciona -->
     <section>
-      <h2 class="section-title">Testimonios</h2>
+      <h2 class="section-title">¿Cómo funciona?</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;counter-reset:steps">
+        <% [
+          ['Regístrate gratis', 'Crea tu cuenta en minutos con tus datos básicos y el de tu moto.'],
+          ['Participa en actividades', 'Asiste a rodadas, eventos del club, lleva tu moto al taller.'],
+          ['Acumula puntos', 'Cada actividad suma puntos automáticamente a tu perfil.'],
+          ['Sube de nivel y gana beneficios', 'Más nivel = más descuentos, prioridad y reconocimiento en la comunidad.'],
+        ].forEach(([t,d], i) => { %>
+          <div class="card" style="position:relative;padding-top:20px">
+            <div style="position:absolute;top:-14px;left:16px;width:28px;height:28px;background:var(--accent,#111);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85em"><%= i+1 %></div>
+            <h3 style="margin:0 0 6px"><%= t %></h3>
+            <p class="muted" style="margin:0;font-size:.9em"><%= d %></p>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- Testimonios -->
+    <section>
+      <h2 class="section-title">Lo que dicen nuestros miembros</h2>
       <ul class="grid">
-        <li>
-          <p>“Excelente servicio y las rodadas del club son lo máximo.”</p>
-          <strong>— Ana, Miembro Premium</strong>
+        <li class="card">
+          <p>"Llegué como prospecto y en 3 meses ya soy Gorilla. Las rodadas del club son lo máximo, ambiente increíble."</p>
+          <strong>— Ana R., nivel Gorilla 🏆</strong>
         </li>
-        <li>
-          <p>“Aprendí muchísimo con el curso de electrónica. Recomendado.”</p>
-          <strong>— Carlos, Miembro</strong>
+        <li class="card">
+          <p>"Aprendí más en los cursos técnicos que en años de mecánica empírica. Y los puntos de los eventos ayudan mucho."</p>
+          <strong>— Carlos M., nivel Rider 🏍️</strong>
         </li>
-        <li>
-          <p>“Ambiente increíble y atención profesional.”</p>
-          <strong>— David, Miembro</strong>
+        <li class="card">
+          <p>"Los recordatorios de SOAT y tecno me han salvado varias veces. El taller siempre tiene mi moto lista en el día."</p>
+          <strong>— David P., nivel Miembro ✅</strong>
         </li>
       </ul>
     </section>
 
+    <!-- FAQ -->
     <section>
       <h2 class="section-title">Preguntas frecuentes</h2>
       <ul class="list" style="max-width:900px;margin:0 auto">
-        <li><span>¿Cómo me inscribo?</span><strong>Regístrate y activa tu membresía desde tu panel.</strong></li>
-        <li><span>¿Cuánto cuesta?</span><strong>Tenemos niveles desde gratuita hasta Premium.</strong></li>
-        <li><span>¿Hay requisitos?</span><strong>Mayor de edad. Recomendamos experiencia básica en conducción.</strong>
-        </li>
+        <li><span>¿Cómo me inscribo?</span><strong>Regístrate gratis en esta página. En minutos tendrás acceso a tu panel.</strong></li>
+        <li><span>¿Cuánto cuesta?</span><strong>La membresía básica es gratuita. Los niveles Premium tienen beneficios adicionales.</strong></li>
+        <li><span>¿Cómo gano puntos?</span><strong>Asistiendo a rodadas, eventos del club, llevando tu moto al taller o haciendo mantenimientos.</strong></li>
+        <li><span>¿Los puntos vencen?</span><strong>No. Los puntos acumulados son permanentes en tu perfil.</strong></li>
+        <li><span>¿Hay requisitos?</span><strong>Mayor de edad. Recomendamos experiencia básica en conducción.</strong></li>
       </ul>
-      <div class="center">
-        <a class="btn" href="/club/registro">Únete hoy</a>
+      <div class="center" style="margin-top:24px">
+        <a class="btn" href="/club/registro">Únete hoy — es gratis</a>
       </div>
     </section>
+
   </main>
 
   <%- include('../partials/footer') %>
