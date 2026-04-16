@@ -394,15 +394,110 @@ async function createJobApplication(data) {
   });
 }
 
+// ── Score ─────────────────────────────────────────────────────────────────
+
+async function addUserScore(userId, points, concept, description) {
+  const user = await getUserById(userId);
+  if (!user) return;
+  const newScore = (user.score || 0) + points;
+  const entry = { date: new Date().toISOString().slice(0, 10), points, concept, description };
+  const history = [entry, ...(user.scoreHistory || [])].slice(0, 100);
+  await updateUser(userId, { score: newScore, scoreHistory: history });
+}
+
+async function getLeaderboard(limit = 10) {
+  const r = await db.execute({
+    sql: 'SELECT id, name, nickname, score FROM users WHERE role != ? ORDER BY score DESC LIMIT ?',
+    args: ['admin', limit],
+  });
+  return r.rows.map(row => ({
+    id: row.id,
+    name: row.name,
+    nickname: row.nickname,
+    score: Number(row.score) || 0,
+  }));
+}
+
+// ── Event Attendances ─────────────────────────────────────────────────────
+
+async function registerEventAttendance(eventId, userId) {
+  try {
+    await db.execute({
+      sql: 'INSERT INTO event_attendances (id, event_id, user_id, status) VALUES (?,?,?,?)',
+      args: [uuidv4(), eventId, userId, 'pending'],
+    });
+    return true;
+  } catch {
+    return false; // already registered (UNIQUE constraint)
+  }
+}
+
+async function hasUserAttendedEvent(eventId, userId) {
+  const r = await db.execute({
+    sql: 'SELECT id FROM event_attendances WHERE event_id = ? AND user_id = ?',
+    args: [eventId, userId],
+  });
+  return r.rows.length > 0;
+}
+
+async function getEventAttendances(eventId) {
+  const r = await db.execute({
+    sql: `SELECT ea.id, ea.user_id, ea.status, ea.registered_at, u.name, u.nickname
+          FROM event_attendances ea
+          JOIN users u ON u.id = ea.user_id
+          WHERE ea.event_id = ?
+          ORDER BY ea.registered_at ASC`,
+    args: [eventId],
+  });
+  return r.rows.map(row => ({
+    id: row.id,
+    userId: row.user_id,
+    status: row.status,
+    registeredAt: row.registered_at,
+    name: row.name,
+    nickname: row.nickname,
+  }));
+}
+
+async function confirmEventAttendance(attendanceId) {
+  await db.execute({
+    sql: 'UPDATE event_attendances SET status = ? WHERE id = ?',
+    args: ['confirmed', attendanceId],
+  });
+}
+
+async function getUpcomingEvents(limit = 6) {
+  const today = new Date().toISOString().slice(0, 10);
+  const r = await db.execute({
+    sql: 'SELECT * FROM events WHERE date >= ? ORDER BY date ASC LIMIT ?',
+    args: [today, limit],
+  });
+  return r.rows.map(rowToEvent);
+}
+
+async function getUserEventRegistrations(userId) {
+  const r = await db.execute({
+    sql: 'SELECT event_id, status FROM event_attendances WHERE user_id = ?',
+    args: [userId],
+  });
+  const map = {};
+  r.rows.forEach(row => { map[row.event_id] = row.status; });
+  return map;
+}
+
 // ── Exports ───────────────────────────────────────────────────────────────
 
 module.exports = {
   db, initDb,
   getUserById, getUserByEmail, getUserByCedula, getUserByResetToken,
   getAllUsers, countUsers, createUser, updateUser, deleteUser,
+  addUserScore, getLeaderboard,
   getAllAppointments, getAppointmentDates, countAppointments,
   createAppointment, updateAppointment, deleteAppointment,
   getAllEvents, countEvents, createEvent, getEventById, updateEvent, deleteEvent,
+  getUpcomingEvents,
+  registerEventAttendance, hasUserAttendedEvent, getEventAttendances,
+  confirmEventAttendance, getUserEventRegistrations,
   getNewsletterByEmail, createNewsletter,
   createEnrollment,
   createJobApplication,
