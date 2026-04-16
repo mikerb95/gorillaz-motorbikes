@@ -882,7 +882,8 @@ app.post('/club/login', authLimiter, async (req, res) => {
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
     res.redirect('/club/panel');
-  } catch {
+  } catch (e) {
+    console.error('POST /club/login error:', e);
     res.status(500).render('club/login', { error: 'Error del servidor' });
   }
 });
