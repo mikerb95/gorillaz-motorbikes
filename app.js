@@ -1093,7 +1093,7 @@ app.get('/club/login', (req, res) => {
   res.render('club/login', { error: null });
 });
 
-app.post('/club/login', async (req, res) => {
+app.post('/club/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
