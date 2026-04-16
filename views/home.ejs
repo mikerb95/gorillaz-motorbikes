@@ -238,6 +238,7 @@
               <% } %>
 
                 <form class="newsletter-form" action="/newsletter" method="post" novalidate>
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <label class="sr-only" for="nl-email">Correo electrónico</label>
                   <input id="nl-email" type="email" name="email" placeholder="TU CORREO ELECTRÓNICO" required />
                   <button type="submit" class="btn btn-square">Suscribirme</button>
