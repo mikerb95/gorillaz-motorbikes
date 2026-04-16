@@ -22,6 +22,7 @@
                 <button class="btn" type="submit">Guardar</button>
               </form>
               <form method="post" action="/admin/usuarios/eliminar" data-confirm="¿Eliminar usuario?">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <input type="hidden" name="id" value="<%= u.id %>" />
                 <button class="btn btn-danger" type="submit">Eliminar</button>
               </form>
