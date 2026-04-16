@@ -352,6 +352,7 @@ async function updateEvent(id, fields) {
   if (fields.date !== undefined)        { set.push('date = ?');        args.push(fields.date); }
   if (fields.location !== undefined)    { set.push('location = ?');    args.push(fields.location); }
   if (fields.description !== undefined) { set.push('description = ?'); args.push(fields.description); }
+  if (fields.type !== undefined)        { set.push('type = ?');        args.push(fields.type); }
   if (set.length === 0) return;
   args.push(id);
   await db.execute({ sql: `UPDATE events SET ${set.join(', ')} WHERE id = ?`, args });
