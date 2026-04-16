@@ -15,6 +15,7 @@
           <td>
             <div class="row gap">
               <form method="post" action="/admin/usuarios/actualizar" class="row gap compact">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <input type="hidden" name="id" value="<%= u.id %>" />
                 <input name="name" value="<%= u.name %>" placeholder="Nombre" />
                 <input name="membershipLevel" value="<%= (u.membership && u.membership.level) || '' %>" placeholder="Nivel membresía" />
