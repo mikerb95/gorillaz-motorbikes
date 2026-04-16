@@ -39,7 +39,9 @@
     ¿Nuevo en Gorillaz? <a class="link" href="/club/registro">Crea una cuenta</a>
   </div>
 
+<% if (process.env.NODE_ENV !== 'production') { %>
   <p class="muted center" style="margin-top:16px">Demo: miembro@gorillaz.co / gorillaz123</p>
+<% } %>
 </section>
 
 <script>
