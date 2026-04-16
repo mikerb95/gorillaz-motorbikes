@@ -89,7 +89,14 @@ app.use((req, res, next) => {
   }
 
   // Fake cart object temporarily until DB cart is added:
-  const cartCookie = req.cookies.cart ? JSON.parse(req.cookies.cart) : { items: {}, count: 0, subtotal: 0 };
+  let cartCookie = { items: {}, count: 0, subtotal: 0 };
+  if (req.cookies.cart) {
+    try {
+      cartCookie = JSON.parse(req.cookies.cart);
+    } catch (_) {
+      res.clearCookie('cart');
+    }
+  }
   req.session.cart = cartCookie;
 
   next();
