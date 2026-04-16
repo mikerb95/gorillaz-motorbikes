@@ -11,7 +11,7 @@ const { SCORE_POINTS }  = require('../helpers/score');
 const {
   countUsers, countEvents, countAppointments,
   getAllUsers, getUserById, updateUser, deleteUser,
-  getAllEvents, countEvents: _ce, createEvent, getEventById, updateEvent, deleteEvent,
+  getAllEvents, createEvent, getEventById, updateEvent, deleteEvent,
   getEventAttendances, confirmEventAttendance,
   getAllAppointments, createAppointment, updateAppointment, deleteAppointment,
   addUserScore,
