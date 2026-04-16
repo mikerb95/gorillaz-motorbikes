@@ -252,6 +252,8 @@ async function updateUser(id, fields) {
   if (fields.membership !== undefined)       { set.push('membership = ?');          args.push(JSON.stringify(fields.membership)); }
   if (fields.visits !== undefined)           { set.push('visits = ?');              args.push(JSON.stringify(fields.visits)); }
   if (fields.vehicles !== undefined)         { set.push('vehicles = ?');            args.push(JSON.stringify(fields.vehicles)); }
+  if (fields.score !== undefined)            { set.push('score = ?');               args.push(fields.score); }
+  if (fields.scoreHistory !== undefined)     { set.push('score_history = ?');       args.push(JSON.stringify(fields.scoreHistory)); }
   if (fields.resetToken !== undefined)       { set.push('reset_token = ?');         args.push(fields.resetToken); }
   if (fields.resetTokenExpiry !== undefined) { set.push('reset_token_expiry = ?');  args.push(fields.resetTokenExpiry); }
   if (set.length === 0) return;
