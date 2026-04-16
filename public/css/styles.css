@@ -313,7 +313,7 @@ body.has-subbar .nav-bar .header-inner {
   }
 
   .nav-bar.submenu-open {
-    padding-bottom: max(200px, var(--submenu-depth, 200px))
+    padding-bottom: var(--submenu-depth, 0px)
   }
 
   /* When sub navbar is embedded, keep padding zero (sub-embed shifts down instead) */
@@ -2923,7 +2923,7 @@ input {
   }
 
   .nav-bar.submenu-open {
-    padding-bottom: max(200px, var(--submenu-depth, 200px))
+    padding-bottom: var(--submenu-depth, 0px)
   }
 
   /* When sub navbar is embedded, keep padding zero (sub-embed shifts down instead) */

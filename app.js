@@ -249,7 +249,8 @@ const saveCart = (res, cart) => {
 
 async function computeDemandMap() {
   const demand = {};
-  const appointments = await getAppointmentDates();
+  let appointments = [];
+  try { appointments = await getAppointmentDates(); } catch (e) { console.error('computeDemandMap DB error:', e.message); }
   appointments.forEach(a => {
     if (!a.date) return;
     const d = a.date.slice(0, 10);
@@ -311,30 +312,40 @@ app.get('/', (req, res) => {
 // ── Servicios ─────────────────────────────────────────────────────────────
 
 app.get('/servicios/agendar', async (req, res) => {
-  const services = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'];
-  res.render('services_schedule', { services, bookingMessage: null, demandMap: await computeDemandMap() });
+  try {
+    const services = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'];
+    res.render('services_schedule', { services, bookingMessage: null, demandMap: await computeDemandMap() });
+  } catch (e) {
+    console.error('GET /servicios/agendar error:', e.message);
+    res.status(500).render('services_schedule', { services: ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'], bookingMessage: null, demandMap: {} });
+  }
 });
 
 app.post('/servicios/agendar', async (req, res) => {
-  const { name, email, phone, service, date } = req.body;
   const services = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'];
-  const demandMap = await computeDemandMap();
-  if (!name || !service || !date || !email) {
-    return res.render('services_schedule', { services, bookingMessage: 'Por favor completa todos los campos.', demandMap });
-  }
-  const formattedDate = new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
-  await createAppointment({ id: uuidv4(), name, email, phone, service, date, status: 'pendiente' });
   try {
-    if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_TU_API_KEY_AQUI') {
-      const clientHtml = `<p>Hola <strong>${name}</strong>,</p><p>Hemos recibido tu solicitud de cita para <strong>${service}</strong> el <strong>${formattedDate}</strong>.</p><p>Nuestro equipo te contactará al número <strong>${phone}</strong> para confirmar la cita.</p><p>Gracias por confiar en Gorillaz Motorbikes.</p>`;
-      const bookingHtml = `<p><strong>Nueva solicitud de cita</strong></p><ul><li><strong>Cliente:</strong> ${name}</li><li><strong>Email:</strong> ${email}</li><li><strong>Teléfono:</strong> ${phone}</li><li><strong>Servicio:</strong> ${service}</li><li><strong>Fecha solicitada:</strong> ${formattedDate}</li></ul>`;
-      await Promise.allSettled([
-        resendClient.emails.send({ from: 'booking@gorillazmotorbikes.com', to: email, subject: `Confirmación de cita — ${service}`, html: clientHtml }),
-        resendClient.emails.send({ from: 'booking@gorillazmotorbikes.com', to: process.env.BOOKING_EMAIL || 'booking@gorillazmotorbikes.com', subject: `Nueva cita: ${service} — ${name}`, html: bookingHtml }),
-      ]);
+    const { name, email, phone, service, date } = req.body;
+    const demandMap = await computeDemandMap();
+    if (!name || !service || !date || !email) {
+      return res.render('services_schedule', { services, bookingMessage: 'Por favor completa todos los campos.', demandMap });
     }
-  } catch (e) { console.error('Resend error:', e.message); }
-  res.render('services_schedule', { services, bookingMessage: `Gracias ${name}. Confirmación enviada a ${email}. Te contactaremos al ${phone}.`, demandMap: await computeDemandMap() });
+    const formattedDate = new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+    await createAppointment({ id: uuidv4(), name, email, phone, service, date, status: 'pendiente' });
+    try {
+      if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_TU_API_KEY_AQUI') {
+        const clientHtml = `<p>Hola <strong>${name}</strong>,</p><p>Hemos recibido tu solicitud de cita para <strong>${service}</strong> el <strong>${formattedDate}</strong>.</p><p>Nuestro equipo te contactará al número <strong>${phone}</strong> para confirmar la cita.</p><p>Gracias por confiar en Gorillaz Motorbikes.</p>`;
+        const bookingHtml = `<p><strong>Nueva solicitud de cita</strong></p><ul><li><strong>Cliente:</strong> ${name}</li><li><strong>Email:</strong> ${email}</li><li><strong>Teléfono:</strong> ${phone}</li><li><strong>Servicio:</strong> ${service}</li><li><strong>Fecha solicitada:</strong> ${formattedDate}</li></ul>`;
+        await Promise.allSettled([
+          resendClient.emails.send({ from: 'booking@gorillazmotorbikes.com', to: email, subject: `Confirmación de cita — ${service}`, html: clientHtml }),
+          resendClient.emails.send({ from: 'booking@gorillazmotorbikes.com', to: process.env.BOOKING_EMAIL || 'booking@gorillazmotorbikes.com', subject: `Nueva cita: ${service} — ${name}`, html: bookingHtml }),
+        ]);
+      }
+    } catch (e) { console.error('Resend error:', e.message); }
+    res.render('services_schedule', { services, bookingMessage: `Gracias ${name}. Confirmación enviada a ${email}. Te contactaremos al ${phone}.`, demandMap: await computeDemandMap() });
+  } catch (e) {
+    console.error('POST /servicios/agendar error:', e.message);
+    res.status(500).render('services_schedule', { services, bookingMessage: 'Error al procesar la solicitud. Por favor intenta de nuevo.', demandMap: {} });
+  }
 });
 
 app.get('/servicios/lavado-motos',    (req, res) => res.render('services/lavado-motos'));
