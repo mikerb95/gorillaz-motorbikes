@@ -961,8 +961,13 @@ app.get('/club/panel', requireAuth, async (req, res) => {
 
 app.post('/club/visitas', requireAuth, async (req, res) => {
   const user = await getUserById(req.userId);
-  const { date, service } = req.body;
-  if (date && service) await updateUser(user.id, { visits: [{ date, service }, ...(user.visits || [])] });
+  const { date, service, type } = req.body;
+  if (date && service) {
+    const visitType = type || 'visita';
+    const pts = SCORE_POINTS[visitType] || SCORE_POINTS.visita;
+    await updateUser(user.id, { visits: [{ date, service, type: visitType }, ...(user.visits || [])] });
+    await addUserScore(user.id, pts, visitType, service);
+  }
   res.redirect('/club/panel');
 });
 
