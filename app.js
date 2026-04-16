@@ -1113,7 +1113,7 @@ app.get('/club/registro', (req, res) => {
   if (req.session.userId) return res.redirect('/club/panel');
   res.render('club/register');
 });
-app.post('/club/registro', async (req, res) => {
+app.post('/club/registro', authLimiter, async (req, res) => {
   const {
     name, cedula, phone, birthdate, bloodType, city,
     nickname, clubNotifications,
@@ -1176,7 +1176,7 @@ app.get('/club/olvide', (req, res) => {
   res.render('club/forgot', { message: null, error: null });
 });
 
-app.post('/club/olvide', async (req, res) => {
+app.post('/club/olvide', authLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.render('club/forgot', { error: 'Por favor, ingresa tu correo.', message: null });
 
