@@ -1080,6 +1080,15 @@ app.get('/club', async (req, res) => {
   res.render('club/landing', { events, slidesClub });
 });
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10,                   // máximo 10 intentos por ventana
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.' },
+  skipSuccessfulRequests: true, // no cuenta los requests exitosos
+});
+
 app.get('/club/login', (req, res) => {
   res.render('club/login', { error: null });
 });
