@@ -1001,6 +1001,25 @@ app.post('/club/vehiculos/actualizar', requireAuth, async (req, res) => {
   res.redirect('/club/panel');
 });
 
+app.post('/club/eventos/:id/asistencia', requireAuth, async (req, res) => {
+  const eventId = req.params.id;
+  const ev = await getEventById(eventId);
+  if (!ev) return res.redirect('/club/panel');
+  await registerEventAttendance(eventId, req.userId);
+  res.redirect('/club/panel');
+});
+
+app.get('/club/tabla', async (req, res) => {
+  const board = await getLeaderboard(20);
+  const levels = board.map(u => ({ ...u, level: getScoreLevel(u.score) }));
+  let myRank = null;
+  if (req.userId) {
+    const idx = board.findIndex(u => u.id === req.userId);
+    myRank = idx >= 0 ? idx + 1 : null;
+  }
+  res.render('club/leaderboard', { board: levels, myRank, scorePoints: SCORE_POINTS });
+});
+
 app.get('/club/vehiculos/:plate/qr.png', requireAuth, async (req, res) => {
   const user = await getUserById(req.userId);
   const plate = (req.params.plate || '').toUpperCase();
