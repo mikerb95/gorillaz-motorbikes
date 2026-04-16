@@ -951,7 +951,12 @@ app.get('/club/panel', requireAuth, async (req, res) => {
     soat:  v.soatExpires  ? daysBetween(new Date(v.soatExpires  + 'T00:00:00'), today) : null,
     tecno: v.tecnoExpires ? daysBetween(new Date(v.tecnoExpires + 'T00:00:00'), today) : null,
   }));
-  res.render('club/dashboard', { user, reminders });
+  const [upcomingEvents, registrations] = await Promise.all([
+    getUpcomingEvents(8),
+    getUserEventRegistrations(user.id),
+  ]);
+  const scoreLevel = getScoreLevel(user.score || 0);
+  res.render('club/dashboard', { user, reminders, upcomingEvents, registrations, scoreLevel, SCORE_POINTS });
 });
 
 app.post('/club/visitas', requireAuth, async (req, res) => {
