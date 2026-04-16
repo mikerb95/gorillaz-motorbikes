@@ -57,7 +57,16 @@ async function initDb() {
       location TEXT,
       description TEXT,
       level TEXT,
+      type TEXT NOT NULL DEFAULT 'evento',
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS event_attendances (
+      id TEXT PRIMARY KEY,
+      event_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      registered_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      UNIQUE(event_id, user_id)
     )`,
     `CREATE TABLE IF NOT EXISTS newsletter (
       id TEXT PRIMARY KEY,
@@ -89,6 +98,17 @@ async function initDb() {
   for (const sql of tables) {
     await db.execute(sql);
   }
+
+  // Migrations: add columns to existing tables if they don't exist
+  const migrations = [
+    `ALTER TABLE users ADD COLUMN score INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE users ADD COLUMN score_history TEXT NOT NULL DEFAULT '[]'`,
+    `ALTER TABLE events ADD COLUMN type TEXT NOT NULL DEFAULT 'evento'`,
+  ];
+  for (const sql of migrations) {
+    try { await db.execute(sql); } catch { /* column already exists */ }
+  }
+
   console.log('✅ Turso schema inicializado');
 }
 
