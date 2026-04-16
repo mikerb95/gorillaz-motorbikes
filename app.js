@@ -542,15 +542,31 @@ app.get('/admin/eventos', requireAuth, requireAdmin, async (req, res) => {
 });
 
 app.post('/admin/eventos/crear', requireAuth, requireAdmin, async (req, res) => {
-  const { title, date, location, description } = req.body;
-  if (title && date) await createEvent({ id: uuidv4(), title, date, location, description });
+  const { title, date, location, description, type } = req.body;
+  if (title && date) await createEvent({ id: uuidv4(), title, date, location, description, type: type || 'evento' });
   res.redirect('/admin/eventos');
 });
 
 app.post('/admin/eventos/actualizar', requireAuth, requireAdmin, async (req, res) => {
-  const { id, title, date, location, description } = req.body;
-  await updateEvent(id, { title, date, location, description });
+  const { id, title, date, location, description, type } = req.body;
+  await updateEvent(id, { title, date, location, description, type });
   res.redirect('/admin/eventos');
+});
+
+app.get('/admin/eventos/:id/asistencias', requireAuth, requireAdmin, async (req, res) => {
+  const ev = await getEventById(req.params.id);
+  if (!ev) return res.redirect('/admin/eventos');
+  const attendances = await getEventAttendances(req.params.id);
+  res.render('admin/event-attendances', { ev, attendances });
+});
+
+app.post('/admin/eventos/asistencia/confirmar', requireAuth, requireAdmin, async (req, res) => {
+  const { attendanceId, eventId, userId, eventType } = req.body;
+  await confirmEventAttendance(attendanceId);
+  const pts = SCORE_POINTS[eventType] || SCORE_POINTS.evento;
+  const ev = await getEventById(eventId);
+  await addUserScore(userId, pts, eventType || 'evento', ev ? ev.title : 'Evento del club');
+  res.redirect(`/admin/eventos/${eventId}/asistencias`);
 });
 
 app.post('/admin/eventos/eliminar', requireAuth, requireAdmin, async (req, res) => {
