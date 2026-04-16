@@ -50,7 +50,14 @@ const uploadProduct = multer({
 
 const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '';
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '';
-const JWT_SECRET = process.env.JWT_SECRET || 'gorillaz-ultra-secret';
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is required in production');
+  } else {
+    console.warn('[WARN] JWT_SECRET not set — using insecure dev-only fallback');
+  }
+}
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-insecure-fallback';
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/gorillaz')
