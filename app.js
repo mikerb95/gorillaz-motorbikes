@@ -104,7 +104,6 @@ app.use((req, res, next) => {
 // JWT Verification Middleware
 app.use((req, res, next) => {
   const token = req.cookies.jwt;
-  req.session = req.session || {}; // Fallback empty object
   if (token) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
