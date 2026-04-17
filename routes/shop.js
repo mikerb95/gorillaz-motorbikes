@@ -135,18 +135,73 @@ router.get('/carrito', (req, res) => {
 router.get('/checkout', (req, res) => {
   const cart = recalc(getCart(req));
   if (cart.count === 0) return res.redirect('/tienda');
-  res.render('checkout', { cart });
+  const items = Object.entries(cart.items).map(([id, qty]) => {
+    const p = catalog.products.find(x => x.id === id);
+    return { ...p, qty, total: p.price * qty };
+  });
+  res.render('checkout', { cart, items });
 });
 
-router.post('/pagar', (req, res) => {
+router.post('/pagar', async (req, res) => {
   const cart = recalc(getCart(req));
   if (cart.count === 0) return res.redirect('/tienda');
+
   const orderId = uuidv4();
-  const total   = cart.subtotal;
-  const empty   = { items: {}, count: 0, subtotal: 0 };
-  req.cart = empty;
-  saveCart(res, empty);
-  res.render('payment/success', { orderId, total });
+
+  try {
+    const payload = await createBoldPaymentLink({
+      orderId,
+      totalCOP: cart.subtotal,
+      description: `Compra en Gorillaz Motorbikes (${cart.count} artículo${cart.count !== 1 ? 's' : ''})`,
+    });
+
+    // Guardar orderId y total en cookie temporal para verificar al retornar
+    res.cookie('bold_pending', JSON.stringify({ orderId, total: cart.subtotal }), {
+      httpOnly: true,
+      maxAge: 35 * 60 * 1000, // 35 min
+      sameSite: 'lax',
+    });
+
+    return res.redirect(payload.payment_link);
+  } catch (err) {
+    console.error('[Bold] Error creando enlace de pago:', err.message);
+    return res.status(502).render('payment/failed', { reason: 'No fue posible conectar con la pasarela de pago. Intenta de nuevo.' });
+  }
+});
+
+// Bold redirige aquí tras el pago: /payment/return?bold-order-id=xxx&bold-tx-status=APPROVED
+router.get('/payment/return', (req, res) => {
+  const status  = (req.query['bold-tx-status']  || '').toUpperCase();
+  const boldId  = req.query['bold-order-id']    || '';
+  const sigHash = req.query['bold-signature']   || '';
+
+  let pending = null;
+  try { pending = JSON.parse(req.cookies.bold_pending || 'null'); } catch (_) {}
+
+  // Limpiar cookie de pendiente
+  res.clearCookie('bold_pending');
+
+  if (status === 'APPROVED') {
+    // Verificar firma si Bold la envía
+    if (sigHash && pending && !verifyBoldSignature(boldId, status, pending.total, sigHash)) {
+      console.warn('[Bold] Firma inválida en retorno de pago');
+      return res.status(400).render('payment/failed', { reason: 'No se pudo verificar el pago. Contacta soporte.' });
+    }
+    // Limpiar carrito
+    const empty = { items: {}, count: 0, subtotal: 0 };
+    saveCart(res, empty);
+    return res.render('payment/success', {
+      orderId: pending?.orderId || boldId,
+      total: pending?.total || 0,
+    });
+  }
+
+  if (status === 'PENDING') {
+    return res.render('payment/failed', { reason: 'Tu pago está pendiente de confirmación. Te notificaremos por email cuando se procese.' });
+  }
+
+  // REJECTED o cualquier otro estado
+  return res.render('payment/failed', { reason: 'El pago fue rechazado o cancelado. Tu carrito sigue guardado.' });
 });
 
 module.exports = router;
