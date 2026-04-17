@@ -1,8 +1,42 @@
 'use strict';
-const express = require('express');
+const express  = require('express');
 const { v4: uuidv4 } = require('uuid');
-const catalog = require('../data/catalog');
+const crypto   = require('crypto');
+const catalog  = require('../data/catalog');
 const { getCart, recalc, saveCart } = require('../helpers/cart');
+const { BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL } = require('../config');
+
+const BOLD_API_BASE = 'https://integrations.api.bold.co';
+
+async function createBoldPaymentLink({ orderId, totalCOP, description }) {
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min
+  const body = {
+    amount_type: 'CLOSE',
+    amount: { currency: 'COP', total_amount: totalCOP },
+    description,
+    order_id: orderId,
+    expiration_date: expiresAt,
+    redirect_url: BOLD_REDIRECT_URL,
+  };
+  const res = await fetch(`${BOLD_API_BASE}/online-payment/v2/payment-vouchers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `x-api-key ${BOLD_API_KEY}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Bold API error ${res.status}: ${err}`);
+  }
+  const data = await res.json();
+  return data.payload; // { payment_link, payment_id }
+}
+
+function verifyBoldSignature(orderId, status, amount, receivedHash) {
+  if (!BOLD_SECRET_KEY) return true; // skip if not configured
+  const message = `${orderId}${amount}${status}`;
+  const expected = crypto.createHmac('sha256', BOLD_SECRET_KEY).update(message).digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(receivedHash, 'hex'));
+}
 
 const router = express.Router();
 
