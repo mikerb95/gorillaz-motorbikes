@@ -3,8 +3,12 @@
 <main class="container">
   <section class="section">
     <h1 class="section-title">¡Pago Exitoso!</h1>
-    <p>Gracias por tu compra. Tu número de orden es <strong><%= orderId %></strong>.</p>
-    <p>Total pagado: <strong>$<%= total.toLocaleString('es-CO') %></strong></p>
+    <p>Gracias por tu compra en <strong>Gorillaz Motorbikes</strong>.</p>
+    <p>Tu número de orden es <strong><%= orderId %></strong>.</p>
+    <% if (total) { %>
+    <p>Total pagado: <strong>$<%= total.toLocaleString('es-CO') %> COP</strong></p>
+    <% } %>
+    <p class="muted">Recibirás un correo de confirmación de Bold con el comprobante de pago.</p>
     <div class="actions-row">
       <a class="btn" href="/tienda">Volver a la tienda</a>
       <a class="btn btn-primary" href="/">Ir al inicio</a>
