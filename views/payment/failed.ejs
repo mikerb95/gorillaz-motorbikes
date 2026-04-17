@@ -1,0 +1,14 @@
+<%- include('../partials/head', { title: 'Pago no completado' }) %>
+
+<main class="container">
+  <section class="section">
+    <h1 class="section-title">Pago no completado</h1>
+    <p class="muted"><%= reason %></p>
+    <div class="actions-row">
+      <a class="btn btn-primary" href="/checkout">Intentar de nuevo</a>
+      <a class="btn" href="/carrito">Ver carrito</a>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
