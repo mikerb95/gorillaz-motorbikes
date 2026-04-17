@@ -3,43 +3,44 @@
 <main class="container">
   <section class="section">
     <h1 class="section-title">Checkout</h1>
-    <p class="section-subtitle">Pasarela de pago simulada</p>
+    <p class="section-subtitle">Revisa tu pedido y completa el pago de forma segura</p>
 
     <div class="checkout-grid">
       <form class="payment-form" method="post" action="/pagar">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-        <h2>Datos de pago</h2>
-        <label>
-          Nombre en la tarjeta
-          <input name="cardName" required />
-        </label>
-        <label>
-          Número de tarjeta
-          <input name="cardNumber" inputmode="numeric" pattern="[0-9 ]{12,19}" placeholder="4111 1111 1111 1111" required />
-        </label>
-        <div class="row-2">
-          <label>
-            Expiración
-            <input name="exp" placeholder="MM/AA" required />
-          </label>
-          <label>
-            CVV
-            <input name="cvv" inputmode="numeric" minlength="3" maxlength="4" required />
-          </label>
+
+        <h2>Resumen del pedido</h2>
+        <ul class="checkout-items">
+          <% items.forEach(item => { %>
+          <li class="checkout-item">
+            <span class="checkout-item-name"><%= item.name %> &times; <%= item.qty %></span>
+            <span class="checkout-item-price">$<%= item.total.toLocaleString('es-CO') %></span>
+          </li>
+          <% }) %>
+        </ul>
+
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <strong>$<%= cart.subtotal.toLocaleString('es-CO') %> COP</strong>
         </div>
-        <button class="btn btn-primary" type="submit">Pagar $<%= cart.subtotal.toLocaleString('es-CO') %></button>
-        <p class="muted">No se realizará ningún cargo real. Esto es una simulación.</p>
+
+        <button class="btn btn-primary btn-bold-pay" type="submit">
+          Pagar con Bold &rarr;
+        </button>
+        <p class="muted">Serás redirigido a la pasarela segura de Bold para completar tu pago.</p>
       </form>
 
       <aside class="order-summary">
-        <h2>Resumen</h2>
-        <div class="summary-row">
-          <span>Artículos</span>
-          <strong><%= cart.count %></strong>
-        </div>
-        <div class="summary-row">
-          <span>Subtotal</span>
-          <strong>$<%= cart.subtotal.toLocaleString('es-CO') %></strong>
+        <h2>¿Cómo funciona?</h2>
+        <ol class="bold-steps">
+          <li>Haz clic en <strong>Pagar con Bold</strong></li>
+          <li>Elige tu método de pago: tarjeta, Nequi, Daviplata u otros</li>
+          <li>Completa el pago en el sitio seguro de Bold</li>
+          <li>Regresa aquí para ver tu confirmación</li>
+        </ol>
+        <div class="bold-badge">
+          <img src="/images/payments/bold-badge.svg" alt="Pago seguro con Bold" onerror="this.style.display='none'" />
+          <p class="muted small">Pagos procesados de forma segura por <strong>Bold</strong></p>
         </div>
       </aside>
     </div>
