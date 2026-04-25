@@ -387,7 +387,14 @@ body.has-subbar .nav-bar .header-inner {
   background: transparent;
   border: 0;
   font-size: 22px;
-  color: #fff
+  color: #fff;
+  padding: 10px 12px;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1
 }
 
 /* Orange blob background under brand and menu items */
