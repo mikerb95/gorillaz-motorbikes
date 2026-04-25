@@ -4704,8 +4704,9 @@ input {
     display: inline-flex
   }
 
-  /* Show logo on right side on mobile */
-  .nav-center {
+  /* Show logo on right side on mobile — overrides .nav-compact .nav-center { display:none } */
+  .nav-center,
+  .nav-compact .nav-center {
     display: flex;
     justify-content: flex-end;
     align-items: center;
