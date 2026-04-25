@@ -139,15 +139,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const toggle = document.querySelector('.nav-toggle');
   const nav = document.querySelector('[data-nav]');
+
+  const closeNav = () => {
+    if (!nav || !toggle) return;
+    nav.setAttribute('data-open', 'false');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.textContent = '☰';
+  };
+
   if (toggle && nav) {
     toggle.addEventListener('click', () => {
       const open = nav.getAttribute('data-open') === 'true';
       nav.setAttribute('data-open', String(!open));
       toggle.setAttribute('aria-expanded', String(!open));
-      // Recompute in case header height changes due to wrap or scrollbar
+      toggle.textContent = !open ? '✕' : '☰';
       setHeaderOffset();
     });
+
+    // Close menu when tapping a non-submenu-parent link
+    nav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        const isSubmenuParent = link.closest('.nav-item.has-submenu') &&
+          link === link.closest('.nav-item.has-submenu').querySelector(':scope > a');
+        if (!isSubmenuParent) closeNav();
+      });
+    });
   }
+
+  // Touch-friendly submenus: tap parent link toggles submenu on mobile
+  document.querySelectorAll('.nav-item.has-submenu > a').forEach(parentLink => {
+    parentLink.addEventListener('click', (e) => {
+      if (window.innerWidth > 900) return;
+      e.preventDefault();
+      const item = parentLink.closest('.nav-item.has-submenu');
+      const isOpen = item.classList.contains('submenu-touch-open');
+      // Close all open submenus first
+      document.querySelectorAll('.nav-item.has-submenu.submenu-touch-open').forEach(el => {
+        el.classList.remove('submenu-touch-open');
+      });
+      if (!isOpen) item.classList.add('submenu-touch-open');
+    });
+  });
 
   // Build and animate the orange blob under brand and nav items (hidden by default)
   const headerInner = document.querySelector('.header-inner');
