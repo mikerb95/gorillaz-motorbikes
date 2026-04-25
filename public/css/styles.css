@@ -506,7 +506,9 @@ body.has-subbar .nav-bar .header-inner {
   font-size: 11px;
   line-height: 18px;
   text-align: center;
-  border: 1px solid rgba(0, 0, 0, .05)
+  border: 1px solid rgba(0, 0, 0, .05);
+  user-select: none;
+  -webkit-user-select: none
 }
 
 /* Dim navbar and menu links when hovering the logo; keep GORILLAZ MOTORBIKES label vivid */
@@ -3182,7 +3184,9 @@ input {
   font-size: 11px;
   line-height: 18px;
   text-align: center;
-  border: 1px solid rgba(0, 0, 0, .05)
+  border: 1px solid rgba(0, 0, 0, .05);
+  user-select: none;
+  -webkit-user-select: none
 }
 
 /* Dim navbar and menu links when hovering the logo; keep GORILLAZ MOTORBIKES label vivid */
