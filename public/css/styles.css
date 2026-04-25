@@ -4556,9 +4556,9 @@ input {
     margin: 12px auto 0
   }
 
-  /* Left = hamburger, Right = (hidden on mobile) header-right */
+  /* Left = hamburger, Right = logo (nav-center) */
   .header-inner {
-    grid-template-columns: auto auto;
+    grid-template-columns: auto 1fr;
     column-gap: 12px
   }
 
