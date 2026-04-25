@@ -568,7 +568,7 @@ body.has-hero main {
   opacity: .95;
   font-weight: 700;
   letter-spacing: .3px;
-  font-size: .8rem
+  font-size: .9rem
 }
 
 /* Align vertically with navbar items without changing text style */
@@ -3242,7 +3242,7 @@ body.has-hero main {
   opacity: .95;
   font-weight: 700;
   letter-spacing: .3px;
-  font-size: .8rem
+  font-size: .9rem
 }
 
 /* Align vertically with navbar items without changing text style */
@@ -5737,6 +5737,19 @@ input {
   padding: 8px 0 0;
   margin-top: auto;
   justify-content: space-between
+}
+
+@media (max-width:480px) {
+  .product-card-actions {
+    flex-direction: column;
+    gap: 10px
+  }
+
+  .product-card-actions a,
+  .product-card-actions button {
+    width: 100%;
+    text-align: center
+  }
 }
 
 .product-card {
