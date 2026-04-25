@@ -4659,9 +4659,12 @@ input {
     display: inline-flex
   }
 
-  /* Hide center logo area on small screens */
+  /* Show logo on right side on mobile */
   .nav-center {
-    display: none
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 12px
   }
 }
 
