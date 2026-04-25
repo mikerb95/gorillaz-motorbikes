@@ -2458,7 +2458,12 @@ input {
   }
 
   .shop-sidebar {
-    position: static
+    position: static;
+    order: 2
+  }
+
+  .shop-content {
+    order: 1
   }
 }
 
@@ -5169,7 +5174,12 @@ input {
   }
 
   .shop-sidebar {
-    position: static
+    position: static;
+    order: 2
+  }
+
+  .shop-content {
+    order: 1
   }
 }
 
