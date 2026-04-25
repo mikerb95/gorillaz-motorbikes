@@ -998,7 +998,9 @@ html {
   transition: filter .15s ease, box-shadow .15s ease, transform .15s ease;
   position: relative;
   overflow: hidden;
-  isolation: isolate
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none
 }
 
 .btn:hover {
@@ -3672,7 +3674,9 @@ html {
   transition: filter .15s ease, box-shadow .15s ease, transform .15s ease;
   position: relative;
   overflow: hidden;
-  isolation: isolate
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none
 }
 
 .btn:hover {
