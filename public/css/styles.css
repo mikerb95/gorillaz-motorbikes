@@ -558,6 +558,10 @@ body.has-hero main {
   padding: 24px 16px
 }
 
+main.container {
+  padding-top: var(--header-offset)
+}
+
 /* Slim sub navigation bar for logged-in users */
 .sub-bar {
   display: none
