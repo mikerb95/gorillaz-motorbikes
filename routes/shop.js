@@ -222,12 +222,13 @@ router.get('/payment/return', (req, res) => {
   res.clearCookie('bold_pending');
 
   if (status === 'APPROVED') {
-    // Verificar firma si Bold la envía
     if (sigHash && pending && !verifyBoldSignature(boldId, status, pending.total, sigHash)) {
       console.warn('[Bold] Firma inválida en retorno de pago');
       return res.status(400).render('payment/failed', { reason: 'No se pudo verificar el pago. Contacta soporte.' });
     }
-    // Limpiar carrito
+    if (pending?.orderId) {
+      updateOrderStatus(pending.orderId, 'paid', boldId).catch(e => console.error('[Orders] updateOrderStatus paid:', e.message));
+    }
     const empty = { items: {}, count: 0, subtotal: 0 };
     saveCart(res, empty);
     return res.render('payment/success', {
@@ -237,10 +238,15 @@ router.get('/payment/return', (req, res) => {
   }
 
   if (status === 'PENDING') {
+    if (pending?.orderId) {
+      updateOrderStatus(pending.orderId, 'pending_confirmation', boldId).catch(e => console.error('[Orders] updateOrderStatus pending:', e.message));
+    }
     return res.render('payment/failed', { reason: 'Tu pago está pendiente de confirmación. Te notificaremos por email cuando se procese.' });
   }
 
-  // REJECTED o cualquier otro estado
+  if (pending?.orderId) {
+    updateOrderStatus(pending.orderId, 'failed', boldId).catch(e => console.error('[Orders] updateOrderStatus failed:', e.message));
+  }
   return res.render('payment/failed', { reason: 'El pago fue rechazado o cancelado. Tu carrito sigue guardado.' });
 });
 
