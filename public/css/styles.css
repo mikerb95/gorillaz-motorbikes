@@ -3924,7 +3924,7 @@ input {
 .crm-sidebar {
   width: 240px;
   min-width: 240px;
-  background: #18181b;
+  background: #F25C05;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -3941,20 +3941,20 @@ input {
   align-items: center;
   gap: 10px;
   padding: 18px 20px 16px;
-  border-bottom: 1px solid #27272a
+  border-bottom: 1px solid rgba(0,0,0,.15)
 }
 
 .crm-sidebar-logo img {
   width: 32px;
   height: 32px;
   object-fit: contain;
-  filter: brightness(1.1)
+  filter: brightness(10)
 }
 
 .crm-sidebar-logo span {
   font-weight: 900;
   font-size: .85rem;
-  color: #F25C05;
+  color: #fff;
   letter-spacing: .08em;
   text-transform: uppercase
 }
@@ -3970,7 +3970,7 @@ input {
   gap: 10px;
   padding: 9px 12px;
   border-radius: 8px;
-  color: #a1a1aa;
+  color: rgba(255,255,255,.75);
   text-decoration: none;
   font-size: .83rem;
   font-weight: 700;
@@ -3980,12 +3980,12 @@ input {
 
 .crm-nav-link svg {
   flex-shrink: 0;
-  opacity: .7;
+  opacity: .8;
   transition: opacity .15s
 }
 
 .crm-nav-link:hover {
-  background: #27272a;
+  background: rgba(0,0,0,.15);
   color: #fff
 }
 
@@ -3994,21 +3994,21 @@ input {
 }
 
 .crm-nav-link.active {
-  background: #27272a;
+  background: rgba(0,0,0,.2);
   color: #fff;
-  border-left: 3px solid #F25C05;
+  border-left: 3px solid #fff;
   padding-left: 9px
 }
 
 .crm-nav-link.active svg {
   opacity: 1;
-  stroke: #F25C05
+  stroke: #fff
 }
 
 /* ── Sidebar footer ── */
 .crm-sidebar-footer {
   padding: 12px 10px;
-  border-top: 1px solid #27272a
+  border-top: 1px solid rgba(0,0,0,.15)
 }
 
 .crm-sidebar-user {
@@ -4049,7 +4049,7 @@ input {
 .crm-user-name {
   font-size: .8rem;
   font-weight: 700;
-  color: #e4e4e7;
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis
@@ -4057,7 +4057,7 @@ input {
 
 .crm-user-role {
   font-size: .7rem;
-  color: #52525b
+  color: rgba(255,255,255,.6)
 }
 
 .crm-sidebar-actions {
@@ -4073,8 +4073,8 @@ input {
   gap: 5px;
   padding: 6px 10px;
   border-radius: 7px;
-  background: #27272a;
-  color: #a1a1aa;
+  background: rgba(0,0,0,.2);
+  color: rgba(255,255,255,.85);
   font-size: .75rem;
   font-weight: 700;
   text-decoration: none;
@@ -4085,13 +4085,13 @@ input {
 }
 
 .crm-sidebar-btn:hover {
-  background: #3f3f46;
+  background: rgba(0,0,0,.35);
   color: #fff
 }
 
 .crm-logout-btn:hover {
-  background: #3f1212;
-  color: #fca5a5
+  background: rgba(0,0,0,.4);
+  color: #fff
 }
 
 /* ── Overlay (mobile) ── */
