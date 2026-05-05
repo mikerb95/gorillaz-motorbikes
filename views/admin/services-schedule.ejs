@@ -1,292 +1,140 @@
-<%- include('../partials/head', { title: 'Admin — Agenda de Servicios' }) %>
-<main class="container section">
-  <h1 class="section-title">Agenda de Servicios</h1>
-  
-  <!-- Filtros y vista -->
-  <div class="card stack" style="margin-bottom: 20px;">
-    <h3>Filtros</h3>
-    <form method="get" action="/admin/agenda-servicios" class="grid three compact">
-      <label>
-        Servicio
-        <select name="service">
-          <option value="">Todos</option>
-          <% services.forEach(s => { %>
-            <option value="<%= s %>" <% if (selectedService === s) { %>selected<% } %>>
-              <%= s %>
-            </option>
-          <% }) %>
-        </select>
-      </label>
-      <label>
-        Mes
-        <input type="month" name="month" value="<%= currentMonth %>" />
-      </label>
-      <button class="btn btn-primary" type="submit">Filtrar</button>
-    </form>
-  </div>
+<%- include('../partials/admin-head', { title: 'Agenda de Servicios' }) %>
 
-  <!-- Vista de calendario -->
-  <div class="card stack" style="margin-bottom: 20px;">
-    <h3><%= monthYear %></h3>
-    <div class="calendar-header">
-      <div class="calendar-day-header">Domingo</div>
-      <div class="calendar-day-header">Lunes</div>
-      <div class="calendar-day-header">Martes</div>
-      <div class="calendar-day-header">Miércoles</div>
-      <div class="calendar-day-header">Jueves</div>
-      <div class="calendar-day-header">Viernes</div>
-      <div class="calendar-day-header">Sábado</div>
-      
-      <% calendarDays.forEach(day => { %>
-          <div class="calendar-day <%= day.isCurrentMonth ? '' : 'other-month' %> <%= day.appointments && day.appointments.length > 0 ? 'has-appointments' : '' %>">
-          <div class="day-number"><%= day.date %></div>
-          <% if (day.isCurrentMonth && day.appointments.length > 0) { %>
-            <div class="appointments-list">
-              <% day.appointments.slice(0, 2).forEach(apt => { %>
-                <div class="appointment-badge" title="<%= apt.customer %> - <%= apt.service %>">
-                  <small><%= apt.service.substring(0, 8) %></small>
-                </div>
-              <% }) %>
-              <% if (day.appointments.length > 2) { %>
-                <div class="appointment-badge more">+<%= day.appointments.length - 2 %></div>
-              <% } %>
-            </div>
-          <% } %>
-        </div>
-      <% }) %>
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Agenda de Servicios — <%= monthYear %></h1>
+</div>
+
+<!-- Stats -->
+<div class="crm-kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= appointments.length %></div>
+    <div class="crm-kpi-label">Total citas</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= appointments.filter(a => a.status === 'pendiente' || !a.status).length %></div>
+    <div class="crm-kpi-label">Pendientes</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= appointments.filter(a => a.status === 'confirmada').length %></div>
+    <div class="crm-kpi-label">Confirmadas</div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="crm-card" style="margin-bottom:18px">
+  <form method="get" action="/admin/agenda-servicios" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+    <div class="crm-form-group" style="flex:1;min-width:160px">
+      <label>Servicio</label>
+      <select name="service">
+        <option value="">Todos</option>
+        <% services.forEach(s => { %>
+          <option value="<%= s %>" <%= selectedService === s ? 'selected' : '' %>><%= s %></option>
+        <% }) %>
+      </select>
     </div>
-  </div>
+    <div class="crm-form-group" style="flex:1;min-width:160px">
+      <label>Mes</label>
+      <input type="month" name="month" value="<%= currentMonth %>" />
+    </div>
+    <button class="btn btn-primary btn-sm" type="submit" style="align-self:flex-end;margin-bottom:0">Filtrar</button>
+    <% if (selectedService) { %>
+      <a href="/admin/agenda-servicios?month=<%= currentMonth %>" class="btn btn-ghost btn-sm" style="align-self:flex-end;margin-bottom:0">Limpiar</a>
+    <% } %>
+  </form>
+</div>
 
-  <!-- Listado de citas para el mes/filtro seleccionado -->
-  <div class="card stack">
-    <h3>Citas Agendadas</h3>
-    <% if (filteredAppointments.length === 0) { %>
-      <p class="muted">No hay citas para esta fecha.</p>
-    <% } else { %>
-      <div class="appointments-table">
-        <div class="table-header">
-          <div class="col-date">Fecha</div>
-          <div class="col-time">Hora</div>
-          <div class="col-customer">Cliente</div>
-          <div class="col-phone">Teléfono</div>
-          <div class="col-service">Servicio</div>
-          <div class="col-status">Estado</div>
-          <div class="col-actions">Acciones</div>
-        </div>
+<!-- Calendar grid -->
+<div class="crm-card" style="margin-bottom:18px">
+  <div class="crm-card-title"><%= monthYear %></div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
+    <% ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].forEach(d => { %>
+      <div style="font-weight:800;font-size:.72rem;color:#71717a;text-align:center;padding:6px;text-transform:uppercase;letter-spacing:.05em"><%= d %></div>
+    <% }) %>
+    <% calendarDays.forEach(day => { %>
+      <div style="border:1px solid <%= day.appointments && day.appointments.length > 0 ? '#F25C05' : '#e4e4e7' %>;
+           border-radius:8px;padding:6px;min-height:70px;
+           background:<%= !day.isCurrentMonth ? '#fafafa' : day.appointments && day.appointments.length > 0 ? '#fff8f5' : '#fff' %>;
+           opacity:<%= day.isCurrentMonth ? 1 : 0.45 %>">
+        <div style="font-weight:800;font-size:.78rem;color:<%= day.isCurrentMonth ? '#18181b' : '#a1a1aa' %>;margin-bottom:4px"><%= day.date %></div>
+        <% if (day.isCurrentMonth && day.appointments && day.appointments.length > 0) { %>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <% day.appointments.slice(0, 2).forEach(apt => { %>
+              <div style="background:#F25C05;color:#fff;border-radius:4px;padding:2px 4px;font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="<%= apt.customer %> — <%= apt.service %>">
+                <%= apt.service.substring(0, 10) %>
+              </div>
+            <% }) %>
+            <% if (day.appointments.length > 2) { %>
+              <div style="background:#e4e4e7;border-radius:4px;padding:2px 4px;font-size:.65rem;text-align:center;color:#52525b">
+                +<%= day.appointments.length - 2 %>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<!-- Appointments list -->
+<div class="crm-card" style="padding:0;overflow:hidden">
+  <div style="padding:12px 16px;font-weight:800;font-size:.85rem;border-bottom:1px solid #e4e4e7">
+    Citas — <%= monthYear %><% if (selectedService) { %> · <%= selectedService %><% } %>
+    <span style="font-weight:400;font-size:.8rem;color:#71717a;margin-left:8px"><%= filteredAppointments.length %> resultado(s)</span>
+  </div>
+  <% if (!filteredAppointments.length) { %>
+    <div style="padding:24px;text-align:center;color:#71717a;font-size:.85rem">No hay citas para este período.</div>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Cliente</th>
+          <th>Teléfono</th>
+          <th>Servicio</th>
+          <th>Estado</th>
+          <th style="width:90px">Eliminar</th>
+        </tr>
+      </thead>
+      <tbody>
         <% filteredAppointments.forEach(apt => { %>
-          <div class="table-row">
-            <div class="col-date">
-              <%= new Date(apt.date).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' }) %>
-            </div>
-            <div class="col-time"><%= apt.time || '—' %></div>
-            <div class="col-customer">
-              <strong><%= apt.customer %></strong>
-            </div>
-            <div class="col-phone">
-              <% if (apt.phone) { %>
-                <a href="tel:<%= apt.phone %>"><%= apt.phone %></a>
-              <% } else { %>
-                <span class="muted">—</span>
-              <% } %>
-            </div>
-            <div class="col-service">
-              <span class="chip"><%= apt.service %></span>
-            </div>
-            <div class="col-status">
-              <form method="post" action="/admin/citas/estado" class="inline-form">
+          <tr>
+            <td style="font-size:.82rem;white-space:nowrap">
+              <%= new Date(apt.date + 'T12:00:00').toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) %>
+            </td>
+            <td style="font-size:.82rem"><%= apt.time || '—' %></td>
+            <td><strong><%= apt.customer || apt.name %></strong></td>
+            <td style="font-size:.82rem">
+              <% if (apt.phone) { %><a href="tel:<%= apt.phone %>" style="color:#2563eb"><%= apt.phone %></a><% } else { %><span style="color:#71717a">—</span><% } %>
+            </td>
+            <td><span class="badge badge-muted"><%= apt.service %></span></td>
+            <td>
+              <form method="post" action="/admin/citas/estado" style="display:flex;gap:5px;align-items:center">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <input type="hidden" name="id" value="<%= apt.id %>" />
-                <select name="status" onchange="this.form.submit()">
-                  <option value="pendiente" <% if (apt.status === 'pendiente') { %>selected<% } %>>Pendiente</option>
-                  <option value="confirmada" <% if (apt.status === 'confirmada') { %>selected<% } %>>Confirmada</option>
-                  <option value="completada" <% if (apt.status === 'completada') { %>selected<% } %>>Completada</option>
-                  <option value="cancelada" <% if (apt.status === 'cancelada') { %>selected<% } %>>Cancelada</option>
+                <select name="status" onchange="this.form.submit()" style="font-size:.75rem;padding:4px 6px;border:1px solid #e4e4e7;border-radius:6px;background:#fafafa">
+                  <% ['pendiente','confirmada','completada','cancelada'].forEach(s => { %>
+                    <option value="<%= s %>" <%= apt.status === s ? 'selected' : '' %>><%= s %></option>
+                  <% }) %>
                 </select>
               </form>
-            </div>
-            <div class="col-actions">
-              <form method="post" action="/admin/citas/eliminar" style="display: inline;">
+            </td>
+            <td>
+              <form method="post" action="/admin/citas/eliminar" data-confirm="¿Eliminar cita de <%= apt.customer %>?">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <input type="hidden" name="id" value="<%= apt.id %>" />
-                <button class="btn btn-danger btn-sm" type="submit" onclick="return confirm('¿Eliminar esta cita?')">Eliminar</button>
+                <button class="btn btn-sm btn-danger" type="submit">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
               </form>
-            </div>
-          </div>
+            </td>
+          </tr>
         <% }) %>
-      </div>
-    <% } %>
+      </tbody>
+    </table>
   </div>
+  <% } %>
+</div>
 
-  <!-- Estadísticas rápidas -->
-  <div class="grid three" style="margin-top: 20px;">
-    <div class="card stat-box">
-      <h4>Total de citas</h4>
-      <div class="stat-number"><%= appointments.length %></div>
-    </div>
-    <div class="card stat-box">
-      <h4>Pendientes</h4>
-      <div class="stat-number pending"><%= appointments.filter(a => a.status === 'pendiente' || !a.status).length %></div>
-    </div>
-    <div class="card stat-box">
-      <h4>Confirmadas</h4>
-      <div class="stat-number confirmed"><%= appointments.filter(a => a.status === 'confirmada').length %></div>
-    </div>
-  </div>
-</main>
-
-<style>
-  .calendar-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .calendar-day-header {
-    font-weight: bold;
-    text-align: center;
-    padding: 10px;
-    background-color: #f0f0f0;
-    border-radius: 4px;
-  }
-
-  .calendar-day {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-    min-height: 80px;
-    background-color: #fff;
-    position: relative;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .calendar-day:hover {
-    background-color: #f9f9f9;
-  }
-
-  .calendar-day.other-month {
-    background-color: #f5f5f5;
-    color: #ccc;
-  }
-
-  .calendar-day.has-appointments {
-    border-color: #4CAF50;
-    background-color: #f1f8f4;
-  }
-
-  .day-number {
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-
-  .appointments-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 0.75rem;
-  }
-
-  .appointment-badge {
-    background-color: #4CAF50;
-    color: white;
-    padding: 2px 4px;
-    border-radius: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .appointment-badge.more {
-    background-color: #2196F3;
-    text-align: center;
-  }
-
-  .appointments-table {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .table-header {
-    display: grid;
-    grid-template-columns: 100px 80px 150px 120px 150px 120px 100px;
-    gap: 0;
-    font-weight: bold;
-    background-color: #f0f0f0;
-    border-bottom: 2px solid #ddd;
-    padding: 10px;
-  }
-
-  .table-row {
-    display: grid;
-    grid-template-columns: 100px 80px 150px 120px 150px 120px 100px;
-    gap: 0;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .table-row:last-child {
-    border-bottom: none;
-  }
-
-  .table-row:hover {
-    background-color: #f9f9f9;
-  }
-
-  .col-date, .col-time, .col-customer, .col-phone, .col-service, .col-status, .col-actions {
-    padding: 0 8px;
-  }
-
-  .col-phone a {
-    color: #0066cc;
-    text-decoration: none;
-  }
-
-  .col-phone a:hover {
-    text-decoration: underline;
-  }
-
-  .inline-form {
-    display: inline;
-  }
-
-  .inline-form select {
-    padding: 4px 8px;
-    font-size: 0.9rem;
-  }
-
-  .stat-box {
-    text-align: center;
-  }
-
-  .stat-number {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #333;
-  }
-
-  .stat-number.pending {
-    color: #FF9800;
-  }
-
-  .stat-number.confirmed {
-    color: #4CAF50;
-  }
-
-  .btn-sm {
-    padding: 4px 8px;
-    font-size: 0.85rem;
-  }
-
-  .chip {
-    display: inline-block;
-    background-color: #e0e0e0;
-    padding: 2px 8px;
-    border-radius: 16px;
-    font-size: 0.85rem;
-  }
-</style>
-
-<%- include('../partials/footer') %>
+<%- include('../partials/admin-foot') %>
