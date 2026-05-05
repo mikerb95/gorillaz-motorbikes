@@ -1,36 +1,128 @@
-<%- include('../partials/head', { title: 'Admin — Usuarios' }) %>
-<main class="container section">
-  <h1 class="section-title">Usuarios</h1>
-  <table class="card table">
-    <thead>
-      <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr>
-    </thead>
-    <tbody>
-      <% users.forEach(u => { %>
+<%- include('../partials/admin-head', { title: 'Usuarios' }) %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Usuarios</h1>
+  <span class="badge badge-info"><%= users.length %> registrados</span>
+</div>
+
+<!-- Search -->
+<div class="crm-search-row">
+  <input class="crm-search-input" type="text" id="userSearch" placeholder="Buscar por nombre, email o ciudad…" />
+</div>
+
+<!-- Table -->
+<div class="crm-card" style="padding:0;overflow:hidden">
+  <div class="crm-table-wrap">
+    <table class="crm-table" id="usersTable">
+      <thead>
         <tr>
-          <td><%= u.id %></td>
-          <td><%= u.name %></td>
-          <td><%= u.email %></td>
-          <td><%= u.role || 'user' %></td>
-          <td>
-            <div class="row gap">
-              <form method="post" action="/admin/usuarios/actualizar" class="row gap compact">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <input type="hidden" name="id" value="<%= u.id %>" />
-                <input name="name" value="<%= u.name %>" placeholder="Nombre" />
-                <input name="membershipLevel" value="<%= (u.membership && u.membership.level) || '' %>" placeholder="Nivel membresía" />
-                <button class="btn" type="submit">Guardar</button>
-              </form>
-              <form method="post" action="/admin/usuarios/eliminar" data-confirm="¿Eliminar usuario?">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <input type="hidden" name="id" value="<%= u.id %>" />
-                <button class="btn btn-danger" type="submit">Eliminar</button>
-              </form>
-            </div>
-          </td>
+          <th style="width:44px"></th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Membresía</th>
+          <th>Ciudad</th>
+          <th>Teléfono</th>
+          <th>Registro</th>
+          <th style="width:110px">Acciones</th>
         </tr>
-      <% }) %>
-    </tbody>
-  </table>
-</main>
-<%- include('../partials/footer') %>
+      </thead>
+      <tbody>
+        <% users.forEach(u => { %>
+          <tr data-search="<%= (u.name + ' ' + u.email + ' ' + (u.city || '')).toLowerCase() %>">
+            <td>
+              <div class="crm-user-circle"><%= u.name.charAt(0).toUpperCase() %></div>
+            </td>
+            <td>
+              <strong><%= u.name %></strong>
+              <% if (u.nickname) { %><br><span style="font-size:.75rem;color:#71717a">@<%= u.nickname %></span><% } %>
+            </td>
+            <td style="font-size:.8rem;color:#52525b"><%= u.email %></td>
+            <td>
+              <% if (u.role === 'admin') { %>
+                <span class="badge badge-orange">Admin</span>
+              <% } else { %>
+                <span class="badge badge-muted">Usuario</span>
+              <% } %>
+            </td>
+            <td>
+              <% const lvl = u.membership && u.membership.level; %>
+              <% if (lvl) { %><span class="badge badge-info"><%= lvl %></span><% } else { %><span class="badge badge-muted">—</span><% } %>
+            </td>
+            <td style="font-size:.8rem;color:#52525b"><%= u.city || '—' %></td>
+            <td style="font-size:.8rem;color:#52525b"><%= u.phone || '—' %></td>
+            <td style="font-size:.75rem;color:#71717a">
+              <% if (u.createdAt) { %><%= new Date(u.createdAt).toLocaleDateString('es-CO') %><% } else { %>—<% } %>
+            </td>
+            <td>
+              <div class="crm-table-actions">
+                <button class="btn btn-sm btn-ghost" type="button"
+                  onclick="toggleEdit('<%= u.id %>')" title="Editar">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <form method="post" action="/admin/usuarios/eliminar" data-confirm="¿Eliminar a <%= u.name %>? Esta acción no se puede deshacer.">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= u.id %>" />
+                  <button class="btn btn-sm btn-danger" type="submit" title="Eliminar">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <!-- Inline edit row -->
+          <tr>
+            <td colspan="9" style="padding:0;border:none">
+              <div class="crm-inline-edit" id="edit-<%= u.id %>">
+                <form method="post" action="/admin/usuarios/actualizar">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= u.id %>" />
+                  <div class="crm-form-grid" style="margin-bottom:12px">
+                    <div class="crm-form-group">
+                      <label>Nombre</label>
+                      <input name="name" value="<%= u.name %>" />
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Nivel membresía</label>
+                      <input name="membershipLevel" value="<%= (u.membership && u.membership.level) || '' %>" placeholder="Básica / Premium…" />
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Rol</label>
+                      <select name="role">
+                        <option value="user" <%= u.role !== 'admin' ? 'selected' : '' %>>Usuario</option>
+                        <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="crm-form-actions">
+                    <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+                    <button class="btn btn-ghost btn-sm" type="button" onclick="toggleEdit('<%= u.id %>')">Cancelar</button>
+                  </div>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function toggleEdit(id) {
+    const el = document.getElementById('edit-' + id);
+    if (el) el.classList.toggle('open');
+  }
+
+  document.getElementById('userSearch').addEventListener('input', function () {
+    const q = this.value.toLowerCase().trim();
+    document.querySelectorAll('#usersTable tbody tr[data-search]').forEach(row => {
+      const match = !q || row.dataset.search.includes(q);
+      row.style.display = match ? '' : 'none';
+      const next = row.nextElementSibling;
+      if (next && !next.dataset.search) next.style.display = match ? '' : 'none';
+    });
+  });
+</script>
+
+<%- include('../partials/admin-foot') %>
