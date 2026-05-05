@@ -13,7 +13,10 @@
           <div class="cart-item">
             <div class="cart-info">
               <strong><%= item.name %></strong>
-              <span class="muted">$<%= item.price.toLocaleString('es-CO') %> c/u</span>
+              <span class="muted">
+                $<%= item.unitPrice.toLocaleString('es-CO') %> c/u
+                <% if (item.discount > 0) { %><span class="price-old" style="font-size:.8em">$<%= item.price.toLocaleString('es-CO') %></span><% } %>
+              </span>
             </div>
             <form method="post" action="/cart/update" class="cart-actions">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
