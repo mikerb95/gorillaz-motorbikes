@@ -591,4 +591,5 @@ module.exports = {
   getNewsletterByEmail, createNewsletter,
   createEnrollment,
   createJobApplication,
+  createOrder, updateOrderStatus, getOrderById, getAllOrders, getOrdersByUser, countOrders,
 };
