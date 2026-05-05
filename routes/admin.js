@@ -83,12 +83,13 @@ router.get('/usuarios', requireAuth, requireAdmin, async (req, res) => {
 });
 
 router.post('/usuarios/actualizar', requireAuth, requireAdmin, async (req, res) => {
-  const { id, name, membershipLevel } = req.body;
+  const { id, name, membershipLevel, role } = req.body;
   const u = await getUserById(id);
   if (u) {
     const fields = {};
     if (name) fields.name = name;
     if (membershipLevel) fields.membership = { ...u.membership, level: membershipLevel };
+    if (role && ['user', 'admin'].includes(role)) fields.role = role;
     await updateUser(id, fields);
   }
   res.redirect('/admin/usuarios');
