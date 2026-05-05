@@ -1,20 +1,62 @@
-<%- include('../partials/head', { title: 'Admin — Calendario' }) %>
-<main class="container section">
-  <h1 class="section-title">Calendario de disponibilidad</h1>
-  <p class="muted">Fechas bloqueadas: <%= availability.blockedDates.join(', ') || 'ninguna' %></p>
-  <div class="grid two">
-    <form class="card stack" method="post" action="/admin/calendario/bloquear">
+<%- include('../partials/admin-head', { title: 'Calendario de Disponibilidad' }) %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Calendario de Disponibilidad</h1>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+  <div class="crm-card">
+    <div class="crm-card-title">Bloquear fecha</div>
+    <form method="post" action="/admin/calendario/bloquear">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <h3>Bloquear fecha</h3>
-      <label>Fecha<input type="date" name="date" required /></label>
-      <button class="btn btn-primary" type="submit">Bloquear</button>
-    </form>
-    <form class="card stack" method="post" action="/admin/calendario/desbloquear">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <h3>Desbloquear fecha</h3>
-      <label>Fecha<input type="date" name="date" required /></label>
-      <button class="btn" type="submit">Desbloquear</button>
+      <div class="crm-form-group" style="margin-bottom:12px">
+        <label>Seleccionar fecha</label>
+        <input type="date" name="date" required />
+      </div>
+      <button class="btn btn-danger btn-sm" type="submit">Bloquear</button>
     </form>
   </div>
-</main>
-<%- include('../partials/footer') %>
+
+  <div class="crm-card">
+    <div class="crm-card-title">Desbloquear fecha</div>
+    <% if (!availability.blockedDates.length) { %>
+      <p style="color:#71717a;font-size:.85rem;margin:0">No hay fechas bloqueadas.</p>
+    <% } else { %>
+      <form method="post" action="/admin/calendario/desbloquear">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div class="crm-form-group" style="margin-bottom:12px">
+          <label>Seleccionar fecha</label>
+          <select name="date">
+            <% availability.blockedDates.sort().forEach(d => { %>
+              <option value="<%= d %>"><%= d %></option>
+            <% }) %>
+          </select>
+        </div>
+        <button class="btn btn-sm" type="submit">Desbloquear</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<div class="crm-card">
+  <div class="crm-card-title">Fechas bloqueadas (<%= availability.blockedDates.length %>)</div>
+  <% if (!availability.blockedDates.length) { %>
+    <p style="color:#71717a;font-size:.85rem;margin:0">Ninguna fecha está bloqueada actualmente.</p>
+  <% } else { %>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <% availability.blockedDates.sort().forEach(d => { %>
+        <div style="display:flex;align-items:center;gap:6px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:5px 10px">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#dc2626" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <span style="font-size:.8rem;font-weight:700;color:#dc2626"><%= d %></span>
+          <form method="post" action="/admin/calendario/desbloquear" style="display:contents" data-confirm="¿Desbloquear <%= d %>?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <input type="hidden" name="date" value="<%= d %>" />
+            <button type="submit" style="background:none;border:none;cursor:pointer;color:#dc2626;padding:0;line-height:1;font-size:.8rem">✕</button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../partials/admin-foot') %>
