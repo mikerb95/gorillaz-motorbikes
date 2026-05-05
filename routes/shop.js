@@ -167,6 +167,30 @@ router.post('/pagar', async (req, res) => {
     });
   }
 
+  // Validar stock antes de procesar el pago
+  const stockErrors = [];
+  for (const [id, qty] of Object.entries(cart.items)) {
+    const p = catalog.products.find(x => x.id === id);
+    if (!p) { stockErrors.push(`Producto no encontrado (${id})`); continue; }
+    if (typeof p.stock === 'number' && p.stock === 0) {
+      stockErrors.push(`"${p.name}" está agotado`);
+    } else if (typeof p.stock === 'number' && qty > p.stock) {
+      stockErrors.push(`"${p.name}": solo quedan ${p.stock} unidades (tienes ${qty} en el carrito)`);
+    }
+  }
+
+  if (stockErrors.length > 0) {
+    const items = Object.entries(cart.items).map(([id, qty]) => {
+      const p = catalog.products.find(x => x.id === id);
+      const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
+      return { ...p, qty, unitPrice: finalPrice, total: finalPrice * qty };
+    });
+    return res.status(409).render('checkout', {
+      cart, items,
+      error: `No se puede procesar el pedido: ${stockErrors.join('; ')}. Actualiza tu carrito e intenta de nuevo.`,
+    });
+  }
+
   const items = Object.entries(cart.items).map(([id, qty]) => {
     const p = catalog.products.find(x => x.id === id);
     const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
