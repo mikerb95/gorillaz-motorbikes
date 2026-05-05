@@ -1,48 +1,202 @@
-<%- include('../partials/head', { title: 'Admin — Citas' }) %>
-<main class="container section">
-  <h1 class="section-title">Citas</h1>
+<%- include('../partials/admin-head', { title: 'Citas' }) %>
 
-  <section class="card stack">
-    <h3>Crear cita</h3>
-  <form class="grid two" method="post" action="/admin/citas/crear">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <label>Cliente<input name="customer" required /></label>
-      <label>Fecha<input type="date" name="date" required /></label>
-      <label>Hora<input type="time" name="time" required /></label>
-      <label>Servicio<input name="service" required /></label>
-      <button class="btn btn-primary" type="submit">Crear</button>
-    </form>
-  </section>
+<%
+const SERVICES = ['Mecánica','Pintura','Alistamiento tecnomecánica','Electricidad','Torno','Prensa','Mecánica rápida','Escaneo de motos'];
+const STATUS_MAP = {
+  pendiente:  { label: 'Pendiente',  cls: 'badge-warning' },
+  confirmada: { label: 'Confirmada', cls: 'badge-info' },
+  completada: { label: 'Completada', cls: 'badge-success' },
+  cancelada:  { label: 'Cancelada',  cls: 'badge-danger' },
+};
+%>
 
-  <section class="section">
-    <h3>Lista</h3>
-    <div class="stack">
-      <% appointments.forEach(a => { %>
-        <article class="card stack">
-          <div class="row space-between">
-            <strong><%= a.customer %></strong>
-            <span class="chip"><%= a.date %> <%= a.time %></span>
-          </div>
-          <div class="muted"><%= a.service %></div>
-          <div class="row gap">
-            <form method="post" action="/admin/citas/actualizar" class="grid two compact">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <input type="hidden" name="id" value="<%= a.id %>" />
-              <input name="customer" value="<%= a.customer %>" />
-              <input type="date" name="date" value="<%= a.date %>" />
-              <input type="time" name="time" value="<%= a.time %>" />
-              <input name="service" value="<%= a.service %>" />
-              <button class="btn" type="submit">Actualizar</button>
-            </form>
-            <form method="post" action="/admin/citas/eliminar" data-confirm="¿Eliminar esta cita?">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <input type="hidden" name="id" value="<%= a.id %>" />
-              <button class="btn btn-danger" type="submit">Eliminar</button>
-            </form>
-          </div>
-        </article>
-      <% }) %>
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Citas</h1>
+  <button class="btn btn-primary btn-sm" type="button"
+    onclick="document.getElementById('newApptCard').classList.toggle('hidden-card')">
+    + Nueva cita
+  </button>
+</div>
+
+<!-- Create form -->
+<div class="crm-card" id="newApptCard" style="margin-bottom:18px">
+  <div class="crm-card-title">Nueva cita</div>
+  <form method="post" action="/admin/citas/crear">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="crm-form-grid">
+      <div class="crm-form-group">
+        <label>Cliente <span class="required">*</span></label>
+        <input name="customer" required placeholder="Nombre del cliente" />
+      </div>
+      <div class="crm-form-group">
+        <label>Fecha <span class="required">*</span></label>
+        <input type="date" name="date" required />
+      </div>
+      <div class="crm-form-group">
+        <label>Hora <span class="required">*</span></label>
+        <input type="time" name="time" required />
+      </div>
+      <div class="crm-form-group">
+        <label>Servicio <span class="required">*</span></label>
+        <select name="service" required>
+          <option value="">— Seleccionar —</option>
+          <% SERVICES.forEach(s => { %><option value="<%= s %>"><%= s %></option><% }) %>
+        </select>
+      </div>
     </div>
-  </section>
-</main>
-<%- include('../partials/footer') %>
+    <div class="crm-form-actions">
+      <button class="btn btn-primary btn-sm" type="submit">Crear cita</button>
+    </div>
+  </form>
+</div>
+
+<!-- Stats row -->
+<div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+  <% const counts = { pendiente:0, confirmada:0, completada:0, cancelada:0 };
+     appointments.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; }); %>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= counts.pendiente %></div>
+    <div class="crm-kpi-label">Pendientes</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= counts.confirmada %></div>
+    <div class="crm-kpi-label">Confirmadas</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= counts.completada %></div>
+    <div class="crm-kpi-label">Completadas</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= counts.cancelada %></div>
+    <div class="crm-kpi-label">Canceladas</div>
+  </div>
+</div>
+
+<!-- Filter by status -->
+<div class="crm-search-row">
+  <select id="statusFilter" class="crm-search-input" style="flex:0;min-width:180px">
+    <option value="">Todos los estados</option>
+    <option value="pendiente">Pendiente</option>
+    <option value="confirmada">Confirmada</option>
+    <option value="completada">Completada</option>
+    <option value="cancelada">Cancelada</option>
+  </select>
+  <input class="crm-search-input" type="text" id="apptSearch" placeholder="Buscar cliente o servicio…" />
+</div>
+
+<!-- Table -->
+<div class="crm-card" style="padding:0;overflow:hidden">
+  <div class="crm-table-wrap">
+    <table class="crm-table" id="apptTable">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Servicio</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Estado</th>
+          <th style="width:130px">Cambiar estado</th>
+          <th style="width:90px">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% appointments.sort((a,b) => (a.date > b.date ? -1 : 1)).forEach(a => {
+             const st = STATUS_MAP[a.status] || { label: a.status || 'pendiente', cls: 'badge-muted' };
+        %>
+          <tr data-status="<%= a.status || 'pendiente' %>"
+              data-search="<%= ((a.customer||'') + ' ' + (a.service||'')).toLowerCase() %>">
+            <td><strong><%= a.customer || a.name || '—' %></strong></td>
+            <td><%= a.service %></td>
+            <td><%= a.date %></td>
+            <td><%= a.time %></td>
+            <td><span class="badge <%= st.cls %>"><%= st.label %></span></td>
+            <td>
+              <form method="post" action="/admin/citas/estado" style="display:flex;gap:5px;align-items:center">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="id" value="<%= a.id %>" />
+                <select name="status" style="font-size:.75rem;padding:4px 6px;border:1px solid #e4e4e7;border-radius:6px;background:#fafafa">
+                  <% ['pendiente','confirmada','completada','cancelada'].forEach(s => { %>
+                    <option value="<%= s %>" <%= a.status === s ? 'selected' : '' %>><%= s %></option>
+                  <% }) %>
+                </select>
+                <button class="btn btn-sm" type="submit" style="padding:4px 8px;font-size:.72rem">OK</button>
+              </form>
+            </td>
+            <td>
+              <div class="crm-table-actions">
+                <button class="btn btn-sm btn-ghost" type="button" onclick="toggleApptEdit('<%= a.id %>')" title="Editar">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <form method="post" action="/admin/citas/eliminar" data-confirm="¿Eliminar esta cita?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= a.id %>" />
+                  <button class="btn btn-sm btn-danger" type="submit" title="Eliminar">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="7" style="padding:0;border:none">
+              <div class="crm-inline-edit" id="appt-edit-<%= a.id %>">
+                <form method="post" action="/admin/citas/actualizar">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= a.id %>" />
+                  <div class="crm-form-grid" style="margin-bottom:12px">
+                    <div class="crm-form-group">
+                      <label>Cliente</label>
+                      <input name="customer" value="<%= a.customer || a.name || '' %>" />
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Fecha</label>
+                      <input type="date" name="date" value="<%= a.date %>" />
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Hora</label>
+                      <input type="time" name="time" value="<%= a.time %>" />
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Servicio</label>
+                      <select name="service">
+                        <% SERVICES.forEach(s => { %><option value="<%= s %>" <%= a.service === s ? 'selected' : '' %>><%= s %></option><% }) %>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="crm-form-actions">
+                    <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+                    <button class="btn btn-ghost btn-sm" type="button" onclick="toggleApptEdit('<%= a.id %>')">Cancelar</button>
+                  </div>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function toggleApptEdit(id) {
+    document.getElementById('appt-edit-' + id).classList.toggle('open');
+  }
+
+  function filterTable() {
+    const status = document.getElementById('statusFilter').value;
+    const q = document.getElementById('apptSearch').value.toLowerCase().trim();
+    document.querySelectorAll('#apptTable tbody tr[data-status]').forEach(row => {
+      const matchStatus = !status || row.dataset.status === status;
+      const matchSearch = !q || row.dataset.search.includes(q);
+      const show = matchStatus && matchSearch;
+      row.style.display = show ? '' : 'none';
+      const next = row.nextElementSibling;
+      if (next && !next.dataset.status) next.style.display = show ? '' : 'none';
+    });
+  }
+
+  document.getElementById('statusFilter').addEventListener('change', filterTable);
+  document.getElementById('apptSearch').addEventListener('input', filterTable);
+</script>
+
+<%- include('../partials/admin-foot') %>
