@@ -43,7 +43,11 @@ const templateLocals = async (req, res, next) => {
   let count = 0, subtotal = 0;
   for (const [id, qty] of Object.entries(c.items || {})) {
     const prod = (catalog.products || []).find(p => p.id === id);
-    if (prod) { count += qty; subtotal += prod.price * qty; }
+    if (prod) {
+      count += qty;
+      const finalPrice = prod.discount > 0 ? Math.round(prod.price * (1 - prod.discount / 100)) : prod.price;
+      subtotal += finalPrice * qty;
+    }
   }
   res.locals.cart = { items: c.items || {}, count, subtotal };
   try {
