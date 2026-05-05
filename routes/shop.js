@@ -149,19 +149,56 @@ router.post('/pagar', async (req, res) => {
   const cart = recalc(getCart(req));
   if (cart.count === 0) return res.redirect('/tienda');
 
+  const customerName    = (req.body.customer_name    || '').trim();
+  const customerEmail   = (req.body.customer_email   || '').trim();
+  const customerPhone   = (req.body.customer_phone   || '').trim();
+  const customerCity    = (req.body.customer_city    || '').trim();
+  const customerAddress = (req.body.customer_address || '').trim();
+
+  if (!customerName || !customerEmail || !customerPhone || !customerCity || !customerAddress) {
+    const items = Object.entries(cart.items).map(([id, qty]) => {
+      const p = catalog.products.find(x => x.id === id);
+      const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
+      return { ...p, qty, unitPrice: finalPrice, total: finalPrice * qty };
+    });
+    return res.status(400).render('checkout', {
+      cart, items,
+      error: 'Por favor completa todos los campos de contacto y envío.',
+    });
+  }
+
+  const items = Object.entries(cart.items).map(([id, qty]) => {
+    const p = catalog.products.find(x => x.id === id);
+    const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
+    return { id, name: p.name, qty, unitPrice: finalPrice, total: finalPrice * qty };
+  });
+
   const orderId = uuidv4();
 
   try {
+    await createOrder({
+      id: orderId,
+      userId: req.userId || null,
+      boldOrderId: orderId,
+      status: 'pending',
+      total: cart.subtotal,
+      items,
+      customerName,
+      customerEmail,
+      customerPhone,
+      customerAddress,
+      customerCity,
+    });
+
     const payload = await createBoldPaymentLink({
       orderId,
       totalCOP: cart.subtotal,
       description: `Compra en Gorillaz Motorbikes (${cart.count} artículo${cart.count !== 1 ? 's' : ''})`,
     });
 
-    // Guardar orderId y total en cookie temporal para verificar al retornar
     res.cookie('bold_pending', JSON.stringify({ orderId, total: cart.subtotal }), {
       httpOnly: true,
-      maxAge: 35 * 60 * 1000, // 35 min
+      maxAge: 35 * 60 * 1000,
       sameSite: 'lax',
     });
 
