@@ -25,7 +25,12 @@ router.get('/', (req, res) => {
   const flash            = req.query.flash || null;
   const newsletterStatus = flash === 'ok' ? 'ok' : flash === 'error' ? 'error' : flash === 'captcha' ? 'captcha' : null;
 
-  res.render('home', { slides, newsletterStatus, recaptchaSiteKey: RECAPTCHA_SITE_KEY });
+  const featuredProducts = catalog.products
+    .filter(p => p.stock > 0)
+    .sort((a, b) => b.discount - a.discount)
+    .slice(0, 3);
+
+  res.render('home', { slides, newsletterStatus, recaptchaSiteKey: RECAPTCHA_SITE_KEY, featuredProducts });
 });
 
 module.exports = router;
