@@ -409,6 +409,81 @@ async function createJobApplication(data) {
   });
 }
 
+// ── Orders ────────────────────────────────────────────────────────────────
+
+function rowToOrder(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    userId: row.user_id,
+    boldOrderId: row.bold_order_id,
+    boldPaymentId: row.bold_payment_id,
+    status: row.status,
+    total: Number(row.total) || 0,
+    items: safeJson(row.items, []),
+    customerName: row.customer_name,
+    customerEmail: row.customer_email,
+    customerPhone: row.customer_phone,
+    customerAddress: row.customer_address,
+    customerCity: row.customer_city,
+    createdAt: row.created_at,
+  };
+}
+
+async function createOrder(data) {
+  const id = data.id || uuidv4();
+  await db.execute({
+    sql: `INSERT INTO orders
+            (id, user_id, bold_order_id, status, total, items,
+             customer_name, customer_email, customer_phone, customer_address, customer_city)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      id,
+      data.userId || null,
+      data.boldOrderId || null,
+      data.status || 'pending',
+      data.total || 0,
+      JSON.stringify(data.items || []),
+      data.customerName || '',
+      data.customerEmail || '',
+      data.customerPhone || null,
+      data.customerAddress || null,
+      data.customerCity || null,
+    ],
+  });
+  return id;
+}
+
+async function updateOrderStatus(id, status, boldPaymentId) {
+  await db.execute({
+    sql: 'UPDATE orders SET status = ?, bold_payment_id = ? WHERE id = ?',
+    args: [status, boldPaymentId || null, id],
+  });
+}
+
+async function getOrderById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM orders WHERE id = ?', args: [id] });
+  return rowToOrder(r.rows[0] || null);
+}
+
+async function getAllOrders() {
+  const r = await db.execute('SELECT * FROM orders ORDER BY created_at DESC');
+  return r.rows.map(rowToOrder);
+}
+
+async function getOrdersByUser(userId) {
+  const r = await db.execute({
+    sql: 'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC',
+    args: [userId],
+  });
+  return r.rows.map(rowToOrder);
+}
+
+async function countOrders() {
+  const r = await db.execute('SELECT COUNT(*) as n FROM orders');
+  return Number(r.rows[0].n);
+}
+
 // ── Score ─────────────────────────────────────────────────────────────────
 
 async function addUserScore(userId, points, concept, description) {
