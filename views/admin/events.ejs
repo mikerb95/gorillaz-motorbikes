@@ -1,69 +1,152 @@
-<%- include('../partials/head', { title: 'Admin — Eventos' }) %>
-<main class="container section">
-  <h1 class="section-title">Eventos del Club</h1>
+<%- include('../partials/admin-head', { title: 'Eventos del Club' }) %>
 
-  <section class="card stack">
-    <h3>Crear evento</h3>
-    <form class="stack" method="post" action="/admin/eventos/crear">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <label>Título<input name="title" required /></label>
-      <div class="grid two">
-        <label>Fecha<input type="date" name="date" required /></label>
-        <label>
-          Tipo
-          <select name="type">
-            <option value="evento">Evento del club (+25 pts)</option>
-            <option value="rodada">Rodada (+30 pts)</option>
-          </select>
-        </label>
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Eventos del Club</h1>
+  <button class="btn btn-primary btn-sm" type="button"
+    onclick="document.getElementById('newEventCard').classList.toggle('hidden-card')">
+    + Nuevo evento
+  </button>
+</div>
+
+<!-- Create form -->
+<div class="crm-card" id="newEventCard">
+  <div class="crm-card-title">Crear evento</div>
+  <form method="post" action="/admin/eventos/crear">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="crm-form-grid">
+      <div class="crm-form-group">
+        <label>Título <span class="required">*</span></label>
+        <input name="title" required placeholder="Nombre del evento" />
       </div>
-      <label>Lugar (opcional)<input name="location" /></label>
-      <label>Descripción<textarea name="description" rows="3"></textarea></label>
-      <button class="btn btn-primary" type="submit">Crear</button>
-    </form>
-  </section>
-
-  <section class="section">
-    <h3>Lista de eventos</h3>
-    <div class="grid three">
-      <% events.forEach(ev => { %>
-        <article class="card stack">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <h4 class="tight" style="margin:0"><%= ev.title %></h4>
-            <% if (ev.type === 'rodada') { %>
-              <span class="chip" style="background:#e0f2fe;color:#0891b2;font-size:.75em">🏍️ Rodada</span>
-            <% } else { %>
-              <span class="chip" style="background:#ede9fe;color:#7c3aed;font-size:.75em">🎉 Evento</span>
-            <% } %>
-          </div>
-          <div class="muted"><%= ev.date %><% if (ev.location) { %> · <%= ev.location %><% } %></div>
-          <p><%= ev.description %></p>
-
-          <a class="btn btn-sm btn-outline" href="/admin/eventos/<%= ev.id %>/asistencias">Ver asistencias</a>
-
-          <div class="row gap" style="margin-top:8px">
-            <form method="post" action="/admin/eventos/actualizar" class="stack compact">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <input type="hidden" name="id" value="<%= ev.id %>" />
-              <input name="title" value="<%= ev.title %>" />
-              <input type="date" name="date" value="<%= ev.date %>" />
-              <input name="location" value="<%= ev.location || '' %>" placeholder="Lugar" />
-              <select name="type">
-                <option value="evento" <%= ev.type !== 'rodada' ? 'selected' : '' %>>Evento (+25 pts)</option>
-                <option value="rodada" <%= ev.type === 'rodada' ? 'selected' : '' %>>Rodada (+30 pts)</option>
-              </select>
-              <textarea name="description" rows="2"><%= ev.description %></textarea>
-              <button class="btn" type="submit">Actualizar</button>
-            </form>
-            <form method="post" action="/admin/eventos/eliminar" data-confirm="¿Eliminar este evento?">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <input type="hidden" name="id" value="<%= ev.id %>" />
-              <button class="btn btn-danger" type="submit">Eliminar</button>
-            </form>
-          </div>
-        </article>
-      <% }) %>
+      <div class="crm-form-group">
+        <label>Fecha <span class="required">*</span></label>
+        <input type="date" name="date" required />
+      </div>
+      <div class="crm-form-group">
+        <label>Tipo</label>
+        <select name="type">
+          <option value="evento">Evento del club (+25 pts)</option>
+          <option value="rodada">Rodada (+30 pts)</option>
+        </select>
+      </div>
+      <div class="crm-form-group">
+        <label>Lugar</label>
+        <input name="location" placeholder="Ej: Parque Simón Bolívar" />
+      </div>
+      <div class="crm-form-group crm-form-full">
+        <label>Descripción</label>
+        <textarea name="description" rows="2" placeholder="Detalles del evento…"></textarea>
+      </div>
     </div>
-  </section>
-</main>
-<%- include('../partials/footer') %>
+    <div class="crm-form-actions">
+      <button class="btn btn-primary btn-sm" type="submit">Crear evento</button>
+    </div>
+  </form>
+</div>
+
+<!-- Events list -->
+<div class="crm-card" style="padding:0;overflow:hidden">
+  <% if (!events.length) { %>
+    <div style="padding:32px;text-align:center;color:#71717a">No hay eventos registrados.</div>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Tipo</th>
+          <th>Fecha</th>
+          <th>Lugar</th>
+          <th>Asistencias</th>
+          <th style="width:100px">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% events.sort((a,b) => (a.date > b.date ? -1 : 1)).forEach(ev => { %>
+          <tr>
+            <td>
+              <strong><%= ev.title %></strong>
+              <% if (ev.description) { %>
+                <br><span style="font-size:.75rem;color:#71717a"><%= ev.description.substring(0, 60) %><%= ev.description.length > 60 ? '…' : '' %></span>
+              <% } %>
+            </td>
+            <td>
+              <% if (ev.type === 'rodada') { %>
+                <span class="badge badge-info">🏍️ Rodada</span>
+              <% } else { %>
+                <span class="badge badge-orange">🎉 Evento</span>
+              <% } %>
+            </td>
+            <td style="font-size:.82rem;white-space:nowrap"><%= ev.date %></td>
+            <td style="font-size:.82rem;color:#52525b"><%= ev.location || '—' %></td>
+            <td>
+              <a class="btn btn-sm btn-ghost" href="/admin/eventos/<%= ev.id %>/asistencias">Ver</a>
+            </td>
+            <td>
+              <div class="crm-table-actions">
+                <button class="btn btn-sm btn-ghost" type="button" onclick="toggleEvEdit('<%= ev.id %>')" title="Editar">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <form method="post" action="/admin/eventos/eliminar" data-confirm="¿Eliminar el evento «<%= ev.title %>»?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= ev.id %>" />
+                  <button class="btn btn-sm btn-danger" type="submit" title="Eliminar">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" style="padding:0;border:none">
+              <div class="crm-inline-edit" id="ev-edit-<%= ev.id %>">
+                <form method="post" action="/admin/eventos/actualizar">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= ev.id %>" />
+                  <div class="crm-form-grid" style="margin-bottom:12px">
+                    <div class="crm-form-group">
+                      <label>Título</label>
+                      <input name="title" value="<%= ev.title %>" />
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Fecha</label>
+                      <input type="date" name="date" value="<%= ev.date %>" />
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Tipo</label>
+                      <select name="type">
+                        <option value="evento" <%= ev.type !== 'rodada' ? 'selected' : '' %>>Evento (+25 pts)</option>
+                        <option value="rodada" <%= ev.type === 'rodada' ? 'selected' : '' %>>Rodada (+30 pts)</option>
+                      </select>
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Lugar</label>
+                      <input name="location" value="<%= ev.location || '' %>" />
+                    </div>
+                    <div class="crm-form-group crm-form-full">
+                      <label>Descripción</label>
+                      <textarea name="description" rows="2"><%= ev.description || '' %></textarea>
+                    </div>
+                  </div>
+                  <div class="crm-form-actions">
+                    <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+                    <button class="btn btn-ghost btn-sm" type="button" onclick="toggleEvEdit('<%= ev.id %>')">Cancelar</button>
+                  </div>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<script>
+  function toggleEvEdit(id) {
+    document.getElementById('ev-edit-' + id).classList.toggle('open');
+  }
+</script>
+
+<%- include('../partials/admin-foot') %>
