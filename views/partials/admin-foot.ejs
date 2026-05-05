@@ -1,0 +1,38 @@
+    </div><!-- /crm-content -->
+  </div><!-- /crm-main -->
+</div><!-- /crm-shell -->
+
+<script>
+  // Sidebar toggle (mobile)
+  const toggle = document.getElementById('crmMenuToggle');
+  const sidebar = document.getElementById('crmSidebar');
+  const overlay = document.getElementById('crmOverlay');
+  if (toggle && sidebar && overlay) {
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  }
+
+  // Active nav link
+  const path = window.location.pathname.replace(/\/$/, '');
+  document.querySelectorAll('.crm-nav-link').forEach(link => {
+    const lp = (link.dataset.path || '').replace(/\/$/, '');
+    if (lp && (path === lp || (lp !== '/admin' && path.startsWith(lp)))) {
+      link.classList.add('active');
+    }
+  });
+
+  // Confirm dialogs
+  document.querySelectorAll('[data-confirm]').forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!confirm(form.dataset.confirm || '¿Confirmar?')) e.preventDefault();
+    });
+  });
+</script>
+</body>
+</html>
