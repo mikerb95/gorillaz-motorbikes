@@ -9,6 +9,48 @@
       <form class="payment-form" method="post" action="/pagar">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
+        <h2>Datos de contacto y envío</h2>
+
+        <% if (!user) { %>
+          <p class="checkout-login-hint muted">
+            ¿Tienes cuenta? <a href="/club/login?return=/checkout">Inicia sesión</a> para autocompletar tus datos.
+          </p>
+        <% } %>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="customer_name">Nombre completo <span class="required">*</span></label>
+            <input id="customer_name" name="customer_name" type="text" required
+              value="<%= user ? user.name : '' %>" placeholder="Tu nombre completo" />
+          </div>
+          <div class="form-group">
+            <label for="customer_email">Correo electrónico <span class="required">*</span></label>
+            <input id="customer_email" name="customer_email" type="email" required
+              value="<%= user ? user.email : '' %>" placeholder="correo@ejemplo.com" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="customer_phone">Teléfono / Celular <span class="required">*</span></label>
+            <input id="customer_phone" name="customer_phone" type="tel" required
+              value="<%= user && user.phone ? user.phone : '' %>" placeholder="300 000 0000" />
+          </div>
+          <div class="form-group">
+            <label for="customer_city">Ciudad <span class="required">*</span></label>
+            <input id="customer_city" name="customer_city" type="text" required
+              value="<%= user && user.city ? user.city : '' %>" placeholder="Bogotá, Medellín…" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="customer_address">Dirección de envío <span class="required">*</span></label>
+          <input id="customer_address" name="customer_address" type="text" required
+            value="" placeholder="Calle 123 # 45-67, Apto 8" />
+        </div>
+
+        <hr class="checkout-divider" />
+
         <h2>Resumen del pedido</h2>
         <ul class="checkout-items">
           <% items.forEach(item => { %>
@@ -33,6 +75,7 @@
       <aside class="order-summary">
         <h2>¿Cómo funciona?</h2>
         <ol class="bold-steps">
+          <li>Completa tus datos de contacto</li>
           <li>Haz clic en <strong>Pagar con Bold</strong></li>
           <li>Elige tu método de pago: tarjeta, Nequi, Daviplata u otros</li>
           <li>Completa el pago en el sitio seguro de Bold</li>
