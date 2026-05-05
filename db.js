@@ -93,6 +93,21 @@ async function initDb() {
       message TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    `CREATE TABLE IF NOT EXISTS orders (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      bold_order_id TEXT,
+      bold_payment_id TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      total INTEGER NOT NULL DEFAULT 0,
+      items TEXT NOT NULL DEFAULT '[]',
+      customer_name TEXT NOT NULL DEFAULT '',
+      customer_email TEXT NOT NULL DEFAULT '',
+      customer_phone TEXT,
+      customer_address TEXT,
+      customer_city TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
