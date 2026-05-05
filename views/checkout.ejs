@@ -5,6 +5,10 @@
     <h1 class="section-title">Checkout</h1>
     <p class="section-subtitle">Revisa tu pedido y completa el pago de forma segura</p>
 
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
     <div class="checkout-grid">
       <form class="payment-form" method="post" action="/pagar">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
