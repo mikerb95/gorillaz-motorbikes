@@ -5,6 +5,7 @@ const crypto   = require('crypto');
 const catalog  = require('../data/catalog');
 const { getCart, recalc, saveCart } = require('../helpers/cart');
 const { BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL } = require('../config');
+const { createOrder, updateOrderStatus } = require('../db');
 
 const BOLD_API_BASE = 'https://integrations.api.bold.co';
 
