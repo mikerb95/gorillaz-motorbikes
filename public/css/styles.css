@@ -2423,6 +2423,175 @@ input {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))
 }
 
+/* Featured products section (home page) */
+.fp-section {
+  padding-top: 40px;
+  padding-bottom: 40px
+}
+
+.fp-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px
+}
+
+.fp-label {
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin: 0 0 6px
+}
+
+.fp-title {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.1;
+  color: var(--ink)
+}
+
+.fp-all-link {
+  color: var(--brand);
+  font-size: .9rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  padding-bottom: 2px
+}
+
+.fp-all-link:hover {
+  text-decoration: underline
+}
+
+.fp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px
+}
+
+.fp-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid #e8e8e8
+}
+
+.fp-card-media {
+  display: block;
+  position: relative;
+  aspect-ratio: 3/4;
+  overflow: hidden
+}
+
+.fp-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease
+}
+
+.fp-card:hover .fp-card-media img {
+  transform: scale(1.05)
+}
+
+.fp-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--brand);
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill)
+}
+
+.fp-card-body {
+  padding: 16px 20px 20px
+}
+
+.fp-card-meta {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin: 0 0 6px
+}
+
+.fp-card-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0 0 16px;
+  color: var(--ink)
+}
+
+.fp-card-name a {
+  color: inherit;
+  text-decoration: none
+}
+
+.fp-card-name a:hover {
+  color: var(--brand)
+}
+
+.fp-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between
+}
+
+.fp-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink)
+}
+
+.fp-add-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+  flex-shrink: 0
+}
+
+.fp-add-btn:hover {
+  background: var(--brand)
+}
+
+@media (max-width:900px) {
+  .fp-grid {
+    grid-template-columns: repeat(2, 1fr)
+  }
+}
+
+@media (max-width:600px) {
+  .fp-grid {
+    grid-template-columns: 1fr
+  }
+
+  .fp-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px
+  }
+}
+
 .product-card {
   min-width: 0
 }

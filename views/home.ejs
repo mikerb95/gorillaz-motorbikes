@@ -131,40 +131,36 @@
       </ul>
     </section>
 
-    <section class="container">
-      <div class="section-header-row">
-        <h2>Productos destacados</h2>
-        <a class="btn btn-sm btn-outline" href="/tienda">Ver tienda</a>
+    <section class="container fp-section">
+      <div class="fp-header">
+        <div>
+          <p class="fp-label">Nuestra tienda</p>
+          <h2 class="fp-title">Equípate con lo mejor</h2>
+        </div>
+        <a href="/tienda" class="fp-all-link">Ver todos los productos &rarr;</a>
       </div>
-      <div class="grid products-grid">
-        <% featuredProducts.forEach(p => { %>
-          <article class="card product-card">
-            <a href="/tienda/<%= p.id %>" class="product-card-link">
-              <div class="card-media" aria-hidden="true"
-                style="background-image:url('<%= p.image %>');background-size:cover;background-position:center">
-                <% if (p.discount > 0) { %>
-                  <span class="product-discount-chip">-<%= p.discount %>%</span>
-                <% } %>
-              </div>
-              <div class="card-body">
-                <% if (p.brand) { %><span class="product-brand"><%= p.brand %></span><% } %>
-                <h3 class="card-title"><%= p.name %></h3>
-                <% if (p.description) { %>
-                  <p class="card-text"><%= p.description.substring(0, 80) %><%= p.description.length > 80 ? '...' : '' %></p>
-                <% } %>
-                <div class="price-row">
-                  <% if (p.discount > 0) { %>
-                    <span class="price">$<%= Math.round(p.price * (1 - p.discount / 100)).toLocaleString('es-CO') %></span>
-                    <span class="price-old">$<%= p.price.toLocaleString('es-CO') %></span>
-                  <% } else { %>
-                    <span class="price">$<%= p.price.toLocaleString('es-CO') %></span>
-                  <% } %>
-                </div>
-              </div>
+      <div class="fp-grid">
+        <% featuredProducts.forEach((p, i) => { %>
+          <article class="fp-card">
+            <a href="/tienda/<%= p.id %>" class="fp-card-media">
+              <img src="<%= p.image %>" alt="<%= p.name %>" loading="lazy">
+              <% if (p.discount > 0) { %>
+                <span class="fp-badge">-<%= p.discount %>% OFF</span>
+              <% } else if (i === 0) { %>
+                <span class="fp-badge">Destacado</span>
+              <% } %>
             </a>
-            <div class="product-card-actions">
-              <a href="/tienda/<%= p.id %>" class="btn btn-ghost btn-sm">Ver producto</a>
-              <button type="button" class="btn btn-primary btn-sm btn-add-cart" data-id="<%= p.id %>">Añadir</button>
+            <div class="fp-card-body">
+              <p class="fp-card-meta"><%= p.brand %> &middot; <%= p.category.charAt(0).toUpperCase() + p.category.slice(1) %></p>
+              <h3 class="fp-card-name"><a href="/tienda/<%= p.id %>"><%= p.name %></a></h3>
+              <div class="fp-card-footer">
+                <% if (p.discount > 0) { %>
+                  <span class="fp-price">$<%= Math.round(p.price * (1 - p.discount / 100)).toLocaleString('es-CO') %></span>
+                <% } else { %>
+                  <span class="fp-price">$<%= p.price.toLocaleString('es-CO') %></span>
+                <% } %>
+                <button type="button" class="fp-add-btn btn-add-cart" data-id="<%= p.id %>" aria-label="Añadir al carrito">+</button>
+              </div>
             </div>
           </article>
         <% }) %>
