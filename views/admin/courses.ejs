@@ -1,43 +1,122 @@
-<%- include('../partials/head', { title: 'Admin — Cursos' }) %>
-<main class="container section">
-  <h1 class="section-title">Cursos</h1>
+<%- include('../partials/admin-head', { title: 'Cursos' }) %>
 
-  <section class="card stack">
-    <h3>Crear curso</h3>
-    <form class="grid two" method="post" action="/admin/cursos/crear">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <label>Slug<input name="slug" required placeholder="mecanica-avanzada" /></label>
-      <label>Título<input name="title" required /></label>
-      <label>Precio (COP)<input type="number" step="1" name="priceCOP" required /></label>
-      <button class="btn btn-primary" type="submit">Crear</button>
-    </form>
-  </section>
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Cursos</h1>
+  <button class="btn btn-primary btn-sm" type="button"
+    onclick="document.getElementById('newCourseCard').classList.toggle('hidden-card')">
+    + Nuevo curso
+  </button>
+</div>
 
-  <section class="section">
-    <h3>Lista</h3>
-    <div class="grid three">
-      <% list.forEach(c => { %>
-        <article class="card stack">
-          <h4 class="tight"><%= c.title %></h4>
-          <div class="row gap"><span class="chip">$<%= c.priceCOP %> COP</span></div>
-          <p><%= c.short %></p>
-          <div class="row gap">
-            <form method="post" action="/admin/cursos/actualizar" class="stack compact">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <input type="hidden" name="slug" value="<%= c.slug %>" />
-              <input name="title" value="<%= c.title %>" />
-              <input type="number" step="1" name="priceCOP" value="<%= c.priceCOP %>" />
-              <button class="btn" type="submit">Actualizar</button>
-            </form>
-            <form method="post" action="/admin/cursos/eliminar" data-confirm="¿Eliminar este curso?">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <input type="hidden" name="slug" value="<%= c.slug %>" />
-              <button class="btn btn-danger" type="submit">Eliminar</button>
-            </form>
-          </div>
-        </article>
-      <% }) %>
+<!-- Create form -->
+<div class="crm-card" id="newCourseCard">
+  <div class="crm-card-title">Crear curso</div>
+  <form method="post" action="/admin/cursos/crear">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="crm-form-grid">
+      <div class="crm-form-group">
+        <label>Slug <span class="required">*</span></label>
+        <input name="slug" required placeholder="mecanica-avanzada" />
+      </div>
+      <div class="crm-form-group">
+        <label>Título <span class="required">*</span></label>
+        <input name="title" required placeholder="Nombre del curso" />
+      </div>
+      <div class="crm-form-group">
+        <label>Precio (COP)</label>
+        <input type="number" step="1" min="0" name="priceCOP" placeholder="0" />
+      </div>
     </div>
-  </section>
-</main>
-<%- include('../partials/footer') %>
+    <div class="crm-form-actions">
+      <button class="btn btn-primary btn-sm" type="submit">Crear curso</button>
+    </div>
+  </form>
+</div>
+
+<!-- Courses table -->
+<div class="crm-card" style="padding:0;overflow:hidden">
+  <% if (!list.length) { %>
+    <div style="padding:32px;text-align:center;color:#71717a">No hay cursos registrados.</div>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Slug</th>
+          <th>Precio</th>
+          <th>Categoría</th>
+          <th>Duración</th>
+          <th style="width:90px">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% list.forEach(c => { %>
+          <tr>
+            <td>
+              <strong><%= c.title %></strong>
+              <% if (c.short) { %><br><span style="font-size:.75rem;color:#71717a"><%= c.short.substring(0,60) %></span><% } %>
+            </td>
+            <td><code style="font-size:.75rem;background:#f4f4f5;padding:2px 6px;border-radius:5px"><%= c.slug %></code></td>
+            <td>
+              <% if (c.priceCOP) { %>
+                <span class="badge badge-success">$<%= c.priceCOP.toLocaleString('es-CO') %></span>
+              <% } else { %>
+                <span class="badge badge-muted">Gratis</span>
+              <% } %>
+            </td>
+            <td style="font-size:.8rem;color:#52525b"><%= c.category || '—' %></td>
+            <td style="font-size:.8rem;color:#52525b"><%= c.durationHours ? c.durationHours + 'h' : '—' %></td>
+            <td>
+              <div class="crm-table-actions">
+                <button class="btn btn-sm btn-ghost" type="button" onclick="toggleCourseEdit('<%= c.slug %>')" title="Editar">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <form method="post" action="/admin/cursos/eliminar" data-confirm="¿Eliminar el curso «<%= c.title %>»?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="slug" value="<%= c.slug %>" />
+                  <button class="btn btn-sm btn-danger" type="submit" title="Eliminar">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" style="padding:0;border:none">
+              <div class="crm-inline-edit" id="course-edit-<%= c.slug %>">
+                <form method="post" action="/admin/cursos/actualizar">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="slug" value="<%= c.slug %>" />
+                  <div class="crm-form-grid" style="margin-bottom:12px">
+                    <div class="crm-form-group">
+                      <label>Título</label>
+                      <input name="title" value="<%= c.title %>" />
+                    </div>
+                    <div class="crm-form-group">
+                      <label>Precio (COP)</label>
+                      <input type="number" step="1" min="0" name="priceCOP" value="<%= c.priceCOP %>" />
+                    </div>
+                  </div>
+                  <div class="crm-form-actions">
+                    <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+                    <button class="btn btn-ghost btn-sm" type="button" onclick="toggleCourseEdit('<%= c.slug %>')">Cancelar</button>
+                  </div>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<script>
+  function toggleCourseEdit(slug) {
+    document.getElementById('course-edit-' + slug).classList.toggle('open');
+  }
+</script>
+
+<%- include('../partials/admin-foot') %>
