@@ -40,21 +40,27 @@ router.get('/', async (req, res) => {
   res.render('club/landing', { events, slidesClub });
 });
 
-router.get('/login', (req, res) => res.render('club/login', { error: null }));
+router.get('/login', (req, res) => {
+  const returnTo = (req.query.return || '').toString().trim();
+  const safeReturn = returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '';
+  res.render('club/login', { error: null, returnTo: safeReturn });
+});
 
 router.post('/login', authLimiter, async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, returnTo } = req.body;
+  const safeReturn = (returnTo || '').toString().trim();
+  const redirectTo = safeReturn.startsWith('/') && !safeReturn.startsWith('//') ? safeReturn : '/club/panel';
   try {
     const user = await getUserByEmail(email);
-    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
+    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn });
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas' });
+    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn });
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 });
-    res.redirect('/club/panel');
+    res.redirect(redirectTo);
   } catch (e) {
     console.error('POST /club/login error:', e);
-    res.status(500).render('club/login', { error: 'Error del servidor' });
+    res.status(500).render('club/login', { error: 'Error del servidor', returnTo: safeReturn });
   }
 });
 
