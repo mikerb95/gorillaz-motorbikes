@@ -21,8 +21,19 @@ const {
 const router = express.Router();
 
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
-  const [users, events, citas] = await Promise.all([countUsers(), countEvents(), countAppointments()]);
-  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length } });
+  const [users, events, citas, pedidos] = await Promise.all([countUsers(), countEvents(), countAppointments(), countOrders()]);
+  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos } });
+});
+
+router.get('/pedidos', requireAuth, requireAdmin, async (req, res) => {
+  const orders = await getAllOrders();
+  res.render('admin/orders', { orders });
+});
+
+router.post('/pedidos/estado', requireAuth, requireAdmin, async (req, res) => {
+  const { id, status } = req.body;
+  await updateOrderStatus(id, status, null);
+  res.redirect('/admin/pedidos');
 });
 
 router.get('/calendario', requireAuth, requireAdmin, (req, res) => res.render('admin/calendar', { availability }));
