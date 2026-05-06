@@ -30,7 +30,15 @@ router.get('/', (req, res) => {
     .sort((a, b) => b.discount - a.discount)
     .slice(0, 3);
 
-  res.render('home', { slides, newsletterStatus, recaptchaSiteKey: RECAPTCHA_SITE_KEY, featuredProducts });
+  res.render('home', {
+    slides,
+    newsletterStatus,
+    recaptchaSiteKey: RECAPTCHA_SITE_KEY,
+    featuredProducts,
+    title: 'Gorillaz Motorbikes | Taller de motos en Bogotá',
+    description: 'Taller de motos en Bogotá: mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo computarizado y tienda de accesorios. Agenda tu cita.',
+    canonicalPath: '/',
+  });
 });
 
 module.exports = router;
