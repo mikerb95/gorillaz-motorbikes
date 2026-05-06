@@ -13,6 +13,8 @@
     { "src": "images/**", "use": "@vercel/static" }
   ],
   "routes": [
+    { "src": "/robots.txt", "dest": "/public/robots.txt", "headers": { "cache-control": "public, max-age=86400" } },
+    { "src": "/sitemap.xml", "dest": "/public/sitemap.xml", "headers": { "cache-control": "public, max-age=86400" } },
     { "src": "/static/(.*)", "dest": "/public/$1", "headers": { "cache-control": "public, max-age=31536000, immutable" } },
     { "src": "/favicons/(.*)", "dest": "/favicons/$1", "headers": { "cache-control": "public, max-age=31536000, immutable" } },
     { "src": "/images/(.*)", "dest": "/images/$1", "headers": { "cache-control": "public, max-age=31536000, immutable" } },
