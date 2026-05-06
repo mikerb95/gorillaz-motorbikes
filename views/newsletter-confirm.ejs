@@ -1,0 +1,22 @@
+<%- include('partials/head', { title: 'Confirmar suscripción — Gorillaz Motorbikes', user }) %>
+
+<main class="container section">
+  <div class="card" style="max-width:480px;margin:0 auto;text-align:center">
+
+    <% if (status === 'ok') { %>
+      <h1 class="section-title">¡Suscripción confirmada!</h1>
+      <p>El correo <strong><%= email %></strong> ya está activo en nuestro boletín.</p>
+      <p class="muted">Te avisaremos sobre novedades, eventos y promociones de Gorillaz Motorbikes.</p>
+      <a class="btn btn-primary" href="/">Volver al inicio</a>
+
+    <% } else { %>
+      <h1 class="section-title">Enlace inválido</h1>
+      <p class="muted">Este enlace de confirmación ya fue usado o no es válido.</p>
+      <p>Si ya confirmaste tu suscripción, todo está en orden.</p>
+      <a class="btn" href="/">Volver al inicio</a>
+    <% } %>
+
+  </div>
+</main>
+
+<%- include('partials/footer') %>

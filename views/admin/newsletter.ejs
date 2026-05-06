@@ -1,0 +1,107 @@
+<%- include('../partials/admin-head', { title: 'Newsletter' }) %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Newsletter</h1>
+  <span class="badge badge-info"><%= subscribers.filter(s => s.confirmed).length %> confirmados · <%= subscribers.length %> total</span>
+</div>
+
+<% if (flash === 'sent') { %>
+  <div class="crm-alert crm-alert-success" style="margin-bottom:1rem">Campaña enviada correctamente.</div>
+<% } else if (flash === 'empty') { %>
+  <div class="crm-alert crm-alert-warning" style="margin-bottom:1rem">No hay suscriptores confirmados para enviar.</div>
+<% } else if (flash === 'error') { %>
+  <div class="crm-alert crm-alert-error" style="margin-bottom:1rem">Completa el asunto y el cuerpo del mensaje.</div>
+<% } %>
+
+<!-- Nueva campaña -->
+<div class="crm-card" style="margin-bottom:1.5rem">
+  <div class="crm-card-header" style="margin-bottom:1rem">
+    <strong>Enviar nueva campaña</strong>
+    <span class="badge"><%= subscribers.filter(s => s.confirmed).length %> destinatarios</span>
+  </div>
+  <form action="/admin/newsletter/enviar" method="post">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div style="display:flex;flex-direction:column;gap:.75rem">
+      <input class="crm-input" type="text" name="subject" placeholder="Asunto del correo" required maxlength="200" />
+      <textarea class="crm-input" name="body" rows="8" placeholder="Cuerpo del correo (HTML permitido)" required style="font-family:monospace;font-size:.85rem;resize:vertical"></textarea>
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <button class="btn btn-primary" type="submit">Enviar a todos los confirmados</button>
+        <span class="muted" style="font-size:.8rem">Se añadirá automáticamente el enlace de desuscripción.</span>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Historial de campañas -->
+<% if (campaigns.length) { %>
+<div class="crm-card" style="margin-bottom:1.5rem;padding:0;overflow:hidden">
+  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)"><strong>Campañas enviadas</strong></div>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Asunto</th>
+          <th style="width:120px">Destinatarios</th>
+          <th style="width:160px">Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% campaigns.forEach(c => { %>
+          <tr>
+            <td><%= c.subject %></td>
+            <td><%= c.sent_count %></td>
+            <td style="font-size:.8rem;color:#71717a"><%= new Date(c.sent_at).toLocaleString('es-CO', { dateStyle:'short', timeStyle:'short' }) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<!-- Lista de suscriptores -->
+<div class="crm-card" style="padding:0;overflow:hidden">
+  <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)"><strong>Suscriptores</strong></div>
+  <% if (subscribers.length) { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th style="width:110px">Estado</th>
+          <th style="width:140px">Fecha</th>
+          <th style="width:80px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% subscribers.forEach(s => { %>
+          <tr>
+            <td style="font-size:.85rem"><%= s.email %></td>
+            <td>
+              <% if (s.confirmed) { %>
+                <span class="badge badge-success">Confirmado</span>
+              <% } else { %>
+                <span class="badge badge-warning">Pendiente</span>
+              <% } %>
+            </td>
+            <td style="font-size:.8rem;color:#71717a"><%= new Date(s.created_at).toLocaleDateString('es-CO') %></td>
+            <td>
+              <form action="/admin/newsletter/eliminar" method="post" onsubmit="return confirm('¿Eliminar este suscriptor?')">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="email" value="<%= s.email %>">
+                <button class="crm-btn-icon crm-btn-danger" type="submit" title="Eliminar">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } else { %>
+    <p class="muted" style="padding:1.5rem;text-align:center">No hay suscriptores aún.</p>
+  <% } %>
+</div>
+
+<%- include('../partials/admin-foot') %>
