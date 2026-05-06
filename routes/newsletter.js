@@ -1,6 +1,9 @@
 'use strict';
 const express = require('express');
-const { getNewsletterByEmail, createNewsletter, deleteNewsletterByEmail } = require('../db');
+const {
+  getNewsletterByEmail, getNewsletterByToken,
+  createNewsletter, deleteNewsletterByToken, deleteNewsletterByEmail,
+} = require('../db');
 const { verifyRecaptcha } = require('../helpers/recaptcha');
 const { RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY } = require('../config');
 
@@ -27,11 +30,24 @@ router.post('/newsletter', async (req, res) => {
   res.redirect('/?flash=ok');
 });
 
-router.get('/newsletter/desuscribirse', (req, res) => {
-  const email = (req.query.email || '').toString().trim().toLowerCase();
-  res.render('newsletter-unsubscribe', { title: 'Desuscribirse del boletín', status: null, email });
+// Token-based unsubscribe (link desde email)
+router.get('/newsletter/desuscribirse', async (req, res) => {
+  const token = (req.query.token || '').toString().trim();
+  const emailParam = (req.query.email || '').toString().trim().toLowerCase();
+
+  if (token) {
+    const record = await getNewsletterByToken(token);
+    if (!record) {
+      return res.render('newsletter-unsubscribe', { title: 'Desuscribirse del boletín', status: 'notfound', email: '' });
+    }
+    await deleteNewsletterByToken(token);
+    return res.render('newsletter-unsubscribe', { title: 'Desuscribirse del boletín', status: 'ok', email: record.email });
+  }
+
+  res.render('newsletter-unsubscribe', { title: 'Desuscribirse del boletín', status: null, email: emailParam });
 });
 
+// Form-based unsubscribe (fallback manual)
 router.post('/newsletter/desuscribirse', async (req, res) => {
   const email   = (req.body.email || '').toString().trim().toLowerCase();
   const isValid = /.+@.+\..+/.test(email);
