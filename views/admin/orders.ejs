@@ -1,0 +1,99 @@
+<%- include('../partials/admin-head', { title: 'Pedidos' }) %>
+
+<%
+const STATUS_MAP = {
+  pending:              { label: 'Pendiente',      cls: 'badge-warning' },
+  pending_confirmation: { label: 'En confirmación',cls: 'badge-info' },
+  paid:                 { label: 'Pagado',          cls: 'badge-success' },
+  failed:               { label: 'Fallido',         cls: 'badge-danger' },
+};
+const counts = { pending: 0, pending_confirmation: 0, paid: 0, failed: 0 };
+orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+%>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Pedidos</h1>
+</div>
+
+<div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= counts.pending %></div>
+    <div class="crm-kpi-label">Pendientes</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= counts.pending_confirmation %></div>
+    <div class="crm-kpi-label">En confirmación</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= counts.paid %></div>
+    <div class="crm-kpi-label">Pagados</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value">$<%= orders.filter(o => o.status === 'paid').reduce((s, o) => s + o.total, 0).toLocaleString('es-CO') %></div>
+    <div class="crm-kpi-label">Total recaudado</div>
+  </div>
+</div>
+
+<div class="crm-card">
+  <% if (orders.length === 0) { %>
+    <p class="muted" style="padding:24px;text-align:center">No hay pedidos aún.</p>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Orden</th>
+          <th>Cliente</th>
+          <th>Contacto</th>
+          <th>Envío</th>
+          <th>Productos</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(o => {
+          const st = STATUS_MAP[o.status] || { label: o.status, cls: 'badge-warning' };
+        %>
+        <tr>
+          <td><code style="font-size:.8rem"><%= o.id.slice(0,8).toUpperCase() %></code></td>
+          <td>
+            <strong><%= o.customerName %></strong>
+          </td>
+          <td>
+            <span class="muted" style="font-size:.85rem"><%= o.customerEmail %><br><%= o.customerPhone %></span>
+          </td>
+          <td>
+            <span class="muted" style="font-size:.85rem"><%= o.customerAddress %><br><%= o.customerCity %></span>
+          </td>
+          <td style="font-size:.85rem">
+            <% o.items.forEach(item => { %>
+              <div><%= item.qty %> × <%= item.name %></div>
+            <% }) %>
+          </td>
+          <td><strong>$<%= o.total.toLocaleString('es-CO') %></strong></td>
+          <td><span class="badge <%= st.cls %>"><%= st.label %></span></td>
+          <td class="muted" style="font-size:.82rem;white-space:nowrap"><%= new Date(o.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %></td>
+          <td>
+            <form method="post" action="/admin/pedidos/estado" style="display:flex;gap:4px;align-items:center">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <input type="hidden" name="id" value="<%= o.id %>" />
+              <select name="status" class="crm-select-inline">
+                <% Object.entries(STATUS_MAP).forEach(([val, info]) => { %>
+                  <option value="<%= val %>" <%= o.status === val ? 'selected' : '' %>><%= info.label %></option>
+                <% }) %>
+              </select>
+              <button class="btn btn-ghost btn-sm" type="submit">OK</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<%- include('../partials/admin-foot') %>
