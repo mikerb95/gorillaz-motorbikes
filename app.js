@@ -18,6 +18,7 @@ app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET || JWT_SECRET));
 app.use(csrfToken);
 app.use(jwtCart);
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/static',   express.static(path.join(__dirname, 'public')));
 app.use('/favicons', express.static(path.join(__dirname, 'favicons')));
 app.use('/images',   express.static(path.join(__dirname, 'images')));
