@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /club/panel
+Disallow: /carrito
+Disallow: /checkout
+
+Sitemap: https://gorillazmotorbikes.com/sitemap.xml
