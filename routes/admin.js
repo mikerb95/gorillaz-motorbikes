@@ -15,6 +15,7 @@ const {
   getEventAttendances, confirmEventAttendance,
   getAllAppointments, createAppointment, updateAppointment, deleteAppointment,
   addUserScore,
+  getAllOrders, countOrders, updateOrderStatus,
 } = require('../db');
 
 const router = express.Router();
