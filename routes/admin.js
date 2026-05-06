@@ -25,8 +25,12 @@ const { resendClient } = require('../config');
 const router = express.Router();
 
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
-  const [users, events, citas, pedidos] = await Promise.all([countUsers(), countEvents(), countAppointments(), countOrders()]);
-  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos } });
+  const [users, events, citas, pedidos, allSubs] = await Promise.all([
+    countUsers(), countEvents(), countAppointments(), countOrders(),
+    getAllNewsletterSubscribers(),
+  ]);
+  const suscriptores = allSubs.filter(s => s.confirmed).length;
+  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores } });
 });
 
 router.get('/pedidos', requireAuth, requireAdmin, async (req, res) => {
