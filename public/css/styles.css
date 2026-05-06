@@ -4528,11 +4528,12 @@ main.schedule-full {
   }
 
   .crm-menu-toggle {
-    display: flex
+    display: none
   }
 
   .crm-content {
-    padding: 16px
+    padding: 16px;
+    padding-bottom: 90px
   }
 
   .crm-kpi-row {
@@ -4541,6 +4542,121 @@ main.schedule-full {
 
   .crm-form-grid.cols-3 {
     grid-template-columns: 1fr 1fr
+  }
+
+  /* ── iOS body background ── */
+  .admin-body-root {
+    background: #F2F2F7
+  }
+
+  .crm-main {
+    background: #F2F2F7
+  }
+
+  /* ── KPI cards iOS style ── */
+  .crm-kpi-card {
+    border-radius: 18px;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07)
+  }
+
+  /* ── Quick links iOS 4-col grid ── */
+  .crm-quick-links {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px
+  }
+
+  .crm-quick-link {
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 4px;
+    border-radius: 22px;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    gap: 7px;
+    font-size: .63rem;
+    font-weight: 700;
+    color: #3a3a3c;
+    transition: transform .12s ease, box-shadow .12s ease, background .1s ease
+  }
+
+  .crm-quick-link.pressed {
+    transform: scale(0.91);
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    background: #e8e8ed
+  }
+
+  /* White icon container */
+  .crm-ql-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    transition: transform .12s ease
+  }
+
+  .crm-quick-link svg {
+    width: 24px;
+    height: 24px
+  }
+
+  /* ── iOS Tab Bar ── */
+  .crm-ios-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    z-index: 300;
+    background: rgba(249,249,249,.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(0,0,0,.1);
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0px)
+  }
+
+  .crm-ios-tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
+    text-decoration: none;
+    color: #8e8e93;
+    font-size: .6rem;
+    font-weight: 600;
+    transition: transform .12s ease;
+    -webkit-tap-highlight-color: transparent
+  }
+
+  .crm-ios-tab-item svg {
+    stroke: currentColor;
+    transition: stroke .15s
+  }
+
+  .crm-ios-tab-item.active {
+    color: #F25C05
+  }
+
+  .crm-ios-tab-item.pressed {
+    transform: scale(0.88)
+  }
+
+  .crm-topbar {
+    background: rgba(249,249,249,.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(0,0,0,.1)
   }
 }
 
