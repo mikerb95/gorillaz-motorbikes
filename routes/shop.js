@@ -4,8 +4,8 @@ const { v4: uuidv4 } = require('uuid');
 const crypto   = require('crypto');
 const catalog  = require('../data/catalog');
 const { getCart, recalc, saveCart } = require('../helpers/cart');
-const { BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL } = require('../config');
-const { createOrder, updateOrderStatus } = require('../db');
+const { BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL, resendClient } = require('../config');
+const { createOrder, updateOrderStatus, getOrderById } = require('../db');
 
 const BOLD_API_BASE = 'https://integrations.api.bold.co';
 
@@ -37,6 +37,88 @@ function verifyBoldSignature(orderId, status, amount, receivedHash) {
   const message = `${orderId}${amount}${status}`;
   const expected = crypto.createHmac('sha256', BOLD_SECRET_KEY).update(message).digest('hex');
   return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(receivedHash, 'hex'));
+}
+
+async function sendOrderConfirmationEmails(order) {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_dummy_key_to_prevent_crash_123') return;
+
+  const itemRows = order.items.map(i =>
+    `<tr>
+      <td style="padding:6px 8px;border-bottom:1px solid #eee">${i.name}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center">${i.qty}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right">$${i.unitPrice.toLocaleString('es-CO')}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right">$${i.total.toLocaleString('es-CO')}</td>
+    </tr>`
+  ).join('');
+
+  const clientHtml = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <h2 style="color:#F25C05">¡Gracias por tu compra, ${order.customerName}!</h2>
+      <p>Hemos recibido tu pedido y está siendo procesado. Aquí está el resumen:</p>
+      <p><strong>N° de orden:</strong> ${order.id}</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        <thead>
+          <tr style="background:#f5f5f5">
+            <th style="padding:8px;text-align:left">Producto</th>
+            <th style="padding:8px;text-align:center">Cant.</th>
+            <th style="padding:8px;text-align:right">Precio c/u</th>
+            <th style="padding:8px;text-align:right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" style="padding:8px;text-align:right"><strong>Total pagado</strong></td>
+            <td style="padding:8px;text-align:right"><strong>$${order.total.toLocaleString('es-CO')} COP</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+      <h3 style="margin-top:24px">Datos de envío</h3>
+      <p>
+        ${order.customerAddress}<br/>
+        ${order.customerCity}<br/>
+        Tel: ${order.customerPhone}
+      </p>
+      <p style="color:#888;font-size:13px">Si tienes dudas sobre tu pedido escríbenos por WhatsApp al <a href="https://wa.me/573213204299">321 320 4299</a>.</p>
+      <p style="color:#888;font-size:13px">— Equipo Gorillaz Motorbikes</p>
+    </div>`;
+
+  const storeHtml = `
+    <div style="font-family:sans-serif">
+      <h2>Nuevo pedido — ${order.id}</h2>
+      <p><strong>Cliente:</strong> ${order.customerName} &lt;${order.customerEmail}&gt; · ${order.customerPhone}</p>
+      <p><strong>Dirección:</strong> ${order.customerAddress}, ${order.customerCity}</p>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:#f5f5f5">
+          <th style="padding:6px 8px;text-align:left">Producto</th>
+          <th style="padding:6px 8px;text-align:center">Cant.</th>
+          <th style="padding:6px 8px;text-align:right">Total</th>
+        </tr></thead>
+        <tbody>${order.items.map(i => `<tr>
+          <td style="padding:6px 8px;border-bottom:1px solid #eee">${i.name}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center">${i.qty}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:right">$${i.total.toLocaleString('es-CO')}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <p><strong>Total:</strong> $${order.total.toLocaleString('es-CO')} COP</p>
+    </div>`;
+
+  const storeEmail = process.env.ORDERS_EMAIL || process.env.BOOKING_EMAIL || 'booking@gorillazmotorbikes.com';
+
+  await Promise.allSettled([
+    resendClient.emails.send({
+      from: 'tienda@gorillazmotorbikes.com',
+      to: order.customerEmail,
+      subject: `Confirmación de pedido #${order.id.slice(0, 8).toUpperCase()} — Gorillaz Motorbikes`,
+      html: clientHtml,
+    }),
+    resendClient.emails.send({
+      from: 'tienda@gorillazmotorbikes.com',
+      to: storeEmail,
+      subject: `Nuevo pedido de ${order.customerName} — $${order.total.toLocaleString('es-CO')} COP`,
+      html: storeHtml,
+    }),
+  ]);
 }
 
 const router = express.Router();
