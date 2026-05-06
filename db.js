@@ -391,6 +391,10 @@ async function createNewsletter(email) {
   });
 }
 
+async function deleteNewsletterByEmail(email) {
+  await db.execute({ sql: 'DELETE FROM newsletter WHERE email = ?', args: [email] });
+}
+
 // ── Enrollments ───────────────────────────────────────────────────────────
 
 async function createEnrollment(data) {

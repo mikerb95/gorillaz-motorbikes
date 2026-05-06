@@ -1,0 +1,45 @@
+<%- include('partials/head', { title: 'Desuscribirse del boletín — Gorillaz Motorbikes', user }) %>
+
+<main class="container section">
+  <div class="card" style="max-width:480px;margin:0 auto;text-align:center">
+
+    <% if (status === 'ok') { %>
+      <h1 class="section-title">Listo</h1>
+      <p>Tu correo <strong><%= email %></strong> ha sido eliminado de nuestro boletín.</p>
+      <p class="muted">Ya no recibirás nuestras novedades. Siempre puedes volver a suscribirte desde la página de inicio.</p>
+      <a class="btn btn-primary" href="/">Volver al inicio</a>
+
+    <% } else if (status === 'notfound') { %>
+      <h1 class="section-title">Correo no encontrado</h1>
+      <p>El correo <strong><%= email %></strong> no está suscrito a nuestro boletín.</p>
+      <a class="btn" href="/">Volver al inicio</a>
+
+    <% } else { %>
+      <h1 class="section-title">Desuscribirse del boletín</h1>
+      <p class="muted">Ingresa tu correo para dejar de recibir nuestras novedades.</p>
+
+      <% if (status === 'error') { %>
+        <p class="flash flash-error">Correo inválido. Verifica e inténtalo de nuevo.</p>
+      <% } %>
+
+      <form action="/newsletter/desuscribirse" method="post" style="margin-top:1.5rem">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+          <input
+            class="input"
+            type="email"
+            name="email"
+            placeholder="tu@correo.com"
+            value="<%= email || '' %>"
+            required
+            autocomplete="email"
+          />
+          <button class="btn btn-primary" type="submit">Desuscribirme</button>
+        </div>
+      </form>
+    <% } %>
+
+  </div>
+</main>
+
+<%- include('partials/footer') %>
