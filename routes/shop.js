@@ -333,7 +333,10 @@ router.get('/payment/return', (req, res) => {
       return res.status(400).render('payment/failed', { reason: 'No se pudo verificar el pago. Contacta soporte.' });
     }
     if (pending?.orderId) {
-      updateOrderStatus(pending.orderId, 'paid', boldId).catch(e => console.error('[Orders] updateOrderStatus paid:', e.message));
+      updateOrderStatus(pending.orderId, 'paid', boldId)
+        .then(() => getOrderById(pending.orderId))
+        .then(order => order && sendOrderConfirmationEmails(order))
+        .catch(e => console.error('[Orders] post-payment error:', e.message));
     }
     const empty = { items: {}, count: 0, subtotal: 0 };
     saveCart(res, empty);
