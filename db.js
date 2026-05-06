@@ -394,7 +394,7 @@ async function deleteEvent(id) {
 // ── Newsletter ────────────────────────────────────────────────────────────
 
 async function getNewsletterByEmail(email) {
-  const r = await db.execute({ sql: 'SELECT id, unsubscribe_token FROM newsletter WHERE email = ?', args: [email] });
+  const r = await db.execute({ sql: 'SELECT id, confirmed, unsubscribe_token, confirm_token FROM newsletter WHERE email = ?', args: [email] });
   return r.rows[0] || null;
 }
 
@@ -403,19 +403,34 @@ async function getNewsletterByToken(token) {
   return r.rows[0] || null;
 }
 
+async function getNewsletterByConfirmToken(token) {
+  const r = await db.execute({ sql: 'SELECT id, email FROM newsletter WHERE confirm_token = ?', args: [token] });
+  return r.rows[0] || null;
+}
+
+async function confirmNewsletterSubscription(id) {
+  await db.execute({ sql: 'UPDATE newsletter SET confirmed = 1, confirm_token = NULL WHERE id = ?', args: [id] });
+}
+
 async function getAllNewsletterSubscribers() {
-  const r = await db.execute({ sql: 'SELECT id, email, created_at FROM newsletter ORDER BY created_at DESC', args: [] });
+  const r = await db.execute({ sql: 'SELECT id, email, confirmed, created_at FROM newsletter ORDER BY created_at DESC', args: [] });
+  return r.rows;
+}
+
+async function getConfirmedNewsletterSubscribers() {
+  const r = await db.execute({ sql: 'SELECT email, unsubscribe_token FROM newsletter WHERE confirmed = 1', args: [] });
   return r.rows;
 }
 
 async function createNewsletter(email) {
-  const token = uuidv4();
+  const unsubToken   = uuidv4();
+  const confirmToken = uuidv4();
   await db.execute({
-    sql: 'INSERT OR IGNORE INTO newsletter (id, email, unsubscribe_token) VALUES (?,?,?)',
-    args: [uuidv4(), email, token],
+    sql: 'INSERT OR IGNORE INTO newsletter (id, email, unsubscribe_token, confirm_token, confirmed) VALUES (?,?,?,?,0)',
+    args: [uuidv4(), email, unsubToken, confirmToken],
   });
-  const r = await db.execute({ sql: 'SELECT unsubscribe_token FROM newsletter WHERE email = ?', args: [email] });
-  return r.rows[0]?.unsubscribe_token || token;
+  const r = await db.execute({ sql: 'SELECT unsubscribe_token, confirm_token FROM newsletter WHERE email = ?', args: [email] });
+  return r.rows[0] || { unsubscribe_token: unsubToken, confirm_token: confirmToken };
 }
 
 async function deleteNewsletterByToken(token) {
@@ -426,10 +441,22 @@ async function deleteNewsletterByEmail(email) {
   await db.execute({ sql: 'DELETE FROM newsletter WHERE email = ?', args: [email] });
 }
 
+async function createNewsletterCampaign(subject, bodyHtml, sentCount) {
+  await db.execute({
+    sql: 'INSERT INTO newsletter_campaigns (id, subject, body_html, sent_count) VALUES (?,?,?,?)',
+    args: [uuidv4(), subject, bodyHtml, sentCount],
+  });
+}
+
+async function getAllNewsletterCampaigns() {
+  const r = await db.execute({ sql: 'SELECT id, subject, sent_count, sent_at FROM newsletter_campaigns ORDER BY sent_at DESC', args: [] });
+  return r.rows;
+}
+
 async function ensureNewsletterTokens() {
   const r = await db.execute({ sql: 'SELECT id FROM newsletter WHERE unsubscribe_token IS NULL', args: [] });
   for (const row of r.rows) {
-    await db.execute({ sql: 'UPDATE newsletter SET unsubscribe_token = ? WHERE id = ?', args: [uuidv4(), row.id] });
+    await db.execute({ sql: 'UPDATE newsletter SET unsubscribe_token = ?, confirmed = 1 WHERE id = ?', args: [uuidv4(), row.id] });
   }
 }
 
@@ -630,8 +657,11 @@ module.exports = {
   getUpcomingEvents,
   registerEventAttendance, hasUserAttendedEvent, getEventAttendances,
   confirmEventAttendance, getUserEventRegistrations,
-  getNewsletterByEmail, getNewsletterByToken, getAllNewsletterSubscribers,
+  getNewsletterByEmail, getNewsletterByToken, getNewsletterByConfirmToken,
+  confirmNewsletterSubscription,
+  getAllNewsletterSubscribers, getConfirmedNewsletterSubscribers,
   createNewsletter, deleteNewsletterByToken, deleteNewsletterByEmail,
+  createNewsletterCampaign, getAllNewsletterCampaigns,
   createEnrollment,
   createJobApplication,
   createOrder, updateOrderStatus, getOrderById, getAllOrders, getOrdersByUser, countOrders,
