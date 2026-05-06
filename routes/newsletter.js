@@ -1,6 +1,6 @@
 'use strict';
 const express = require('express');
-const { getNewsletterByEmail, createNewsletter } = require('../db');
+const { getNewsletterByEmail, createNewsletter, deleteNewsletterByEmail } = require('../db');
 const { verifyRecaptcha } = require('../helpers/recaptcha');
 const { RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY } = require('../config');
 
@@ -25,6 +25,25 @@ router.post('/newsletter', async (req, res) => {
   if (!exist) await createNewsletter(email);
   if (wantsJSON) return res.json({ status: 'ok' });
   res.redirect('/?flash=ok');
+});
+
+router.get('/newsletter/desuscribirse', (req, res) => {
+  const email = (req.query.email || '').toString().trim().toLowerCase();
+  res.render('newsletter-unsubscribe', { title: 'Desuscribirse del boletín', status: null, email });
+});
+
+router.post('/newsletter/desuscribirse', async (req, res) => {
+  const email   = (req.body.email || '').toString().trim().toLowerCase();
+  const isValid = /.+@.+\..+/.test(email);
+  if (!isValid) {
+    return res.render('newsletter-unsubscribe', { title: 'Desuscribirse del boletín', status: 'error', email });
+  }
+  const exist = await getNewsletterByEmail(email);
+  if (!exist) {
+    return res.render('newsletter-unsubscribe', { title: 'Desuscribirse del boletín', status: 'notfound', email });
+  }
+  await deleteNewsletterByEmail(email);
+  res.render('newsletter-unsubscribe', { title: 'Desuscribirse del boletín', status: 'ok', email });
 });
 
 module.exports = router;
