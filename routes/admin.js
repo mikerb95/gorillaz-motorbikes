@@ -284,4 +284,47 @@ router.post('/tienda/delete-image', requireAuth, requireAdmin, (req, res) => {
 
 router.get('/clases', requireAuth, requireAdmin, (req, res) => res.render('admin/classes', { classesData }));
 
+// ── Newsletter ────────────────────────────────────────────────────────────
+
+router.get('/newsletter', requireAuth, requireAdmin, async (req, res) => {
+  const [subscribers, campaigns] = await Promise.all([
+    getAllNewsletterSubscribers(),
+    getAllNewsletterCampaigns(),
+  ]);
+  const flash = req.query.flash || null;
+  res.render('admin/newsletter', { subscribers, campaigns, flash });
+});
+
+router.post('/newsletter/eliminar', requireAuth, requireAdmin, async (req, res) => {
+  await deleteNewsletterByEmail(req.body.email);
+  res.redirect('/admin/newsletter');
+});
+
+router.post('/newsletter/enviar', requireAuth, requireAdmin, async (req, res) => {
+  const subject  = (req.body.subject || '').toString().trim();
+  const bodyHtml = (req.body.body || '').toString().trim();
+  if (!subject || !bodyHtml) return res.redirect('/admin/newsletter?flash=error');
+
+  const subscribers = await getConfirmedNewsletterSubscribers();
+  if (!subscribers.length) return res.redirect('/admin/newsletter?flash=empty');
+
+  const BASE_URL = process.env.BASE_URL || 'https://gorillazmotorbikes.com';
+  const FROM = 'boletin@gorillazmotorbikes.com';
+
+  await Promise.allSettled(
+    subscribers.map(s => {
+      const unsubLink = `${BASE_URL}/newsletter/desuscribirse?token=${s.unsubscribe_token}`;
+      return resendClient.emails.send({
+        from: FROM,
+        to: s.email,
+        subject,
+        html: `${bodyHtml}<br><br><hr style="border:none;border-top:1px solid #eee;margin:24px 0"><p style="font-size:12px;color:#999">¿No quieres recibir más correos? <a href="${unsubLink}">Desuscríbete aquí</a></p>`,
+      });
+    })
+  );
+
+  await createNewsletterCampaign(subject, bodyHtml, subscribers.length);
+  res.redirect('/admin/newsletter?flash=sent');
+});
+
 module.exports = router;
