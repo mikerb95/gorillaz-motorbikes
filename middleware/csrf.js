@@ -12,8 +12,11 @@ const csrfToken = (req, res, next) => {
   next();
 };
 
+const CSRF_EXEMPT_PATHS = ['/payment/webhook'];
+
 const validateCsrf = (req, res, next) => {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  if (CSRF_EXEMPT_PATHS.includes(req.path)) return next();
   const token      = req.body._csrf || req.headers['x-csrf-token'];
   const cookieToken = req.cookies._csrf;
   if (!token || token !== cookieToken) {

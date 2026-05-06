@@ -71,7 +71,17 @@ async function initDb() {
     `CREATE TABLE IF NOT EXISTS newsletter (
       id TEXT PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
+      confirmed INTEGER NOT NULL DEFAULT 0,
+      confirm_token TEXT,
+      unsubscribe_token TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS newsletter_campaigns (
+      id TEXT PRIMARY KEY,
+      subject TEXT NOT NULL,
+      body_html TEXT NOT NULL,
+      sent_count INTEGER NOT NULL DEFAULT 0,
+      sent_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
     `CREATE TABLE IF NOT EXISTS enrollments (
       id TEXT PRIMARY KEY,
