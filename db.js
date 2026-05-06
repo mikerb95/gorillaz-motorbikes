@@ -592,7 +592,7 @@ module.exports = {
   getUpcomingEvents,
   registerEventAttendance, hasUserAttendedEvent, getEventAttendances,
   confirmEventAttendance, getUserEventRegistrations,
-  getNewsletterByEmail, createNewsletter,
+  getNewsletterByEmail, createNewsletter, deleteNewsletterByEmail,
   createEnrollment,
   createJobApplication,
   createOrder, updateOrderStatus, getOrderById, getAllOrders, getOrdersByUser, countOrders,
