@@ -359,4 +359,41 @@ router.get('/payment/return', (req, res) => {
   return res.render('payment/failed', { reason: 'El pago fue rechazado o cancelado. Tu carrito sigue guardado.' });
 });
 
+// Webhook server-to-server de Bold — no requiere CSRF ni redirect del browser
+router.post('/payment/webhook', async (req, res) => {
+  const { order_id, status, amount, signature } = req.body || {};
+
+  if (!order_id || !status) {
+    return res.status(400).json({ ok: false, message: 'Payload inválido' });
+  }
+
+  const normalizedStatus = (status || '').toUpperCase();
+  const totalAmount = amount?.total_amount ?? amount ?? 0;
+
+  if (signature && !verifyBoldSignature(order_id, normalizedStatus, totalAmount, signature)) {
+    console.warn('[Bold Webhook] Firma inválida para orden', order_id);
+    return res.status(401).json({ ok: false, message: 'Firma inválida' });
+  }
+
+  try {
+    let newStatus;
+    if (normalizedStatus === 'APPROVED')       newStatus = 'paid';
+    else if (normalizedStatus === 'PENDING')   newStatus = 'pending_confirmation';
+    else                                        newStatus = 'failed';
+
+    await updateOrderStatus(order_id, newStatus, order_id);
+
+    if (newStatus === 'paid') {
+      const order = await getOrderById(order_id);
+      if (order) sendOrderConfirmationEmails(order).catch(e => console.error('[Bold Webhook] email error:', e.message));
+    }
+
+    console.log(`[Bold Webhook] Orden ${order_id} → ${newStatus}`);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[Bold Webhook] Error:', err.message);
+    return res.status(500).json({ ok: false, message: 'Error interno' });
+  }
+});
+
 module.exports = router;
