@@ -125,6 +125,7 @@ async function initDb() {
     try { await db.execute(sql); } catch { /* column already exists */ }
   }
 
+  await ensureNewsletterTokens();
   console.log('✅ Turso schema inicializado');
 }
 
@@ -381,19 +382,43 @@ async function deleteEvent(id) {
 // ── Newsletter ────────────────────────────────────────────────────────────
 
 async function getNewsletterByEmail(email) {
-  const r = await db.execute({ sql: 'SELECT id FROM newsletter WHERE email = ?', args: [email] });
+  const r = await db.execute({ sql: 'SELECT id, unsubscribe_token FROM newsletter WHERE email = ?', args: [email] });
   return r.rows[0] || null;
 }
 
+async function getNewsletterByToken(token) {
+  const r = await db.execute({ sql: 'SELECT id, email FROM newsletter WHERE unsubscribe_token = ?', args: [token] });
+  return r.rows[0] || null;
+}
+
+async function getAllNewsletterSubscribers() {
+  const r = await db.execute({ sql: 'SELECT id, email, created_at FROM newsletter ORDER BY created_at DESC', args: [] });
+  return r.rows;
+}
+
 async function createNewsletter(email) {
+  const token = uuidv4();
   await db.execute({
-    sql: 'INSERT OR IGNORE INTO newsletter (id, email) VALUES (?,?)',
-    args: [uuidv4(), email],
+    sql: 'INSERT OR IGNORE INTO newsletter (id, email, unsubscribe_token) VALUES (?,?,?)',
+    args: [uuidv4(), email, token],
   });
+  const r = await db.execute({ sql: 'SELECT unsubscribe_token FROM newsletter WHERE email = ?', args: [email] });
+  return r.rows[0]?.unsubscribe_token || token;
+}
+
+async function deleteNewsletterByToken(token) {
+  await db.execute({ sql: 'DELETE FROM newsletter WHERE unsubscribe_token = ?', args: [token] });
 }
 
 async function deleteNewsletterByEmail(email) {
   await db.execute({ sql: 'DELETE FROM newsletter WHERE email = ?', args: [email] });
+}
+
+async function ensureNewsletterTokens() {
+  const r = await db.execute({ sql: 'SELECT id FROM newsletter WHERE unsubscribe_token IS NULL', args: [] });
+  for (const row of r.rows) {
+    await db.execute({ sql: 'UPDATE newsletter SET unsubscribe_token = ? WHERE id = ?', args: [uuidv4(), row.id] });
+  }
 }
 
 // ── Enrollments ───────────────────────────────────────────────────────────
