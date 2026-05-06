@@ -16,7 +16,11 @@ const {
   getAllAppointments, createAppointment, updateAppointment, deleteAppointment,
   addUserScore,
   getAllOrders, countOrders, updateOrderStatus,
+  getAllNewsletterSubscribers, getConfirmedNewsletterSubscribers,
+  deleteNewsletterByEmail,
+  createNewsletterCampaign, getAllNewsletterCampaigns,
 } = require('../db');
+const { resendClient } = require('../config');
 
 const router = express.Router();
 

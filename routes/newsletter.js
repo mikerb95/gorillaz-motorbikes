@@ -1,15 +1,18 @@
 'use strict';
 const express = require('express');
 const {
-  getNewsletterByEmail, getNewsletterByToken,
+  getNewsletterByEmail, getNewsletterByToken, getNewsletterByConfirmToken,
+  confirmNewsletterSubscription,
   createNewsletter, deleteNewsletterByToken, deleteNewsletterByEmail,
 } = require('../db');
 const { verifyRecaptcha } = require('../helpers/recaptcha');
-const { RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY } = require('../config');
+const { RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, resendClient } = require('../config');
 
-const router = express.Router();
+const FROM = 'boletin@gorillazmotorbikes.com';
+const BASE_URL = process.env.BASE_URL || 'https://gorillazmotorbikes.com';
 
 router.post('/newsletter', async (req, res) => {
+  const express_router = req.app;
   const email     = (req.body.email || '').toString().trim().toLowerCase();
   const isValid   = /.+@.+\..+/.test(email);
   const wantsJSON = (req.headers['x-requested-with'] === 'fetch') || ((req.headers.accept || '').includes('application/json'));
@@ -25,9 +28,27 @@ router.post('/newsletter', async (req, res) => {
     }
   }
   const exist = await getNewsletterByEmail(email);
-  if (!exist) await createNewsletter(email);
+  if (!exist) {
+    const tokens = await createNewsletter(email);
+    const confirmLink = `${BASE_URL}/newsletter/confirmar?token=${tokens.confirm_token}`;
+    resendClient.emails.send({
+      from: FROM,
+      to: email,
+      subject: 'Confirma tu suscripción al boletín — Gorillaz Motorbikes',
+      html: `<p>Hola,</p><p>Gracias por suscribirte al boletín de <strong>Gorillaz Motorbikes</strong>.</p><p>Para completar tu suscripción, haz clic en el siguiente enlace:</p><p><a href="${confirmLink}">Confirmar suscripción</a></p><p>Si no solicitaste esta suscripción, ignora este mensaje.</p>`,
+    }).catch(e => console.error('Resend error (newsletter confirm):', e.message));
+  }
   if (wantsJSON) return res.json({ status: 'ok' });
   res.redirect('/?flash=ok');
+});
+
+router.get('/newsletter/confirmar', async (req, res) => {
+  const token = (req.query.token || '').toString().trim();
+  if (!token) return res.redirect('/');
+  const record = await getNewsletterByConfirmToken(token);
+  if (!record) return res.render('newsletter-confirm', { status: 'invalid' });
+  await confirmNewsletterSubscription(record.id);
+  res.render('newsletter-confirm', { status: 'ok', email: record.email });
 });
 
 // Token-based unsubscribe (link desde email)
