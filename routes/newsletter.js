@@ -11,8 +11,9 @@ const { RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, resendClient } = require('../c
 const FROM = 'boletin@gorillazmotorbikes.com';
 const BASE_URL = process.env.BASE_URL || 'https://gorillazmotorbikes.com';
 
+const router = express.Router();
+
 router.post('/newsletter', async (req, res) => {
-  const express_router = req.app;
   const email     = (req.body.email || '').toString().trim().toLowerCase();
   const isValid   = /.+@.+\..+/.test(email);
   const wantsJSON = (req.headers['x-requested-with'] === 'fetch') || ((req.headers.accept || '').includes('application/json'));
