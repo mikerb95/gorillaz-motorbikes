@@ -4443,6 +4443,11 @@ main.schedule-full {
   border-color: #F25C05
 }
 
+/* ── Users mobile card list (hidden on desktop) ── */
+.crm-user-cards {
+  display: none
+}
+
 /* ── Quick links grid ── */
 .crm-quick-links {
   display: grid;
