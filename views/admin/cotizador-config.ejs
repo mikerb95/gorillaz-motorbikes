@@ -1,0 +1,137 @@
+<%- include('../partials/admin-head', { title: 'Config Liquidador' }) %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Configuración del Liquidador</h1>
+</div>
+
+<% if (flash === 'saved') { %>
+  <div class="alert" style="background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-weight:700">
+    ✓ Configuración guardada correctamente.
+  </div>
+<% } %>
+
+<div style="display:grid;gap:20px;max-width:720px">
+
+  <!-- Mensaje WhatsApp -->
+  <div class="crm-card" style="padding:24px">
+    <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">Mensaje de WhatsApp</h2>
+    <p class="muted" style="font-size:13px;margin:0 0 20px">
+      Personaliza el texto que se envía al cliente cuando se usa la opción de WhatsApp en el liquidador.
+      El mensaje siempre incluirá la lista de ítems y el total de forma automática.
+    </p>
+
+    <form method="post" action="/admin/cotizador-config">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <div style="display:grid;gap:14px">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Encabezado del mensaje
+          </label>
+          <input
+            type="text"
+            name="waHeader"
+            value="<%= config.waHeader %>"
+            placeholder="🏍️ *Cotización Gorillaz Motorbikes*"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none"
+          />
+          <p class="muted" style="font-size:12px;margin:4px 0 0">Puedes usar *asteriscos* para negrita en WhatsApp.</p>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Prefijo de cada ítem
+          </label>
+          <input
+            type="text"
+            name="waItemPrefix"
+            value="<%= config.waItemPrefix %>"
+            placeholder="•"
+            maxlength="4"
+            style="width:80px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none"
+          />
+          <p class="muted" style="font-size:12px;margin:4px 0 0">Símbolo que aparece antes de cada producto/servicio en la lista.</p>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Nota adicional (opcional)
+          </label>
+          <textarea
+            name="waNote"
+            placeholder="Ej: Válida por 30 días. Para más información escríbenos."
+            rows="2"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;resize:vertical"
+          ><%= config.waNote %></textarea>
+          <p class="muted" style="font-size:12px;margin:4px 0 0">Se incluye después del total, antes del pie de mensaje.</p>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Pie del mensaje
+          </label>
+          <input
+            type="text"
+            name="waFooter"
+            value="<%= config.waFooter %>"
+            placeholder="gorillazmotorbikes.com"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none"
+          />
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div style="margin-top:20px;padding:14px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px">
+        <div style="font-size:11px;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Vista previa del mensaje</div>
+        <pre id="waPreview" style="font-size:12px;font-family:monospace;white-space:pre-wrap;color:#374151;margin:0;line-height:1.6"></pre>
+      </div>
+
+      <div style="margin-top:20px">
+        <button class="btn btn-primary" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const fields = {
+    header:     document.querySelector('[name=waHeader]'),
+    itemPrefix: document.querySelector('[name=waItemPrefix]'),
+    note:       document.querySelector('[name=waNote]'),
+    footer:     document.querySelector('[name=waFooter]'),
+  };
+  const preview = document.getElementById('waPreview');
+  const EXAMPLE_ITEMS = [
+    { name: 'Mecánica general', qty: 1, price: 80000 },
+    { name: 'Cambio de aceite',  qty: 2, price: 40000 },
+  ];
+
+  function fmt(n) { return 'COP ' + Number(n).toLocaleString('es-CO'); }
+
+  function update() {
+    const header = fields.header.value || '🏍️ *Cotización Gorillaz Motorbikes*';
+    const prefix = fields.itemPrefix.value || '•';
+    const note   = fields.note.value.trim();
+    const footer = fields.footer.value || 'gorillazmotorbikes.com';
+    const total  = EXAMPLE_ITEMS.reduce((s, it) => s + it.price * it.qty, 0);
+    const lines  = [
+      header,
+      'N° 0001',
+      '',
+      ...EXAMPLE_ITEMS.map(it => `${prefix} ${it.name} ×${it.qty} — ${fmt(it.price * it.qty)}`),
+      '',
+      `*Total: ${fmt(total)}*`,
+    ];
+    if (note) { lines.push(''); lines.push(note); }
+    lines.push(''); lines.push(footer);
+    preview.textContent = lines.join('\n');
+  }
+
+  Object.values(fields).forEach(el => el && el.addEventListener('input', update));
+  update();
+})();
+</script>
+
+<%- include('../partials/admin-foot') %>

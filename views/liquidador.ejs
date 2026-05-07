@@ -1,4 +1,7 @@
 <%- include('partials/head', { title, description, canonicalPath }) %>
+<script>
+  window.__WA_CONFIG__ = <%- JSON.stringify(waConfig) %>;
+</script>
 
 <style>
 /* ── Liquidador ─────────────────────────────────────────────── */
@@ -677,6 +680,21 @@
           </svg>
           Cotización #<span id="liqConsecNum">—</span>
         </div>
+      </div>
+
+      <!-- Moto / Placa -->
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+          Moto / Placa <span style="font-weight:400;color:#9ca3af">(opcional)</span>
+        </label>
+        <input
+          id="motoField"
+          type="text"
+          placeholder="Ej: Honda CB190R — ABC123"
+          style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:#fafafa;box-sizing:border-box"
+          maxlength="80"
+          aria-label="Moto o placa del cliente"
+        />
       </div>
 
       <!-- WhatsApp -->
