@@ -2,6 +2,7 @@
 const path   = require('path');
 const fs     = require('fs');
 const multer = require('multer');
+const { put, del } = require('@vercel/blob');
 
 const saveJSON = (file, data) => {
   try { fs.writeFileSync(path.join(__dirname, '..', 'data', file), JSON.stringify(data, null, 2), 'utf8'); } catch { }
@@ -14,20 +15,9 @@ const writeCatalog = (obj) => {
   } catch { }
 };
 
-const productStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, '..', 'images', 'products');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, Date.now() + '-' + Math.round(Math.random() * 1e6) + ext);
-  },
-});
-
-const uploadProduct = multer({
-  storage: productStorage,
+// Files stay in memory — no disk writes needed
+const _multerMemory = multer({
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = /\.(jpg|jpeg|png|webp|avif)$/i;
@@ -35,4 +25,33 @@ const uploadProduct = multer({
   },
 }).array('images', 5);
 
-module.exports = { saveJSON, writeCatalog, uploadProduct };
+async function uploadToBlob(buffer, originalName, mimetype) {
+  const ext      = path.extname(originalName).toLowerCase();
+  const filename = `products/${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+  const blob     = await put(filename, buffer, { access: 'public', contentType: mimetype });
+  return blob.url;
+}
+
+async function deleteFromBlob(url) {
+  // Skip legacy local URLs (old products uploaded before this migration)
+  if (!url || url.startsWith('/images/')) return;
+  try { await del(url); } catch { }
+}
+
+// Drop-in middleware: parses multipart form, uploads files to Blob,
+// then sets req.blobUrls with the resulting public URLs.
+const uploadProduct = (req, res, next) => {
+  _multerMemory(req, res, async (err) => {
+    if (err) return next(err);
+    try {
+      req.blobUrls = await Promise.all(
+        (req.files || []).map(f => uploadToBlob(f.buffer, f.originalname, f.mimetype))
+      );
+      next();
+    } catch (e) {
+      next(e);
+    }
+  });
+};
+
+module.exports = { saveJSON, writeCatalog, uploadProduct, uploadToBlob, deleteFromBlob };

@@ -182,44 +182,52 @@ router.get('/panel', requireAuth, async (req, res) => {
 });
 
 router.post('/visitas', requireAuth, async (req, res) => {
-  const user = await getUserById(req.userId);
-  const { date, service, type } = req.body;
-  if (date && service) {
-    const visitType = type || 'visita';
-    const pts       = SCORE_POINTS[visitType] || SCORE_POINTS.visita;
-    await updateUser(user.id, { visits: [{ date, service, type: visitType }, ...(user.visits || [])] });
-    await addUserScore(user.id, pts, visitType, service);
-  }
+  try {
+    const user = await getUserById(req.userId);
+    const { date, service, type } = req.body;
+    if (date && service && user) {
+      const visitType = type || 'visita';
+      const pts       = SCORE_POINTS[visitType] || SCORE_POINTS.visita;
+      await updateUser(user.id, { visits: [{ date, service, type: visitType }, ...(user.visits || [])] });
+      await addUserScore(user.id, pts, visitType, service);
+    }
+  } catch (e) { console.error('POST /club/visitas error:', e.message); }
   res.redirect('/club/panel');
 });
 
 router.post('/vehiculos', requireAuth, async (req, res) => {
-  const user = await getUserById(req.userId);
-  const { plate, soatExpires, tecnoExpires } = req.body;
-  if (plate) {
-    const plateUp  = plate.trim().toUpperCase();
-    const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
-    const vehicles = [...(user.vehicles || []), { plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload }];
-    await updateUser(user.id, { vehicles });
-  }
+  try {
+    const user = await getUserById(req.userId);
+    const { plate, soatExpires, tecnoExpires } = req.body;
+    if (plate && user) {
+      const plateUp   = plate.trim().toUpperCase();
+      const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
+      const vehicles  = [...(user.vehicles || []), { plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload }];
+      await updateUser(user.id, { vehicles });
+    }
+  } catch (e) { console.error('POST /club/vehiculos error:', e.message); }
   res.redirect('/club/panel');
 });
 
 router.post('/vehiculos/eliminar', requireAuth, async (req, res) => {
-  const user     = await getUserById(req.userId);
-  const vehicles = (user.vehicles || []).filter(v => v.plate !== req.body.plate);
-  await updateUser(user.id, { vehicles });
+  try {
+    const user     = await getUserById(req.userId);
+    const vehicles = (user.vehicles || []).filter(v => v.plate !== req.body.plate);
+    await updateUser(user.id, { vehicles });
+  } catch (e) { console.error('POST /club/vehiculos/eliminar error:', e.message); }
   res.redirect('/club/panel');
 });
 
 router.post('/vehiculos/actualizar', requireAuth, async (req, res) => {
-  const user = await getUserById(req.userId);
-  const { plate, soatExpires, tecnoExpires } = req.body;
-  const vehicles = (user.vehicles || []).map(v => {
-    if (v.plate !== (plate || '').toUpperCase()) return v;
-    return { ...v, soatExpires: soatExpires ?? v.soatExpires, tecnoExpires: tecnoExpires ?? v.tecnoExpires, qr: v.qr || JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id }) };
-  });
-  await updateUser(user.id, { vehicles });
+  try {
+    const user = await getUserById(req.userId);
+    const { plate, soatExpires, tecnoExpires } = req.body;
+    const vehicles = (user.vehicles || []).map(v => {
+      if (v.plate !== (plate || '').toUpperCase()) return v;
+      return { ...v, soatExpires: soatExpires ?? v.soatExpires, tecnoExpires: tecnoExpires ?? v.tecnoExpires, qr: v.qr || JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id }) };
+    });
+    await updateUser(user.id, { vehicles });
+  } catch (e) { console.error('POST /club/vehiculos/actualizar error:', e.message); }
   res.redirect('/club/panel');
 });
 
