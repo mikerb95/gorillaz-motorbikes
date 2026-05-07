@@ -35,6 +35,7 @@ async function initDb() {
       emergency_phone TEXT,
       reset_token TEXT,
       reset_token_expiry INTEGER,
+      deleted_at TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
     `CREATE TABLE IF NOT EXISTS appointments (
@@ -61,6 +62,17 @@ async function initDb() {
       category TEXT NOT NULL DEFAULT 'club',
       lat TEXT,
       lng TEXT,
+      deleted_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS admin_audit_log (
+      id TEXT PRIMARY KEY,
+      admin_id TEXT NOT NULL,
+      admin_name TEXT NOT NULL,
+      action TEXT NOT NULL,
+      target_type TEXT NOT NULL,
+      target_id TEXT,
+      details TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
     `CREATE TABLE IF NOT EXISTS event_attendances (
@@ -141,10 +153,12 @@ async function initDb() {
   const migrations = [
     `ALTER TABLE users ADD COLUMN score INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE users ADD COLUMN score_history TEXT NOT NULL DEFAULT '[]'`,
+    `ALTER TABLE users ADD COLUMN deleted_at TEXT`,
     `ALTER TABLE events ADD COLUMN type TEXT NOT NULL DEFAULT 'evento'`,
     `ALTER TABLE events ADD COLUMN category TEXT NOT NULL DEFAULT 'club'`,
     `ALTER TABLE events ADD COLUMN lat TEXT`,
     `ALTER TABLE events ADD COLUMN lng TEXT`,
+    `ALTER TABLE events ADD COLUMN deleted_at TEXT`,
     `ALTER TABLE newsletter ADD COLUMN unsubscribe_token TEXT`,
     `ALTER TABLE newsletter ADD COLUMN confirmed INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE newsletter ADD COLUMN confirm_token TEXT`,
@@ -239,35 +253,35 @@ function rowToAppointment(row) {
 // ── Users ─────────────────────────────────────────────────────────────────
 
 async function getUserById(id) {
-  const r = await db.execute({ sql: 'SELECT * FROM users WHERE id = ?', args: [id] });
+  const r = await db.execute({ sql: 'SELECT * FROM users WHERE id = ? AND deleted_at IS NULL', args: [id] });
   return rowToUser(r.rows[0] || null);
 }
 
 async function getUserByEmail(email) {
-  const r = await db.execute({ sql: 'SELECT * FROM users WHERE email = ?', args: [email] });
+  const r = await db.execute({ sql: 'SELECT * FROM users WHERE email = ? AND deleted_at IS NULL', args: [email] });
   return rowToUser(r.rows[0] || null);
 }
 
 async function getUserByCedula(cedula) {
-  const r = await db.execute({ sql: 'SELECT * FROM users WHERE cedula = ?', args: [cedula] });
+  const r = await db.execute({ sql: 'SELECT * FROM users WHERE cedula = ? AND deleted_at IS NULL', args: [cedula] });
   return rowToUser(r.rows[0] || null);
 }
 
 async function getUserByResetToken(token) {
   const r = await db.execute({
-    sql: 'SELECT * FROM users WHERE reset_token = ? AND reset_token_expiry > ?',
+    sql: 'SELECT * FROM users WHERE reset_token = ? AND reset_token_expiry > ? AND deleted_at IS NULL',
     args: [token, Date.now()],
   });
   return rowToUser(r.rows[0] || null);
 }
 
 async function getAllUsers() {
-  const r = await db.execute('SELECT * FROM users ORDER BY created_at DESC');
+  const r = await db.execute('SELECT * FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC');
   return r.rows.map(rowToUser);
 }
 
 async function countUsers() {
-  const r = await db.execute('SELECT COUNT(*) as n FROM users');
+  const r = await db.execute('SELECT COUNT(*) as n FROM users WHERE deleted_at IS NULL');
   return Number(r.rows[0].n);
 }
 
@@ -321,7 +335,7 @@ async function updateUser(id, fields) {
 }
 
 async function deleteUser(id) {
-  await db.execute({ sql: 'DELETE FROM users WHERE id = ?', args: [id] });
+  await db.execute({ sql: `UPDATE users SET deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?`, args: [id] });
 }
 
 // ── Appointments ──────────────────────────────────────────────────────────
