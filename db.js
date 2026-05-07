@@ -744,6 +744,32 @@ async function countQuotations() {
   return Number(r.rows[0].n);
 }
 
+// ── Admin Audit Log ───────────────────────────────────────────────────────
+
+async function logAdminAction(adminId, adminName, action, targetType, targetId, details) {
+  await db.execute({
+    sql: 'INSERT INTO admin_audit_log (id, admin_id, admin_name, action, target_type, target_id, details) VALUES (?,?,?,?,?,?,?)',
+    args: [uuidv4(), adminId, adminName, action, targetType, targetId || null, details ? JSON.stringify(details) : null],
+  });
+}
+
+async function getAdminAuditLog(limit = 100) {
+  const r = await db.execute({
+    sql: 'SELECT * FROM admin_audit_log ORDER BY created_at DESC LIMIT ?',
+    args: [limit],
+  });
+  return r.rows.map(row => ({
+    id: row.id,
+    adminId: row.admin_id,
+    adminName: row.admin_name,
+    action: row.action,
+    targetType: row.target_type,
+    targetId: row.target_id,
+    details: safeJson(row.details, null),
+    createdAt: row.created_at,
+  }));
+}
+
 // ── Exports ───────────────────────────────────────────────────────────────
 
 module.exports = {
