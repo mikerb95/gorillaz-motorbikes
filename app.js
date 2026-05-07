@@ -28,6 +28,7 @@ app.use(templateLocals);
 app.use(validateCsrf);
 
 app.use('/',       require('./routes/home'));
+app.use('/',       require('./routes/liquidador'));
 app.use('/',       require('./routes/services'));
 app.use('/',       require('./routes/shop'));
 app.use('/',       require('./routes/courses'));
