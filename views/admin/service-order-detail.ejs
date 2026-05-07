@@ -1,0 +1,161 @@
+<%- include('../partials/admin-head', { title: 'Orden ' + order.label }) %>
+
+<%
+const STATUS_OPTS = [
+  { v: 'pendiente',  l: 'Pendiente'  },
+  { v: 'en_proceso', l: 'En proceso' },
+  { v: 'completado', l: 'Completado' },
+];
+const STATUS_CLS = { pendiente:'badge-warning', en_proceso:'badge-info', completado:'badge-success', facturado:'badge-success' };
+%>
+
+<div class="crm-page-header" style="flex-wrap:wrap;gap:10px">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a class="btn btn-ghost btn-sm" href="/admin/ordenes-servicio">← Órdenes</a>
+    <h1 class="crm-page-title" style="margin:0">Orden <span style="color:var(--brand)"><%= order.label %></span></h1>
+    <span class="badge <%= STATUS_CLS[order.status] || 'badge-warning' %>" style="font-size:.85rem"><%= order.status.replace('_',' ') %></span>
+  </div>
+  <% if (order.quotationId) { %>
+    <a class="btn btn-ghost btn-sm" href="/admin/cotizaciones/<%= order.quotationId %>">Ver cotización origen →</a>
+  <% } %>
+</div>
+
+<div style="display:grid;gap:16px;max-width:920px">
+
+  <!-- Info general -->
+  <div class="crm-card" style="padding:20px 24px">
+    <h2 style="font-size:13px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px">Información</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Creada</div>
+        <div style="font-weight:700;font-size:13px"><%= new Date(order.createdAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) %></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Moto / Placa</div>
+        <div style="font-weight:800;font-size:14px"><%= order.motorcycle || '—' %></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Cliente (WA)</div>
+        <% if (order.clientPhone) { %>
+          <div style="font-weight:700;font-size:13px"><%= order.clientPhoneCountry %> <%= order.clientPhone %></div>
+          <a href="https://wa.me/<%= (order.clientPhoneCountry||'+57').replace('+','') %><%= order.clientPhone %>" target="_blank" rel="noopener" style="font-size:12px;color:#25D366;font-weight:700">Abrir →</a>
+        <% } else { %><div class="muted" style="font-size:13px">—</div><% } %>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Mecánico</div>
+        <div style="font-weight:700;font-size:13px"><%= order.mechanic || '—' %></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Entrega estimada</div>
+        <div style="font-weight:700;font-size:13px"><%= order.estimatedDate || '—' %></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Total</div>
+        <div style="font-weight:900;font-size:18px;color:var(--brand)">$<%= order.total.toLocaleString('es-CO') %></div>
+      </div>
+    </div>
+    <% if (order.notes) { %>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6">
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Notas</div>
+        <div style="font-size:13px;color:#374151"><%= order.notes %></div>
+      </div>
+    <% } %>
+    <% if (invoice) { %>
+      <div style="margin-top:14px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <span style="font-size:13px;font-weight:700;color:#166534">Factura generada: <strong><%= invoice.label %></strong></span>
+        <a class="btn btn-ghost btn-sm" href="/admin/facturas/<%= invoice.id %>">Ver factura →</a>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Ítems -->
+  <div class="crm-card" style="padding:20px 24px">
+    <h2 style="font-size:13px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Ítems (<%= order.items.length %>)</h2>
+    <div class="crm-table-wrap">
+      <table class="crm-table">
+        <thead><tr><th>Ítem</th><th>Tipo</th><th style="text-align:center">Cant.</th><th style="text-align:right">Precio unit.</th><th style="text-align:right">Subtotal</th></tr></thead>
+        <tbody>
+          <% order.items.forEach(it => { %>
+          <tr>
+            <td style="font-weight:700"><%= it.name %></td>
+            <td><span class="badge <%= it.type==='service'?'badge-warning':'badge-success' %>" style="font-size:.75rem"><%= it.type==='service'?'Servicio':it.type==='product'?'Producto':'Custom' %></span></td>
+            <td style="text-align:center;font-weight:700"><%= it.qty %></td>
+            <td style="text-align:right">$<%= Number(it.price).toLocaleString('es-CO') %></td>
+            <td style="text-align:right;font-weight:800;color:var(--brand)">$<%= (it.price*it.qty).toLocaleString('es-CO') %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+        <tfoot>
+          <tr><td colspan="4" style="text-align:right;font-weight:800;padding:12px 10px;font-size:13px">TOTAL</td>
+          <td style="text-align:right;font-weight:900;font-size:17px;color:var(--brand);padding:12px 10px">$<%= order.total.toLocaleString('es-CO') %></td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Actualizar estado -->
+  <% if (order.status !== 'facturado') { %>
+  <div class="crm-card" style="padding:20px 24px">
+    <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Actualizar orden</h2>
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/actualizar">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Estado</label>
+          <select name="status" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none">
+            <% STATUS_OPTS.forEach(s => { %><option value="<%= s.v %>"<%= order.status===s.v?' selected':'' %>><%= s.l %></option><% }) %>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Mecánico</label>
+          <input type="text" name="mechanic" value="<%= order.mechanic || '' %>" placeholder="Nombre" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Fecha entrega</label>
+          <input type="date" name="estimatedDate" value="<%= order.estimatedDate || '' %>" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Observaciones</label>
+        <textarea name="notes" rows="2" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"><%= order.notes || '' %></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm" type="submit">Guardar cambios</button>
+    </form>
+  </div>
+  <% } %>
+
+  <!-- Convertir en factura -->
+  <% if (order.status === 'completado' && !order.invoiceId) { %>
+  <div class="crm-card" style="padding:20px 24px;border-top:3px solid #22c55e">
+    <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Generar Factura</h2>
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/convertir-factura">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Método de pago</label>
+          <select name="paymentMethod" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none">
+            <option value="efectivo">Efectivo</option>
+            <option value="nequi">Nequi</option>
+            <option value="daviplata">Daviplata</option>
+            <option value="tarjeta">Tarjeta</option>
+            <option value="transferencia">Transferencia</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">IVA (COP)</label>
+          <input type="number" name="tax" value="0" min="0" placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+          <span style="font-size:11px;color:#9ca3af;margin-top:3px;display:block">Subtotal: $<%= order.total.toLocaleString('es-CO') %></span>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Notas de factura</label>
+        <textarea name="notes" rows="2" placeholder="Observaciones finales, garantía, etc." style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <button class="btn btn-primary" type="submit">Generar Factura →</button>
+    </form>
+  </div>
+  <% } %>
+
+</div>
+
+<%- include('../partials/admin-foot') %>
