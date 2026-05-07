@@ -1115,7 +1115,8 @@
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || 'Error desconocido');
       savedConsecutive = data.consecutive;
-      consecNum.textContent = String(savedConsecutive).padStart(4, '0');
+      savedLabel = data.label;
+      consecNum.textContent = savedLabel;
       goToStep(3);
     } catch (err) {
       alert('No se pudo guardar: ' + err.message);
@@ -1158,7 +1159,7 @@
       ? window.location.origin + '/cotizacion/' + savedQuoteId
       : null;
 
-    const lines = [header, 'N° ' + String(savedConsecutive).padStart(4, '0')];
+    const lines = [header, 'N° ' + (savedLabel || savedConsecutive)];
     if (moto) lines.push('🏍️ ' + moto);
     lines.push('');
     items.forEach(it => lines.push(`${prefix} ${it.name} ×${it.qty} — ${fmt(it.price * it.qty)}`));
