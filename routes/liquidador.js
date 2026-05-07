@@ -74,7 +74,7 @@ router.get('/cotizacion/:id', async (req, res) => {
     const quotation = await getQuotationById(req.params.id);
     if (!quotation) return res.status(404).render('404');
     res.render('cotizacion', {
-      title: `Cotización #${String(quotation.consecutive).padStart(4, '0')} — Gorillaz Motorbikes`,
+      title: `Cotización #${quotation.label} — Gorillaz Motorbikes`,
       description: 'Detalle de cotización Gorillaz Motorbikes.',
       canonicalPath: `/cotizacion/${quotation.id}`,
       quotation,
