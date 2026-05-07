@@ -767,6 +767,17 @@ async function getAllQuotations() {
   return r.rows.map(rowToQuotation);
 }
 
+async function getQuotationsByMotorcyclePlates(plates) {
+  if (!plates || plates.length === 0) return [];
+  const conditions = plates.map(() => 'UPPER(motorcycle) LIKE ?').join(' OR ');
+  const args = plates.map(p => '%' + p.toUpperCase().trim() + '%');
+  const r = await db.execute({
+    sql: `SELECT * FROM quotations WHERE motorcycle IS NOT NULL AND (${conditions}) ORDER BY created_at DESC`,
+    args,
+  });
+  return r.rows.map(rowToQuotation);
+}
+
 async function countQuotations() {
   const r = await db.execute('SELECT COUNT(*) as n FROM quotations');
   return Number(r.rows[0].n);
@@ -819,6 +830,6 @@ module.exports = {
   createEnrollment,
   createJobApplication,
   createOrder, updateOrderStatus, getOrderById, getAllOrders, getOrdersByUser, countOrders,
-  createQuotation, getQuotationById, getAllQuotations, countQuotations,
+  createQuotation, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates,
   logAdminAction, getAdminAuditLog,
 };
