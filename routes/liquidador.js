@@ -62,7 +62,7 @@ router.post('/api/liquidador/quotation', async (req, res) => {
       motorcycle: motorcycle || null,
       notes: notes || null,
     });
-    res.json({ ok: true, id, consecutive });
+    res.json({ ok: true, id, consecutive, label });
   } catch (err) {
     console.error('POST /api/liquidador/quotation error:', err.message);
     res.status(500).json({ error: 'Error al guardar la cotización.' });
