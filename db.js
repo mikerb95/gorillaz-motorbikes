@@ -663,6 +663,51 @@ async function getUserEventRegistrations(userId) {
   return map;
 }
 
+// ── Quotations ────────────────────────────────────────────────────────────
+
+async function getNextQuotationConsecutive() {
+  const r = await db.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM quotations');
+  return Number(r.rows[0].next);
+}
+
+async function createQuotation(data) {
+  const id = data.id || uuidv4();
+  const consecutive = await getNextQuotationConsecutive();
+  await db.execute({
+    sql: `INSERT INTO quotations (id, consecutive, items, total, client_phone, client_phone_country, status)
+          VALUES (?,?,?,?,?,?,?)`,
+    args: [
+      id,
+      consecutive,
+      JSON.stringify(data.items || []),
+      data.total || 0,
+      data.clientPhone || null,
+      data.clientPhoneCountry || '+57',
+      'confirmed',
+    ],
+  });
+  return { id, consecutive };
+}
+
+async function getAllQuotations() {
+  const r = await db.execute('SELECT * FROM quotations ORDER BY created_at DESC');
+  return r.rows.map(row => ({
+    id: row.id,
+    consecutive: Number(row.consecutive),
+    items: safeJson(row.items, []),
+    total: Number(row.total),
+    clientPhone: row.client_phone,
+    clientPhoneCountry: row.client_phone_country,
+    status: row.status,
+    createdAt: row.created_at,
+  }));
+}
+
+async function countQuotations() {
+  const r = await db.execute('SELECT COUNT(*) as n FROM quotations');
+  return Number(r.rows[0].n);
+}
+
 // ── Exports ───────────────────────────────────────────────────────────────
 
 module.exports = {
