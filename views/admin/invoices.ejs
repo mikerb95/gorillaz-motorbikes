@@ -1,0 +1,49 @@
+<%- include('../partials/admin-head', { title: 'Facturas' }) %>
+
+<%
+const STATUS = { pendiente:{label:'Pendiente',cls:'badge-warning'}, pagada:{label:'Pagada',cls:'badge-success'}, anulada:{label:'Anulada',cls:'badge-danger'} };
+const totalPagado = invoices.filter(i=>i.status==='pagada').reduce((s,i)=>s+i.total,0);
+%>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Facturas</h1>
+</div>
+
+<div class="crm-kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= invoices.filter(i=>i.status==='pendiente').length %></div><div class="crm-kpi-label">Pendientes de pago</div></div>
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= invoices.filter(i=>i.status==='pagada').length %></div><div class="crm-kpi-label">Pagadas</div></div>
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value" style="font-size:1.1rem">$<%= totalPagado.toLocaleString('es-CO') %></div><div class="crm-kpi-label">Total recaudado</div></div>
+</div>
+
+<div class="crm-card">
+  <% if (invoices.length === 0) { %>
+    <p class="muted" style="padding:32px;text-align:center">No hay facturas aún.</p>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr><th>N° Factura</th><th>Fecha</th><th>Orden</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Método</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% invoices.forEach(inv => {
+          const st = STATUS[inv.status] || {label:inv.status, cls:'badge-warning'};
+        %>
+        <tr>
+          <td><span class="badge badge-success" style="font-weight:900;font-size:.8rem"><%= inv.label %></span></td>
+          <td class="muted" style="font-size:.82rem;white-space:nowrap"><%= new Date(inv.createdAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) %></td>
+          <td class="muted" style="font-size:.82rem"><a href="/admin/ordenes-servicio/<%= inv.serviceOrderId %>" style="color:var(--brand)">Ver orden</a></td>
+          <td>$<%= inv.subtotal.toLocaleString('es-CO') %></td>
+          <td class="muted" style="font-size:.85rem">$<%= inv.tax.toLocaleString('es-CO') %></td>
+          <td><strong>$<%= inv.total.toLocaleString('es-CO') %></strong></td>
+          <td style="font-size:.85rem;text-transform:capitalize"><%= inv.paymentMethod %></td>
+          <td><span class="badge <%= st.cls %>"><%= st.label %></span></td>
+          <td><a class="btn btn-ghost btn-sm" href="/admin/facturas/<%= inv.id %>">Ver</a></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<%- include('../partials/admin-foot') %>
