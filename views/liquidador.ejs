@@ -1246,7 +1246,7 @@
     doc.text('Válida por 30 días. Precios en COP.', 14, 285);
     doc.text('Gorillaz Motorbikes — Bogotá, Colombia', 196, 285, { align: 'right' });
 
-    doc.save('cotizacion-' + String(savedConsecutive).padStart(4, '0') + '.pdf');
+    doc.save('cotizacion-' + (savedLabel || savedConsecutive) + '.pdf');
   });
 
   // ── Nueva cotización ──────────────────────────────────────────────
