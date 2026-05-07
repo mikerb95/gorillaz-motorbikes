@@ -255,46 +255,39 @@ router.get('/tienda/:id/editar', requireAuth, requireAdmin, (req, res) => {
   res.render('admin/shop-edit', { product, categories: catalog.categories || [] });
 });
 
-router.post('/tienda/crear', requireAuth, requireAdmin, (req, res) => {
-  uploadProduct(req, res, (err) => {
-    if (err) return res.status(400).send('Error subiendo imágenes');
-    const { id, name, price, category, description, brand, sku, stock, discount, tags } = req.body;
-    if (!catalog.products) catalog.products = [];
-    const prodId  = id && id.trim() ? id.trim() : uuidv4();
-    const gallery = (req.files || []).map(f => '/images/products/' + f.filename);
-    const mainImage = gallery.length > 0 ? gallery[0] : '/images/download.png';
-    if (name && category) {
-      catalog.products.push({ id: prodId, name, price: parseInt(price || '0', 10) || 0, category, image: mainImage, gallery: gallery.length > 0 ? gallery : ['/images/download.png'], brand: (brand || '').trim(), sku: (sku || '').trim(), stock: parseInt(stock || '0', 10), discount: Math.min(100, Math.max(0, parseInt(discount || '0', 10))), tags: (tags || '').split(',').map(t => t.trim()).filter(Boolean), description: description || '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-      writeCatalog(catalog);
-    }
-    res.redirect('/admin/tienda');
-  });
+router.post('/tienda/crear', requireAuth, requireAdmin, uploadProduct, (req, res) => {
+  const { id, name, price, category, description, brand, sku, stock, discount, tags } = req.body;
+  if (!catalog.products) catalog.products = [];
+  const prodId    = id && id.trim() ? id.trim() : uuidv4();
+  const gallery   = req.blobUrls || [];
+  const mainImage = gallery.length > 0 ? gallery[0] : '/images/download.png';
+  if (name && category) {
+    catalog.products.push({ id: prodId, name, price: parseInt(price || '0', 10) || 0, category, image: mainImage, gallery: gallery.length > 0 ? gallery : ['/images/download.png'], brand: (brand || '').trim(), sku: (sku || '').trim(), stock: parseInt(stock || '0', 10), discount: Math.min(100, Math.max(0, parseInt(discount || '0', 10))), tags: (tags || '').split(',').map(t => t.trim()).filter(Boolean), description: description || '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    writeCatalog(catalog);
+  }
+  res.redirect('/admin/tienda');
 });
 
-router.post('/tienda/actualizar', requireAuth, requireAdmin, (req, res) => {
-  uploadProduct(req, res, (err) => {
-    if (err) return res.status(400).send('Error subiendo imágenes');
-    const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
-    const p = (catalog.products || []).find(x => x.id === id);
-    if (p) {
-      if (name) p.name = name;
-      if (price       !== undefined) p.price    = parseInt(price || '0', 10) || 0;
-      if (category)                  p.category = category;
-      if (description !== undefined) p.description = description;
-      if (brand       !== undefined) p.brand    = (brand || '').trim();
-      if (sku         !== undefined) p.sku      = (sku || '').trim();
-      if (stock       !== undefined) p.stock    = parseInt(stock || '0', 10);
-      if (discount    !== undefined) p.discount = Math.min(100, Math.max(0, parseInt(discount || '0', 10)));
-      if (tags        !== undefined) p.tags     = (tags || '').split(',').map(t => t.trim()).filter(Boolean);
-      let kept         = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
-      const newUploads = (req.files || []).map(f => '/images/products/' + f.filename);
-      const gallery    = [...kept, ...newUploads];
-      if (gallery.length > 0) { p.gallery = gallery; p.image = gallery[0]; }
-      p.updatedAt = new Date().toISOString();
-      writeCatalog(catalog);
-    }
-    res.redirect('/admin/tienda');
-  });
+router.post('/tienda/actualizar', requireAuth, requireAdmin, uploadProduct, (req, res) => {
+  const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
+  const p = (catalog.products || []).find(x => x.id === id);
+  if (p) {
+    if (name)               p.name        = name;
+    if (price       !== undefined) p.price       = parseInt(price || '0', 10) || 0;
+    if (category)           p.category    = category;
+    if (description !== undefined) p.description = description;
+    if (brand       !== undefined) p.brand       = (brand || '').trim();
+    if (sku         !== undefined) p.sku         = (sku || '').trim();
+    if (stock       !== undefined) p.stock       = parseInt(stock || '0', 10);
+    if (discount    !== undefined) p.discount    = Math.min(100, Math.max(0, parseInt(discount || '0', 10)));
+    if (tags        !== undefined) p.tags        = (tags || '').split(',').map(t => t.trim()).filter(Boolean);
+    const kept    = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
+    const gallery = [...kept, ...(req.blobUrls || [])];
+    if (gallery.length > 0) { p.gallery = gallery; p.image = gallery[0]; }
+    p.updatedAt = new Date().toISOString();
+    writeCatalog(catalog);
+  }
+  res.redirect('/admin/tienda');
 });
 
 router.post('/tienda/eliminar', requireAuth, requireAdmin, (req, res) => {
@@ -303,14 +296,11 @@ router.post('/tienda/eliminar', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/tienda');
 });
 
-router.post('/tienda/upload-image', requireAuth, requireAdmin, (req, res) => {
-  uploadProduct(req, res, (err) => {
-    if (err) return res.status(400).json({ ok: false, message: 'Error subiendo imágenes' });
-    res.json({ ok: true, urls: (req.files || []).map(f => '/images/products/' + f.filename) });
-  });
+router.post('/tienda/upload-image', requireAuth, requireAdmin, uploadProduct, (req, res) => {
+  res.json({ ok: true, urls: req.blobUrls || [] });
 });
 
-router.post('/tienda/delete-image', requireAuth, requireAdmin, (req, res) => {
+router.post('/tienda/delete-image', requireAuth, requireAdmin, async (req, res) => {
   const { productId, imageUrl } = req.body;
   const p = (catalog.products || []).find(x => x.id === productId);
   if (p && p.gallery) {
@@ -319,6 +309,7 @@ router.post('/tienda/delete-image', requireAuth, requireAdmin, (req, res) => {
     if (!p.gallery.length) p.gallery = ['/images/download.png'];
     p.updatedAt = new Date().toISOString();
     writeCatalog(catalog);
+    await deleteFromBlob(imageUrl);
   }
   if ((req.headers.accept || '').includes('application/json')) return res.json({ ok: true });
   res.redirect('/admin/tienda/' + productId + '/editar');
