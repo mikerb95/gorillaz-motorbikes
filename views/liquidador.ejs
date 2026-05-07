@@ -911,31 +911,74 @@
   function renderDropdown(results) {
     ddResults = results;
     ddFocusIdx = -1;
-    if (results.length === 0) {
-      dropdown.innerHTML = '<div class="liq-dd-empty">Sin resultados. Intenta con otro término.</div>';
-    } else {
-      dropdown.innerHTML = results.map((r, i) => `
-        <div class="liq-dd-item" data-dd-idx="${i}" role="option" tabindex="-1">
-          <span class="liq-dd-name">${escHtml(r.name)}${r.brand ? ` <span class="liq-dd-brand">— ${escHtml(r.brand)}</span>` : ''}</span>
-          <span class="liq-dd-type ${r.type}">${r.type === 'service' ? 'Servicio' : 'Producto'}</span>
+    const q = searchInput.value.trim();
+
+    let html = results.map((r, i) => `
+      <div class="liq-dd-item" data-dd-idx="${i}" role="option" tabindex="-1">
+        <span class="liq-dd-name">${escHtml(r.name)}${r.brand ? ` <span class="liq-dd-brand">— ${escHtml(r.brand)}</span>` : ''}</span>
+        <span class="liq-dd-type ${r.type}">${r.type === 'service' ? 'Servicio' : 'Producto'}</span>
+      </div>
+    `).join('');
+
+    // Always append the "use as custom item" option when there's text typed
+    if (q.length >= 3) {
+      html += `
+        <div class="liq-dd-item liq-dd-custom" data-dd-custom="1" role="option" tabindex="-1"
+             style="${results.length ? 'border-top:1px solid #e5e7eb;' : ''}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          <span class="liq-dd-name" style="color:#374151">Usar "<strong>${escHtml(q)}</strong>"</span>
+          <span class="liq-dd-type" style="background:#f3f4f6;color:#6b7280">Personalizado</span>
         </div>
-      `).join('');
-      dropdown.querySelectorAll('.liq-dd-item').forEach(el => {
+      `;
+    }
+
+    if (!html) {
+      dropdown.innerHTML = '<div class="liq-dd-empty">Escribe al menos 3 caracteres.</div>';
+    } else {
+      dropdown.innerHTML = html;
+      dropdown.querySelectorAll('.liq-dd-item:not([data-dd-custom])').forEach(el => {
         el.addEventListener('mousedown', e => {
           e.preventDefault();
           pickFromDropdown(Number(el.dataset.ddIdx));
         });
       });
+      const customEl = dropdown.querySelector('[data-dd-custom]');
+      if (customEl) {
+        customEl.addEventListener('mousedown', e => {
+          e.preventDefault();
+          pickCustom(q);
+        });
+      }
     }
     dropdown.classList.add('open');
   }
 
   function moveDdFocus(dir) {
-    if (!ddResults.length) return;
-    ddFocusIdx = (ddFocusIdx + dir + ddResults.length) % ddResults.length;
-    dropdown.querySelectorAll('.liq-dd-item').forEach((el, i) => {
-      el.classList.toggle('focused', i === ddFocusIdx);
-    });
+    // Count all focusable items (catalog results + custom option)
+    const all = dropdown.querySelectorAll('.liq-dd-item');
+    if (!all.length) return;
+    ddFocusIdx = (ddFocusIdx + dir + all.length) % all.length;
+    all.forEach((el, i) => el.classList.toggle('focused', i === ddFocusIdx));
+  }
+
+  function pickCustom(name) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    staged = { id: 'custom-' + Date.now(), name: trimmed, type: 'custom' };
+    stagingName.textContent = trimmed;
+    stagingPrice.value = '';
+    stagingQty.value = '1';
+    staging.classList.add('visible');
+    closeDropdown();
+    searchInput.value = '';
+    clearBtn.classList.remove('visible');
+    searchInput.disabled = true;
+    stagingPrice.classList.remove('error');
+    stagingPrice.focus();
   }
 
   function pickFromDropdown(idx) {
