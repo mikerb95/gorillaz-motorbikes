@@ -1144,8 +1144,14 @@
       return;
     }
     const country = waCountry.value.replace('+', '');
-    const msg = buildWhatsAppMsg();
-    window.open('https://wa.me/' + country + digits + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+    const url = 'https://wa.me/' + country + digits + '?text=' + encodeURIComponent(buildWhatsAppMsg());
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   });
 
   function buildWhatsAppMsg() {
