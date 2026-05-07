@@ -637,6 +637,14 @@ async function getEventAttendances(eventId) {
   }));
 }
 
+async function getAttendanceById(attendanceId) {
+  const r = await db.execute({
+    sql: 'SELECT id, event_id, user_id, status FROM event_attendances WHERE id = ?',
+    args: [attendanceId],
+  });
+  return r.rows[0] || null;
+}
+
 async function confirmEventAttendance(attendanceId) {
   await db.execute({
     sql: 'UPDATE event_attendances SET status = ? WHERE id = ?',
