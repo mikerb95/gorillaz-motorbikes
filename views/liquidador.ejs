@@ -806,6 +806,7 @@
   const btnEditItems   = document.getElementById('btnEditItems');
   const btnConfirm     = document.getElementById('btnConfirmSummary');
   const consecNum      = document.getElementById('liqConsecNum');
+  const motoField      = document.getElementById('motoField');
   const waToggle       = document.getElementById('waToggle');
   const waFields       = document.getElementById('waFields');
   const waCountry      = document.getElementById('waCountry');
@@ -1057,6 +1058,7 @@
           total: calcTotal(),
           clientPhone: null,
           clientPhoneCountry: '+57',
+          motorcycle: motoField ? motoField.value.trim() || null : null,
         }),
       });
       const data = await res.json();
