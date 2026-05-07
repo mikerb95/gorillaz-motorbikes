@@ -395,12 +395,12 @@ async function deleteAppointment(id) {
 // ── Events ────────────────────────────────────────────────────────────────
 
 async function getAllEvents() {
-  const r = await db.execute('SELECT * FROM events ORDER BY date ASC');
+  const r = await db.execute('SELECT * FROM events WHERE deleted_at IS NULL ORDER BY date ASC');
   return r.rows.map(rowToEvent);
 }
 
 async function countEvents() {
-  const r = await db.execute('SELECT COUNT(*) as n FROM events');
+  const r = await db.execute('SELECT COUNT(*) as n FROM events WHERE deleted_at IS NULL');
   return Number(r.rows[0].n);
 }
 
@@ -613,7 +613,7 @@ async function addUserScore(userId, points, concept, description) {
 
 async function getLeaderboard(limit = 10) {
   const r = await db.execute({
-    sql: 'SELECT id, name, nickname, score FROM users WHERE role != ? ORDER BY score DESC LIMIT ?',
+    sql: 'SELECT id, name, nickname, score FROM users WHERE role != ? AND deleted_at IS NULL ORDER BY score DESC LIMIT ?',
     args: ['admin', limit],
   });
   return r.rows.map(row => ({
