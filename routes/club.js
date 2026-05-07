@@ -33,6 +33,7 @@ const {
   registerEventAttendance, getUserEventRegistrations,
   getLeaderboard,
   addUserScore,
+  getQuotationsByMotorcyclePlates,
 } = require('../db');
 
 const router = express.Router();
