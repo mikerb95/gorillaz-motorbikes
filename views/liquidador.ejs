@@ -1092,18 +1092,30 @@
       return;
     }
     const country = waCountry.value.replace('+', '');
-    const msg = [
-      '🏍️ *Cotización Gorillaz Motorbikes*',
-      'N° ' + String(savedConsecutive).padStart(4, '0'),
-      '',
-      ...items.map(it => `• ${it.name} ×${it.qty} — ${fmt(it.price * it.qty)}`),
-      '',
-      '*Total: ' + fmt(calcTotal()) + '*',
-      '',
-      'gorillazmotorbikes.com',
-    ].join('\n');
+    const msg = buildWhatsAppMsg();
     window.open('https://wa.me/' + country + digits + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   });
+
+  function buildWhatsAppMsg() {
+    const cfg = window.__WA_CONFIG__ || {};
+    const header = cfg.waHeader || '🏍️ *Cotización Gorillaz Motorbikes*';
+    const prefix = cfg.waItemPrefix || '•';
+    const footer = cfg.waFooter || 'gorillazmotorbikes.com';
+    const note   = (cfg.waNote || '').trim();
+    const moto   = motoField ? motoField.value.trim() : '';
+    const lines  = [
+      header,
+      'N° ' + String(savedConsecutive).padStart(4, '0'),
+    ];
+    if (moto) lines.push('🏍️ ' + moto);
+    lines.push('');
+    items.forEach(it => lines.push(`${prefix} ${it.name} ×${it.qty} — ${fmt(it.price * it.qty)}`));
+    lines.push('');
+    lines.push('*Total: ' + fmt(calcTotal()) + '*');
+    if (note) { lines.push(''); lines.push(note); }
+    lines.push(''); lines.push(footer);
+    return lines.join('\n');
+  }
 
   // ── PDF ───────────────────────────────────────────────────────────
   btnDownload.addEventListener('click', () => {
@@ -1187,6 +1199,7 @@
     staged = null;
     savedConsecutive = null;
     staging.classList.remove('visible');
+    if (motoField) motoField.value = '';
     waToggle.checked = false;
     waFields.classList.remove('open');
     waPhone.value = '';
