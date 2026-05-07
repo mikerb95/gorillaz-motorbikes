@@ -690,7 +690,7 @@
           id="motoField"
           type="text"
           placeholder="Ej: Honda CB190R — ABC123"
-          style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:#fafafa;box-sizing:border-box"
+          style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:#fafafa;box-sizing:border-box;text-transform:uppercase"
           maxlength="80"
           aria-label="Moto o placa del cliente"
         />
@@ -807,6 +807,13 @@
   const btnConfirm     = document.getElementById('btnConfirmSummary');
   const consecNum      = document.getElementById('liqConsecNum');
   const motoField      = document.getElementById('motoField');
+  if (motoField) {
+    motoField.addEventListener('input', () => {
+      const pos = motoField.selectionStart;
+      motoField.value = motoField.value.toUpperCase();
+      motoField.setSelectionRange(pos, pos);
+    });
+  }
   const waToggle       = document.getElementById('waToggle');
   const waFields       = document.getElementById('waFields');
   const waCountry      = document.getElementById('waCountry');
