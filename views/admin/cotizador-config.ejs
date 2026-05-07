@@ -125,6 +125,9 @@
       `*Total: ${fmt(total)}*`,
     ];
     if (note) { lines.push(''); lines.push(note); }
+    lines.push('');
+    lines.push('📄 *Ver cotización completa y descargar PDF:*');
+    lines.push('https://gorillazmotorbikes.com/cotizacion/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx');
     lines.push(''); lines.push(footer);
     preview.textContent = lines.join('\n');
   }
