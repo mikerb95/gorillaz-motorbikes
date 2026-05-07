@@ -708,12 +708,28 @@ async function getNextQuotationConsecutive() {
   return Number(r.rows[0].next);
 }
 
+function rowToQuotation(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    consecutive: Number(row.consecutive),
+    items: safeJson(row.items, []),
+    total: Number(row.total),
+    clientPhone: row.client_phone,
+    clientPhoneCountry: row.client_phone_country,
+    motorcycle: row.motorcycle || null,
+    notes: row.notes || null,
+    status: row.status,
+    createdAt: row.created_at,
+  };
+}
+
 async function createQuotation(data) {
   const id = data.id || uuidv4();
   const consecutive = await getNextQuotationConsecutive();
   await db.execute({
-    sql: `INSERT INTO quotations (id, consecutive, items, total, client_phone, client_phone_country, status)
-          VALUES (?,?,?,?,?,?,?)`,
+    sql: `INSERT INTO quotations (id, consecutive, items, total, client_phone, client_phone_country, motorcycle, notes, status)
+          VALUES (?,?,?,?,?,?,?,?,?)`,
     args: [
       id,
       consecutive,
@@ -721,24 +737,22 @@ async function createQuotation(data) {
       data.total || 0,
       data.clientPhone || null,
       data.clientPhoneCountry || '+57',
+      data.motorcycle || null,
+      data.notes || null,
       'confirmed',
     ],
   });
   return { id, consecutive };
 }
 
+async function getQuotationById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM quotations WHERE id = ?', args: [id] });
+  return rowToQuotation(r.rows[0] || null);
+}
+
 async function getAllQuotations() {
   const r = await db.execute('SELECT * FROM quotations ORDER BY created_at DESC');
-  return r.rows.map(row => ({
-    id: row.id,
-    consecutive: Number(row.consecutive),
-    items: safeJson(row.items, []),
-    total: Number(row.total),
-    clientPhone: row.client_phone,
-    clientPhoneCountry: row.client_phone_country,
-    status: row.status,
-    createdAt: row.created_at,
-  }));
+  return r.rows.map(rowToQuotation);
 }
 
 async function countQuotations() {
