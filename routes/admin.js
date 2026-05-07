@@ -25,13 +25,22 @@ const {
   getAllQuotations, getQuotationById, countQuotations,
 } = require('../db');
 
-const COTIZADOR_CONFIG_PATH = path.join(__dirname, '..', 'data', 'cotizador-config.json');
+const COTIZADOR_CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
+const SERVICES_CATALOG_PATH   = path.join(__dirname, '..', 'data', 'services-catalog.json');
+
 function loadCotizadorConfig() {
   try { return JSON.parse(fs.readFileSync(COTIZADOR_CONFIG_PATH, 'utf8')); }
   catch { return { waHeader: '🏍️ *Cotización Gorillaz Motorbikes*', waItemPrefix: '•', waFooter: 'gorillazmotorbikes.com', waNote: '' }; }
 }
 function saveCotizadorConfig(cfg) {
   try { fs.writeFileSync(COTIZADOR_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
+}
+function loadServicesCatalog() {
+  try { return JSON.parse(fs.readFileSync(SERVICES_CATALOG_PATH, 'utf8')); }
+  catch { return []; }
+}
+function saveServicesCatalog(list) {
+  try { fs.writeFileSync(SERVICES_CATALOG_PATH, JSON.stringify(list, null, 2), 'utf8'); } catch { }
 }
 const { resendClient } = require('../config');
 
@@ -370,6 +379,45 @@ router.get('/cotizaciones/:id', requireAuth, requireAdmin, async (req, res) => {
   const quotation = await getQuotationById(req.params.id);
   if (!quotation) return res.redirect('/admin/cotizaciones');
   res.render('admin/quotation-detail', { quotation });
+});
+
+// ── Ítems del cotizador (servicios + productos) ───────────────────────────
+
+router.get('/cotizador-items', requireAuth, requireAdmin, (req, res) => {
+  const services = loadServicesCatalog();
+  const products = (catalog.products || []).map(p => ({
+    id: p.id, name: p.name, brand: p.brand || '', category: p.category || '',
+  }));
+  const flash = req.query.flash || null;
+  res.render('admin/cotizador-items', { services, products, flash });
+});
+
+router.post('/cotizador-items/servicio/crear', requireAuth, requireAdmin, (req, res) => {
+  const name = (req.body.name || '').trim();
+  if (!name) return res.redirect('/admin/cotizador-items?flash=error-name');
+  const services = loadServicesCatalog();
+  const id = 'svc-' + name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
+  services.push({ id, name, type: 'service' });
+  saveServicesCatalog(services);
+  res.redirect('/admin/cotizador-items?flash=created');
+});
+
+router.post('/cotizador-items/servicio/actualizar', requireAuth, requireAdmin, (req, res) => {
+  const { id, name } = req.body;
+  const trimmed = (name || '').trim();
+  if (!id || !trimmed) return res.redirect('/admin/cotizador-items?flash=error-name');
+  const services = loadServicesCatalog();
+  const svc = services.find(s => s.id === id);
+  if (svc) svc.name = trimmed;
+  saveServicesCatalog(services);
+  res.redirect('/admin/cotizador-items?flash=updated');
+});
+
+router.post('/cotizador-items/servicio/eliminar', requireAuth, requireAdmin, (req, res) => {
+  const { id } = req.body;
+  const services = loadServicesCatalog().filter(s => s.id !== id);
+  saveServicesCatalog(services);
+  res.redirect('/admin/cotizador-items?flash=deleted');
 });
 
 // ── Configuración del liquidador ──────────────────────────────────────────
