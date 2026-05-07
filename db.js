@@ -143,6 +143,39 @@ async function initDb() {
       status TEXT NOT NULL DEFAULT 'draft',
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    `CREATE TABLE IF NOT EXISTS service_orders (
+      id TEXT PRIMARY KEY,
+      consecutive INTEGER NOT NULL,
+      label TEXT NOT NULL,
+      quotation_id TEXT,
+      items TEXT NOT NULL DEFAULT '[]',
+      total INTEGER NOT NULL DEFAULT 0,
+      motorcycle TEXT,
+      client_phone TEXT,
+      client_phone_country TEXT NOT NULL DEFAULT '+57',
+      mechanic TEXT,
+      status TEXT NOT NULL DEFAULT 'pendiente',
+      notes TEXT,
+      estimated_date TEXT,
+      invoice_id TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS invoices (
+      id TEXT PRIMARY KEY,
+      consecutive INTEGER NOT NULL,
+      label TEXT NOT NULL,
+      service_order_id TEXT NOT NULL,
+      quotation_id TEXT,
+      items TEXT NOT NULL DEFAULT '[]',
+      subtotal INTEGER NOT NULL DEFAULT 0,
+      tax INTEGER NOT NULL DEFAULT 0,
+      total INTEGER NOT NULL DEFAULT 0,
+      payment_method TEXT NOT NULL DEFAULT 'efectivo',
+      status TEXT NOT NULL DEFAULT 'pendiente',
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
