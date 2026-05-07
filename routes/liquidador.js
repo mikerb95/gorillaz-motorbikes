@@ -4,30 +4,28 @@ const path     = require('path');
 const fs       = require('fs');
 const { createQuotation } = require('../db');
 const { products } = require('../data/catalog');
-const services = require('../data/services-catalog');
 
 const router = express.Router();
 
-const CONFIG_PATH = path.join(__dirname, '..', 'data', 'cotizador-config.json');
+const CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
+const SERVICES_PATH = path.join(__dirname, '..', 'data', 'services-catalog.json');
 
 function loadConfig() {
-  try {
-    return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-  } catch {
-    return { waHeader: '🏍️ *Cotización Gorillaz Motorbikes*', waItemPrefix: '•', waFooter: 'gorillazmotorbikes.com', waNote: '' };
-  }
+  try { return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); }
+  catch { return { waHeader: '🏍️ *Cotización Gorillaz Motorbikes*', waItemPrefix: '•', waFooter: 'gorillazmotorbikes.com', waNote: '' }; }
 }
 
-// Combined searchable catalog — no prices
-const catalog = [
-  ...services,
-  ...products.map(p => ({
-    id: p.id,
-    name: p.name,
-    type: 'product',
-    brand: p.brand || '',
-  })),
-];
+function loadServices() {
+  try { return JSON.parse(fs.readFileSync(SERVICES_PATH, 'utf8')); }
+  catch { return []; }
+}
+
+function buildCatalog() {
+  return [
+    ...loadServices(),
+    ...products.map(p => ({ id: p.id, name: p.name, type: 'product', brand: p.brand || '' })),
+  ];
+}
 
 router.get('/liquidador', (req, res) => {
   res.render('liquidador', {
@@ -42,15 +40,10 @@ router.get('/api/liquidador/search', (req, res) => {
   const q = (req.query.q || '').toLowerCase().trim();
   if (q.length < 3) return res.json([]);
 
-  const results = catalog
+  const results = buildCatalog()
     .filter(item => item.name.toLowerCase().includes(q) || (item.brand || '').toLowerCase().includes(q))
     .slice(0, 12)
-    .map(item => ({
-      id: item.id,
-      name: item.name,
-      type: item.type,
-      brand: item.brand || '',
-    }));
+    .map(({ id, name, type, brand }) => ({ id, name, type, brand: brand || '' }));
 
   res.json(results);
 });
@@ -58,11 +51,9 @@ router.get('/api/liquidador/search', (req, res) => {
 router.post('/api/liquidador/quotation', async (req, res) => {
   try {
     const { items, total, clientPhone, clientPhoneCountry, motorcycle, notes } = req.body;
-
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Se requiere al menos un ítem.' });
     }
-
     const { id, consecutive } = await createQuotation({
       items,
       total: Number(total) || 0,
@@ -71,7 +62,6 @@ router.post('/api/liquidador/quotation', async (req, res) => {
       motorcycle: motorcycle || null,
       notes: notes || null,
     });
-
     res.json({ ok: true, id, consecutive });
   } catch (err) {
     console.error('POST /api/liquidador/quotation error:', err.message);
