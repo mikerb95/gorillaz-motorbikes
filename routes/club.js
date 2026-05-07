@@ -85,7 +85,8 @@ router.get('/registro', (req, res) => {
 
 router.post('/registro', authLimiter, async (req, res) => {
   const { name, cedula, phone, birthdate, bloodType, city, nickname, clubNotifications, emergencyName, emergencyPhone, vehicleBrand, vehicleModel, vehicleYear, vehiclePlate, vehicleCC, vehicleColor, soatExpires, tecnoExpires, email, password, confirmPassword } = req.body;
-  if (!name || !email || !password) return res.status(400).render('club/register', { error: 'Nombre, correo y contraseña son obligatorios' });
+  const validationError = validateRegistration({ name, email, password, phone, cedula });
+  if (validationError) return res.status(400).render('club/register', { error: validationError });
   if (password !== confirmPassword) return res.status(400).render('club/register', { error: 'Las contraseñas no coinciden' });
   try {
     if (await getUserByEmail(email)) return res.status(400).render('club/register', { error: 'El correo ya está en uso' });
