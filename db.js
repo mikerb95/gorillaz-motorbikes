@@ -118,6 +118,16 @@ async function initDb() {
       customer_city TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    `CREATE TABLE IF NOT EXISTS quotations (
+      id TEXT PRIMARY KEY,
+      consecutive INTEGER NOT NULL,
+      items TEXT NOT NULL DEFAULT '[]',
+      total INTEGER NOT NULL DEFAULT 0,
+      client_phone TEXT,
+      client_phone_country TEXT NOT NULL DEFAULT '+57',
+      status TEXT NOT NULL DEFAULT 'draft',
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
