@@ -1194,7 +1194,7 @@
     doc.text('gorillazmotorbikes.com  |  Bogotá, Colombia', 14, 20);
     const dateStr = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
     doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
-    doc.text('Cotización N° ' + String(savedConsecutive).padStart(4, '0'), 196, 20, { align: 'right' });
+    doc.text('Cotización N° ' + (savedLabel || savedConsecutive), 196, 20, { align: 'right' });
 
     // Title
     doc.setTextColor(17, 17, 17);
