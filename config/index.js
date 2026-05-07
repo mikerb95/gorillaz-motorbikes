@@ -10,6 +10,9 @@ if (!process.env.JWT_SECRET) {
 if (!process.env.BOLD_API_KEY || process.env.BOLD_API_KEY === 'tu_api_key_de_bold_aqui') {
   console.warn('[WARN] BOLD_API_KEY not configured — payments will fail. Set this env var.');
 }
+if (!process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
+  console.warn('[WARN] R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY not set — image uploads will fail.');
+}
 
 const JWT_SECRET          = process.env.JWT_SECRET || 'dev-only-insecure-fallback';
 const RECAPTCHA_SITE_KEY   = process.env.RECAPTCHA_SITE_KEY   || '';
