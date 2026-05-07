@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const csrfToken = (req, res, next) => {
   if (!req.cookies._csrf) {
     const token = crypto.randomBytes(32).toString('hex');
-    res.cookie('_csrf', token, { httpOnly: false, sameSite: 'strict', maxAge: 3600000 });
+    res.cookie('_csrf', token, { httpOnly: true, sameSite: 'strict', maxAge: 3600000 });
     res.locals.csrfToken = token;
   } else {
     res.locals.csrfToken = req.cookies._csrf;
