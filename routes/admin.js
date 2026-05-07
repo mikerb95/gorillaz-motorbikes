@@ -85,10 +85,13 @@ router.get('/eventos/:id/asistencias', requireAuth, requireAdmin, async (req, re
 
 router.post('/eventos/asistencia/confirmar', requireAuth, requireAdmin, async (req, res) => {
   const { attendanceId, eventId, userId, eventType } = req.body;
-  await confirmEventAttendance(attendanceId);
-  const pts = SCORE_POINTS[eventType] || SCORE_POINTS.evento;
-  const ev  = await getEventById(eventId);
-  await addUserScore(userId, pts, eventType || 'evento', ev ? ev.title : 'Evento del club');
+  const attendance = await getAttendanceById(attendanceId);
+  if (attendance && attendance.status !== 'confirmed') {
+    await confirmEventAttendance(attendanceId);
+    const pts = SCORE_POINTS[eventType] || SCORE_POINTS.evento;
+    const ev  = await getEventById(eventId);
+    await addUserScore(userId, pts, eventType || 'evento', ev ? ev.title : 'Evento del club');
+  }
   res.redirect(`/admin/eventos/${eventId}/asistencias`);
 });
 
