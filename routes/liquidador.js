@@ -69,4 +69,20 @@ router.post('/api/liquidador/quotation', async (req, res) => {
   }
 });
 
+router.get('/cotizacion/:id', async (req, res) => {
+  try {
+    const quotation = await getQuotationById(req.params.id);
+    if (!quotation) return res.status(404).render('404');
+    res.render('cotizacion', {
+      title: `Cotización #${String(quotation.consecutive).padStart(4, '0')} — Gorillaz Motorbikes`,
+      description: 'Detalle de cotización Gorillaz Motorbikes.',
+      canonicalPath: `/cotizacion/${quotation.id}`,
+      quotation,
+    });
+  } catch (err) {
+    console.error('GET /cotizacion/:id error:', err.message);
+    res.status(500).render('404');
+  }
+});
+
 module.exports = router;
