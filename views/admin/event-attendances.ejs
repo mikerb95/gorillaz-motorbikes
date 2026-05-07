@@ -9,12 +9,11 @@
     <span style="color:#d4d4d8">›</span>
     <h1 class="crm-page-title" style="margin:0"><%= ev.title %></h1>
   </div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <% if (ev.type === 'rodada') { %>
-      <span class="badge badge-info">🏍️ Rodada</span>
-    <% } else { %>
-      <span class="badge badge-orange">🎉 Evento</span>
-    <% } %>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <% const typeLabels = { rodada:'🏍️ Rodada', encuentro:'⚽ Encuentro', caminata:'🥾 Caminata', actividad:'🎉 Actividad', evento:'🎉 Actividad' }; %>
+    <span class="badge <%= ev.category === 'taller' ? 'badge-warning' : 'badge-info' %>">
+      <%= typeLabels[ev.type] || ('🎉 ' + ev.type) %>
+    </span>
     <span class="badge badge-muted"><%= ev.date %><% if (ev.location) { %> · <%= ev.location %><% } %></span>
   </div>
 </div>
