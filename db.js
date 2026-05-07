@@ -792,4 +792,5 @@ module.exports = {
   createJobApplication,
   createOrder, updateOrderStatus, getOrderById, getAllOrders, getOrdersByUser, countOrders,
   createQuotation, getAllQuotations, countQuotations,
+  logAdminAction, getAdminAuditLog,
 };
