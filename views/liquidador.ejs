@@ -1136,6 +1136,7 @@
       if (!res.ok || !data.ok) throw new Error(data.error || 'Error desconocido');
       savedConsecutive = data.consecutive;
       savedLabel = data.label;
+      savedQuoteId = data.id;
       consecNum.textContent = savedLabel;
       goToStep(3);
     } catch (err) {
@@ -1283,6 +1284,7 @@
     staged = null;
     savedConsecutive = null;
     savedLabel = null;
+    savedQuoteId = null;
     staging.classList.remove('visible');
     if (motoField) motoField.value = '';
     waToggle.checked = false;
