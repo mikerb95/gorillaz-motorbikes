@@ -1020,8 +1020,15 @@
     else if (e.key === 'ArrowUp')   { e.preventDefault(); moveDdFocus(-1); }
     else if (e.key === 'Enter') {
       e.preventDefault();
-      if (ddFocusIdx >= 0) pickFromDropdown(ddFocusIdx);
-      else if (ddResults.length === 1) pickFromDropdown(0);
+      const allItems = dropdown.querySelectorAll('.liq-dd-item');
+      const focusedEl = ddFocusIdx >= 0 ? allItems[ddFocusIdx] : null;
+      if (focusedEl && focusedEl.dataset.ddCustom) {
+        pickCustom(searchInput.value.trim());
+      } else if (ddFocusIdx >= 0 && ddFocusIdx < ddResults.length) {
+        pickFromDropdown(ddFocusIdx);
+      } else if (ddResults.length === 1) {
+        pickFromDropdown(0);
+      }
     }
     else if (e.key === 'Escape') { closeDropdown(); }
   });
