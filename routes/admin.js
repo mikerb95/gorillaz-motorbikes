@@ -67,13 +67,18 @@ router.get('/eventos', requireAuth, requireAdmin, async (req, res) => {
 
 router.post('/eventos/crear', requireAuth, requireAdmin, async (req, res) => {
   const { title, date, location, description, type, category, lat, lng } = req.body;
-  if (title && date) await createEvent({ id: uuidv4(), title, date, location, description, type: type || 'evento', category: category || 'club', lat: lat || null, lng: lng || null });
+  if (title && date) {
+    const newId = uuidv4();
+    await createEvent({ id: newId, title, date, location, description, type: type || 'evento', category: category || 'club', lat: lat || null, lng: lng || null });
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'crear_evento', 'event', newId, { title, date, type, category });
+  }
   res.redirect('/admin/eventos');
 });
 
 router.post('/eventos/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { id, title, date, location, description, type, category, lat, lng } = req.body;
   await updateEvent(id, { title, date, location, description, type, category, lat: lat || null, lng: lng || null });
+  await logAdminAction(res.locals.user.id, res.locals.user.name, 'actualizar_evento', 'event', id, { title, date, type, category });
   res.redirect('/admin/eventos');
 });
 
@@ -92,12 +97,15 @@ router.post('/eventos/asistencia/confirmar', requireAuth, requireAdmin, async (r
     const pts = SCORE_POINTS[eventType] || SCORE_POINTS.evento;
     const ev  = await getEventById(eventId);
     await addUserScore(userId, pts, eventType || 'evento', ev ? ev.title : 'Evento del club');
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'confirmar_asistencia', 'attendance', attendanceId, { eventId, userId, pts, eventType });
   }
   res.redirect(`/admin/eventos/${eventId}/asistencias`);
 });
 
 router.post('/eventos/eliminar', requireAuth, requireAdmin, async (req, res) => {
+  const ev = await getEventById(req.body.id);
   await deleteEvent(req.body.id);
+  await logAdminAction(res.locals.user.id, res.locals.user.name, 'eliminar_evento', 'event', req.body.id, { title: ev ? ev.title : null });
   res.redirect('/admin/eventos');
 });
 
@@ -115,12 +123,15 @@ router.post('/usuarios/actualizar', requireAuth, requireAdmin, async (req, res) 
     if (membershipLevel) fields.membership = { ...u.membership, level: membershipLevel };
     if (role && ['user', 'admin'].includes(role)) fields.role = role;
     await updateUser(id, fields);
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'actualizar_usuario', 'user', id, { name, membershipLevel, role });
   }
   res.redirect('/admin/usuarios');
 });
 
 router.post('/usuarios/eliminar', requireAuth, requireAdmin, async (req, res) => {
+  const u = await getUserById(req.body.id);
   await deleteUser(req.body.id);
+  await logAdminAction(res.locals.user.id, res.locals.user.name, 'eliminar_usuario', 'user', req.body.id, { name: u ? u.name : null, email: u ? u.email : null });
   res.redirect('/admin/usuarios');
 });
 

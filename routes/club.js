@@ -6,6 +6,20 @@ const { v4: uuidv4 } = require('uuid');
 const jwt    = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+
+function validateRegistration({ name, email, password, phone, cedula }) {
+  if (!name || name.trim().length < 2 || name.trim().length > 100)
+    return 'El nombre debe tener entre 2 y 100 caracteres.';
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim()))
+    return 'El correo electrónico no es válido.';
+  if (!password || password.length < 8)
+    return 'La contraseña debe tener al menos 8 caracteres.';
+  if (phone && !/^[+\d\s\-()ñ]{7,25}$/.test(phone.trim()))
+    return 'El teléfono no es válido.';
+  if (cedula && (!/^\d{5,12}$/.test(cedula.trim())))
+    return 'La cédula debe contener entre 5 y 12 dígitos.';
+  return null;
+}
 const QRCode = require('qrcode');
 
 const { JWT_SECRET, resendClient }  = require('../config');
