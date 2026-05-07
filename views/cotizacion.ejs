@@ -1,0 +1,360 @@
+<%- include('partials/head', { title, description, canonicalPath }) %>
+
+<style>
+.cot-page {
+  padding-top: calc(var(--header-offset) + 28px);
+  padding-bottom: 60px;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+.cot-wrap {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Header card */
+.cot-header-card {
+  background: #111;
+  border-radius: 18px;
+  padding: 24px 20px 20px;
+  margin-bottom: 14px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.cot-header-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top right, rgba(242,92,5,.35) 0%, transparent 65%);
+  pointer-events: none;
+}
+.cot-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.cot-brand img {
+  height: 32px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+.cot-brand-name {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  opacity: .85;
+}
+.cot-num {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+.cot-num span { color: var(--brand); }
+.cot-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+}
+.cot-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cot-meta-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: rgba(255,255,255,.5);
+}
+.cot-meta-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Items card */
+.cot-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+}
+.cot-card-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin: 0 0 14px;
+}
+.cot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.cot-item:last-child { border-bottom: none; padding-bottom: 0; }
+.cot-item:first-child { padding-top: 0; }
+.cot-item-left { flex: 1; min-width: 0; }
+.cot-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cot-item-qty {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 1px;
+}
+.cot-item-type {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  margin-top: 3px;
+}
+.cot-item-type.service { background: #fff7ed; color: #ea580c; }
+.cot-item-type.product { background: #f0fdf4; color: #16a34a; }
+.cot-item-type.custom  { background: #f3f4f6; color: #6b7280; }
+.cot-item-right { text-align: right; flex-shrink: 0; }
+.cot-item-unit  { font-size: 11px; color: #9ca3af; }
+.cot-item-sub   { font-size: 15px; font-weight: 800; color: #111; }
+
+/* Total */
+.cot-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 0;
+  margin-top: 10px;
+  border-top: 2px solid #111;
+}
+.cot-total-label { font-size: 14px; font-weight: 800; color: #374151; }
+.cot-total-val   { font-size: 22px; font-weight: 900; color: var(--brand); }
+
+/* Download button */
+.cot-dl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 15px 20px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  letter-spacing: .3px;
+  text-decoration: none;
+}
+.cot-dl-btn:hover { opacity: .88; text-decoration: none; color: #fff; }
+.cot-dl-btn:active { transform: scale(.97); }
+
+.cot-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 20px;
+  line-height: 1.6;
+}
+.cot-footer a { color: var(--brand); }
+
+@media (min-width: 600px) {
+  .cot-header-card { padding: 28px 28px 24px; }
+  .cot-card { padding: 22px 22px; }
+  .cot-num { font-size: 34px; }
+}
+</style>
+
+<div class="cot-page">
+  <div class="cot-wrap">
+
+    <!-- Header -->
+    <div class="cot-header-card">
+      <div class="cot-brand">
+        <img src="/images/nobg_logo/logo_transp.png" alt="Gorillaz Motorbikes" />
+        <span class="cot-brand-name">Gorillaz Motorbikes</span>
+      </div>
+      <div class="cot-num">Cotización <span>#<%= String(quotation.consecutive).padStart(4,'0') %></span></div>
+
+      <div class="cot-meta-row">
+        <div class="cot-meta-item">
+          <span class="cot-meta-label">Fecha</span>
+          <span class="cot-meta-value">
+            <%= new Date(quotation.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric', timeZone:'America/Bogota' }) %>
+          </span>
+        </div>
+        <% if (quotation.motorcycle) { %>
+        <div class="cot-meta-item">
+          <span class="cot-meta-label">Moto / Placa</span>
+          <span class="cot-meta-value"><%= quotation.motorcycle %></span>
+        </div>
+        <% } %>
+        <div class="cot-meta-item">
+          <span class="cot-meta-label">Ítems</span>
+          <span class="cot-meta-value"><%= quotation.items.length %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="cot-card">
+      <p class="cot-card-title">Detalle</p>
+      <% quotation.items.forEach(function(it) { %>
+        <div class="cot-item">
+          <div class="cot-item-left">
+            <div class="cot-item-name"><%= it.name %></div>
+            <div class="cot-item-qty"><%= it.qty %> unidad<%= it.qty > 1 ? 'es' : '' %> × COP <%= Number(it.price).toLocaleString('es-CO') %></div>
+            <span class="cot-item-type <%= it.type || 'custom' %>">
+              <%= it.type === 'service' ? 'Servicio' : it.type === 'product' ? 'Producto' : 'Personalizado' %>
+            </span>
+          </div>
+          <div class="cot-item-right">
+            <div class="cot-item-sub">COP <%= (it.price * it.qty).toLocaleString('es-CO') %></div>
+          </div>
+        </div>
+      <% }) %>
+
+      <div class="cot-total-row">
+        <span class="cot-total-label">Total</span>
+        <span class="cot-total-val">COP <%= quotation.total.toLocaleString('es-CO') %></span>
+      </div>
+    </div>
+
+    <!-- Download PDF -->
+    <button class="cot-dl-btn" id="btnDownloadPdf">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Descargar PDF
+    </button>
+
+    <div class="cot-footer">
+      <p>¿Tienes preguntas? Escríbenos por<br>
+        <a href="https://wa.me/573213204299" target="_blank" rel="noopener">WhatsApp</a>
+        o visítanos en <a href="/">gorillazmotorbikes.com</a>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function () {
+  const QUOTATION = <%- JSON.stringify({
+    consecutive: quotation.consecutive,
+    createdAt:   quotation.createdAt,
+    motorcycle:  quotation.motorcycle,
+    items:       quotation.items,
+    total:       quotation.total,
+  }) %>;
+
+  function fmt(n) { return 'COP ' + Number(n).toLocaleString('es-CO'); }
+
+  document.getElementById('btnDownloadPdf').addEventListener('click', function () {
+    if (typeof window.jspdf === 'undefined') {
+      alert('La librería PDF aún está cargando, intenta en un momento.');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+    // Header bar
+    doc.setFillColor(242, 92, 5);
+    doc.rect(0, 0, 210, 28, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+    doc.text('GORILLAZ MOTORBIKES', 14, 12);
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('gorillazmotorbikes.com  |  Bogotá, Colombia', 14, 20);
+    const dateStr = new Date(QUOTATION.createdAt).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+    doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
+    doc.text('Cotización N° ' + String(QUOTATION.consecutive).padStart(4, '0'), 196, 20, { align: 'right' });
+
+    // Title + moto
+    doc.setTextColor(17, 17, 17);
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('COTIZACIÓN', 14, 40);
+    if (QUOTATION.motorcycle) {
+      doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+      doc.setTextColor(107, 114, 128);
+      doc.text('Moto / Placa: ' + QUOTATION.motorcycle, 14, 47);
+    }
+
+    // Table header
+    let y = QUOTATION.motorcycle ? 57 : 50;
+    doc.setFillColor(245, 245, 245);
+    doc.rect(14, y - 6, 182, 9, 'F');
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(107, 114, 128);
+    doc.text('ÍTEM', 16, y);
+    doc.text('CANT.', 126, y, { align: 'center' });
+    doc.text('PRECIO UNIT.', 158, y, { align: 'right' });
+    doc.text('SUBTOTAL', 196, y, { align: 'right' });
+    y += 6;
+    doc.setDrawColor(229, 231, 235); doc.setLineWidth(0.3);
+    doc.line(14, y, 196, y);
+
+    // Rows
+    doc.setFontSize(10); doc.setTextColor(17, 17, 17);
+    QUOTATION.items.forEach((it, idx) => {
+      y += 8;
+      if (idx % 2 === 1) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(14, y - 5.5, 182, 8, 'F');
+      }
+      doc.setFont('helvetica', 'normal');
+      doc.text(it.name, 16, y);
+      doc.text(String(it.qty), 126, y, { align: 'center' });
+      doc.text(Number(it.price).toLocaleString('es-CO'), 158, y, { align: 'right' });
+      doc.setFont('helvetica', 'bold');
+      doc.text((it.price * it.qty).toLocaleString('es-CO'), 196, y, { align: 'right' });
+    });
+
+    // Total
+    y += 12;
+    doc.setFillColor(242, 92, 5);
+    doc.rect(120, y - 6, 76, 11, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+    doc.text('TOTAL:', 128, y);
+    doc.text('COP ' + QUOTATION.total.toLocaleString('es-CO'), 196, y, { align: 'right' });
+
+    // Footer
+    doc.setTextColor(107, 114, 128);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text('Válida por 30 días. Precios en COP. gorillazmotorbikes.com', 14, 285);
+    doc.text('Gorillaz Motorbikes — Bogotá, Colombia', 196, 285, { align: 'right' });
+
+    doc.save('cotizacion-' + String(QUOTATION.consecutive).padStart(4, '0') + '.pdf');
+  });
+})();
+</script>
+
+<%- include('partials/footer') %>

@@ -1147,22 +1147,28 @@
   });
 
   function buildWhatsAppMsg() {
-    const cfg = window.__WA_CONFIG__ || {};
+    const cfg    = window.__WA_CONFIG__ || {};
     const header = cfg.waHeader || '🏍️ *Cotización Gorillaz Motorbikes*';
     const prefix = cfg.waItemPrefix || '•';
     const footer = cfg.waFooter || 'gorillazmotorbikes.com';
     const note   = (cfg.waNote || '').trim();
     const moto   = motoField ? motoField.value.trim() : '';
-    const lines  = [
-      header,
-      'N° ' + String(savedConsecutive).padStart(4, '0'),
-    ];
+    const link   = savedQuoteId
+      ? window.location.origin + '/cotizacion/' + savedQuoteId
+      : null;
+
+    const lines = [header, 'N° ' + String(savedConsecutive).padStart(4, '0')];
     if (moto) lines.push('🏍️ ' + moto);
     lines.push('');
     items.forEach(it => lines.push(`${prefix} ${it.name} ×${it.qty} — ${fmt(it.price * it.qty)}`));
     lines.push('');
     lines.push('*Total: ' + fmt(calcTotal()) + '*');
     if (note) { lines.push(''); lines.push(note); }
+    if (link) {
+      lines.push('');
+      lines.push('📄 *Ver cotización completa y descargar PDF:*');
+      lines.push(link);
+    }
     lines.push(''); lines.push(footer);
     return lines.join('\n');
   }
