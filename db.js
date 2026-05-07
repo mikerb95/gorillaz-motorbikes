@@ -129,6 +129,9 @@ async function initDb() {
     `ALTER TABLE users ADD COLUMN score INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE users ADD COLUMN score_history TEXT NOT NULL DEFAULT '[]'`,
     `ALTER TABLE events ADD COLUMN type TEXT NOT NULL DEFAULT 'evento'`,
+    `ALTER TABLE events ADD COLUMN category TEXT NOT NULL DEFAULT 'club'`,
+    `ALTER TABLE events ADD COLUMN lat TEXT`,
+    `ALTER TABLE events ADD COLUMN lng TEXT`,
     `ALTER TABLE newsletter ADD COLUMN unsubscribe_token TEXT`,
     `ALTER TABLE newsletter ADD COLUMN confirmed INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE newsletter ADD COLUMN confirm_token TEXT`,
@@ -185,6 +188,9 @@ function rowToEvent(row) {
     description: row.description,
     level: row.level,
     type: row.type || 'evento',
+    category: row.category || 'club',
+    lat: row.lat || null,
+    lng: row.lng || null,
     createdAt: row.created_at,
   };
 }
@@ -363,8 +369,8 @@ async function countEvents() {
 async function createEvent(data) {
   const id = data.id || uuidv4();
   await db.execute({
-    sql: 'INSERT INTO events (id, title, date, location, description, level, type) VALUES (?,?,?,?,?,?,?)',
-    args: [id, data.title, data.date, data.location || null, data.description || null, data.level || null, data.type || 'evento'],
+    sql: 'INSERT INTO events (id, title, date, location, description, level, type, category, lat, lng) VALUES (?,?,?,?,?,?,?,?,?,?)',
+    args: [id, data.title, data.date, data.location || null, data.description || null, data.level || null, data.type || 'evento', data.category || 'club', data.lat || null, data.lng || null],
   });
   return id;
 }
@@ -382,6 +388,9 @@ async function updateEvent(id, fields) {
   if (fields.location !== undefined)    { set.push('location = ?');    args.push(fields.location); }
   if (fields.description !== undefined) { set.push('description = ?'); args.push(fields.description); }
   if (fields.type !== undefined)        { set.push('type = ?');        args.push(fields.type); }
+  if (fields.category !== undefined)    { set.push('category = ?');    args.push(fields.category); }
+  if (fields.lat !== undefined)         { set.push('lat = ?');         args.push(fields.lat); }
+  if (fields.lng !== undefined)         { set.push('lng = ?');         args.push(fields.lng); }
   if (set.length === 0) return;
   args.push(id);
   await db.execute({ sql: `UPDATE events SET ${set.join(', ')} WHERE id = ?`, args });

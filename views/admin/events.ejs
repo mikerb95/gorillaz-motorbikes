@@ -1,7 +1,9 @@
-<%- include('../partials/admin-head', { title: 'Eventos del Club' }) %>
+<%- include('../partials/admin-head', { title: 'Eventos' }) %>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
 <div class="crm-page-header">
-  <h1 class="crm-page-title">Eventos del Club</h1>
+  <h1 class="crm-page-title">Eventos</h1>
   <button class="btn btn-primary btn-sm" type="button"
     onclick="document.getElementById('newEventCard').classList.toggle('hidden-card')">
     + Nuevo evento
@@ -11,8 +13,25 @@
 <!-- Create form -->
 <div class="crm-card" id="newEventCard">
   <div class="crm-card-title">Crear evento</div>
-  <form method="post" action="/admin/eventos/crear">
+  <form method="post" action="/admin/eventos/crear" id="createEventForm">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <input type="hidden" name="lat" id="createLat" value="" />
+    <input type="hidden" name="lng" id="createLng" value="" />
+
+    <!-- Category selector -->
+    <div class="ev-category-selector" style="margin-bottom:18px">
+      <label style="font-weight:600;font-size:.85rem;display:block;margin-bottom:8px">Categoría del evento <span class="required">*</span></label>
+      <div class="ev-cat-tabs" id="createCatTabs">
+        <button type="button" class="ev-cat-btn active" data-cat="club" onclick="selectCategory('create','club')">
+          <span class="ev-cat-icon">🏍️</span> Club
+        </button>
+        <button type="button" class="ev-cat-btn" data-cat="taller" onclick="selectCategory('create','taller')">
+          <span class="ev-cat-icon">🔧</span> Taller
+        </button>
+      </div>
+      <input type="hidden" name="category" id="createCategory" value="club" />
+    </div>
+
     <div class="crm-form-grid">
       <div class="crm-form-group">
         <label>Título <span class="required">*</span></label>
@@ -22,20 +41,27 @@
         <label>Fecha <span class="required">*</span></label>
         <input type="date" name="date" required />
       </div>
-      <div class="crm-form-group">
+      <div class="crm-form-group" id="createTypeGroup">
         <label>Tipo</label>
-        <select name="type">
-          <option value="evento">Evento del club (+25 pts)</option>
-          <option value="rodada">Rodada (+30 pts)</option>
+        <select name="type" id="createType">
+          <option value="rodada">🏍️ Rodada (+30 pts)</option>
+          <option value="encuentro">⚽ Encuentro (+25 pts)</option>
+          <option value="caminata">🥾 Caminata (+25 pts)</option>
+          <option value="actividad">🎉 Actividad (+25 pts)</option>
         </select>
-      </div>
-      <div class="crm-form-group">
-        <label>Lugar</label>
-        <input name="location" placeholder="Ej: Parque Simón Bolívar" />
       </div>
       <div class="crm-form-group crm-form-full">
         <label>Descripción</label>
         <textarea name="description" rows="2" placeholder="Detalles del evento…"></textarea>
+      </div>
+      <!-- Location map picker -->
+      <div class="crm-form-group crm-form-full">
+        <label>Lugar</label>
+        <input name="location" id="createLocation" placeholder="Haz clic en el mapa para seleccionar…" autocomplete="off" oninput="searchLocation('create', this.value)" />
+        <div id="createMapContainer" class="ev-map-container">
+          <div id="createMap" class="ev-map"></div>
+        </div>
+        <p class="ev-map-hint">Haz clic en el mapa para fijar la ubicación exacta del evento.</p>
       </div>
     </div>
     <div class="crm-form-actions">
@@ -54,6 +80,7 @@
       <thead>
         <tr>
           <th>Título</th>
+          <th>Categoría</th>
           <th>Tipo</th>
           <th>Fecha</th>
           <th>Lugar</th>
@@ -71,16 +98,35 @@
               <% } %>
             </td>
             <td>
-              <% if (ev.type === 'rodada') { %>
-                <span class="badge badge-info">🏍️ Rodada</span>
+              <% if (ev.category === 'taller') { %>
+                <span class="badge badge-warning">🔧 Taller</span>
               <% } else { %>
-                <span class="badge badge-orange">🎉 Evento</span>
+                <span class="badge badge-info">🏍️ Club</span>
               <% } %>
             </td>
+            <td style="font-size:.82rem">
+              <% if (ev.type === 'rodada') { %>Rodada
+              <% } else if (ev.type === 'encuentro') { %>Encuentro
+              <% } else if (ev.type === 'caminata') { %>Caminata
+              <% } else if (ev.type === 'actividad') { %>Actividad
+              <% } else if (ev.type === 'descuento') { %>Descuento
+              <% } else if (ev.type === 'beneficio') { %>Beneficio
+              <% } else if (ev.type === 'oportunidad') { %>Oportunidad
+              <% } else { %>Evento<% } %>
+            </td>
             <td style="font-size:.82rem;white-space:nowrap"><%= ev.date %></td>
-            <td style="font-size:.82rem;color:#52525b"><%= ev.location || '—' %></td>
+            <td style="font-size:.82rem;color:#52525b">
+              <%= ev.location || '—' %>
+              <% if (ev.lat && ev.lng) { %>
+                <a href="https://www.google.com/maps?q=<%= ev.lat %>,<%= ev.lng %>" target="_blank" rel="noopener" style="margin-left:4px;font-size:.7rem;color:var(--accent)">ver mapa</a>
+              <% } %>
+            </td>
             <td>
-              <a class="btn btn-sm btn-ghost" href="/admin/eventos/<%= ev.id %>/asistencias">Ver</a>
+              <% if (ev.category !== 'taller') { %>
+                <a class="btn btn-sm btn-ghost" href="/admin/eventos/<%= ev.id %>/asistencias">Ver</a>
+              <% } else { %>
+                <span style="font-size:.75rem;color:#a1a1aa">N/A</span>
+              <% } %>
             </td>
             <td>
               <div class="crm-table-actions">
@@ -98,11 +144,28 @@
             </td>
           </tr>
           <tr>
-            <td colspan="6" style="padding:0;border:none">
+            <td colspan="7" style="padding:0;border:none">
               <div class="crm-inline-edit" id="ev-edit-<%= ev.id %>">
                 <form method="post" action="/admin/eventos/actualizar">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <input type="hidden" name="id" value="<%= ev.id %>" />
+                  <input type="hidden" name="lat" id="editLat-<%= ev.id %>" value="<%= ev.lat || '' %>" />
+                  <input type="hidden" name="lng" id="editLng-<%= ev.id %>" value="<%= ev.lng || '' %>" />
+
+                  <!-- Category selector -->
+                  <div class="ev-category-selector" style="margin-bottom:14px">
+                    <label style="font-weight:600;font-size:.85rem;display:block;margin-bottom:8px">Categoría</label>
+                    <div class="ev-cat-tabs" id="editCatTabs-<%= ev.id %>">
+                      <button type="button" class="ev-cat-btn <%= ev.category !== 'taller' ? 'active' : '' %>" data-cat="club" onclick="selectCategory('edit-<%= ev.id %>','club')">
+                        <span class="ev-cat-icon">🏍️</span> Club
+                      </button>
+                      <button type="button" class="ev-cat-btn <%= ev.category === 'taller' ? 'active' : '' %>" data-cat="taller" onclick="selectCategory('edit-<%= ev.id %>','taller')">
+                        <span class="ev-cat-icon">🔧</span> Taller
+                      </button>
+                    </div>
+                    <input type="hidden" name="category" id="editCategory-<%= ev.id %>" value="<%= ev.category || 'club' %>" />
+                  </div>
+
                   <div class="crm-form-grid" style="margin-bottom:12px">
                     <div class="crm-form-group">
                       <label>Título</label>
@@ -112,20 +175,32 @@
                       <label>Fecha</label>
                       <input type="date" name="date" value="<%= ev.date %>" />
                     </div>
-                    <div class="crm-form-group">
+                    <div class="crm-form-group" id="editTypeGroup-<%= ev.id %>">
                       <label>Tipo</label>
-                      <select name="type">
-                        <option value="evento" <%= ev.type !== 'rodada' ? 'selected' : '' %>>Evento (+25 pts)</option>
-                        <option value="rodada" <%= ev.type === 'rodada' ? 'selected' : '' %>>Rodada (+30 pts)</option>
+                      <select name="type" id="editType-<%= ev.id %>">
+                        <% if (ev.category === 'taller') { %>
+                          <option value="descuento" <%= ev.type === 'descuento' ? 'selected' : '' %>>💰 Descuento</option>
+                          <option value="beneficio" <%= ev.type === 'beneficio' ? 'selected' : '' %>>🎁 Beneficio</option>
+                          <option value="oportunidad" <%= ev.type === 'oportunidad' ? 'selected' : '' %>>⚡ Oportunidad única</option>
+                        <% } else { %>
+                          <option value="rodada" <%= ev.type === 'rodada' ? 'selected' : '' %>>🏍️ Rodada (+30 pts)</option>
+                          <option value="encuentro" <%= (ev.type === 'encuentro' || ev.type === 'evento') ? 'selected' : '' %>>⚽ Encuentro (+25 pts)</option>
+                          <option value="caminata" <%= ev.type === 'caminata' ? 'selected' : '' %>>🥾 Caminata (+25 pts)</option>
+                          <option value="actividad" <%= ev.type === 'actividad' ? 'selected' : '' %>>🎉 Actividad (+25 pts)</option>
+                        <% } %>
                       </select>
-                    </div>
-                    <div class="crm-form-group">
-                      <label>Lugar</label>
-                      <input name="location" value="<%= ev.location || '' %>" />
                     </div>
                     <div class="crm-form-group crm-form-full">
                       <label>Descripción</label>
                       <textarea name="description" rows="2"><%= ev.description || '' %></textarea>
+                    </div>
+                    <div class="crm-form-group crm-form-full">
+                      <label>Lugar</label>
+                      <input name="location" id="editLocation-<%= ev.id %>" value="<%= ev.location || '' %>" placeholder="Haz clic en el mapa para seleccionar…" autocomplete="off" />
+                      <div id="editMapContainer-<%= ev.id %>" class="ev-map-container">
+                        <div id="editMap-<%= ev.id %>" class="ev-map" data-lat="<%= ev.lat || '' %>" data-lng="<%= ev.lng || '' %>"></div>
+                      </div>
+                      <p class="ev-map-hint">Haz clic en el mapa para fijar la ubicación exacta.</p>
                     </div>
                   </div>
                   <div class="crm-form-actions">
@@ -143,10 +218,129 @@
   <% } %>
 </div>
 
+<style>
+.ev-category-selector { }
+.ev-cat-tabs { display: flex; gap: 8px; }
+.ev-cat-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 8px; border: 2px solid #e4e4e7;
+  background: #fff; cursor: pointer; font-size: .85rem; font-weight: 600;
+  color: #52525b; transition: all .15s;
+}
+.ev-cat-btn.active[data-cat="club"] { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+.ev-cat-btn.active[data-cat="taller"] { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
+.ev-cat-btn:hover { border-color: #a1a1aa; }
+
+.ev-map-container { margin-top: 8px; border-radius: 10px; overflow: hidden; border: 1px solid #e4e4e7; }
+.ev-map { height: 260px; width: 100%; }
+.ev-map-hint { font-size: .75rem; color: #71717a; margin: 4px 0 0; }
+</style>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/TDI=" crossorigin=""></script>
 <script>
-  function toggleEvEdit(id) {
-    document.getElementById('ev-edit-' + id).classList.toggle('open');
+const BOGOTA = [4.711, -74.0721];
+const maps = {};
+const markers = {};
+
+function initMap(mapId, latInputId, lngInputId, locationInputId, initLat, initLng) {
+  if (maps[mapId]) return;
+  const map = L.map(mapId).setView(initLat && initLng ? [initLat, initLng] : BOGOTA, initLat && initLng ? 15 : 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map);
+
+  if (initLat && initLng) {
+    const m = L.marker([initLat, initLng], { draggable: true }).addTo(map);
+    markers[mapId] = m;
+    m.on('dragend', () => {
+      const p = m.getLatLng();
+      document.getElementById(latInputId).value = p.lat.toFixed(6);
+      document.getElementById(lngInputId).value = p.lng.toFixed(6);
+      reverseGeocode(p.lat, p.lng, locationInputId);
+    });
   }
+
+  map.on('click', e => {
+    const { lat, lng } = e.latlng;
+    document.getElementById(latInputId).value = lat.toFixed(6);
+    document.getElementById(lngInputId).value = lng.toFixed(6);
+    reverseGeocode(lat, lng, locationInputId);
+    if (markers[mapId]) {
+      markers[mapId].setLatLng(e.latlng);
+    } else {
+      const m = L.marker(e.latlng, { draggable: true }).addTo(map);
+      markers[mapId] = m;
+      m.on('dragend', () => {
+        const p = m.getLatLng();
+        document.getElementById(latInputId).value = p.lat.toFixed(6);
+        document.getElementById(lngInputId).value = p.lng.toFixed(6);
+        reverseGeocode(p.lat, p.lng, locationInputId);
+      });
+    }
+  });
+
+  maps[mapId] = map;
+}
+
+async function reverseGeocode(lat, lng, inputId) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`, { headers: { 'Accept-Language': 'es' } });
+    const data = await r.json();
+    if (data && data.display_name) {
+      const el = document.getElementById(inputId);
+      if (el && !el.dataset.userEdited) el.value = data.display_name.split(',').slice(0, 3).join(',').trim();
+    }
+  } catch {}
+}
+
+function selectCategory(prefix, cat) {
+  const tabs = document.getElementById(prefix === 'create' ? 'createCatTabs' : `editCatTabs-${prefix.replace('edit-','')}`);
+  if (!tabs) return;
+  tabs.querySelectorAll('.ev-cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+
+  const catInput = document.getElementById(prefix === 'create' ? 'createCategory' : `editCategory-${prefix.replace('edit-','')}`);
+  if (catInput) catInput.value = cat;
+
+  const typeSelect = document.getElementById(prefix === 'create' ? 'createType' : `editType-${prefix.replace('edit-','')}`);
+  if (!typeSelect) return;
+
+  if (cat === 'taller') {
+    typeSelect.innerHTML = `
+      <option value="descuento">💰 Descuento</option>
+      <option value="beneficio">🎁 Beneficio</option>
+      <option value="oportunidad">⚡ Oportunidad única</option>`;
+  } else {
+    typeSelect.innerHTML = `
+      <option value="rodada">🏍️ Rodada (+30 pts)</option>
+      <option value="encuentro">⚽ Encuentro (+25 pts)</option>
+      <option value="caminata">🥾 Caminata (+25 pts)</option>
+      <option value="actividad">🎉 Actividad (+25 pts)</option>`;
+  }
+}
+
+function toggleEvEdit(id) {
+  const el = document.getElementById('ev-edit-' + id);
+  el.classList.toggle('open');
+  if (el.classList.contains('open')) {
+    const mapEl = document.getElementById('editMap-' + id);
+    if (mapEl) {
+      const lat = parseFloat(mapEl.dataset.lat) || null;
+      const lng = parseFloat(mapEl.dataset.lng) || null;
+      setTimeout(() => initMap('editMap-' + id, 'editLat-' + id, 'editLng-' + id, 'editLocation-' + id, lat, lng), 50);
+    }
+  }
+}
+
+// Init create map when form opens
+document.querySelector('[onclick*="newEventCard"]').addEventListener('click', () => {
+  setTimeout(() => {
+    const card = document.getElementById('newEventCard');
+    if (!card.classList.contains('hidden-card')) {
+      initMap('createMap', 'createLat', 'createLng', 'createLocation', null, null);
+    }
+  }, 50);
+});
 </script>
 
 <%- include('../partials/admin-foot') %>

@@ -65,14 +65,14 @@ router.get('/eventos', requireAuth, requireAdmin, async (req, res) => {
 });
 
 router.post('/eventos/crear', requireAuth, requireAdmin, async (req, res) => {
-  const { title, date, location, description, type } = req.body;
-  if (title && date) await createEvent({ id: uuidv4(), title, date, location, description, type: type || 'evento' });
+  const { title, date, location, description, type, category, lat, lng } = req.body;
+  if (title && date) await createEvent({ id: uuidv4(), title, date, location, description, type: type || 'evento', category: category || 'club', lat: lat || null, lng: lng || null });
   res.redirect('/admin/eventos');
 });
 
 router.post('/eventos/actualizar', requireAuth, requireAdmin, async (req, res) => {
-  const { id, title, date, location, description, type } = req.body;
-  await updateEvent(id, { title, date, location, description, type });
+  const { id, title, date, location, description, type, category, lat, lng } = req.body;
+  await updateEvent(id, { title, date, location, description, type, category, lat: lat || null, lng: lng || null });
   res.redirect('/admin/eventos');
 });
 

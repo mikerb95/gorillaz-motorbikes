@@ -1,21 +1,111 @@
 <%- include('./partials/head', { title: 'Eventos' }) %>
 <main class="container section">
-  <h1 class="section-title">Eventos del Club</h1>
+  <div class="events-header">
+    <h1 class="section-title" style="margin-bottom:8px">Eventos</h1>
+    <p class="muted" style="margin-bottom:24px">Actividades del club y promociones del taller</p>
+
+    <% const hasClub = events.some(e => e.category !== 'taller'); %>
+    <% const hasTaller = events.some(e => e.category === 'taller'); %>
+
+    <% if (hasClub || hasTaller) { %>
+    <div class="events-filter-bar" role="tablist">
+      <button class="ev-filter-btn active" data-filter="all" onclick="filterEvents('all',this)" role="tab" aria-selected="true">
+        Todos
+        <span class="ev-filter-count"><%= events.filter(e => { const t = Date.parse(e.date); return Number.isFinite(t) && new Date(t) >= new Date(new Date().setHours(0,0,0,0)); }).length %></span>
+      </button>
+      <% if (hasClub) { %>
+      <button class="ev-filter-btn" data-filter="club" onclick="filterEvents('club',this)" role="tab" aria-selected="false">
+        <span class="ev-filter-dot club"></span> Club
+        <span class="ev-filter-count"><%= events.filter(e => e.category !== 'taller' && (() => { const t = Date.parse(e.date); return Number.isFinite(t) && new Date(t) >= new Date(new Date().setHours(0,0,0,0)); })()).length %></span>
+      </button>
+      <% } %>
+      <% if (hasTaller) { %>
+      <button class="ev-filter-btn" data-filter="taller" onclick="filterEvents('taller',this)" role="tab" aria-selected="false">
+        <span class="ev-filter-dot taller"></span> Taller
+        <span class="ev-filter-count"><%= events.filter(e => e.category === 'taller' && (() => { const t = Date.parse(e.date); return Number.isFinite(t) && new Date(t) >= new Date(new Date().setHours(0,0,0,0)); })()).length %></span>
+      </button>
+      <% } %>
+    </div>
+    <% } %>
+  </div>
+
   <% if (!events || events.length === 0) { %>
-    <p class="muted">No hay eventos publicados aún.</p>
+    <p class="muted" style="text-align:center;padding:40px 0">No hay eventos publicados aún.</p>
   <% } else { %>
-    <div class="grid three">
-      <% events.forEach((ev, idx) => { %>
-        <article class="card stack" id="ev-<%= idx %>">
-          <h3 class="tight"><%= ev.title %></h3>
-          <div class="row gap">
-            <span class="chip"><%= ev.date %></span>
-            <% if (ev.location) { %><span class="chip"><%= ev.location %></span><% } %>
+    <div class="events-grid" id="eventsGrid">
+      <%
+        const today = new Date(); today.setHours(0,0,0,0);
+        const upcoming = events.filter(e => { const t = Date.parse(e.date); return Number.isFinite(t) && new Date(new Date(t).setHours(0,0,0,0)) >= today; });
+        const past = events.filter(e => { const t = Date.parse(e.date); return !Number.isFinite(t) || new Date(new Date(t).setHours(0,0,0,0)) < today; });
+        const sorted = [...upcoming, ...past];
+      %>
+      <% sorted.forEach((ev, idx) => { %>
+        <%
+          const evDate = new Date(ev.date + 'T00:00:00');
+          const isPast = evDate < today;
+          const isTaller = ev.category === 'taller';
+          const typeLabel = {
+            rodada: '🏍️ Rodada', encuentro: '⚽ Encuentro', caminata: '🥾 Caminata',
+            actividad: '🎉 Actividad', evento: '🎉 Actividad',
+            descuento: '💰 Descuento', beneficio: '🎁 Beneficio', oportunidad: '⚡ Oportunidad única'
+          }[ev.type] || '📅 Evento';
+          const dateStr = evDate.toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        %>
+        <article class="ev-card <%= isTaller ? 'ev-card--taller' : 'ev-card--club' %> <%= isPast ? 'ev-card--past' : '' %>"
+                 id="ev-<%= idx %>"
+                 data-category="<%= isTaller ? 'taller' : 'club' %>">
+          <div class="ev-card-accent"></div>
+          <div class="ev-card-body">
+            <div class="ev-card-meta">
+              <span class="ev-type-chip <%= isTaller ? 'taller' : 'club' %>"><%= typeLabel %></span>
+              <% if (isPast) { %><span class="ev-past-chip">Finalizado</span><% } %>
+            </div>
+            <h3 class="ev-card-title"><%= ev.title %></h3>
+            <% if (ev.description) { %>
+              <p class="ev-card-desc"><%= ev.description %></p>
+            <% } %>
+            <div class="ev-card-footer">
+              <div class="ev-card-info">
+                <span class="ev-info-item">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <%= dateStr %>
+                </span>
+                <% if (ev.location) { %>
+                <span class="ev-info-item">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <% if (ev.lat && ev.lng) { %>
+                    <a href="https://www.google.com/maps?q=<%= ev.lat %>,<%= ev.lng %>" target="_blank" rel="noopener" class="ev-location-link"><%= ev.location %></a>
+                  <% } else { %>
+                    <%= ev.location %>
+                  <% } %>
+                </span>
+                <% } %>
+              </div>
+              <% if (!isTaller && !isPast && user) { %>
+                <a class="btn btn-sm <%= isTaller ? 'btn-warning' : 'btn-primary' %>" href="#ev-<%= idx %>">Registrarme</a>
+              <% } %>
+            </div>
           </div>
-          <p><%= ev.description %></p>
         </article>
       <% }) %>
     </div>
+
+    <% if (past.length > 0 && upcoming.length > 0) { %>
+      <p class="muted" style="text-align:center;margin-top:8px;font-size:.8rem">Los eventos finalizados aparecen al final de la lista.</p>
+    <% } %>
   <% } %>
 </main>
 <%- include('./partials/footer') %>
+
+<script>
+function filterEvents(cat, btn) {
+  document.querySelectorAll('.ev-filter-btn').forEach(b => {
+    b.classList.toggle('active', b === btn);
+    b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+  });
+  document.querySelectorAll('.ev-card').forEach(card => {
+    const show = cat === 'all' || card.dataset.category === cat;
+    card.style.display = show ? '' : 'none';
+  });
+}
+</script>
