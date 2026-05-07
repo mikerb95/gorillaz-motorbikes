@@ -441,4 +441,84 @@ router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/cotizador-config?flash=saved');
 });
 
+// ── Órdenes de servicio ───────────────────────────────────────────────────
+
+router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, async (req, res) => {
+  const quotation = await getQuotationById(req.params.id);
+  if (!quotation) return res.redirect('/admin/cotizaciones');
+  const { id } = await createServiceOrder({
+    quotationId:        quotation.id,
+    items:              quotation.items,
+    total:              quotation.total,
+    motorcycle:         quotation.motorcycle,
+    clientPhone:        quotation.clientPhone,
+    clientPhoneCountry: quotation.clientPhoneCountry,
+    mechanic:           (req.body.mechanic || '').trim() || null,
+    notes:              (req.body.notes || '').trim() || null,
+    estimatedDate:      req.body.estimatedDate || null,
+  });
+  res.redirect('/admin/ordenes-servicio/' + id);
+});
+
+router.get('/ordenes-servicio', requireAuth, requireAdmin, async (req, res) => {
+  const orders = await getAllServiceOrders();
+  res.render('admin/service-orders', { orders });
+});
+
+router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order) return res.redirect('/admin/ordenes-servicio');
+  const quotation = order.quotationId ? await getQuotationById(order.quotationId) : null;
+  const invoice   = order.invoiceId   ? await getInvoiceById(order.invoiceId)     : null;
+  res.render('admin/service-order-detail', { order, quotation, invoice });
+});
+
+router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
+  const { mechanic, status, notes, estimatedDate } = req.body;
+  await updateServiceOrder(req.params.id, {
+    mechanic:      (mechanic || '').trim() || null,
+    status:        status || 'pendiente',
+    notes:         (notes || '').trim() || null,
+    estimatedDate: estimatedDate || null,
+  });
+  res.redirect('/admin/ordenes-servicio/' + req.params.id);
+});
+
+router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order || order.invoiceId) return res.redirect('/admin/ordenes-servicio/' + req.params.id);
+  const tax = Math.round(Number(req.body.tax || 0));
+  const subtotal = order.total;
+  const { id: invoiceId } = await createInvoice({
+    serviceOrderId:     order.id,
+    quotationId:        order.quotationId,
+    items:              order.items,
+    subtotal,
+    tax,
+    paymentMethod:      req.body.paymentMethod || 'efectivo',
+    notes:              (req.body.notes || '').trim() || null,
+  });
+  await updateServiceOrder(order.id, { status: 'facturado', invoiceId });
+  res.redirect('/admin/facturas/' + invoiceId);
+});
+
+// ── Facturas ──────────────────────────────────────────────────────────────
+
+router.get('/facturas', requireAuth, requireAdmin, async (req, res) => {
+  const invoices = await getAllInvoices();
+  res.render('admin/invoices', { invoices });
+});
+
+router.get('/facturas/:id', requireAuth, requireAdmin, async (req, res) => {
+  const invoice = await getInvoiceById(req.params.id);
+  if (!invoice) return res.redirect('/admin/facturas');
+  const order = await getServiceOrderById(invoice.serviceOrderId);
+  res.render('admin/invoice-detail', { invoice, order });
+});
+
+router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) => {
+  await updateInvoiceStatus(req.params.id, req.body.status, req.body.paymentMethod);
+  res.redirect('/admin/facturas/' + req.params.id);
+});
+
 module.exports = router;
