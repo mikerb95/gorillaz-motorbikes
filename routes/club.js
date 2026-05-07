@@ -218,9 +218,11 @@ router.post('/vehiculos/actualizar', requireAuth, async (req, res) => {
 router.post('/eventos/:id/asistencia', requireAuth, async (req, res) => {
   const eventId = req.params.id;
   const ev      = await require('../db').getEventById(eventId);
-  if (!ev) return res.redirect('/club/panel');
-  await registerEventAttendance(eventId, req.userId);
-  res.redirect('/club/panel');
+  if (!ev) return res.redirect('/eventos');
+  try {
+    await registerEventAttendance(eventId, req.userId);
+  } catch { /* UNIQUE constraint: ya inscrito, ignorar */ }
+  res.redirect('/eventos');
 });
 
 router.get('/tabla', async (req, res) => {

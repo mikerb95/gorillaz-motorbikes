@@ -1,12 +1,24 @@
 'use strict';
-const express = require('express');
+const express  = require('express');
+const path     = require('path');
+const fs       = require('fs');
 const { createQuotation } = require('../db');
 const { products } = require('../data/catalog');
 const services = require('../data/services-catalog');
 
 const router = express.Router();
 
-// Build combined searchable catalog (products + services) — no prices here
+const CONFIG_PATH = path.join(__dirname, '..', 'data', 'cotizador-config.json');
+
+function loadConfig() {
+  try {
+    return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+  } catch {
+    return { waHeader: '🏍️ *Cotización Gorillaz Motorbikes*', waItemPrefix: '•', waFooter: 'gorillazmotorbikes.com', waNote: '' };
+  }
+}
+
+// Combined searchable catalog — no prices
 const catalog = [
   ...services,
   ...products.map(p => ({
@@ -22,6 +34,7 @@ router.get('/liquidador', (req, res) => {
     title: 'Liquidador — Gorillaz Motorbikes',
     description: 'Crea cotizaciones rápidas de servicios y productos.',
     canonicalPath: '/liquidador',
+    waConfig: loadConfig(),
   });
 });
 
@@ -44,7 +57,7 @@ router.get('/api/liquidador/search', (req, res) => {
 
 router.post('/api/liquidador/quotation', async (req, res) => {
   try {
-    const { items, total, clientPhone, clientPhoneCountry } = req.body;
+    const { items, total, clientPhone, clientPhoneCountry, motorcycle, notes } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Se requiere al menos un ítem.' });
@@ -55,6 +68,8 @@ router.post('/api/liquidador/quotation', async (req, res) => {
       total: Number(total) || 0,
       clientPhone: clientPhone || null,
       clientPhoneCountry: clientPhoneCountry || '+57',
+      motorcycle: motorcycle || null,
+      notes: notes || null,
     });
 
     res.json({ ok: true, id, consecutive });
