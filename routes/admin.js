@@ -1,5 +1,7 @@
 'use strict';
 const express  = require('express');
+const path     = require('path');
+const fs       = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const courses     = require('../data/courses.json');
 const classesData = require('../data/classes.json');
@@ -20,18 +22,28 @@ const {
   getAllNewsletterSubscribers, getConfirmedNewsletterSubscribers,
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
+  getAllQuotations, getQuotationById, countQuotations,
 } = require('../db');
+
+const COTIZADOR_CONFIG_PATH = path.join(__dirname, '..', 'data', 'cotizador-config.json');
+function loadCotizadorConfig() {
+  try { return JSON.parse(fs.readFileSync(COTIZADOR_CONFIG_PATH, 'utf8')); }
+  catch { return { waHeader: '🏍️ *Cotización Gorillaz Motorbikes*', waItemPrefix: '•', waFooter: 'gorillazmotorbikes.com', waNote: '' }; }
+}
+function saveCotizadorConfig(cfg) {
+  try { fs.writeFileSync(COTIZADOR_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
+}
 const { resendClient } = require('../config');
 
 const router = express.Router();
 
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
-  const [users, events, citas, pedidos, allSubs] = await Promise.all([
+  const [users, events, citas, pedidos, allSubs, cotizaciones] = await Promise.all([
     countUsers(), countEvents(), countAppointments(), countOrders(),
-    getAllNewsletterSubscribers(),
+    getAllNewsletterSubscribers(), countQuotations(),
   ]);
   const suscriptores = allSubs.filter(s => s.confirmed).length;
-  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores } });
+  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores, cotizaciones } });
 });
 
 router.get('/pedidos', requireAuth, requireAdmin, async (req, res) => {
@@ -344,6 +356,39 @@ router.post('/newsletter/enviar', requireAuth, requireAdmin, async (req, res) =>
 
   await createNewsletterCampaign(subject, bodyHtml, subscribers.length);
   res.redirect('/admin/newsletter?flash=sent');
+});
+
+// ── Cotizaciones ──────────────────────────────────────────────────────────
+
+router.get('/cotizaciones', requireAuth, requireAdmin, async (req, res) => {
+  const quotations = await getAllQuotations();
+  const totalRevenue = quotations.reduce((s, q) => s + q.total, 0);
+  res.render('admin/quotations', { quotations, totalRevenue });
+});
+
+router.get('/cotizaciones/:id', requireAuth, requireAdmin, async (req, res) => {
+  const quotation = await getQuotationById(req.params.id);
+  if (!quotation) return res.redirect('/admin/cotizaciones');
+  res.render('admin/quotation-detail', { quotation });
+});
+
+// ── Configuración del liquidador ──────────────────────────────────────────
+
+router.get('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
+  const config = loadCotizadorConfig();
+  const flash = req.query.flash || null;
+  res.render('admin/cotizador-config', { config, flash });
+});
+
+router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
+  const { waHeader, waItemPrefix, waFooter, waNote } = req.body;
+  saveCotizadorConfig({
+    waHeader:     (waHeader     || '').trim(),
+    waItemPrefix: (waItemPrefix || '•').trim() || '•',
+    waFooter:     (waFooter     || '').trim(),
+    waNote:       (waNote       || '').trim(),
+  });
+  res.redirect('/admin/cotizador-config?flash=saved');
 });
 
 module.exports = router;
