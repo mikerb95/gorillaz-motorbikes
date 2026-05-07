@@ -683,7 +683,7 @@ async function confirmEventAttendance(attendanceId) {
 async function getUpcomingEvents(limit = 6) {
   const today = new Date().toISOString().slice(0, 10);
   const r = await db.execute({
-    sql: 'SELECT * FROM events WHERE date >= ? ORDER BY date ASC LIMIT ?',
+    sql: 'SELECT * FROM events WHERE date >= ? AND deleted_at IS NULL ORDER BY date ASC LIMIT ?',
     args: [today, limit],
   });
   return r.rows.map(rowToEvent);
