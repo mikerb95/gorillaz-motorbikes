@@ -2,7 +2,10 @@
 const { Resend } = require('resend');
 
 if (!process.env.JWT_SECRET) {
-  console.warn('[WARN] JWT_SECRET not set — using insecure fallback. Set this env var in production.');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[FATAL] JWT_SECRET must be set in production. Refusing to start.');
+  }
+  console.warn('[WARN] JWT_SECRET not set — using insecure fallback. Never deploy this way.');
 }
 if (!process.env.BOLD_API_KEY || process.env.BOLD_API_KEY === 'tu_api_key_de_bold_aqui') {
   console.warn('[WARN] BOLD_API_KEY not configured — payments will fail. Set this env var.');

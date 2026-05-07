@@ -6,16 +6,14 @@ const services = require('../data/services-catalog');
 
 const router = express.Router();
 
-// Build combined searchable catalog (products + services)
+// Build combined searchable catalog (products + services) — no prices here
 const catalog = [
   ...services,
   ...products.map(p => ({
     id: p.id,
     name: p.name,
-    price: p.price,
     type: 'product',
     brand: p.brand || '',
-    category: p.category || '',
   })),
 ];
 
@@ -37,7 +35,6 @@ router.get('/api/liquidador/search', (req, res) => {
     .map(item => ({
       id: item.id,
       name: item.name,
-      price: item.price,
       type: item.type,
       brand: item.brand || '',
     }));
