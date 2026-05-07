@@ -162,6 +162,8 @@ async function initDb() {
     `ALTER TABLE newsletter ADD COLUMN unsubscribe_token TEXT`,
     `ALTER TABLE newsletter ADD COLUMN confirmed INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE newsletter ADD COLUMN confirm_token TEXT`,
+    `ALTER TABLE quotations ADD COLUMN motorcycle TEXT`,
+    `ALTER TABLE quotations ADD COLUMN notes TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
