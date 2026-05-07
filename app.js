@@ -42,4 +42,17 @@ app.use('/admin',  require('./routes/admin'));
 
 app.use((req, res) => res.status(404).render('404'));
 
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  const status = err.status || err.statusCode || 500;
+  console.error(`[${new Date().toISOString()}] ${req.method} ${req.path} → ${status}:`, err.message || err);
+  if (res.headersSent) return next(err);
+  if (status < 500) return res.status(status).render('403', { message: err.message || 'Acceso denegado.' });
+  res.status(500).render('500');
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+
 module.exports = app;
