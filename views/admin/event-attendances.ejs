@@ -78,7 +78,10 @@
                     <input type="hidden" name="eventId" value="<%= ev.id %>" />
                     <input type="hidden" name="userId" value="<%= a.userId %>" />
                     <input type="hidden" name="eventType" value="<%= ev.type %>" />
-                    <button class="btn btn-sm btn-primary" type="submit">Confirmar + puntos</button>
+                    <button class="btn btn-sm btn-primary" type="submit"
+                      data-confirm="¿Confirmar asistencia y otorgar puntos a <%= a.nickname || a.name %>?">
+                      Confirmar + puntos
+                    </button>
                   </form>
                 <% } else { %>
                   <span style="font-size:.8rem;color:#16a34a;font-weight:700">Puntos otorgados ✓</span>
