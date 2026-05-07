@@ -153,6 +153,17 @@ async function initDb() {
     try { await db.execute(sql); } catch { /* column already exists */ }
   }
 
+  const indexes = [
+    `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`,
+    `CREATE INDEX IF NOT EXISTS idx_users_cedula ON users(cedula)`,
+    `CREATE INDEX IF NOT EXISTS idx_ea_event_id  ON event_attendances(event_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_ea_user_id   ON event_attendances(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_events_date  ON events(date)`,
+  ];
+  for (const sql of indexes) {
+    try { await db.execute(sql); } catch { /* index already exists */ }
+  }
+
   await ensureNewsletterTokens();
   console.log('✅ Turso schema inicializado');
 }
