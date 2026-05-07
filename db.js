@@ -807,6 +807,6 @@ module.exports = {
   createEnrollment,
   createJobApplication,
   createOrder, updateOrderStatus, getOrderById, getAllOrders, getOrdersByUser, countOrders,
-  createQuotation, getAllQuotations, countQuotations,
+  createQuotation, getQuotationById, getAllQuotations, countQuotations,
   logAdminAction, getAdminAuditLog,
 };

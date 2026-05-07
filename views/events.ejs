@@ -81,8 +81,20 @@
                 </span>
                 <% } %>
               </div>
-              <% if (!isTaller && !isPast && user) { %>
-                <a class="btn btn-sm <%= isTaller ? 'btn-warning' : 'btn-primary' %>" href="#ev-<%= idx %>">Registrarme</a>
+              <% if (!isTaller && !isPast) { %>
+                <% const regStatus = registrations[ev.id]; %>
+                <% if (!user) { %>
+                  <a class="btn btn-sm btn-ghost" href="/club/login?return=/eventos">Iniciar sesión</a>
+                <% } else if (regStatus === 'confirmed') { %>
+                  <span class="ev-reg-badge confirmed">✓ Confirmado</span>
+                <% } else if (regStatus === 'pending') { %>
+                  <span class="ev-reg-badge pending">⏳ Inscrito</span>
+                <% } else { %>
+                  <form method="post" action="/club/eventos/<%= ev.id %>/asistencia" style="margin:0">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="btn btn-sm btn-primary">Inscribirme</button>
+                  </form>
+                <% } %>
               <% } %>
             </div>
           </div>
