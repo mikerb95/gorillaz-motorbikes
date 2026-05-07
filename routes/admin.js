@@ -49,12 +49,12 @@ const { resendClient } = require('../config');
 const router = express.Router();
 
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
-  const [users, events, citas, pedidos, allSubs, cotizaciones] = await Promise.all([
+  const [users, events, citas, pedidos, allSubs, cotizaciones, ordenes, facturas] = await Promise.all([
     countUsers(), countEvents(), countAppointments(), countOrders(),
-    getAllNewsletterSubscribers(), countQuotations(),
+    getAllNewsletterSubscribers(), countQuotations(), countServiceOrders(), countInvoices(),
   ]);
   const suscriptores = allSubs.filter(s => s.confirmed).length;
-  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores, cotizaciones } });
+  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores, cotizaciones, ordenes, facturas } });
 });
 
 router.get('/pedidos', requireAuth, requireAdmin, async (req, res) => {
