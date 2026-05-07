@@ -703,6 +703,14 @@ async function getUserEventRegistrations(userId) {
 
 // ── Quotations ────────────────────────────────────────────────────────────
 
+function fmtConsecutiveLabel(consecutive, createdAt) {
+  const d  = createdAt ? new Date(createdAt) : new Date();
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const yy = String(d.getUTCFullYear()).slice(2);
+  return `${dd}${mm}${yy}-${String(consecutive).padStart(4, '0')}`;
+}
+
 async function getNextQuotationConsecutive() {
   const r = await db.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM quotations');
   return Number(r.rows[0].next);
@@ -710,9 +718,11 @@ async function getNextQuotationConsecutive() {
 
 function rowToQuotation(row) {
   if (!row) return null;
+  const consecutive = Number(row.consecutive);
   return {
     id: row.id,
-    consecutive: Number(row.consecutive),
+    consecutive,
+    label: fmtConsecutiveLabel(consecutive, row.created_at),
     items: safeJson(row.items, []),
     total: Number(row.total),
     clientPhone: row.client_phone,
@@ -725,8 +735,10 @@ function rowToQuotation(row) {
 }
 
 async function createQuotation(data) {
-  const id = data.id || uuidv4();
+  const id         = data.id || uuidv4();
+  const now        = new Date().toISOString();
   const consecutive = await getNextQuotationConsecutive();
+  const label       = fmtConsecutiveLabel(consecutive, now);
   await db.execute({
     sql: `INSERT INTO quotations (id, consecutive, items, total, client_phone, client_phone_country, motorcycle, notes, status)
           VALUES (?,?,?,?,?,?,?,?,?)`,
@@ -742,7 +754,7 @@ async function createQuotation(data) {
       'confirmed',
     ],
   });
-  return { id, consecutive };
+  return { id, consecutive, label };
 }
 
 async function getQuotationById(id) {

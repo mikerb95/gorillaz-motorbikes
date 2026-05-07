@@ -54,7 +54,7 @@ router.post('/api/liquidador/quotation', async (req, res) => {
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Se requiere al menos un ítem.' });
     }
-    const { id, consecutive } = await createQuotation({
+    const { id, consecutive, label } = await createQuotation({
       items,
       total: Number(total) || 0,
       clientPhone: clientPhone || null,
