@@ -166,12 +166,14 @@ router.get('/panel', requireAuth, async (req, res) => {
     soat:  v.soatExpires  ? daysBetween(new Date(v.soatExpires  + 'T00:00:00'), today) : null,
     tecno: v.tecnoExpires ? daysBetween(new Date(v.tecnoExpires + 'T00:00:00'), today) : null,
   }));
-  const [upcomingEvents, registrations] = await Promise.all([
+  const plates = (user.vehicles || []).map(v => v.plate).filter(Boolean);
+  const [upcomingEvents, registrations, quotationHistory] = await Promise.all([
     getUpcomingEvents(8),
     getUserEventRegistrations(user.id),
+    getQuotationsByMotorcyclePlates(plates),
   ]);
   const scoreLevel = getScoreLevel(user.score || 0);
-  res.render('club/dashboard', { user, reminders, upcomingEvents, registrations, scoreLevel, SCORE_POINTS });
+  res.render('club/dashboard', { user, reminders, upcomingEvents, registrations, scoreLevel, SCORE_POINTS, quotationHistory });
 });
 
 router.post('/visitas', requireAuth, async (req, res) => {
