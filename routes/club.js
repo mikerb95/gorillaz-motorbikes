@@ -167,11 +167,16 @@ router.get('/panel', requireAuth, async (req, res) => {
     tecno: v.tecnoExpires ? daysBetween(new Date(v.tecnoExpires + 'T00:00:00'), today) : null,
   }));
   const plates = (user.vehicles || []).map(v => v.plate).filter(Boolean);
-  const [upcomingEvents, registrations, quotationHistory] = await Promise.all([
-    getUpcomingEvents(8),
-    getUserEventRegistrations(user.id),
-    getQuotationsByMotorcyclePlates(plates),
-  ]);
+  let upcomingEvents = [], registrations = {}, quotationHistory = [];
+  try {
+    [upcomingEvents, registrations, quotationHistory] = await Promise.all([
+      getUpcomingEvents(8),
+      getUserEventRegistrations(user.id),
+      getQuotationsByMotorcyclePlates(plates),
+    ]);
+  } catch (e) {
+    console.error('GET /club/panel data error:', e.message);
+  }
   const scoreLevel = getScoreLevel(user.score || 0);
   res.render('club/dashboard', { user, reminders, upcomingEvents, registrations, scoreLevel, SCORE_POINTS, quotationHistory });
 });

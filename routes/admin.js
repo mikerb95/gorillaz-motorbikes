@@ -23,6 +23,8 @@ const {
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
   getAllQuotations, getQuotationById, countQuotations,
+  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
+  createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
 } = require('../db');
 
 const COTIZADOR_CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
