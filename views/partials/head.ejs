@@ -7,7 +7,7 @@
   <title>
     <%= title || 'Gorillaz Motorbikes | Taller de motos en Bogotá' %>
   </title>
-  <meta name="description" content="<%= description || 'Gorillaz Motorbikes — Taller de motos en Bogotá. Mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo y tienda de accesorios.' %>" />
+  <meta name="description" content="<%= typeof description !== 'undefined' && description ? description : 'Gorillaz Motorbikes — Taller de motos en Bogotá. Mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo y tienda de accesorios.' %>" />
   <link rel="canonical" href="https://gorillazmotorbikes.com<%= typeof canonicalPath !== 'undefined' ? canonicalPath : '' %>" />
   <!-- Open Graph -->
   <meta property="og:type"        content="website" />
