@@ -1,8 +1,13 @@
 'use strict';
 
 const SCORE_POINTS = {
+  // Club events
   rodada:        30,
-  evento:        25,
+  encuentro:     25,
+  caminata:      25,
+  actividad:     25,
+  evento:        25, // legacy
+  // Workshop
   mantenimiento: 20,
   visita:        10,
 };
