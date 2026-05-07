@@ -1,24 +1,4 @@
 'use strict';
-
-module.exports = [
-  { id: 'svc-mecanica',         name: 'Mecánica general',               type: 'service' },
-  { id: 'svc-mecanica-rapida',  name: 'Mecánica rápida',                type: 'service' },
-  { id: 'svc-pintura',          name: 'Pintura completa',               type: 'service' },
-  { id: 'svc-pintura-retoque',  name: 'Retoque de pintura',             type: 'service' },
-  { id: 'svc-alistamiento',     name: 'Alistamiento tecnomecánica',     type: 'service' },
-  { id: 'svc-electricidad',     name: 'Diagnóstico eléctrico',          type: 'service' },
-  { id: 'svc-electricidad-rep', name: 'Reparación eléctrica',           type: 'service' },
-  { id: 'svc-torno',            name: 'Trabajo de torno',               type: 'service' },
-  { id: 'svc-prensa',           name: 'Trabajo de prensa',              type: 'service' },
-  { id: 'svc-escaneo',          name: 'Escaneo de motos',               type: 'service' },
-  { id: 'svc-aceite',           name: 'Cambio de aceite',               type: 'service' },
-  { id: 'svc-frenos',           name: 'Revisión de frenos',             type: 'service' },
-  { id: 'svc-llantas',          name: 'Montaje de llantas',             type: 'service' },
-  { id: 'svc-cadena',           name: 'Ajuste y engrase de cadena',     type: 'service' },
-  { id: 'svc-lavado',           name: 'Lavado de moto',                 type: 'service' },
-  { id: 'svc-lavado-casco',     name: 'Lavado de casco',                type: 'service' },
-  { id: 'svc-detailing',        name: 'Detailing de moto',              type: 'service' },
-  { id: 'svc-revision-gral',    name: 'Revisión general preventiva',    type: 'service' },
-  { id: 'svc-bujias',           name: 'Cambio de bujías',               type: 'service' },
-  { id: 'svc-filtro-aire',      name: 'Cambio filtro de aire',          type: 'service' },
-];
+// Source of truth is services-catalog.json — this file just re-exports it
+// so existing require('./data/services-catalog') calls keep working.
+module.exports = require('./services-catalog.json');
