@@ -592,11 +592,10 @@
             <input
               id="stagingPrice"
               class="liq-price-input"
-              type="number"
-              min="0"
-              step="1000"
-              placeholder="0"
+              type="text"
               inputmode="numeric"
+              placeholder="0"
+              autocomplete="off"
               aria-label="Valor del ítem en pesos colombianos"
             />
           </div>
@@ -1045,12 +1044,25 @@
 
   // ── Staging: confirmar precio y añadir ────────────────────────────
   btnStagingAdd.addEventListener('click', confirmStaging);
+  // Formato de miles en tiempo real
+  stagingPrice.addEventListener('input', () => {
+    const raw = stagingPrice.value.replace(/\D/g, '');
+    const cursor = stagingPrice.selectionStart;
+    const prevLen = stagingPrice.value.length;
+    if (raw === '') { stagingPrice.value = ''; return; }
+    const formatted = Number(raw).toLocaleString('es-CO');
+    stagingPrice.value = formatted;
+    // Reposicionar el cursor considerando los separadores añadidos
+    const diff = formatted.length - prevLen;
+    stagingPrice.setSelectionRange(cursor + diff, cursor + diff);
+  });
+
   stagingPrice.addEventListener('keydown', e => {
     if (e.key === 'Enter') confirmStaging();
   });
 
   function confirmStaging() {
-    const price = parseInt(stagingPrice.value, 10);
+    const price = parseInt(stagingPrice.value.replace(/\D/g, ''), 10);
     if (!price || price <= 0) {
       stagingPrice.classList.add('error');
       stagingPrice.focus();
