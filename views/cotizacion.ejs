@@ -296,7 +296,7 @@
     doc.text('gorillazmotorbikes.com  |  Bogotá, Colombia', 14, 20);
     const dateStr = new Date(QUOTATION.createdAt).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
     doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
-    doc.text('Cotización N° ' + String(QUOTATION.consecutive).padStart(4, '0'), 196, 20, { align: 'right' });
+    doc.text('Cotización N° ' + (QUOTATION.label || QUOTATION.consecutive), 196, 20, { align: 'right' });
 
     // Title + moto
     doc.setTextColor(17, 17, 17);
@@ -353,7 +353,7 @@
     doc.text('Válida por 30 días. Precios en COP. gorillazmotorbikes.com', 14, 285);
     doc.text('Gorillaz Motorbikes — Bogotá, Colombia', 196, 285, { align: 'right' });
 
-    doc.save('cotizacion-' + String(QUOTATION.consecutive).padStart(4, '0') + '.pdf');
+    doc.save('cotizacion-' + (QUOTATION.label || QUOTATION.consecutive) + '.pdf');
   });
 })();
 </script>
