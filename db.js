@@ -816,6 +816,165 @@ async function countQuotations() {
   return Number(r.rows[0].n);
 }
 
+// ── Service Orders ────────────────────────────────────────────────────────
+
+function fmtLabel(prefix, consecutive, createdAt) {
+  const d  = createdAt ? new Date(createdAt) : new Date();
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const yy = String(d.getUTCFullYear()).slice(2);
+  return `${prefix}${dd}${mm}${yy}-${String(consecutive).padStart(4, '0')}`;
+}
+
+function rowToServiceOrder(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    consecutive: Number(row.consecutive),
+    label: row.label,
+    quotationId: row.quotation_id,
+    items: safeJson(row.items, []),
+    total: Number(row.total),
+    motorcycle: row.motorcycle || null,
+    clientPhone: row.client_phone,
+    clientPhoneCountry: row.client_phone_country,
+    mechanic: row.mechanic || null,
+    status: row.status,
+    notes: row.notes || null,
+    estimatedDate: row.estimated_date || null,
+    invoiceId: row.invoice_id || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function createServiceOrder(data) {
+  const id  = data.id || uuidv4();
+  const now = new Date().toISOString();
+  const r   = await db.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM service_orders');
+  const consecutive = Number(r.rows[0].next);
+  const label = fmtLabel('OS-', consecutive, now);
+  await db.execute({
+    sql: `INSERT INTO service_orders
+          (id, consecutive, label, quotation_id, items, total, motorcycle, client_phone, client_phone_country, mechanic, status, notes, estimated_date)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      id, consecutive, label,
+      data.quotationId || null,
+      JSON.stringify(data.items || []),
+      data.total || 0,
+      data.motorcycle || null,
+      data.clientPhone || null,
+      data.clientPhoneCountry || '+57',
+      data.mechanic || null,
+      data.status || 'pendiente',
+      data.notes || null,
+      data.estimatedDate || null,
+    ],
+  });
+  return { id, consecutive, label };
+}
+
+async function getServiceOrderById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM service_orders WHERE id = ?', args: [id] });
+  return rowToServiceOrder(r.rows[0] || null);
+}
+
+async function getAllServiceOrders() {
+  const r = await db.execute('SELECT * FROM service_orders ORDER BY created_at DESC');
+  return r.rows.map(rowToServiceOrder);
+}
+
+async function updateServiceOrder(id, fields) {
+  const set = [], args = [];
+  if (fields.items         !== undefined) { set.push('items = ?');          args.push(JSON.stringify(fields.items)); }
+  if (fields.total         !== undefined) { set.push('total = ?');          args.push(fields.total); }
+  if (fields.mechanic      !== undefined) { set.push('mechanic = ?');       args.push(fields.mechanic); }
+  if (fields.status        !== undefined) { set.push('status = ?');         args.push(fields.status); }
+  if (fields.notes         !== undefined) { set.push('notes = ?');          args.push(fields.notes); }
+  if (fields.estimatedDate !== undefined) { set.push('estimated_date = ?'); args.push(fields.estimatedDate); }
+  if (fields.invoiceId     !== undefined) { set.push('invoice_id = ?');     args.push(fields.invoiceId); }
+  if (set.length === 0) return;
+  set.push('updated_at = ?'); args.push(new Date().toISOString());
+  args.push(id);
+  await db.execute({ sql: `UPDATE service_orders SET ${set.join(', ')} WHERE id = ?`, args });
+}
+
+async function countServiceOrders() {
+  const r = await db.execute("SELECT COUNT(*) as n FROM service_orders WHERE status != 'facturado'");
+  return Number(r.rows[0].n);
+}
+
+// ── Invoices ──────────────────────────────────────────────────────────────
+
+function rowToInvoice(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    consecutive: Number(row.consecutive),
+    label: row.label,
+    serviceOrderId: row.service_order_id,
+    quotationId: row.quotation_id,
+    items: safeJson(row.items, []),
+    subtotal: Number(row.subtotal),
+    tax: Number(row.tax),
+    total: Number(row.total),
+    paymentMethod: row.payment_method,
+    status: row.status,
+    notes: row.notes || null,
+    createdAt: row.created_at,
+  };
+}
+
+async function createInvoice(data) {
+  const id  = data.id || uuidv4();
+  const now = new Date().toISOString();
+  const r   = await db.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM invoices');
+  const consecutive = Number(r.rows[0].next);
+  const label = fmtLabel('F-', consecutive, now);
+  const subtotal = data.subtotal || data.total || 0;
+  const tax      = data.tax || 0;
+  const total    = subtotal + tax;
+  await db.execute({
+    sql: `INSERT INTO invoices
+          (id, consecutive, label, service_order_id, quotation_id, items, subtotal, tax, total, payment_method, status, notes)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      id, consecutive, label,
+      data.serviceOrderId,
+      data.quotationId || null,
+      JSON.stringify(data.items || []),
+      subtotal, tax, total,
+      data.paymentMethod || 'efectivo',
+      data.status || 'pendiente',
+      data.notes || null,
+    ],
+  });
+  return { id, consecutive, label };
+}
+
+async function getInvoiceById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM invoices WHERE id = ?', args: [id] });
+  return rowToInvoice(r.rows[0] || null);
+}
+
+async function getAllInvoices() {
+  const r = await db.execute('SELECT * FROM invoices ORDER BY created_at DESC');
+  return r.rows.map(rowToInvoice);
+}
+
+async function updateInvoiceStatus(id, status, paymentMethod) {
+  await db.execute({
+    sql: 'UPDATE invoices SET status = ?, payment_method = ? WHERE id = ?',
+    args: [status, paymentMethod || 'efectivo', id],
+  });
+}
+
+async function countInvoices() {
+  const r = await db.execute("SELECT COUNT(*) as n FROM invoices WHERE status = 'pendiente'");
+  return Number(r.rows[0].n);
+}
+
 // ── Admin Audit Log ───────────────────────────────────────────────────────
 
 async function logAdminAction(adminId, adminName, action, targetType, targetId, details) {
