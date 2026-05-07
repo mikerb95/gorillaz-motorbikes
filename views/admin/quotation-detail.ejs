@@ -1,10 +1,10 @@
-<%- include('../partials/admin-head', { title: 'Cotización #' + String(quotation.consecutive).padStart(4,'0') }) %>
+<%- include('../partials/admin-head', { title: 'Cotización #' + quotation.label }) %>
 
 <div class="crm-page-header">
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <a class="btn btn-ghost btn-sm" href="/admin/cotizaciones">← Cotizaciones</a>
     <h1 class="crm-page-title" style="margin:0">
-      Cotización <span style="color:var(--brand)">#<%= String(quotation.consecutive).padStart(4,'0') %></span>
+      Cotización <span style="color:var(--brand)">#<%= quotation.label %></span>
     </h1>
   </div>
 </div>
@@ -17,7 +17,7 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px">
       <div>
         <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Consecutivo</div>
-        <div style="font-size:20px;font-weight:900;color:var(--brand)">#<%= String(quotation.consecutive).padStart(4,'0') %></div>
+        <div style="font-size:20px;font-weight:900;color:var(--brand)">#<%= quotation.label %></div>
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Fecha de creación</div>

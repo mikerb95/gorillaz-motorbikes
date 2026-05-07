@@ -49,7 +49,7 @@ const thisMonthRev = thisMonthQ.reduce((s,q) => s + q.total, 0);
         <tr>
           <td>
             <span class="badge badge-info" style="font-size:.8rem;font-weight:900">
-              #<%= String(q.consecutive).padStart(4,'0') %>
+              #<%= q.label %>
             </span>
           </td>
           <td class="muted" style="font-size:.82rem;white-space:nowrap">
