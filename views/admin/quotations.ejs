@@ -1,0 +1,93 @@
+<%- include('../partials/admin-head', { title: 'Cotizaciones' }) %>
+
+<%
+const totalRevenue = quotations.reduce((s,q) => s + q.total, 0);
+const thisMonth = new Date().toISOString().slice(0,7);
+const thisMonthQ = quotations.filter(q => q.createdAt && q.createdAt.startsWith(thisMonth));
+const thisMonthRev = thisMonthQ.reduce((s,q) => s + q.total, 0);
+%>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Cotizaciones</h1>
+  <a class="btn btn-primary btn-sm" href="/liquidador" target="_blank" rel="noopener">+ Nueva cotización</a>
+</div>
+
+<div class="crm-kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= quotations.length %></div>
+    <div class="crm-kpi-label">Total cotizaciones</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= thisMonthQ.length %></div>
+    <div class="crm-kpi-label">Este mes</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value" style="font-size:1.1rem">$<%= totalRevenue.toLocaleString('es-CO') %></div>
+    <div class="crm-kpi-label">Valor total cotizado</div>
+  </div>
+</div>
+
+<div class="crm-card">
+  <% if (quotations.length === 0) { %>
+    <p class="muted" style="padding:32px;text-align:center">No hay cotizaciones aún. <a href="/liquidador">Crear la primera</a></p>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>Moto / Placa</th>
+          <th>Ítems</th>
+          <th>Total</th>
+          <th>Cliente (WA)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% quotations.forEach(q => { %>
+        <tr>
+          <td>
+            <span class="badge badge-info" style="font-size:.8rem;font-weight:900">
+              #<%= String(q.consecutive).padStart(4,'0') %>
+            </span>
+          </td>
+          <td class="muted" style="font-size:.82rem;white-space:nowrap">
+            <%= new Date(q.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %><br>
+            <span style="font-size:.76rem"><%= new Date(q.createdAt).toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' }) %></span>
+          </td>
+          <td>
+            <% if (q.motorcycle) { %>
+              <strong style="font-size:.85rem"><%= q.motorcycle %></strong>
+            <% } else { %>
+              <span class="muted" style="font-size:.82rem">—</span>
+            <% } %>
+          </td>
+          <td style="font-size:.85rem;max-width:200px">
+            <% q.items.slice(0,3).forEach(it => { %>
+              <div><%= it.qty %> × <%= it.name %></div>
+            <% }) %>
+            <% if (q.items.length > 3) { %>
+              <span class="muted">+<%= q.items.length - 3 %> más</span>
+            <% } %>
+          </td>
+          <td><strong>$<%= q.total.toLocaleString('es-CO') %></strong></td>
+          <td style="font-size:.82rem">
+            <% if (q.clientPhone) { %>
+              <span><%= q.clientPhoneCountry %> <%= q.clientPhone %></span>
+            <% } else { %>
+              <span class="muted">—</span>
+            <% } %>
+          </td>
+          <td>
+            <a class="btn btn-ghost btn-sm" href="/admin/cotizaciones/<%= q.id %>">Ver detalle</a>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<%- include('../partials/admin-foot') %>
