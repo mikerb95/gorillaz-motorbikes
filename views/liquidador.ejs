@@ -1,0 +1,1093 @@
+<%- include('partials/head', { title, description, canonicalPath }) %>
+
+<style>
+/* ── Liquidador ─────────────────────────────────────────────── */
+.liq-page {
+  padding-top: calc(var(--header-offset) + 24px);
+  padding-bottom: 60px;
+  min-height: 100vh;
+  background: #fafafa;
+}
+.liq-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Steps indicator */
+.liq-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 28px;
+}
+.liq-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  max-width: 130px;
+}
+.liq-step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #9ca3af;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s, color .2s;
+}
+.liq-step.active .liq-step-dot  { background: var(--brand); color: #fff; }
+.liq-step.done   .liq-step-dot  { background: #22c55e; color: #fff; }
+.liq-step-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #9ca3af;
+  text-align: center;
+}
+.liq-step.active .liq-step-label { color: var(--brand); }
+.liq-step.done   .liq-step-label { color: #22c55e; }
+.liq-step-line {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+  margin-bottom: 18px;
+  max-width: 60px;
+}
+.liq-step-line.done { background: #22c55e; }
+
+/* Card panels */
+.liq-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.07);
+  padding: 24px 20px;
+  display: none;
+}
+.liq-panel.active { display: block; }
+
+.liq-panel-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 6px;
+}
+.liq-panel-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 20px;
+}
+
+/* Search box */
+.liq-search-wrap {
+  position: relative;
+  margin-bottom: 20px;
+}
+.liq-search-input {
+  width: 100%;
+  padding: 14px 48px 14px 48px;
+  border: 2px solid #e5e7eb;
+  border-radius: 999px;
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 600;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  background: #fafafa;
+}
+.liq-search-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(242,92,5,.12);
+  background: #fff;
+}
+.liq-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+.liq-search-clear {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #e5e7eb;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.liq-search-clear.visible { display: flex; }
+
+/* Autocomplete dropdown */
+.liq-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.12);
+  z-index: 50;
+  overflow: hidden;
+  display: none;
+}
+.liq-dropdown.open { display: block; }
+.liq-dd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background .12s;
+  gap: 12px;
+}
+.liq-dd-item:last-child { border-bottom: none; }
+.liq-dd-item:hover, .liq-dd-item.focused { background: #fff7f0; }
+.liq-dd-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  flex: 1;
+}
+.liq-dd-type {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.liq-dd-type.service { background: #fff7ed; color: #ea580c; }
+.liq-dd-type.product { background: #f0fdf4; color: #16a34a; }
+.liq-dd-price {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--brand);
+  white-space: nowrap;
+}
+.liq-dd-empty {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+}
+.liq-searching {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Item cards */
+.liq-item-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: #fafafa;
+}
+.liq-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.liq-item-info { flex: 1; }
+.liq-item-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 2px;
+}
+.liq-item-unit {
+  font-size: 12px;
+  color: #6b7280;
+}
+.liq-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.liq-qty-select {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 700;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  color: #111;
+}
+.liq-qty-select:focus { border-color: var(--brand); }
+.liq-item-subtotal {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--brand);
+  white-space: nowrap;
+  min-width: 90px;
+  text-align: right;
+}
+.liq-item-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #d1d5db;
+  font-size: 18px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  transition: color .15s;
+  line-height: 1;
+}
+.liq-item-remove:hover { color: #ef4444; }
+
+/* Total bar */
+.liq-total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  margin: 14px 0 18px;
+}
+.liq-total-label { font-size: 14px; font-weight: 700; }
+.liq-total-value { font-size: 20px; font-weight: 900; color: var(--brand); }
+
+/* Buttons */
+.liq-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.liq-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: none;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  text-align: center;
+  letter-spacing: .3px;
+}
+.liq-btn:active { transform: scale(.97); }
+.liq-btn-primary {
+  background: var(--brand);
+  color: #fff;
+}
+.liq-btn-primary:hover { opacity: .88; }
+.liq-btn-ghost {
+  background: #f3f4f6;
+  color: #374151;
+}
+.liq-btn-ghost:hover { background: #e5e7eb; }
+.liq-btn-green {
+  background: #22c55e;
+  color: #fff;
+}
+.liq-btn-green:hover { opacity: .88; }
+.liq-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Summary table */
+.liq-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.liq-summary-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-weight: 800;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  font-size: 11px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.liq-summary-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+  color: #111;
+}
+.liq-summary-table tr:last-child td { border-bottom: none; }
+.liq-summary-table .td-name { font-weight: 700; }
+.liq-summary-table .td-price,
+.liq-summary-table .td-sub  { font-weight: 800; color: var(--brand); white-space: nowrap; }
+.liq-summary-table .td-qty  { text-align: center; }
+
+/* Consecutive badge */
+.liq-consecutive {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 18px;
+}
+
+/* WhatsApp section */
+.liq-wa-section {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.liq-wa-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+.liq-wa-toggle input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  accent-color: #25D366;
+  cursor: pointer;
+}
+.liq-wa-toggle-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+.liq-wa-fields {
+  display: none;
+  margin-top: 14px;
+  gap: 8px;
+}
+.liq-wa-fields.open { display: flex; }
+.liq-country-select {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 8px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 700;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  color: #111;
+  flex-shrink: 0;
+  width: 96px;
+}
+.liq-country-select:focus { border-color: var(--brand); }
+.liq-phone-input {
+  flex: 1;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  outline: none;
+  color: #111;
+  background: #fafafa;
+}
+.liq-phone-input:focus {
+  border-color: #25D366;
+  box-shadow: 0 0 0 3px rgba(37,211,102,.12);
+  background: #fff;
+}
+
+/* Success state */
+.liq-success-icon {
+  width: 56px;
+  height: 56px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.liq-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Empty state */
+.liq-empty {
+  text-align: center;
+  padding: 28px 0 12px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+.liq-empty-icon { font-size: 36px; margin-bottom: 8px; }
+
+/* Desktop adjustments */
+@media (min-width: 640px) {
+  .liq-panel { padding: 32px 32px; }
+  .liq-panel-title { font-size: 24px; }
+  .liq-search-input { font-size: 18px; padding: 16px 54px; }
+  .liq-summary-table { font-size: 14px; }
+  .liq-btn { font-size: 15px; }
+}
+</style>
+
+<div class="liq-page">
+  <div class="liq-wrap">
+
+    <!-- Steps -->
+    <div class="liq-steps" id="liqSteps">
+      <div class="liq-step active" data-step="1">
+        <div class="liq-step-dot">1</div>
+        <div class="liq-step-label">Ítems</div>
+      </div>
+      <div class="liq-step-line" id="line12"></div>
+      <div class="liq-step" data-step="2">
+        <div class="liq-step-dot">2</div>
+        <div class="liq-step-label">Resumen</div>
+      </div>
+      <div class="liq-step-line" id="line23"></div>
+      <div class="liq-step" data-step="3">
+        <div class="liq-step-dot">3</div>
+        <div class="liq-step-label">Confirmar</div>
+      </div>
+    </div>
+
+    <!-- ── STEP 1: Agregar ítems ────────────────────────────── -->
+    <div class="liq-panel active" id="panel1">
+      <h1 class="liq-panel-title">Nueva cotización</h1>
+      <p class="liq-panel-sub">Escribe 3 letras para buscar un producto o servicio.</p>
+
+      <div class="liq-search-wrap">
+        <svg class="liq-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          id="liqSearch"
+          class="liq-search-input"
+          type="text"
+          placeholder="Buscar producto o servicio…"
+          autocomplete="off"
+          aria-label="Buscar producto o servicio"
+          aria-autocomplete="list"
+          aria-controls="liqDropdown"
+        />
+        <button class="liq-search-clear" id="liqClear" aria-label="Limpiar búsqueda" tabindex="-1">×</button>
+        <div class="liq-dropdown" id="liqDropdown" role="listbox" aria-label="Resultados de búsqueda"></div>
+      </div>
+
+      <!-- Items list -->
+      <div id="liqItemsList"></div>
+
+      <!-- Total -->
+      <div class="liq-total-bar" id="liqTotalBar" style="display:none">
+        <span class="liq-total-label">Total</span>
+        <span class="liq-total-value" id="liqTotalVal">$0</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="liq-actions" id="liqActionsStep1" style="display:none">
+        <button class="liq-btn liq-btn-ghost" id="btnAddAnother">+ Añadir otro ítem</button>
+        <button class="liq-btn liq-btn-primary" id="btnFinish">Ver resumen →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Resumen ──────────────────────────────────── -->
+    <div class="liq-panel" id="panel2">
+      <h2 class="liq-panel-title">Resumen de cotización</h2>
+      <p class="liq-panel-sub">Verifica los ítems antes de confirmar.</p>
+
+      <table class="liq-summary-table">
+        <thead>
+          <tr>
+            <th>Ítem</th>
+            <th class="td-qty">Cant.</th>
+            <th>Precio unit.</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="liqSummaryBody"></tbody>
+      </table>
+
+      <div class="liq-total-bar">
+        <span class="liq-total-label">Total cotización</span>
+        <span class="liq-total-value" id="liqSummaryTotal">$0</span>
+      </div>
+
+      <div class="liq-actions">
+        <button class="liq-btn liq-btn-ghost" id="btnEditItems">← Editar ítems</button>
+        <button class="liq-btn liq-btn-primary" id="btnConfirmSummary">Confirmar →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Confirmación ─────────────────────────────── -->
+    <div class="liq-panel" id="panel3">
+      <div class="liq-success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff"
+          stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2 class="liq-panel-title" style="text-align:center">¡Cotización confirmada!</h2>
+
+      <div style="text-align:center;margin-bottom:20px">
+        <div class="liq-consecutive" id="liqConsecutive">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span>Cotización #<span id="liqConsecNum">—</span></span>
+        </div>
+      </div>
+
+      <!-- WhatsApp -->
+      <div class="liq-wa-section">
+        <label class="liq-wa-toggle">
+          <input type="checkbox" id="waToggle" />
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="#25D366" aria-hidden="true">
+            <path d="M19.11 17.63c-.3-.15-1.73-.85-2-.94-.27-.1-.47-.15-.67.15-.2.3-.77.94-.94 1.14-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.48-1.77-1.65-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.92-2.2-.24-.58-.48-.5-.67-.5-.17-.01-.37-.01-.57-.01-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.5 0 1.48 1.07 2.92 1.22 3.12.15.2 2.1 3.2 5.08 4.49.71.31 1.26.5 1.69.64.71.23 1.35.2 1.86.12.57-.09 1.73-.71 1.98-1.4.24-.69.24-1.28.17-1.4-.07-.12-.27-.2-.57-.35z"/>
+            <path d="M27.25 4.75C24.77 2.27 21.48 1 18.02 1 9.83 1 3.2 7.63 3.2 15.82c0 2.71.71 5.36 2.07 7.71L3 31l7.65-2.01c2.29 1.25 4.88 1.92 7.38 1.92h.01c8.19 0 14.82-6.63 14.82-14.82 0-3.46-1.27-6.75-3.65-9.24zm-9.6 23.72h-.01c-2.29 0-4.55-.62-6.52-1.8l-.47-.28-4.54 1.19 1.21-4.43-.31-.46c-1.25-1.95-1.91-4.22-1.91-6.56 0-6.77 5.51-12.28 12.29-12.28 3.28 0 6.35 1.28 8.67 3.6 2.31 2.31 3.59 5.38 3.59 8.66 0 6.77-5.51 12.29-12.28 12.29z"/>
+          </svg>
+          <span class="liq-wa-toggle-label">Enviar por WhatsApp al cliente</span>
+        </label>
+
+        <div class="liq-wa-fields" id="waFields">
+          <select class="liq-country-select" id="waCountry" aria-label="Código de país">
+            <option value="+57" selected>🇨🇴 +57</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+52">🇲🇽 +52</option>
+            <option value="+34">🇪🇸 +34</option>
+            <option value="+54">🇦🇷 +54</option>
+            <option value="+56">🇨🇱 +56</option>
+            <option value="+51">🇵🇪 +51</option>
+            <option value="+58">🇻🇪 +58</option>
+            <option value="+593">🇪🇨 +593</option>
+            <option value="+502">🇬🇹 +502</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+55">🇧🇷 +55</option>
+          </select>
+          <input
+            id="waPhone"
+            class="liq-phone-input"
+            type="tel"
+            placeholder="Número celular"
+            maxlength="15"
+            aria-label="Número de celular del cliente"
+          />
+        </div>
+        <div class="liq-hint" id="waHint" style="display:none">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          El número quedará guardado con esta cotización.
+        </div>
+      </div>
+
+      <!-- Actions step 3 -->
+      <div class="liq-actions">
+        <button class="liq-btn liq-btn-ghost" id="btnDownloadPdf">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            style="display:inline;vertical-align:middle;margin-right:5px" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Descargar PDF
+        </button>
+        <button class="liq-btn liq-btn-green" id="btnSendOrFinish">Finalizar</button>
+      </div>
+
+      <div style="text-align:center;margin-top:18px">
+        <button class="liq-btn liq-btn-ghost" id="btnNewQuote" style="max-width:220px">Nueva cotización</button>
+      </div>
+    </div>
+
+  </div><!-- /liq-wrap -->
+</div><!-- /liq-page -->
+
+<!-- jsPDF CDN for client-side PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── State ──────────────────────────────────────────────────────────
+  let items = [];   // [{ id, name, price, type, qty }]
+  let currentStep = 1;
+  let savedConsecutive = null;
+  let savedQuoteId = null;
+  let searchDebounce = null;
+  let dropdownFocusIdx = -1;
+  let ddResults = [];
+
+  // ── DOM refs ───────────────────────────────────────────────────────
+  const searchInput   = document.getElementById('liqSearch');
+  const clearBtn      = document.getElementById('liqClear');
+  const dropdown      = document.getElementById('liqDropdown');
+  const itemsList     = document.getElementById('liqItemsList');
+  const totalBar      = document.getElementById('liqTotalBar');
+  const totalVal      = document.getElementById('liqTotalVal');
+  const actionsStep1  = document.getElementById('liqActionsStep1');
+  const btnAddAnother = document.getElementById('btnAddAnother');
+  const btnFinish     = document.getElementById('btnFinish');
+  const summaryBody   = document.getElementById('liqSummaryBody');
+  const summaryTotal  = document.getElementById('liqSummaryTotal');
+  const btnEditItems  = document.getElementById('btnEditItems');
+  const btnConfirm    = document.getElementById('btnConfirmSummary');
+  const consecNum     = document.getElementById('liqConsecNum');
+  const waToggle      = document.getElementById('waToggle');
+  const waFields      = document.getElementById('waFields');
+  const waCountry     = document.getElementById('waCountry');
+  const waPhone       = document.getElementById('waPhone');
+  const waHint        = document.getElementById('waHint');
+  const btnDownload   = document.getElementById('btnDownloadPdf');
+  const btnSendOrFin  = document.getElementById('btnSendOrFinish');
+  const btnNewQuote   = document.getElementById('btnNewQuote');
+
+  // ── Helpers ────────────────────────────────────────────────────────
+  function fmt(n) {
+    return 'COP ' + Number(n).toLocaleString('es-CO');
+  }
+
+  function calcTotal() {
+    return items.reduce((acc, it) => acc + it.price * it.qty, 0);
+  }
+
+  function goToStep(n) {
+    currentStep = n;
+    [1, 2, 3].forEach(s => {
+      document.getElementById('panel' + s).classList.toggle('active', s === n);
+    });
+    // Update step indicators
+    document.querySelectorAll('[data-step]').forEach(el => {
+      const s = Number(el.dataset.step);
+      el.classList.remove('active', 'done');
+      if (s === n) el.classList.add('active');
+      else if (s < n) el.classList.add('done');
+    });
+    document.getElementById('line12').classList.toggle('done', n > 1);
+    document.getElementById('line23').classList.toggle('done', n > 2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Render items (step 1) ──────────────────────────────────────────
+  function renderItems() {
+    if (items.length === 0) {
+      itemsList.innerHTML = '';
+      totalBar.style.display = 'none';
+      actionsStep1.style.display = 'none';
+      return;
+    }
+
+    itemsList.innerHTML = items.map((it, idx) => `
+      <div class="liq-item-card" data-idx="${idx}">
+        <div class="liq-item-row">
+          <div class="liq-item-info">
+            <div class="liq-item-name">${escHtml(it.name)}</div>
+            <div class="liq-item-unit">${fmt(it.price)} × unidad</div>
+          </div>
+          <div class="liq-item-controls">
+            <select class="liq-qty-select" data-qty-idx="${idx}" aria-label="Cantidad">
+              ${Array.from({length: 20}, (_, i) => i + 1).map(n =>
+                `<option value="${n}"${n === it.qty ? ' selected' : ''}>${n}</option>`
+              ).join('')}
+            </select>
+            <span class="liq-item-subtotal">${fmt(it.price * it.qty)}</span>
+            <button class="liq-item-remove" data-rm-idx="${idx}" aria-label="Eliminar ítem">×</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Bind qty selects
+    itemsList.querySelectorAll('[data-qty-idx]').forEach(sel => {
+      sel.addEventListener('change', e => {
+        const i = Number(e.target.dataset.qtyIdx);
+        items[i].qty = Number(e.target.value);
+        renderItems();
+      });
+    });
+
+    // Bind remove buttons
+    itemsList.querySelectorAll('[data-rm-idx]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const i = Number(e.currentTarget.dataset.rmIdx);
+        items.splice(i, 1);
+        renderItems();
+        if (items.length === 0) focusSearch();
+      });
+    });
+
+    const total = calcTotal();
+    totalVal.textContent = fmt(total);
+    totalBar.style.display = 'flex';
+    actionsStep1.style.display = 'flex';
+  }
+
+  // ── Search ─────────────────────────────────────────────────────────
+  function focusSearch() {
+    searchInput.value = '';
+    clearBtn.classList.remove('visible');
+    searchInput.focus();
+  }
+
+  function closeDropdown() {
+    dropdown.classList.remove('open');
+    dropdown.innerHTML = '';
+    ddResults = [];
+    dropdownFocusIdx = -1;
+  }
+
+  function renderDropdown(results) {
+    ddResults = results;
+    dropdownFocusIdx = -1;
+    if (results.length === 0) {
+      dropdown.innerHTML = '<div class="liq-dd-empty">Sin resultados. Intenta otra búsqueda.</div>';
+    } else {
+      dropdown.innerHTML = results.map((r, i) => `
+        <div class="liq-dd-item" data-dd-idx="${i}" role="option" tabindex="-1">
+          <span class="liq-dd-name">${escHtml(r.name)}${r.brand ? ' <span style="font-weight:400;color:#6b7280;font-size:12px">— ' + escHtml(r.brand) + '</span>' : ''}</span>
+          <span class="liq-dd-type ${r.type}">${r.type === 'service' ? 'Servicio' : 'Producto'}</span>
+          <span class="liq-dd-price">${fmt(r.price)}</span>
+        </div>
+      `).join('');
+
+      dropdown.querySelectorAll('.liq-dd-item').forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault();
+          selectItem(Number(el.dataset.ddIdx));
+        });
+      });
+    }
+    dropdown.classList.add('open');
+  }
+
+  function moveFocus(dir) {
+    const total = ddResults.length;
+    if (total === 0) return;
+    dropdownFocusIdx = (dropdownFocusIdx + dir + total) % total;
+    dropdown.querySelectorAll('.liq-dd-item').forEach((el, i) => {
+      el.classList.toggle('focused', i === dropdownFocusIdx);
+    });
+  }
+
+  function selectItem(idx) {
+    const r = ddResults[idx];
+    if (!r) return;
+    // Check duplicate
+    const existing = items.find(it => it.id === r.id);
+    if (existing) {
+      existing.qty = Math.min(existing.qty + 1, 20);
+    } else {
+      items.push({ id: r.id, name: r.name, price: r.price, type: r.type, qty: 1 });
+    }
+    renderItems();
+    closeDropdown();
+    searchInput.value = '';
+    clearBtn.classList.remove('visible');
+    searchInput.focus();
+  }
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim();
+    clearBtn.classList.toggle('visible', q.length > 0);
+    clearTimeout(searchDebounce);
+    if (q.length < 3) { closeDropdown(); return; }
+
+    dropdown.classList.add('open');
+    dropdown.innerHTML = '<div class="liq-searching">Buscando…</div>';
+
+    searchDebounce = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/liquidador/search?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        renderDropdown(data);
+      } catch {
+        dropdown.innerHTML = '<div class="liq-dd-empty">Error al buscar. Intenta de nuevo.</div>';
+      }
+    }, 220);
+  });
+
+  searchInput.addEventListener('keydown', e => {
+    if (!dropdown.classList.contains('open')) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(-1); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (dropdownFocusIdx >= 0) selectItem(dropdownFocusIdx);
+      else if (ddResults.length === 1) selectItem(0);
+    }
+    else if (e.key === 'Escape') { closeDropdown(); }
+  });
+
+  searchInput.addEventListener('blur', () => {
+    setTimeout(closeDropdown, 150);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearBtn.classList.remove('visible');
+    closeDropdown();
+    searchInput.focus();
+  });
+
+  // ── Step 1 actions ────────────────────────────────────────────────
+  btnAddAnother.addEventListener('click', () => {
+    focusSearch();
+  });
+
+  btnFinish.addEventListener('click', () => {
+    if (items.length === 0) return;
+    renderSummary();
+    goToStep(2);
+  });
+
+  // ── Summary (step 2) ──────────────────────────────────────────────
+  function renderSummary() {
+    summaryBody.innerHTML = items.map(it => `
+      <tr>
+        <td class="td-name">${escHtml(it.name)}</td>
+        <td class="td-qty">${it.qty}</td>
+        <td class="td-price">${fmt(it.price)}</td>
+        <td class="td-sub">${fmt(it.price * it.qty)}</td>
+      </tr>
+    `).join('');
+    summaryTotal.textContent = fmt(calcTotal());
+  }
+
+  btnEditItems.addEventListener('click', () => goToStep(1));
+
+  btnConfirm.addEventListener('click', async () => {
+    btnConfirm.disabled = true;
+    btnConfirm.textContent = 'Guardando…';
+    try {
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const res = await fetch('/api/liquidador/quotation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrf,
+        },
+        body: JSON.stringify({
+          items: items.map(it => ({ id: it.id, name: it.name, price: it.price, type: it.type, qty: it.qty })),
+          total: calcTotal(),
+          clientPhone: null,
+          clientPhoneCountry: '+57',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Error al guardar');
+      savedConsecutive = data.consecutive;
+      savedQuoteId = data.id;
+      consecNum.textContent = String(savedConsecutive).padStart(4, '0');
+      goToStep(3);
+    } catch (err) {
+      alert('No se pudo guardar la cotización: ' + err.message);
+      btnConfirm.disabled = false;
+      btnConfirm.textContent = 'Confirmar →';
+    }
+  });
+
+  // ── Step 3: WhatsApp ──────────────────────────────────────────────
+  waToggle.addEventListener('change', () => {
+    waFields.classList.toggle('open', waToggle.checked);
+    waHint.style.display = waToggle.checked ? 'flex' : 'none';
+    btnSendOrFin.textContent = waToggle.checked ? 'Enviar por WhatsApp' : 'Finalizar';
+    btnSendOrFin.className = waToggle.checked
+      ? 'liq-btn liq-btn-green'
+      : 'liq-btn liq-btn-primary';
+  });
+
+  btnSendOrFin.addEventListener('click', () => {
+    if (!waToggle.checked) {
+      resetAll();
+      return;
+    }
+    const phone = waPhone.value.replace(/\D/g, '');
+    if (phone.length < 7) {
+      waPhone.focus();
+      waPhone.style.borderColor = '#ef4444';
+      setTimeout(() => waPhone.style.borderColor = '', 1500);
+      return;
+    }
+    const country = waCountry.value.replace('+', '');
+    const fullPhone = country + phone;
+    const msg = buildWhatsAppMsg();
+    const url = 'https://wa.me/' + fullPhone + '?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank', 'noopener');
+  });
+
+  function buildWhatsAppMsg() {
+    const lines = [
+      '🏍️ *Cotización Gorillaz Motorbikes*',
+      'N° ' + String(savedConsecutive).padStart(4, '0'),
+      '',
+      ...items.map(it => `• ${it.name} x${it.qty} — ${fmt(it.price * it.qty)}`),
+      '',
+      '*Total: ' + fmt(calcTotal()) + '*',
+      '',
+      'gorillazmotorbikes.com',
+    ];
+    return lines.join('\n');
+  }
+
+  // ── PDF ────────────────────────────────────────────────────────────
+  btnDownload.addEventListener('click', () => {
+    if (typeof window.jspdf === 'undefined') {
+      alert('La librería de PDF aún está cargando. Intenta en un momento.');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const orange = [242, 92, 5];
+    const black  = [17, 17, 17];
+    const gray   = [107, 114, 128];
+
+    // Header bar
+    doc.setFillColor(...orange);
+    doc.rect(0, 0, 210, 28, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GORILLAZ MOTORBIKES', 14, 12);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('gorillazmotorbikes.com  |  Bogotá, Colombia', 14, 20);
+
+    const dateStr = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+    doc.setFontSize(10);
+    doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
+    doc.text('Cotización N° ' + String(savedConsecutive).padStart(4, '0'), 196, 20, { align: 'right' });
+
+    // Title
+    doc.setTextColor(...black);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('COTIZACIÓN', 14, 40);
+
+    // Table header
+    let y = 50;
+    doc.setFillColor(245, 245, 245);
+    doc.rect(14, y - 6, 182, 9, 'F');
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...gray);
+    doc.text('ÍTEM', 16, y);
+    doc.text('CANT.', 126, y, { align: 'center' });
+    doc.text('PRECIO UNIT.', 156, y, { align: 'right' });
+    doc.text('SUBTOTAL', 196, y, { align: 'right' });
+
+    y += 6;
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.3);
+    doc.line(14, y, 196, y);
+
+    // Rows
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...black);
+    doc.setFontSize(10);
+
+    items.forEach((it, idx) => {
+      y += 8;
+      if (idx % 2 === 1) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(14, y - 5.5, 182, 8, 'F');
+      }
+      doc.text(it.name, 16, y);
+      doc.text(String(it.qty), 126, y, { align: 'center' });
+      doc.text(it.price.toLocaleString('es-CO'), 156, y, { align: 'right' });
+      doc.setFont('helvetica', 'bold');
+      doc.text((it.price * it.qty).toLocaleString('es-CO'), 196, y, { align: 'right' });
+      doc.setFont('helvetica', 'normal');
+    });
+
+    // Total
+    y += 12;
+    doc.setFillColor(...orange);
+    doc.rect(120, y - 6, 76, 11, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('TOTAL:', 128, y);
+    doc.text('COP ' + calcTotal().toLocaleString('es-CO'), 196, y, { align: 'right' });
+
+    // Footer
+    doc.setTextColor(...gray);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Esta cotización es válida por 30 días. Precios en COP.', 14, 285);
+    doc.text('Gorillaz Motorbikes — Bogotá, Colombia', 196, 285, { align: 'right' });
+
+    doc.save('cotizacion-' + String(savedConsecutive).padStart(4, '0') + '.pdf');
+  });
+
+  // ── New quote ──────────────────────────────────────────────────────
+  btnNewQuote.addEventListener('click', resetAll);
+
+  function resetAll() {
+    items = [];
+    savedConsecutive = null;
+    savedQuoteId = null;
+    waToggle.checked = false;
+    waFields.classList.remove('open');
+    waPhone.value = '';
+    waCountry.value = '+57';
+    waHint.style.display = 'none';
+    btnSendOrFin.textContent = 'Finalizar';
+    btnSendOrFin.className = 'liq-btn liq-btn-primary';
+    btnConfirm.disabled = false;
+    btnConfirm.textContent = 'Confirmar →';
+    renderItems();
+    goToStep(1);
+    focusSearch();
+  }
+
+  // ── Utils ──────────────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Init
+  focusSearch();
+})();
+</script>
+
+<%- include('partials/footer') %>
