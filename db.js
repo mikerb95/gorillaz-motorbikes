@@ -414,7 +414,7 @@ async function createEvent(data) {
 }
 
 async function getEventById(id) {
-  const r = await db.execute({ sql: 'SELECT * FROM events WHERE id = ?', args: [id] });
+  const r = await db.execute({ sql: 'SELECT * FROM events WHERE id = ? AND deleted_at IS NULL', args: [id] });
   return rowToEvent(r.rows[0] || null);
 }
 
@@ -435,7 +435,7 @@ async function updateEvent(id, fields) {
 }
 
 async function deleteEvent(id) {
-  await db.execute({ sql: 'DELETE FROM events WHERE id = ?', args: [id] });
+  await db.execute({ sql: `UPDATE events SET deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?`, args: [id] });
 }
 
 // ── Newsletter ────────────────────────────────────────────────────────────
