@@ -293,6 +293,53 @@
       </div>
     </section>
 
+    <!-- Historial de cotizaciones por placa -->
+    <% if (quotationHistory && quotationHistory.length > 0) { %>
+    <section id="cotizaciones">
+      <h2 class="section-title">Historial de cotizaciones</h2>
+      <p class="muted" style="margin-top:-12px;margin-bottom:20px;font-size:.9em">
+        Cotizaciones registradas con las placas de tus vehículos.
+      </p>
+      <div class="card" style="padding:0;overflow:hidden">
+        <% quotationHistory.forEach((q, idx) => { %>
+          <div style="padding:16px 20px;<%= idx > 0 ? 'border-top:1px solid #f3f4f6' : '' %>;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+                <span style="font-size:13px;font-weight:900;color:var(--brand)">#<%= q.label %></span>
+                <% if (q.motorcycle) { %>
+                  <span class="chip" style="background:#f1f5f9;color:#475569;font-size:.75em;font-weight:700"><%= q.motorcycle %></span>
+                <% } %>
+                <span class="muted" style="font-size:.8em">
+                  <%= new Date(q.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
+                </span>
+              </div>
+              <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px">
+                <% q.items.slice(0, 3).forEach(it => { %>
+                  <li style="font-size:.85em;color:#374151">
+                    <span style="color:#9ca3af"><%= it.qty %>×</span> <%= it.name %>
+                  </li>
+                <% }) %>
+                <% if (q.items.length > 3) { %>
+                  <li style="font-size:.82em;color:#9ca3af">+ <%= q.items.length - 3 %> ítem<%= q.items.length - 3 > 1 ? 's' : '' %> más</li>
+                <% } %>
+              </ul>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:16px;font-weight:900;color:#111;margin-bottom:8px">
+                COP <%= q.total.toLocaleString('es-CO') %>
+              </div>
+              <a href="/cotizacion/<%= q.id %>" target="_blank" rel="noopener"
+                 style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#f3f4f6;color:#374151;border-radius:999px;font-size:12px;font-weight:700;text-decoration:none">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Ver detalle
+              </a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+    <% } %>
+
   </main>
 
   <%- include('../partials/footer') %>
