@@ -58,6 +58,9 @@ async function initDb() {
       description TEXT,
       level TEXT,
       type TEXT NOT NULL DEFAULT 'evento',
+      category TEXT NOT NULL DEFAULT 'club',
+      lat TEXT,
+      lng TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
     `CREATE TABLE IF NOT EXISTS event_attendances (
