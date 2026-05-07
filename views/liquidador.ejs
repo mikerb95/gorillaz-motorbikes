@@ -19,7 +19,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
   margin-bottom: 28px;
 }
 .liq-step {
@@ -43,8 +42,8 @@
   justify-content: center;
   transition: background .2s, color .2s;
 }
-.liq-step.active .liq-step-dot  { background: var(--brand); color: #fff; }
-.liq-step.done   .liq-step-dot  { background: #22c55e; color: #fff; }
+.liq-step.active .liq-step-dot { background: var(--brand); color: #fff; }
+.liq-step.done   .liq-step-dot { background: #22c55e; color: #fff; }
 .liq-step-label {
   font-size: 10px;
   font-weight: 700;
@@ -61,6 +60,7 @@
   background: #e5e7eb;
   margin-bottom: 18px;
   max-width: 60px;
+  transition: background .3s;
 }
 .liq-step-line.done { background: #22c55e; }
 
@@ -89,7 +89,7 @@
 /* Search box */
 .liq-search-wrap {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 .liq-search-input {
   width: 100%;
@@ -107,6 +107,10 @@
   border-color: var(--brand);
   box-shadow: 0 0 0 3px rgba(242,92,5,.12);
   background: #fff;
+}
+.liq-search-input:disabled {
+  opacity: .45;
+  cursor: not-allowed;
 }
 .liq-search-icon {
   position: absolute;
@@ -154,12 +158,11 @@
 .liq-dd-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   padding: 12px 16px;
   cursor: pointer;
   border-bottom: 1px solid #f3f4f6;
   transition: background .12s;
-  gap: 12px;
 }
 .liq-dd-item:last-child { border-bottom: none; }
 .liq-dd-item:hover, .liq-dd-item.focused { background: #fff7f0; }
@@ -169,6 +172,11 @@
   color: #111;
   flex: 1;
 }
+.liq-dd-brand {
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+}
 .liq-dd-type {
   font-size: 11px;
   font-weight: 700;
@@ -176,63 +184,148 @@
   border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: .4px;
+  flex-shrink: 0;
 }
 .liq-dd-type.service { background: #fff7ed; color: #ea580c; }
 .liq-dd-type.product { background: #f0fdf4; color: #16a34a; }
-.liq-dd-price {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--brand);
-  white-space: nowrap;
-}
-.liq-dd-empty {
+.liq-dd-empty, .liq-dd-searching {
   padding: 14px 16px;
   font-size: 13px;
   color: #9ca3af;
   text-align: center;
 }
-.liq-searching {
-  padding: 14px 16px;
-  font-size: 13px;
-  color: #6b7280;
-  text-align: center;
+
+/* ── Staging form (ítem seleccionado, pendiente de precio) ── */
+.liq-staging {
+  display: none;
+  margin-top: 14px;
+  border: 2px solid var(--brand);
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff8f5;
+  animation: stagePop .18s ease;
+}
+.liq-staging.visible { display: block; }
+
+@keyframes stagePop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Item cards */
+.liq-staging-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #111;
+  color: #fff;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.liq-staging-fields {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.liq-staging-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.liq-staging-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.liq-price-input {
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 800;
+  outline: none;
+  color: #111;
+  background: #fff;
+  width: 160px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.liq-price-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(242,92,5,.12);
+}
+.liq-price-input.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+}
+.liq-qty-select {
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 10px;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  color: #111;
+  width: 80px;
+  transition: border-color .2s;
+}
+.liq-qty-select:focus { border-color: var(--brand); }
+.liq-staging-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* Item cards (confirmados) */
+.liq-items-area { margin-top: 18px; }
 .liq-item-card {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
   background: #fafafa;
-}
-.liq-item-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
+  animation: itemIn .16s ease;
 }
-.liq-item-info { flex: 1; }
+@keyframes itemIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.liq-item-info { flex: 1; min-width: 0; }
 .liq-item-name {
   font-size: 14px;
   font-weight: 800;
   color: #111;
-  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.liq-item-unit {
+.liq-item-meta {
   font-size: 12px;
   color: #6b7280;
+  margin-top: 2px;
 }
-.liq-item-controls {
+.liq-item-right {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
 }
-.liq-qty-select {
+.liq-item-qty-sel {
   border: 1.5px solid #e5e7eb;
   border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 14px;
+  padding: 5px 8px;
+  font-size: 13px;
   font-family: inherit;
   font-weight: 700;
   background: #fff;
@@ -240,13 +333,13 @@
   outline: none;
   color: #111;
 }
-.liq-qty-select:focus { border-color: var(--brand); }
+.liq-item-qty-sel:focus { border-color: var(--brand); }
 .liq-item-subtotal {
   font-size: 15px;
   font-weight: 800;
   color: var(--brand);
   white-space: nowrap;
-  min-width: 90px;
+  min-width: 88px;
   text-align: right;
 }
 .liq-item-remove {
@@ -271,21 +364,24 @@
   background: #111;
   color: #fff;
   border-radius: 12px;
-  margin: 14px 0 18px;
+  margin-top: 14px;
 }
 .liq-total-label { font-size: 14px; font-weight: 700; }
 .liq-total-value { font-size: 20px; font-weight: 900; color: var(--brand); }
 
-/* Buttons */
-.liq-actions {
+/* Bottom actions */
+.liq-footer-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  margin-top: 16px;
 }
+
+/* Buttons */
 .liq-btn {
   flex: 1;
-  min-width: 140px;
-  padding: 14px 20px;
+  min-width: 130px;
+  padding: 13px 18px;
   border-radius: 999px;
   border: none;
   font-size: 14px;
@@ -295,24 +391,17 @@
   transition: opacity .15s, transform .1s;
   text-align: center;
   letter-spacing: .3px;
+  line-height: 1.2;
 }
 .liq-btn:active { transform: scale(.97); }
-.liq-btn-primary {
-  background: var(--brand);
-  color: #fff;
-}
+.liq-btn-primary { background: var(--brand); color: #fff; }
 .liq-btn-primary:hover { opacity: .88; }
-.liq-btn-ghost {
-  background: #f3f4f6;
-  color: #374151;
-}
+.liq-btn-ghost { background: #f3f4f6; color: #374151; }
 .liq-btn-ghost:hover { background: #e5e7eb; }
-.liq-btn-green {
-  background: #22c55e;
-  color: #fff;
-}
+.liq-btn-green { background: #22c55e; color: #fff; }
 .liq-btn-green:hover { opacity: .88; }
-.liq-btn:disabled { opacity: .45; cursor: not-allowed; }
+.liq-btn-sm { min-width: 0; flex: none; padding: 10px 16px; font-size: 13px; }
+.liq-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
 /* Summary table */
 .liq-summary-table {
@@ -332,7 +421,7 @@
   border-bottom: 1px solid #e5e7eb;
 }
 .liq-summary-table td {
-  padding: 10px 10px;
+  padding: 10px;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
   color: #111;
@@ -351,13 +440,13 @@
   background: var(--brand);
   color: #fff;
   border-radius: 999px;
-  padding: 8px 18px;
+  padding: 8px 20px;
   font-size: 15px;
   font-weight: 900;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
-/* WhatsApp section */
+/* WhatsApp */
 .liq-wa-section {
   border: 1.5px solid #e5e7eb;
   border-radius: 14px;
@@ -369,19 +458,14 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  margin-bottom: 0;
 }
 .liq-wa-toggle input[type=checkbox] {
-  width: 18px;
-  height: 18px;
+  width: 18px; height: 18px;
   accent-color: #25D366;
   cursor: pointer;
+  flex-shrink: 0;
 }
-.liq-wa-toggle-label {
-  font-size: 14px;
-  font-weight: 700;
-  color: #111;
-}
+.liq-wa-toggle-label { font-size: 14px; font-weight: 700; color: #111; }
 .liq-wa-fields {
   display: none;
   margin-top: 14px;
@@ -420,11 +504,18 @@
   box-shadow: 0 0 0 3px rgba(37,211,102,.12);
   background: #fff;
 }
+.liq-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 
-/* Success state */
+/* Success icon */
 .liq-success-icon {
-  width: 56px;
-  height: 56px;
+  width: 56px; height: 56px;
   background: #22c55e;
   border-radius: 50%;
   display: flex;
@@ -433,30 +524,12 @@
   margin: 0 auto 16px;
 }
 
-.liq-hint {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Empty state */
-.liq-empty {
-  text-align: center;
-  padding: 28px 0 12px;
-  color: #9ca3af;
-  font-size: 14px;
-}
-.liq-empty-icon { font-size: 36px; margin-bottom: 8px; }
-
-/* Desktop adjustments */
+/* Desktop */
 @media (min-width: 640px) {
   .liq-panel { padding: 32px 32px; }
   .liq-panel-title { font-size: 24px; }
   .liq-search-input { font-size: 18px; padding: 16px 54px; }
-  .liq-summary-table { font-size: 14px; }
+  .liq-price-input { width: 180px; }
   .liq-btn { font-size: 15px; }
 }
 </style>
@@ -464,8 +537,8 @@
 <div class="liq-page">
   <div class="liq-wrap">
 
-    <!-- Steps -->
-    <div class="liq-steps" id="liqSteps">
+    <!-- Indicador de pasos -->
+    <div class="liq-steps">
       <div class="liq-step active" data-step="1">
         <div class="liq-step-dot">1</div>
         <div class="liq-step-label">Ítems</div>
@@ -482,11 +555,12 @@
       </div>
     </div>
 
-    <!-- ── STEP 1: Agregar ítems ────────────────────────────── -->
+    <!-- ── PASO 1: Agregar ítems ─────────────────────────────── -->
     <div class="liq-panel active" id="panel1">
       <h1 class="liq-panel-title">Nueva cotización</h1>
-      <p class="liq-panel-sub">Escribe 3 letras para buscar un producto o servicio.</p>
+      <p class="liq-panel-sub">Busca el ítem (3 letras mínimo) y luego fija el valor.</p>
 
+      <!-- Buscador -->
       <div class="liq-search-wrap">
         <svg class="liq-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -503,26 +577,58 @@
           aria-controls="liqDropdown"
         />
         <button class="liq-search-clear" id="liqClear" aria-label="Limpiar búsqueda" tabindex="-1">×</button>
-        <div class="liq-dropdown" id="liqDropdown" role="listbox" aria-label="Resultados de búsqueda"></div>
+        <div class="liq-dropdown" id="liqDropdown" role="listbox"></div>
       </div>
 
-      <!-- Items list -->
-      <div id="liqItemsList"></div>
+      <!-- Formulario de staging (aparece al seleccionar del dropdown) -->
+      <div class="liq-staging" id="liqStaging" aria-live="polite">
+        <div class="liq-staging-name" id="stagingName">—</div>
+        <div class="liq-staging-fields">
+          <div class="liq-staging-field">
+            <label for="stagingPrice">Valor (COP)</label>
+            <input
+              id="stagingPrice"
+              class="liq-price-input"
+              type="number"
+              min="0"
+              step="1000"
+              placeholder="0"
+              inputmode="numeric"
+              aria-label="Valor del ítem en pesos colombianos"
+            />
+          </div>
+          <div class="liq-staging-field">
+            <label for="stagingQty">Cantidad</label>
+            <select id="stagingQty" class="liq-qty-select" aria-label="Cantidad">
+              <% for (let n = 1; n <= 20; n++) { %>
+                <option value="<%= n %>"><%= n %></option>
+              <% } %>
+            </select>
+          </div>
+        </div>
+        <div class="liq-staging-actions">
+          <button class="liq-btn liq-btn-primary liq-btn-sm" id="btnStagingAdd">Añadir ítem</button>
+          <button class="liq-btn liq-btn-ghost liq-btn-sm" id="btnStagingCancel">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Lista de ítems confirmados -->
+      <div class="liq-items-area" id="liqItemsList"></div>
 
       <!-- Total -->
       <div class="liq-total-bar" id="liqTotalBar" style="display:none">
         <span class="liq-total-label">Total</span>
-        <span class="liq-total-value" id="liqTotalVal">$0</span>
+        <span class="liq-total-value" id="liqTotalVal">COP 0</span>
       </div>
 
-      <!-- Actions -->
-      <div class="liq-actions" id="liqActionsStep1" style="display:none">
+      <!-- Acciones paso 1 -->
+      <div class="liq-footer-actions" id="liqActionsStep1" style="display:none">
         <button class="liq-btn liq-btn-ghost" id="btnAddAnother">+ Añadir otro ítem</button>
         <button class="liq-btn liq-btn-primary" id="btnFinish">Ver resumen →</button>
       </div>
     </div>
 
-    <!-- ── STEP 2: Resumen ──────────────────────────────────── -->
+    <!-- ── PASO 2: Resumen ────────────────────────────────────── -->
     <div class="liq-panel" id="panel2">
       <h2 class="liq-panel-title">Resumen de cotización</h2>
       <p class="liq-panel-sub">Verifica los ítems antes de confirmar.</p>
@@ -541,16 +647,16 @@
 
       <div class="liq-total-bar">
         <span class="liq-total-label">Total cotización</span>
-        <span class="liq-total-value" id="liqSummaryTotal">$0</span>
+        <span class="liq-total-value" id="liqSummaryTotal">COP 0</span>
       </div>
 
-      <div class="liq-actions">
+      <div class="liq-footer-actions" style="margin-top:16px">
         <button class="liq-btn liq-btn-ghost" id="btnEditItems">← Editar ítems</button>
         <button class="liq-btn liq-btn-primary" id="btnConfirmSummary">Confirmar →</button>
       </div>
     </div>
 
-    <!-- ── STEP 3: Confirmación ─────────────────────────────── -->
+    <!-- ── PASO 3: Confirmación ──────────────────────────────── -->
     <div class="liq-panel" id="panel3">
       <div class="liq-success-icon">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff"
@@ -560,14 +666,16 @@
       </div>
       <h2 class="liq-panel-title" style="text-align:center">¡Cotización confirmada!</h2>
 
-      <div style="text-align:center;margin-bottom:20px">
-        <div class="liq-consecutive" id="liqConsecutive">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      <div style="text-align:center;margin-bottom:22px">
+        <div class="liq-consecutive">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8"  y1="2" x2="8"  y2="6"/>
+            <line x1="3"  y1="10" x2="21" y2="10"/>
           </svg>
-          <span>Cotización #<span id="liqConsecNum">—</span></span>
+          Cotización #<span id="liqConsecNum">—</span>
         </div>
       </div>
 
@@ -584,7 +692,7 @@
 
         <div class="liq-wa-fields" id="waFields">
           <select class="liq-country-select" id="waCountry" aria-label="Código de país">
-            <option value="+57" selected>🇨🇴 +57</option>
+            <option value="+57"  selected>🇨🇴 +57</option>
             <option value="+1">🇺🇸 +1</option>
             <option value="+52">🇲🇽 +52</option>
             <option value="+34">🇪🇸 +34</option>
@@ -603,21 +711,25 @@
             type="tel"
             placeholder="Número celular"
             maxlength="15"
+            inputmode="numeric"
             aria-label="Número de celular del cliente"
           />
         </div>
         <div class="liq-hint" id="waHint" style="display:none">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
           El número quedará guardado con esta cotización.
         </div>
       </div>
 
-      <!-- Actions step 3 -->
-      <div class="liq-actions">
+      <!-- Acciones paso 3 -->
+      <div class="liq-footer-actions">
         <button class="liq-btn liq-btn-ghost" id="btnDownloadPdf">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
             style="display:inline;vertical-align:middle;margin-right:5px" aria-hidden="true">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -630,60 +742,74 @@
       </div>
 
       <div style="text-align:center;margin-top:18px">
-        <button class="liq-btn liq-btn-ghost" id="btnNewQuote" style="max-width:220px">Nueva cotización</button>
+        <button class="liq-btn liq-btn-ghost" id="btnNewQuote" style="max-width:220px;flex:none">
+          Nueva cotización
+        </button>
       </div>
     </div>
 
-  </div><!-- /liq-wrap -->
-</div><!-- /liq-page -->
+  </div>
+</div>
 
-<!-- jsPDF CDN for client-side PDF -->
+<!-- jsPDF via CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 (function () {
   'use strict';
 
-  // ── State ──────────────────────────────────────────────────────────
-  let items = [];   // [{ id, name, price, type, qty }]
+  // ── Estado ────────────────────────────────────────────────────────
+  let items = [];            // [{ id, name, type, price, qty }]
+  let staged = null;         // ítem seleccionado pendiente de precio
   let currentStep = 1;
   let savedConsecutive = null;
-  let savedQuoteId = null;
   let searchDebounce = null;
-  let dropdownFocusIdx = -1;
   let ddResults = [];
+  let ddFocusIdx = -1;
 
-  // ── DOM refs ───────────────────────────────────────────────────────
-  const searchInput   = document.getElementById('liqSearch');
-  const clearBtn      = document.getElementById('liqClear');
-  const dropdown      = document.getElementById('liqDropdown');
-  const itemsList     = document.getElementById('liqItemsList');
-  const totalBar      = document.getElementById('liqTotalBar');
-  const totalVal      = document.getElementById('liqTotalVal');
-  const actionsStep1  = document.getElementById('liqActionsStep1');
-  const btnAddAnother = document.getElementById('btnAddAnother');
-  const btnFinish     = document.getElementById('btnFinish');
-  const summaryBody   = document.getElementById('liqSummaryBody');
-  const summaryTotal  = document.getElementById('liqSummaryTotal');
-  const btnEditItems  = document.getElementById('btnEditItems');
-  const btnConfirm    = document.getElementById('btnConfirmSummary');
-  const consecNum     = document.getElementById('liqConsecNum');
-  const waToggle      = document.getElementById('waToggle');
-  const waFields      = document.getElementById('waFields');
-  const waCountry     = document.getElementById('waCountry');
-  const waPhone       = document.getElementById('waPhone');
-  const waHint        = document.getElementById('waHint');
-  const btnDownload   = document.getElementById('btnDownloadPdf');
-  const btnSendOrFin  = document.getElementById('btnSendOrFinish');
-  const btnNewQuote   = document.getElementById('btnNewQuote');
+  // ── DOM ───────────────────────────────────────────────────────────
+  const searchInput    = document.getElementById('liqSearch');
+  const clearBtn       = document.getElementById('liqClear');
+  const dropdown       = document.getElementById('liqDropdown');
+  const staging        = document.getElementById('liqStaging');
+  const stagingName    = document.getElementById('stagingName');
+  const stagingPrice   = document.getElementById('stagingPrice');
+  const stagingQty     = document.getElementById('stagingQty');
+  const btnStagingAdd  = document.getElementById('btnStagingAdd');
+  const btnStagingCanc = document.getElementById('btnStagingCancel');
+  const itemsList      = document.getElementById('liqItemsList');
+  const totalBar       = document.getElementById('liqTotalBar');
+  const totalVal       = document.getElementById('liqTotalVal');
+  const actionsStep1   = document.getElementById('liqActionsStep1');
+  const btnAddAnother  = document.getElementById('btnAddAnother');
+  const btnFinish      = document.getElementById('btnFinish');
+  const summaryBody    = document.getElementById('liqSummaryBody');
+  const summaryTotal   = document.getElementById('liqSummaryTotal');
+  const btnEditItems   = document.getElementById('btnEditItems');
+  const btnConfirm     = document.getElementById('btnConfirmSummary');
+  const consecNum      = document.getElementById('liqConsecNum');
+  const waToggle       = document.getElementById('waToggle');
+  const waFields       = document.getElementById('waFields');
+  const waCountry      = document.getElementById('waCountry');
+  const waPhone        = document.getElementById('waPhone');
+  const waHint         = document.getElementById('waHint');
+  const btnDownload    = document.getElementById('btnDownloadPdf');
+  const btnSendOrFin   = document.getElementById('btnSendOrFinish');
+  const btnNewQuote    = document.getElementById('btnNewQuote');
 
-  // ── Helpers ────────────────────────────────────────────────────────
+  // ── Utilidades ────────────────────────────────────────────────────
   function fmt(n) {
     return 'COP ' + Number(n).toLocaleString('es-CO');
   }
 
   function calcTotal() {
-    return items.reduce((acc, it) => acc + it.price * it.qty, 0);
+    return items.reduce((s, it) => s + it.price * it.qty, 0);
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   function goToStep(n) {
@@ -691,7 +817,6 @@
     [1, 2, 3].forEach(s => {
       document.getElementById('panel' + s).classList.toggle('active', s === n);
     });
-    // Update step indicators
     document.querySelectorAll('[data-step]').forEach(el => {
       const s = Number(el.dataset.step);
       el.classList.remove('active', 'done');
@@ -703,7 +828,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ── Render items (step 1) ──────────────────────────────────────────
+  // ── Renderizar lista de ítems confirmados ─────────────────────────
   function renderItems() {
     if (items.length === 0) {
       itemsList.innerHTML = '';
@@ -713,52 +838,45 @@
     }
 
     itemsList.innerHTML = items.map((it, idx) => `
-      <div class="liq-item-card" data-idx="${idx}">
-        <div class="liq-item-row">
-          <div class="liq-item-info">
-            <div class="liq-item-name">${escHtml(it.name)}</div>
-            <div class="liq-item-unit">${fmt(it.price)} × unidad</div>
-          </div>
-          <div class="liq-item-controls">
-            <select class="liq-qty-select" data-qty-idx="${idx}" aria-label="Cantidad">
-              ${Array.from({length: 20}, (_, i) => i + 1).map(n =>
-                `<option value="${n}"${n === it.qty ? ' selected' : ''}>${n}</option>`
-              ).join('')}
-            </select>
-            <span class="liq-item-subtotal">${fmt(it.price * it.qty)}</span>
-            <button class="liq-item-remove" data-rm-idx="${idx}" aria-label="Eliminar ítem">×</button>
-          </div>
+      <div class="liq-item-card">
+        <div class="liq-item-info">
+          <div class="liq-item-name">${escHtml(it.name)}</div>
+          <div class="liq-item-meta">${fmt(it.price)} × unidad</div>
+        </div>
+        <div class="liq-item-right">
+          <select class="liq-item-qty-sel" data-qty-idx="${idx}" aria-label="Cantidad de ${escHtml(it.name)}">
+            ${Array.from({length:20},(_,i)=>i+1).map(n =>
+              `<option value="${n}"${n===it.qty?' selected':''}>${n}</option>`
+            ).join('')}
+          </select>
+          <span class="liq-item-subtotal">${fmt(it.price * it.qty)}</span>
+          <button class="liq-item-remove" data-rm-idx="${idx}" aria-label="Eliminar ${escHtml(it.name)}">×</button>
         </div>
       </div>
     `).join('');
 
-    // Bind qty selects
     itemsList.querySelectorAll('[data-qty-idx]').forEach(sel => {
       sel.addEventListener('change', e => {
-        const i = Number(e.target.dataset.qtyIdx);
-        items[i].qty = Number(e.target.value);
+        items[Number(e.target.dataset.qtyIdx)].qty = Number(e.target.value);
         renderItems();
       });
     });
-
-    // Bind remove buttons
     itemsList.querySelectorAll('[data-rm-idx]').forEach(btn => {
       btn.addEventListener('click', e => {
-        const i = Number(e.currentTarget.dataset.rmIdx);
-        items.splice(i, 1);
+        items.splice(Number(e.currentTarget.dataset.rmIdx), 1);
         renderItems();
         if (items.length === 0) focusSearch();
       });
     });
 
-    const total = calcTotal();
-    totalVal.textContent = fmt(total);
+    totalVal.textContent = fmt(calcTotal());
     totalBar.style.display = 'flex';
     actionsStep1.style.display = 'flex';
   }
 
-  // ── Search ─────────────────────────────────────────────────────────
+  // ── Buscador ──────────────────────────────────────────────────────
   function focusSearch() {
+    searchInput.disabled = false;
     searchInput.value = '';
     clearBtn.classList.remove('visible');
     searchInput.focus();
@@ -768,57 +886,53 @@
     dropdown.classList.remove('open');
     dropdown.innerHTML = '';
     ddResults = [];
-    dropdownFocusIdx = -1;
+    ddFocusIdx = -1;
   }
 
   function renderDropdown(results) {
     ddResults = results;
-    dropdownFocusIdx = -1;
+    ddFocusIdx = -1;
     if (results.length === 0) {
-      dropdown.innerHTML = '<div class="liq-dd-empty">Sin resultados. Intenta otra búsqueda.</div>';
+      dropdown.innerHTML = '<div class="liq-dd-empty">Sin resultados. Intenta con otro término.</div>';
     } else {
       dropdown.innerHTML = results.map((r, i) => `
         <div class="liq-dd-item" data-dd-idx="${i}" role="option" tabindex="-1">
-          <span class="liq-dd-name">${escHtml(r.name)}${r.brand ? ' <span style="font-weight:400;color:#6b7280;font-size:12px">— ' + escHtml(r.brand) + '</span>' : ''}</span>
+          <span class="liq-dd-name">${escHtml(r.name)}${r.brand ? ` <span class="liq-dd-brand">— ${escHtml(r.brand)}</span>` : ''}</span>
           <span class="liq-dd-type ${r.type}">${r.type === 'service' ? 'Servicio' : 'Producto'}</span>
-          <span class="liq-dd-price">${fmt(r.price)}</span>
         </div>
       `).join('');
-
       dropdown.querySelectorAll('.liq-dd-item').forEach(el => {
         el.addEventListener('mousedown', e => {
           e.preventDefault();
-          selectItem(Number(el.dataset.ddIdx));
+          pickFromDropdown(Number(el.dataset.ddIdx));
         });
       });
     }
     dropdown.classList.add('open');
   }
 
-  function moveFocus(dir) {
-    const total = ddResults.length;
-    if (total === 0) return;
-    dropdownFocusIdx = (dropdownFocusIdx + dir + total) % total;
+  function moveDdFocus(dir) {
+    if (!ddResults.length) return;
+    ddFocusIdx = (ddFocusIdx + dir + ddResults.length) % ddResults.length;
     dropdown.querySelectorAll('.liq-dd-item').forEach((el, i) => {
-      el.classList.toggle('focused', i === dropdownFocusIdx);
+      el.classList.toggle('focused', i === ddFocusIdx);
     });
   }
 
-  function selectItem(idx) {
+  function pickFromDropdown(idx) {
     const r = ddResults[idx];
     if (!r) return;
-    // Check duplicate
-    const existing = items.find(it => it.id === r.id);
-    if (existing) {
-      existing.qty = Math.min(existing.qty + 1, 20);
-    } else {
-      items.push({ id: r.id, name: r.name, price: r.price, type: r.type, qty: 1 });
-    }
-    renderItems();
+    staged = { id: r.id, name: r.name, type: r.type };
+    stagingName.textContent = r.name;
+    stagingPrice.value = '';
+    stagingQty.value = '1';
+    staging.classList.add('visible');
     closeDropdown();
     searchInput.value = '';
     clearBtn.classList.remove('visible');
-    searchInput.focus();
+    searchInput.disabled = true;
+    stagingPrice.classList.remove('error');
+    stagingPrice.focus();
   }
 
   searchInput.addEventListener('input', () => {
@@ -826,15 +940,12 @@
     clearBtn.classList.toggle('visible', q.length > 0);
     clearTimeout(searchDebounce);
     if (q.length < 3) { closeDropdown(); return; }
-
+    dropdown.innerHTML = '<div class="liq-dd-searching">Buscando…</div>';
     dropdown.classList.add('open');
-    dropdown.innerHTML = '<div class="liq-searching">Buscando…</div>';
-
     searchDebounce = setTimeout(async () => {
       try {
         const res = await fetch('/api/liquidador/search?q=' + encodeURIComponent(q));
-        const data = await res.json();
-        renderDropdown(data);
+        renderDropdown(await res.json());
       } catch {
         dropdown.innerHTML = '<div class="liq-dd-empty">Error al buscar. Intenta de nuevo.</div>';
       }
@@ -843,19 +954,17 @@
 
   searchInput.addEventListener('keydown', e => {
     if (!dropdown.classList.contains('open')) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(-1); }
+    if (e.key === 'ArrowDown')  { e.preventDefault(); moveDdFocus(1); }
+    else if (e.key === 'ArrowUp')   { e.preventDefault(); moveDdFocus(-1); }
     else if (e.key === 'Enter') {
       e.preventDefault();
-      if (dropdownFocusIdx >= 0) selectItem(dropdownFocusIdx);
-      else if (ddResults.length === 1) selectItem(0);
+      if (ddFocusIdx >= 0) pickFromDropdown(ddFocusIdx);
+      else if (ddResults.length === 1) pickFromDropdown(0);
     }
     else if (e.key === 'Escape') { closeDropdown(); }
   });
 
-  searchInput.addEventListener('blur', () => {
-    setTimeout(closeDropdown, 150);
-  });
+  searchInput.addEventListener('blur', () => setTimeout(closeDropdown, 150));
 
   clearBtn.addEventListener('click', () => {
     searchInput.value = '';
@@ -864,19 +973,44 @@
     searchInput.focus();
   });
 
-  // ── Step 1 actions ────────────────────────────────────────────────
-  btnAddAnother.addEventListener('click', () => {
+  // ── Staging: confirmar precio y añadir ────────────────────────────
+  btnStagingAdd.addEventListener('click', confirmStaging);
+  stagingPrice.addEventListener('keydown', e => {
+    if (e.key === 'Enter') confirmStaging();
+  });
+
+  function confirmStaging() {
+    const price = parseInt(stagingPrice.value, 10);
+    if (!price || price <= 0) {
+      stagingPrice.classList.add('error');
+      stagingPrice.focus();
+      setTimeout(() => stagingPrice.classList.remove('error'), 1800);
+      return;
+    }
+    items.push({
+      id: staged.id,
+      name: staged.name,
+      type: staged.type,
+      price,
+      qty: Number(stagingQty.value),
+    });
+    staged = null;
+    staging.classList.remove('visible');
+    renderItems();
+    focusSearch();
+  }
+
+  btnStagingCanc.addEventListener('click', () => {
+    staged = null;
+    staging.classList.remove('visible');
     focusSearch();
   });
 
+  // ── Acciones paso 1 ───────────────────────────────────────────────
+  btnAddAnother.addEventListener('click', focusSearch);
+
   btnFinish.addEventListener('click', () => {
     if (items.length === 0) return;
-    renderSummary();
-    goToStep(2);
-  });
-
-  // ── Summary (step 2) ──────────────────────────────────────────────
-  function renderSummary() {
     summaryBody.innerHTML = items.map(it => `
       <tr>
         <td class="td-name">${escHtml(it.name)}</td>
@@ -886,8 +1020,10 @@
       </tr>
     `).join('');
     summaryTotal.textContent = fmt(calcTotal());
-  }
+    goToStep(2);
+  });
 
+  // ── Paso 2 ────────────────────────────────────────────────────────
   btnEditItems.addEventListener('click', () => goToStep(1));
 
   btnConfirm.addEventListener('click', async () => {
@@ -897,10 +1033,7 @@
       const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
       const res = await fetch('/api/liquidador/quotation', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrf,
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
         body: JSON.stringify({
           items: items.map(it => ({ id: it.id, name: it.name, price: it.price, type: it.type, qty: it.qty })),
           total: calcTotal(),
@@ -909,159 +1042,131 @@
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Error al guardar');
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Error desconocido');
       savedConsecutive = data.consecutive;
-      savedQuoteId = data.id;
       consecNum.textContent = String(savedConsecutive).padStart(4, '0');
       goToStep(3);
     } catch (err) {
-      alert('No se pudo guardar la cotización: ' + err.message);
+      alert('No se pudo guardar: ' + err.message);
       btnConfirm.disabled = false;
       btnConfirm.textContent = 'Confirmar →';
     }
   });
 
-  // ── Step 3: WhatsApp ──────────────────────────────────────────────
+  // ── Paso 3: WhatsApp ──────────────────────────────────────────────
   waToggle.addEventListener('change', () => {
-    waFields.classList.toggle('open', waToggle.checked);
-    waHint.style.display = waToggle.checked ? 'flex' : 'none';
-    btnSendOrFin.textContent = waToggle.checked ? 'Enviar por WhatsApp' : 'Finalizar';
-    btnSendOrFin.className = waToggle.checked
-      ? 'liq-btn liq-btn-green'
-      : 'liq-btn liq-btn-primary';
+    const on = waToggle.checked;
+    waFields.classList.toggle('open', on);
+    waHint.style.display = on ? 'flex' : 'none';
+    btnSendOrFin.textContent = on ? 'Enviar por WhatsApp' : 'Finalizar';
+    btnSendOrFin.className = 'liq-btn ' + (on ? 'liq-btn-green' : 'liq-btn-primary');
   });
 
   btnSendOrFin.addEventListener('click', () => {
-    if (!waToggle.checked) {
-      resetAll();
-      return;
-    }
-    const phone = waPhone.value.replace(/\D/g, '');
-    if (phone.length < 7) {
+    if (!waToggle.checked) { resetAll(); return; }
+    const digits = waPhone.value.replace(/\D/g, '');
+    if (digits.length < 7) {
       waPhone.focus();
       waPhone.style.borderColor = '#ef4444';
-      setTimeout(() => waPhone.style.borderColor = '', 1500);
+      setTimeout(() => waPhone.style.borderColor = '', 1600);
       return;
     }
     const country = waCountry.value.replace('+', '');
-    const fullPhone = country + phone;
-    const msg = buildWhatsAppMsg();
-    const url = 'https://wa.me/' + fullPhone + '?text=' + encodeURIComponent(msg);
-    window.open(url, '_blank', 'noopener');
-  });
-
-  function buildWhatsAppMsg() {
-    const lines = [
+    const msg = [
       '🏍️ *Cotización Gorillaz Motorbikes*',
       'N° ' + String(savedConsecutive).padStart(4, '0'),
       '',
-      ...items.map(it => `• ${it.name} x${it.qty} — ${fmt(it.price * it.qty)}`),
+      ...items.map(it => `• ${it.name} ×${it.qty} — ${fmt(it.price * it.qty)}`),
       '',
       '*Total: ' + fmt(calcTotal()) + '*',
       '',
       'gorillazmotorbikes.com',
-    ];
-    return lines.join('\n');
-  }
+    ].join('\n');
+    window.open('https://wa.me/' + country + digits + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  });
 
-  // ── PDF ────────────────────────────────────────────────────────────
+  // ── PDF ───────────────────────────────────────────────────────────
   btnDownload.addEventListener('click', () => {
     if (typeof window.jspdf === 'undefined') {
-      alert('La librería de PDF aún está cargando. Intenta en un momento.');
+      alert('La librería PDF aún está cargando, intenta en un momento.');
       return;
     }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const orange = [242, 92, 5];
-    const black  = [17, 17, 17];
-    const gray   = [107, 114, 128];
 
-    // Header bar
-    doc.setFillColor(...orange);
+    // Header
+    doc.setFillColor(242, 92, 5);
     doc.rect(0, 0, 210, 28, 'F');
-
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
     doc.text('GORILLAZ MOTORBIKES', 14, 12);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
     doc.text('gorillazmotorbikes.com  |  Bogotá, Colombia', 14, 20);
-
     const dateStr = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
-    doc.setFontSize(10);
     doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
     doc.text('Cotización N° ' + String(savedConsecutive).padStart(4, '0'), 196, 20, { align: 'right' });
 
     // Title
-    doc.setTextColor(...black);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(17, 17, 17);
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
     doc.text('COTIZACIÓN', 14, 40);
 
     // Table header
     let y = 50;
     doc.setFillColor(245, 245, 245);
     doc.rect(14, y - 6, 182, 9, 'F');
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...gray);
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(107, 114, 128);
     doc.text('ÍTEM', 16, y);
     doc.text('CANT.', 126, y, { align: 'center' });
-    doc.text('PRECIO UNIT.', 156, y, { align: 'right' });
+    doc.text('PRECIO UNIT.', 158, y, { align: 'right' });
     doc.text('SUBTOTAL', 196, y, { align: 'right' });
-
     y += 6;
-    doc.setDrawColor(229, 231, 235);
-    doc.setLineWidth(0.3);
+    doc.setDrawColor(229, 231, 235); doc.setLineWidth(0.3);
     doc.line(14, y, 196, y);
 
     // Rows
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...black);
-    doc.setFontSize(10);
-
+    doc.setFontSize(10); doc.setTextColor(17, 17, 17);
     items.forEach((it, idx) => {
       y += 8;
       if (idx % 2 === 1) {
         doc.setFillColor(250, 250, 250);
         doc.rect(14, y - 5.5, 182, 8, 'F');
       }
+      doc.setFont('helvetica', 'normal');
       doc.text(it.name, 16, y);
       doc.text(String(it.qty), 126, y, { align: 'center' });
-      doc.text(it.price.toLocaleString('es-CO'), 156, y, { align: 'right' });
+      doc.text(it.price.toLocaleString('es-CO'), 158, y, { align: 'right' });
       doc.setFont('helvetica', 'bold');
       doc.text((it.price * it.qty).toLocaleString('es-CO'), 196, y, { align: 'right' });
-      doc.setFont('helvetica', 'normal');
     });
 
     // Total
     y += 12;
-    doc.setFillColor(...orange);
+    doc.setFillColor(242, 92, 5);
     doc.rect(120, y - 6, 76, 11, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
     doc.text('TOTAL:', 128, y);
     doc.text('COP ' + calcTotal().toLocaleString('es-CO'), 196, y, { align: 'right' });
 
     // Footer
-    doc.setTextColor(...gray);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text('Esta cotización es válida por 30 días. Precios en COP.', 14, 285);
+    doc.setTextColor(107, 114, 128);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text('Válida por 30 días. Precios en COP.', 14, 285);
     doc.text('Gorillaz Motorbikes — Bogotá, Colombia', 196, 285, { align: 'right' });
 
     doc.save('cotizacion-' + String(savedConsecutive).padStart(4, '0') + '.pdf');
   });
 
-  // ── New quote ──────────────────────────────────────────────────────
+  // ── Nueva cotización ──────────────────────────────────────────────
   btnNewQuote.addEventListener('click', resetAll);
 
   function resetAll() {
     items = [];
+    staged = null;
     savedConsecutive = null;
-    savedQuoteId = null;
+    staging.classList.remove('visible');
     waToggle.checked = false;
     waFields.classList.remove('open');
     waPhone.value = '';
@@ -1074,15 +1179,6 @@
     renderItems();
     goToStep(1);
     focusSearch();
-  }
-
-  // ── Utils ──────────────────────────────────────────────────────────
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
   }
 
   // Init
