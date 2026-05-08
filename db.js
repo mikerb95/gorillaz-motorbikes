@@ -1089,5 +1089,6 @@ module.exports = {
   createQuotation, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
+  createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
 };
