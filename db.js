@@ -992,6 +992,53 @@ async function countInvoices() {
   return Number(r.rows[0].n);
 }
 
+// ── Gastos ────────────────────────────────────────────────────────────────
+
+function rowToGasto(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    category: row.category || 'otros',
+    description: row.description,
+    amount: Number(row.amount) || 0,
+    date: row.date,
+    paymentMethod: row.payment_method,
+    notes: row.notes,
+    createdAt: row.created_at,
+  };
+}
+
+async function createGasto(data) {
+  const id = uuidv4();
+  await db.execute({
+    sql: `INSERT INTO gastos (id, category, description, amount, date, payment_method, notes)
+          VALUES (?,?,?,?,?,?,?)`,
+    args: [id, data.category || 'otros', data.description, Math.round(Number(data.amount) || 0), data.date, data.paymentMethod || 'efectivo', data.notes || null],
+  });
+  return { id };
+}
+
+async function getAllGastos() {
+  const r = await db.execute('SELECT * FROM gastos ORDER BY date DESC, created_at DESC');
+  return r.rows.map(rowToGasto);
+}
+
+async function getGastoById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM gastos WHERE id = ?', args: [id] });
+  return rowToGasto(r.rows[0] || null);
+}
+
+async function updateGasto(id, data) {
+  await db.execute({
+    sql: 'UPDATE gastos SET category=?, description=?, amount=?, date=?, payment_method=?, notes=? WHERE id=?',
+    args: [data.category || 'otros', data.description, Math.round(Number(data.amount) || 0), data.date, data.paymentMethod || 'efectivo', data.notes || null, id],
+  });
+}
+
+async function deleteGasto(id) {
+  await db.execute({ sql: 'DELETE FROM gastos WHERE id = ?', args: [id] });
+}
+
 // ── Admin Audit Log ───────────────────────────────────────────────────────
 
 async function logAdminAction(adminId, adminName, action, targetType, targetId, details) {
