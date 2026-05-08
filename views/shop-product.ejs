@@ -20,27 +20,30 @@
 
         <div class="pdp-layout">
             <!-- Gallery Column -->
+            <% const pdpGallery = (product.gallery && product.gallery.length > 0) ? product.gallery : [product.image || '/images/download.png']; %>
             <div class="pdp-gallery">
                 <div class="pdp-main-image" id="pdpMainImage">
-                    <img src="<%= (product.gallery && product.gallery[0]) || product.image %>" alt="<%= product.name %>"
-                        id="pdpMainImg" />
-                    <% if (product.discount> 0) { %>
+                    <img src="<%= pdpGallery[0] %>" alt="<%= product.name %>" id="pdpMainImg" />
+                    <% if (product.discount > 0) { %>
                         <span class="pdp-discount-badge">-<%= product.discount %>%</span>
-                        <% } %>
-                            <% if (typeof product.stock==='number' && product.stock===0) { %>
-                                <span class="pdp-soldout-badge">Agotado</span>
-                                <% } %>
-                </div>
-                <% if (product.gallery && product.gallery.length> 1) { %>
-                    <div class="pdp-thumbs">
-                        <% product.gallery.forEach((img, i)=> { %>
-                            <button type="button" class="pdp-thumb <%= i === 0 ? 'is-active' : '' %>"
-                                onclick="switchImage(this, '<%= img %>')">
-                                <img src="<%= img %>" alt="Imagen <%= i + 1 %>" />
-                            </button>
-                            <% }) %>
-                    </div>
                     <% } %>
+                    <% if (typeof product.stock === 'number' && product.stock === 0) { %>
+                        <span class="pdp-soldout-badge">Agotado</span>
+                    <% } %>
+                    <% if (pdpGallery.length > 1) { %>
+                        <button type="button" class="pdp-nav-btn pdp-prev" id="pdpPrev" aria-label="Imagen anterior">&#8249;</button>
+                        <button type="button" class="pdp-nav-btn pdp-next" id="pdpNext" aria-label="Imagen siguiente">&#8250;</button>
+                    <% } %>
+                </div>
+                <% if (pdpGallery.length > 1) { %>
+                    <div class="pdp-thumbs" id="pdpThumbs">
+                        <% pdpGallery.forEach((img, i) => { %>
+                            <button type="button" class="pdp-thumb <%= i === 0 ? 'is-active' : '' %>" data-idx="<%= i %>">
+                                <img src="<%= img %>" alt="Imagen <%= i + 1 %>" loading="lazy" />
+                            </button>
+                        <% }) %>
+                    </div>
+                <% } %>
             </div>
 
             <!-- Info Column -->
