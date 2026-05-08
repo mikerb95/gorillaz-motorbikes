@@ -5355,3 +5355,44 @@ main.schedule-full {
     grid-template-columns: 1fr
   }
 }
+
+/* ── Flash toast ─────────────────────────────────────────────────────────── */
+.flash-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-size: .875rem;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+  z-index: 9999;
+  animation: flash-in .22s ease;
+  max-width: calc(100vw - 32px)
+}
+
+@keyframes flash-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px) }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) }
+}
+
+.flash-success { background: #16a34a; color: #fff }
+.flash-error   { background: #dc2626; color: #fff }
+.flash-info    { background: #2563eb; color: #fff }
+
+.flash-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: .75;
+  padding: 0 0 0 6px;
+  line-height: 1
+}
+
+.flash-close:hover { opacity: 1 }
