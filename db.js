@@ -1101,7 +1101,7 @@ module.exports = {
   getAllEvents, countEvents, createEvent, getEventById, updateEvent, deleteEvent,
   getUpcomingEvents,
   registerEventAttendance, hasUserAttendedEvent, getEventAttendances,
-  getAttendanceById, confirmEventAttendance, getUserEventRegistrations,
+  getAttendanceById, confirmEventAttendance, cancelEventAttendances, getUserEventRegistrations,
   getNewsletterByEmail, getNewsletterByToken, getNewsletterByConfirmToken,
   confirmNewsletterSubscription,
   getAllNewsletterSubscribers, getConfirmedNewsletterSubscribers,
