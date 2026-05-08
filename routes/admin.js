@@ -484,7 +484,7 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async
 
 router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
-  if (!order || order.invoiceId || order.status !== 'completado') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
+  if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
   const tax = Math.round(Number(req.body.tax || 0));
   const subtotal = order.total;
   const { id: invoiceId } = await createInvoice({
