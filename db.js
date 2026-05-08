@@ -176,6 +176,16 @@ async function initDb() {
       notes TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    `CREATE TABLE IF NOT EXISTS gastos (
+      id TEXT PRIMARY KEY,
+      category TEXT NOT NULL DEFAULT 'otros',
+      description TEXT NOT NULL,
+      amount INTEGER NOT NULL DEFAULT 0,
+      date TEXT NOT NULL,
+      payment_method TEXT NOT NULL DEFAULT 'efectivo',
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
