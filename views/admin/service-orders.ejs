@@ -51,7 +51,7 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
             <%= new Date(o.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
           </td>
           <td style="font-weight:700;font-size:.85rem"><%= o.motorcycle || '—' %></td>
-          <td style="font-size:.85rem"><%= o.mechanic || '<span class="muted">Sin asignar</span>' %></td>
+          <td style="font-size:.85rem"><% if (o.mechanic) { %><%= o.mechanic %><% } else { %><span class="muted">Sin asignar</span><% } %></td>
           <td style="font-size:.85rem">
             <% o.items.slice(0,2).forEach(it => { %><div><%= it.qty %>× <%= it.name %></div><% }) %>
             <% if (o.items.length > 2) { %><span class="muted">+<%= o.items.length-2 %> más</span><% } %>
