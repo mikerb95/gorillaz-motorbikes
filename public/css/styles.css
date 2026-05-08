@@ -3516,6 +3516,44 @@ main.schedule-full {
   display: block
 }
 
+.pdp-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  transition: background .15s, opacity .15s;
+  opacity: 0;
+  padding: 0;
+  line-height: 1
+}
+
+.pdp-main-image:hover .pdp-nav-btn {
+  opacity: 1
+}
+
+.pdp-nav-btn:hover { background: rgba(0,0,0,.7) }
+.pdp-nav-btn.pdp-prev { left: 12px }
+.pdp-nav-btn.pdp-next { right: 12px }
+
+.pdp-main-image img {
+  transition: opacity .25s ease
+}
+
+.pdp-main-image img.fade-out {
+  opacity: 0
+}
+
 /* Info */
 .pdp-brand {
   display: block;
