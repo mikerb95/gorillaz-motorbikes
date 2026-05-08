@@ -1,0 +1,18 @@
+<nav style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:22px;border-bottom:2px solid #f4f4f5;padding-bottom:0">
+  <%
+    const finTabs = [
+      { key:'dashboard',          href:'/admin/finanzas',                    label:'Dashboard' },
+      { key:'ingresos',           href:'/admin/finanzas/ingresos',           label:'Ingresos' },
+      { key:'egresos',            href:'/admin/finanzas/egresos',            label:'Egresos' },
+      { key:'cuentas-cobrar',     href:'/admin/finanzas/cuentas-cobrar',     label:'Cuentas por Cobrar' },
+      { key:'flujo-caja',         href:'/admin/finanzas/flujo-caja',         label:'Flujo de Caja' },
+      { key:'estado-resultados',  href:'/admin/finanzas/estado-resultados',  label:'Estado de Resultados' },
+    ];
+  %>
+  <% finTabs.forEach(tab => { %>
+    <a href="<%= tab.href %>"
+       style="padding:8px 14px;font-size:.78rem;font-weight:700;text-decoration:none;border-radius:8px 8px 0 0;margin-bottom:-2px;border:2px solid transparent;border-bottom:none;transition:all .15s;<%= activeFin===tab.key ? 'background:#fff;border-color:#f4f4f5;border-bottom-color:#fff;color:#F25C05;' : 'color:#71717a;' %>">
+      <%= tab.label %>
+    </a>
+  <% }) %>
+</nav>
