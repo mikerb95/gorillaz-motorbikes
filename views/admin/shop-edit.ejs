@@ -1,232 +1,271 @@
 <%- include('../partials/admin-head', { title: 'Editar: ' + product.name }) %>
 
-<div class="crm-page-header">
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <a href="/admin/tienda" style="color:#71717a;text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:4px">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      Tienda
-    </a>
-    <span style="color:#d4d4d8">›</span>
-    <h1 class="crm-page-title" style="margin:0"><%= product.name %></h1>
+  <div class="crm-page-header">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <a href="/admin/tienda"
+        style="color:#71717a;text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:4px">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Tienda
+      </a>
+      <span style="color:#d4d4d8">›</span>
+      <h1 class="crm-page-title" style="margin:0">
+        <%= product.name %>
+      </h1>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <form method="post" action="/admin/tienda/eliminar"
+        data-confirm="¿Eliminar «<%= product.name %>» permanentemente?">
+        <input type="hidden" name="id" value="<%= product.id %>" />
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button type="submit" class="btn btn-danger btn-sm">Eliminar producto</button>
+      </form>
+    </div>
   </div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <form method="post" action="/admin/tienda/eliminar"
-      data-confirm="¿Eliminar «<%= product.name %>» permanentemente?">
-      <input type="hidden" name="id" value="<%= product.id %>" />
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <button type="submit" class="btn btn-danger btn-sm">Eliminar producto</button>
-    </form>
+
+  <!-- Meta info -->
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;font-size:.75rem;color:#71717a">
+    <span>ID: <code style="background:#f4f4f5;padding:2px 6px;border-radius:5px"><%= product.id %></code></span>
+    <% if (product.createdAt) { %><span>Creado: <%= new Date(product.createdAt).toLocaleDateString('es-CO') %></span>
+      <% } %>
+        <% if (product.updatedAt) { %><span>Actualizado: <%= new Date(product.updatedAt).toLocaleDateString('es-CO') %>
+          </span>
+          <% } %>
   </div>
-</div>
 
-<!-- Meta info -->
-<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;font-size:.75rem;color:#71717a">
-  <span>ID: <code style="background:#f4f4f5;padding:2px 6px;border-radius:5px"><%= product.id %></code></span>
-  <% if (product.createdAt) { %><span>Creado: <%= new Date(product.createdAt).toLocaleDateString('es-CO') %></span><% } %>
-  <% if (product.updatedAt) { %><span>Actualizado: <%= new Date(product.updatedAt).toLocaleDateString('es-CO') %></span><% } %>
-</div>
+  <form method="post" action="/admin/tienda/actualizar" id="editForm" onsubmit="document.getElementById('priceInput').value = document.getElementById('priceInput').value.replace(/[^\d]/g, '')">
+    <input type="hidden" name="id" value="<%= product.id %>" />
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
-<form method="post" action="/admin/tienda/actualizar" id="editForm">
-  <input type="hidden" name="id" value="<%= product.id %>" />
-  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
 
-  <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
-
-    <!-- Left column -->
-    <div>
-      <!-- Basic info -->
-      <div class="crm-card">
-        <div class="crm-card-title">Información básica</div>
-        <div class="crm-form-grid" style="margin-bottom:14px">
-          <div class="crm-form-group">
-            <label>Nombre <span class="required">*</span></label>
-            <input name="name" value="<%= product.name %>" required />
-          </div>
-          <div class="crm-form-group">
-            <label>SKU</label>
-            <input name="sku" value="<%= product.sku || '' %>" placeholder="NK-CAS-001" />
-          </div>
-          <div class="crm-form-group">
-            <label>Marca</label>
-            <input name="brand" value="<%= product.brand || '' %>" placeholder="Ej: Gorillaz" />
-          </div>
-          <div class="crm-form-group">
-            <label>Categoría <span class="required">*</span></label>
-            <select name="category" required>
-              <option value="">— Seleccionar —</option>
-              <% categories.forEach(c => { %>
-                <option value="<%= c.slug %>" <%= product.category === c.slug ? 'selected' : '' %>><%= c.name %></option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="crm-form-group crm-form-full">
-            <label>Descripción</label>
-            <textarea name="description" rows="4" placeholder="Describe el producto…"><%= product.description || '' %></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Price & inventory -->
-      <div class="crm-card">
-        <div class="crm-card-title">Precio e inventario</div>
-        <div class="crm-form-grid cols-3" style="margin-bottom:12px">
-          <div class="crm-form-group">
-            <label>Precio (COP) <span class="required">*</span></label>
-            <input type="text" name="price" id="priceInput" value="<%= Number(product.price).toLocaleString('es-CO') %>" min="0" required
-              oninput="formatPrice(); updatePricePreview()" />
-          </div>
-          <div class="crm-form-group">
-            <label>Descuento (%)</label>
-            <input type="number" name="discount" id="discountInput" value="<%= product.discount || 0 %>" min="0" max="100"
-              oninput="updatePricePreview()" />
-          </div>
-          <div class="crm-form-group">
-            <label>Stock</label>
-            <input type="number" name="stock" value="<%= typeof product.stock === 'number' ? product.stock : 0 %>" min="0" />
-          </div>
-        </div>
-        <div id="pricePreview" style="display:none;padding:10px 12px;background:#f0fdf4;border-radius:8px;font-size:.85rem;color:#16a34a;font-weight:700"></div>
-      </div>
-
-      <!-- Gallery -->
-      <div class="crm-card">
-        <div class="crm-card-title">Galería de imágenes</div>
-        <p style="font-size:.78rem;color:#71717a;margin:0 0 12px">Máximo 5 imágenes. La primera será la imagen principal.</p>
-        <div class="admin-gallery" id="galleryPreview">
-          <% (product.gallery || [product.image]).forEach((img, i) => { %>
-            <div class="admin-gallery-item">
-              <img src="<%= img %>" alt="Imagen <%= i + 1 %>" />
-              <input type="hidden" name="existingImages" value="<%= img %>" />
-              <button type="button" class="admin-gallery-remove"
-                onclick="this.closest('.admin-gallery-item').remove()" title="Quitar">✕</button>
-              <% if (i === 0) { %><span class="admin-gallery-badge">Principal</span><% } %>
+      <!-- Left column -->
+      <div>
+        <!-- Basic info -->
+        <div class="crm-card">
+          <div class="crm-card-title">Información básica</div>
+          <div class="crm-form-grid" style="margin-bottom:14px">
+            <div class="crm-form-group">
+              <label>Nombre <span class="required">*</span></label>
+              <input name="name" value="<%= product.name %>" required />
             </div>
-          <% }) %>
+            <div class="crm-form-group">
+              <label>SKU</label>
+              <input name="sku" value="<%= product.sku || '' %>" placeholder="NK-CAS-001" />
+            </div>
+            <div class="crm-form-group">
+              <label>Marca</label>
+              <input name="brand" value="<%= product.brand || '' %>" placeholder="Ej: Gorillaz" />
+            </div>
+            <div class="crm-form-group">
+              <label>Categoría <span class="required">*</span></label>
+              <select name="category" required>
+                <option value="">— Seleccionar —</option>
+                <% categories.forEach(c=> { %>
+                  <option value="<%= c.slug %>" <%=product.category===c.slug ? 'selected' : '' %>><%= c.name %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
+            <div class="crm-form-group crm-form-full">
+              <label>Descripción</label>
+              <textarea name="description" rows="4"
+                placeholder="Describe el producto…"><%= product.description || '' %></textarea>
+            </div>
+          </div>
         </div>
-        <div class="admin-gallery-upload" style="margin-top:10px">
-          <label class="btn btn-ghost btn-sm" style="cursor:pointer" id="editUploadLabel">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span id="editUploadText">Agregar imágenes</span>
-            <input type="file" accept="image/*" multiple style="display:none" onchange="handleEditImages(this)" />
-          </label>
+
+        <!-- Price & inventory -->
+        <div class="crm-card">
+          <div class="crm-card-title">Precio e inventario</div>
+          <div class="crm-form-grid cols-3" style="margin-bottom:12px">
+            <div class="crm-form-group">
+              <label>Precio (COP) <span class="required">*</span></label>
+              <input type="text" name="price" id="priceInput"
+                value="<%= Number(product.price).toLocaleString('es-CO') %>" min="0" required
+                oninput="formatPrice(); updatePricePreview()" />
+            </div>
+            <div class="crm-form-group">
+              <label>Descuento (%)</label>
+              <input type="number" name="discount" id="discountInput" value="<%= product.discount || 0 %>" min="0"
+                max="100" oninput="updatePricePreview()" />
+            </div>
+            <div class="crm-form-group">
+              <label>Stock</label>
+              <input type="number" name="stock" value="<%= typeof product.stock === 'number' ? product.stock : 0 %>"
+                min="0" />
+            </div>
+          </div>
+          <div id="pricePreview"
+            style="display:none;padding:10px 12px;background:#f0fdf4;border-radius:8px;font-size:.85rem;color:#16a34a;font-weight:700">
+          </div>
+        </div>
+
+        <!-- Gallery -->
+        <div class="crm-card">
+          <div class="crm-card-title">Galería de imágenes</div>
+          <p style="font-size:.78rem;color:#71717a;margin:0 0 12px">Máximo 5 imágenes. La primera será la imagen
+            principal.</p>
+          <div class="admin-gallery" id="galleryPreview">
+            <% (product.gallery || [product.image]).forEach((img, i)=> { %>
+              <div class="admin-gallery-item">
+                <img src="<%= img %>" alt="Imagen <%= i + 1 %>" />
+                <input type="hidden" name="existingImages" value="<%= img %>" />
+                <button type="button" class="admin-gallery-remove"
+                  onclick="this.closest('.admin-gallery-item').remove()" title="Quitar">✕</button>
+                <% if (i===0) { %><span class="admin-gallery-badge">Principal</span>
+                  <% } %>
+              </div>
+              <% }) %>
+          </div>
+          <div class="admin-gallery-upload" style="margin-top:10px">
+            <label class="btn btn-ghost btn-sm" style="cursor:pointer" id="editUploadLabel">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <span id="editUploadText">Agregar imágenes</span>
+              <input type="file" accept="image/*" multiple style="display:none" onchange="handleEditImages(this)" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="crm-card">
+          <div class="crm-card-title">Etiquetas</div>
+          <div class="crm-form-group" style="margin-bottom:10px">
+            <label>Tags (separadas por coma)</label>
+            <input name="tags" value="<%= (product.tags || []).join(', ') %>" placeholder="casco, protección, naked"
+              oninput="updateTagsPreview(this.value)" />
+          </div>
+          <div id="tagsPreview" style="display:flex;flex-wrap:wrap;gap:6px">
+            <% (product.tags || []).forEach(tag=> { %>
+              <span class="chip">
+                <%= tag %>
+              </span>
+              <% }) %>
+          </div>
         </div>
       </div>
 
-      <!-- Tags -->
-      <div class="crm-card">
-        <div class="crm-card-title">Etiquetas</div>
-        <div class="crm-form-group" style="margin-bottom:10px">
-          <label>Tags (separadas por coma)</label>
-          <input name="tags" value="<%= (product.tags || []).join(', ') %>"
-            placeholder="casco, protección, naked"
-            oninput="updateTagsPreview(this.value)" />
-        </div>
-        <div id="tagsPreview" style="display:flex;flex-wrap:wrap;gap:6px">
-          <% (product.tags || []).forEach(tag => { %>
-            <span class="chip"><%= tag %></span>
-          <% }) %>
+      <!-- Right column: save + preview -->
+      <div>
+        <div class="crm-card" style="position:sticky;top:74px">
+          <div class="crm-card-title">Guardar</div>
+          <button type="submit" class="btn btn-primary" style="width:100%;margin-bottom:10px">
+            Guardar cambios
+          </button>
+          <a href="/admin/tienda" class="btn btn-ghost" style="width:100%;text-align:center;display:block">
+            Cancelar
+          </a>
+          <hr style="border:none;border-top:1px solid #e4e4e7;margin:14px 0">
+          <a href="/tienda/<%= product.id %>" target="_blank"
+            style="display:flex;align-items:center;gap:6px;font-size:.8rem;color:#52525b;text-decoration:none">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              formatPrice() {
+              const input = document.getElementById('priceInput');
+              const value = input.value.replace(/[^\d]/g, '');
+              const numValue = parseInt(value, 10);
+              if (!isNaN(numValue)) {
+              input.value = numValue.toLocaleString('es-CO');
+              }
+              }
+
+              function updatePricePreview() {
+              const priceText = document.getElementById('priceInput').value.replace(/[^\d]/g, '');
+              const price = parseFloat(priceText
+              Ver en tienda
+          </a>
+
+          <hr style="border:none;border-top:1px solid #e4e4e7;margin:14px 0">
+          <div style="font-size:.75rem;color:#71717a">
+            <% if (product.stock===0) { %>
+              <span class="badge badge-danger" style="display:block;margin-bottom:6px">Agotado</span>
+              <% } else if (product.stock <=5) { %>
+                <span class="badge badge-warning" style="display:block;margin-bottom:6px">Poco stock (<%= product.stock
+                    %>)</span>
+                <% } else { %>
+                  <span class="badge badge-success" style="display:block;margin-bottom:6px">En stock (<%= product.stock
+                      %>)</span>
+                  <% } %>
+                    <% if (product.discount> 0) { %>
+                      <span class="badge badge-orange" style="display:block">
+                        <%= product.discount %>% de descuento activo
+                      </span>
+                      <% } %>
+          </div>
         </div>
       </div>
+
     </div>
+  </form>
 
-    <!-- Right column: save + preview -->
-    <div>
-      <div class="crm-card" style="position:sticky;top:74px">
-        <div class="crm-card-title">Guardar</div>
-        <button type="submit" class="btn btn-primary" style="width:100%;margin-bottom:10px">
-          Guardar cambios
-        </button>
-        <a href="/admin/tienda" class="btn btn-ghost" style="width:100%;text-align:center;display:block">
-          Cancelar
-        </a>
-        <hr style="border:none;border-top:1px solid #e4e4e7;margin:14px 0">
-        <a href="/tienda/<%= product.id %>" target="_blank"
-          style="display:flex;align-items:center;gap:6px;font-size:.8rem;color:#52525b;text-decoration:none">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Ver en tienda
-        </a>
-
-        <hr style="border:none;border-top:1px solid #e4e4e7;margin:14px 0">
-        <div style="font-size:.75rem;color:#71717a">
-          <% if (product.stock === 0) { %>
-            <span class="badge badge-danger" style="display:block;margin-bottom:6px">Agotado</span>
-          <% } else if (product.stock <= 5) { %>
-            <span class="badge badge-warning" style="display:block;margin-bottom:6px">Poco stock (<%= product.stock %>)</span>
-          <% } else { %>
-            <span class="badge badge-success" style="display:block;margin-bottom:6px">En stock (<%= product.stock %>)</span>
-          <% } %>
-          <% if (product.discount > 0) { %>
-            <span class="badge badge-orange" style="display:block"><%= product.discount %>% de descuento activo</span>
-          <% } %>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</form>
-
-<script>
-  function updatePricePreview() {
-    const price = parseFloat(document.getElementById('priceInput').value) || 0;
-    const disc = parseFloat(document.getElementById('discountInput').value) || 0;
-    const preview = document.getElementById('pricePreview');
-    if (disc > 0) {
-      const final = Math.round(price * (1 - disc / 100));
-      preview.style.display = 'block';
-      preview.textContent = 'Precio final con ' + disc + '% dto: $' + final.toLocaleString('es-CO');
-    } else {
-      preview.style.display = 'none';
+  <script>
+    function updatePricePreview() {
+      const price = parseFloat(document.getElementById('priceInput').value) || 0;
+      const disc = parseFloat(document.getElementById('discountInput').value) || 0;
+      const preview = document.getElementById('pricePreview');
+      if (disc > 0) {
+        const final = Math.round(price * (1 - disc / 100));
+        preview.style.display = 'block';
+        preview.textContent = 'Precio final con ' + disc + '% dto: $' + final.toLocaleString('es-CO');
+      } else {
+        preview.style.display = 'none';
+      }
     }
-  }
 
-  function updateTagsPreview(value) {
-    const container = document.getElementById('tagsPreview');
-    const tags = value.split(',').map(t => t.trim()).filter(Boolean);
-    container.innerHTML = tags.map(t => '<span class="chip">' + t + '</span>').join('');
-  }
+    function updateTagsPreview(value) {
+      const container = document.getElementById('tagsPreview');
+      const tags = value.split(',').map(t => t.trim()).filter(Boolean);
+      container.innerHTML = tags.map(t => '<span class="chip">' + t + '</span>').join('');
+    }
 
-  async function handleEditImages(input) {
-    const gallery = document.getElementById('galleryPreview');
-    const currentCount = gallery.querySelectorAll('.admin-gallery-item').length;
-    const files = Array.from(input.files).slice(0, 5 - currentCount);
-    if (!files.length) return;
+    async function handleEditImages(input) {
+      const gallery = document.getElementById('galleryPreview');
+      const currentCount = gallery.querySelectorAll('.admin-gallery-item').length;
+      const files = Array.from(input.files).slice(0, 5 - currentCount);
+      if (!files.length) return;
 
-    const label = document.getElementById('editUploadLabel');
-    const textEl = document.getElementById('editUploadText');
-    textEl.textContent = 'Subiendo…';
-    label.style.pointerEvents = 'none';
-    input.value = '';
+      const label = document.getElementById('editUploadLabel');
+      const textEl = document.getElementById('editUploadText');
+      textEl.textContent = 'Subiendo…';
+      label.style.pointerEvents = 'none';
+      input.value = '';
 
-    const csrf = document.querySelector('input[name="_csrf"]').value;
-    const formData = new FormData();
-    files.forEach(f => formData.append('images', f));
+      const csrf = document.querySelector('input[name="_csrf"]').value;
+      const formData = new FormData();
+      files.forEach(f => formData.append('images', f));
 
-    try {
-      const res = await fetch('/admin/tienda/upload-image', {
-        method: 'POST',
-        headers: { 'X-CSRF-Token': csrf },
-        body: formData,
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error('Upload failed');
-      (data.urls || []).forEach(url => {
-        const div = document.createElement('div');
-        div.className = 'admin-gallery-item admin-gallery-new';
-        div.innerHTML = `<img src="${url}" alt="Nueva imagen" />
+      try {
+        const res = await fetch('/admin/tienda/upload-image', {
+          method: 'POST',
+          headers: { 'X-CSRF-Token': csrf },
+          body: formData,
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error('Upload failed');
+        (data.urls || []).forEach(url => {
+          const div = document.createElement('div');
+          div.className = 'admin-gallery-item admin-gallery-new';
+          div.innerHTML = `<img src="${url}" alt="Nueva imagen" />
           <input type="hidden" name="existingImages" value="${url}" />
           <button type="button" class="admin-gallery-remove" onclick="this.closest('.admin-gallery-item').remove()">✕</button>`;
-        gallery.appendChild(div);
-      });
-    } catch {
-      alert('Error al subir imágenes. Intenta de nuevo.');
-    } finally {
-      textEl.textContent = 'Agregar imágenes';
-      label.style.pointerEvents = '';
+          gallery.appendChild(div);
+        });
+      } catch {
+        alert('Error al subir imágenes. Intenta de nuevo.');
+      } finally {
+        textEl.textContent = 'Agregar imágenes';
+        label.style.pointerEvents = '';
+      }
     }
-  }
 
-  // Init price preview
-  updatePricePreview();
-</script>
+    // Init price preview
+    updatePricePreview();
+  </script>
 
-<%- include('../partials/admin-foot') %>
+  <%- include('../partials/admin-foot') %>
