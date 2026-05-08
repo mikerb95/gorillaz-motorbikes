@@ -75,6 +75,7 @@ const templateLocals = async (req, res, next) => {
     res.locals.eventsUpcoming    = 0;
     res.locals.eventsFirstAnchor = '';
   }
+  res.locals.flash = readFlash(req, res);
   next();
 };
 
