@@ -1,0 +1,211 @@
+<%- include('../../partials/admin-head', { title: 'Finanzas' }) %>
+<% const fmt = n => '$' + Number(n).toLocaleString('es-CO'); %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Finanzas</h1>
+  <form method="get" action="/admin/finanzas" style="display:flex;gap:8px;align-items:center">
+    <select name="period" class="crm-form-group" style="padding:6px 10px;border:1px solid #e4e4e7;border-radius:8px;font-size:.82rem;background:#fff" onchange="this.form.submit()">
+      <% availablePeriods.forEach(p => { %>
+        <option value="<%= p %>" <%= p === periodParam ? 'selected' : '' %>>
+          <% const [py,pm] = p.split('-').map(Number); %><%= MONTH_NAMES[pm-1] %> <%= py %>
+        </option>
+      <% }) %>
+    </select>
+  </form>
+</div>
+
+<%- include('../../partials/finanzas-nav') %>
+
+<!-- KPIs del período -->
+<div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:6px">
+  <div class="crm-kpi-card" style="cursor:default;border-left:4px solid #22c55e">
+    <div class="crm-kpi-icon green">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    </div>
+    <div class="crm-kpi-value" style="font-size:1rem"><%= fmt(periodoIng) %></div>
+    <div class="crm-kpi-label">Ingresos — <%= periodLabel %></div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default;border-left:4px solid #ef4444">
+    <div class="crm-kpi-icon" style="background:#fee2e2">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+    </div>
+    <div class="crm-kpi-value" style="font-size:1rem"><%= fmt(periodoGas) %></div>
+    <div class="crm-kpi-label">Egresos — <%= periodLabel %></div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default;border-left:4px solid <%= periodoNet >= 0 ? '#3b82f6' : '#f59e0b' %>">
+    <div class="crm-kpi-icon <%= periodoNet >= 0 ? 'blue' : 'amber' %>">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    </div>
+    <div class="crm-kpi-value" style="font-size:1rem;color:<%= periodoNet >= 0 ? '#16a34a' : '#dc2626' %>"><%= fmt(periodoNet) %></div>
+    <div class="crm-kpi-label">Utilidad neta — <%= periodLabel %></div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-icon purple">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    </div>
+    <div class="crm-kpi-value" style="font-size:1.3rem"><%= periodoMarg %>%</div>
+    <div class="crm-kpi-label">Margen de utilidad</div>
+  </div>
+</div>
+
+<!-- KPIs acumulados -->
+<div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+  <a class="crm-kpi-card" href="/admin/finanzas/ingresos" style="text-decoration:none">
+    <div class="crm-kpi-value" style="font-size:.95rem"><%= fmt(totalIngresosAllTime) %></div>
+    <div class="crm-kpi-label">Total ingresos (histórico)</div>
+  </a>
+  <a class="crm-kpi-card" href="/admin/finanzas/egresos" style="text-decoration:none">
+    <div class="crm-kpi-value" style="font-size:.95rem"><%= fmt(totalEgresosAllTime) %></div>
+    <div class="crm-kpi-label">Total egresos (histórico)</div>
+  </a>
+  <a class="crm-kpi-card" href="/admin/finanzas/cuentas-cobrar" style="text-decoration:none">
+    <div class="crm-kpi-value" style="font-size:.95rem;color:<%= pendingTotal > 0 ? '#f59e0b' : '#18181b' %>"><%= fmt(pendingTotal) %></div>
+    <div class="crm-kpi-label">Cuentas por cobrar (<%= pendingCount %>)</div>
+  </a>
+  <a class="crm-kpi-card" href="/admin/finanzas/estado-resultados" style="text-decoration:none">
+    <div class="crm-kpi-value" style="font-size:.95rem;color:<%= utilidadAllTime >= 0 ? '#16a34a' : '#dc2626' %>"><%= fmt(utilidadAllTime) %></div>
+    <div class="crm-kpi-label">Utilidad histórica</div>
+  </a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 300px;gap:20px;margin-bottom:20px">
+
+  <!-- Gráfica mensual: Ingresos vs Egresos -->
+  <div class="crm-card" style="margin-bottom:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span class="crm-card-title" style="margin-bottom:0">Ingresos vs Egresos — últimos 12 meses</span>
+      <a href="/admin/finanzas/flujo-caja" style="font-size:.75rem;color:#F25C05;text-decoration:none;font-weight:700">Ver flujo →</a>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:8px;height:150px;padding-bottom:24px;position:relative;overflow:hidden">
+      <% monthlyData.forEach(m => { %>
+        <%
+          const ingPct = maxMonthly > 0 ? Math.max(Math.round((m.ing / maxMonthly) * 100), m.ing > 0 ? 2 : 0) : 0;
+          const gasPct = maxMonthly > 0 ? Math.max(Math.round((m.gas / maxMonthly) * 100), m.gas > 0 ? 2 : 0) : 0;
+          const isSelected = m.key === periodParam;
+        %>
+        <div style="flex:1;display:flex;align-items:flex-end;gap:2px;height:100%;cursor:pointer" onclick="window.location='/admin/finanzas?period=<%= m.key %>'" title="<%= m.fullLabel %> — Ing: <%= fmt(m.ing) %> / Eg: <%= fmt(m.gas) %>">
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end">
+            <div style="width:100%;height:<%= ingPct %>%;min-height:<%= m.ing>0?2:0 %>px;background:<%= isSelected?'#16a34a':'#22c55e' %>;border-radius:3px 3px 0 0;transition:background .2s;opacity:<%= isSelected?1:.75 %>"></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end">
+            <div style="width:100%;height:<%= gasPct %>%;min-height:<%= m.gas>0?2:0 %>px;background:<%= isSelected?'#dc2626':'#ef4444' %>;border-radius:3px 3px 0 0;transition:background .2s;opacity:<%= isSelected?1:.7 %>"></div>
+          </div>
+          <div style="position:absolute;bottom:0;font-size:.58rem;color:<%= isSelected?'#18181b':'#a1a1aa' %>;font-weight:<%= isSelected?'800':'400' %>;white-space:nowrap;transform:translateX(-50%);left:50%"><%= m.shortLabel %></div>
+        </div>
+      <% }) %>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:4px;font-size:.73rem;color:#52525b">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#22c55e;border-radius:2px;display:inline-block"></span>Ingresos</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;display:inline-block"></span>Egresos</span>
+    </div>
+  </div>
+
+  <!-- Egresos por categoría del período -->
+  <div class="crm-card" style="margin-bottom:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span class="crm-card-title" style="margin-bottom:0">Egresos por categoría</span>
+      <a href="/admin/finanzas/egresos?period=<%= periodParam %>" style="font-size:.75rem;color:#F25C05;text-decoration:none;font-weight:700">Ver todos →</a>
+    </div>
+    <% if (Object.keys(byCategory).length === 0) { %>
+      <p class="muted" style="text-align:center;padding:30px 0;font-size:.83rem">Sin egresos este período.</p>
+    <% } else { %>
+      <% Object.entries(byCategory).sort((a,b) => b[1]-a[1]).slice(0,7).forEach(([cat, amt]) => { %>
+        <% const pct = Math.round((amt / catMax) * 100); %>
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:4px">
+            <span style="color:#52525b"><%= GASTO_CATS[cat] || cat %></span>
+            <span style="font-weight:700;color:#18181b"><%= fmt(amt) %></span>
+          </div>
+          <div style="height:5px;background:#f4f4f5;border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:<%= pct %>%;background:#F25C05;border-radius:3px"></div>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+
+  <!-- Ingresos por método de pago -->
+  <div class="crm-card" style="margin-bottom:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span class="crm-card-title" style="margin-bottom:0">Ingresos por método de pago</span>
+    </div>
+    <% if (Object.keys(byMethod).length === 0) { %>
+      <p class="muted" style="text-align:center;padding:20px 0;font-size:.83rem">Sin datos para este período.</p>
+    <% } else { %>
+      <% const methodMax2 = Math.max(...Object.values(byMethod), 1); %>
+      <% Object.entries(byMethod).sort((a,b) => b[1]-a[1]).forEach(([method, amt]) => { %>
+        <% const pct = Math.round((amt / methodMax2) * 100); %>
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:4px">
+            <span style="color:#52525b"><%= METHOD_LABELS[method] || method %></span>
+            <span style="font-weight:700;color:#18181b"><%= fmt(amt) %></span>
+          </div>
+          <div style="height:5px;background:#f4f4f5;border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:<%= pct %>%;background:#3b82f6;border-radius:3px"></div>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+  <!-- Resumen del período -->
+  <div class="crm-card" style="margin-bottom:0">
+    <span class="crm-card-title">Resumen del período — <%= periodLabel %></span>
+    <table style="width:100%;font-size:.83rem;border-collapse:collapse">
+      <tr style="border-bottom:1px solid #f4f4f5"><td style="padding:8px 0;color:#52525b">Facturas de servicio</td><td style="text-align:right;font-weight:600"><%= fmt(periodoInv) %> (<%= invCount %>)</td></tr>
+      <tr style="border-bottom:1px solid #f4f4f5"><td style="padding:8px 0;color:#52525b">Pedidos online</td><td style="text-align:right;font-weight:600"><%= fmt(periodoOrd) %> (<%= ordCount %>)</td></tr>
+      <tr style="border-bottom:2px solid #e4e4e7"><td style="padding:8px 0;font-weight:800">Total Ingresos</td><td style="text-align:right;font-weight:800;color:#16a34a"><%= fmt(periodoIng) %></td></tr>
+      <tr style="border-bottom:1px solid #f4f4f5"><td style="padding:8px 0;color:#52525b">Gastos registrados</td><td style="text-align:right;font-weight:600;color:#dc2626"><%= fmt(periodoGas) %> (<%= gasCount %>)</td></tr>
+      <tr style="border-bottom:2px solid #e4e4e7"><td style="padding:8px 0;font-weight:800">Total Egresos</td><td style="text-align:right;font-weight:800;color:#dc2626"><%= fmt(periodoGas) %></td></tr>
+      <tr><td style="padding:10px 0;font-weight:900;font-size:.9rem">Utilidad Neta</td><td style="text-align:right;font-weight:900;font-size:.95rem;color:<%= periodoNet >= 0 ? '#16a34a' : '#dc2626' %>"><%= fmt(periodoNet) %></td></tr>
+    </table>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f4f4f5;display:flex;justify-content:space-between">
+      <a class="btn btn-ghost btn-sm" href="/admin/finanzas/estado-resultados?period=<%= periodParam %>">Ver P&L completo</a>
+      <a class="btn btn-ghost btn-sm" href="/admin/finanzas/egresos?period=<%= periodParam %>">Agregar gasto</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Movimientos recientes -->
+<div class="crm-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span class="crm-card-title" style="margin-bottom:0">Movimientos recientes</span>
+    <div style="display:flex;gap:8px">
+      <a class="btn btn-ghost btn-sm" href="/admin/finanzas/ingresos">Ingresos</a>
+      <a class="btn btn-ghost btn-sm" href="/admin/finanzas/egresos">Egresos</a>
+    </div>
+  </div>
+  <% if (recentMovements.length === 0) { %>
+    <p class="muted" style="text-align:center;padding:32px 0">No hay movimientos registrados.</p>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead><tr><th>Tipo</th><th>Referencia</th><th>Fecha</th><th style="text-align:right">Monto</th><th></th></tr></thead>
+      <tbody>
+        <% recentMovements.forEach(mov => { %>
+        <tr>
+          <td>
+            <% if (mov.type === 'ingreso') { %>
+              <span class="badge badge-success" style="font-size:.7rem"><%= mov.icon === 'pedido' ? 'Pedido' : 'Factura' %></span>
+            <% } else { %>
+              <span class="badge badge-danger" style="font-size:.7rem">Gasto</span>
+            <% } %>
+          </td>
+          <td style="font-size:.83rem"><%= mov.ref %><% if (mov.cat) { %> <span class="muted" style="font-size:.75rem">— <%= mov.cat %></span><% } %></td>
+          <td class="muted" style="font-size:.78rem;white-space:nowrap"><%= new Date(mov.date).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %></td>
+          <td style="text-align:right;font-weight:700;color:<%= mov.type==='ingreso'?'#16a34a':'#dc2626' %>"><%= mov.type==='ingreso'?'+':'-' %><%= fmt(mov.amount) %></td>
+          <td><% if (mov.link) { %><a class="btn btn-ghost btn-sm" href="<%= mov.link %>">Ver</a><% } %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<%- include('../../partials/admin-foot') %>
