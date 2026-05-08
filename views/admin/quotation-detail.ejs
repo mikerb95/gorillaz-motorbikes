@@ -74,8 +74,8 @@
           <tr>
             <td style="font-weight:700"><%= it.name %></td>
             <td>
-              <span class="badge <%= it.type === 'service' ? 'badge-warning' : 'badge-success' %>" style="font-size:.75rem">
-                <%= it.type === 'service' ? 'Servicio' : 'Producto' %>
+              <span class="badge <%= it.type === 'service' ? 'badge-warning' : it.type === 'product' ? 'badge-success' : 'badge-info' %>" style="font-size:.75rem">
+                <%= it.type === 'service' ? 'Servicio' : it.type === 'product' ? 'Producto' : 'Personalizado' %>
               </span>
             </td>
             <td style="text-align:center;font-weight:700"><%= it.qty %></td>
