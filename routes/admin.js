@@ -447,6 +447,21 @@ router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/cotizador-config?flash=saved');
 });
 
+// ── Configuración de parqueadero ──────────────────────────────────────────
+
+router.get('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
+  const config = loadParqueaderoConfig();
+  const flash = req.query.flash || null;
+  res.render('admin/config-parqueadero', { config, flash });
+});
+
+router.post('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
+  const diasGratis   = Math.max(0, parseInt(req.body.diasGratis, 10)   || 0);
+  const tarifaPorDia = Math.max(0, parseInt(req.body.tarifaPorDia, 10) || 0);
+  saveParqueaderoConfig({ diasGratis, tarifaPorDia });
+  res.redirect('/admin/config-parqueadero?flash=saved');
+});
+
 // ── Órdenes de servicio ───────────────────────────────────────────────────
 
 router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, async (req, res) => {
