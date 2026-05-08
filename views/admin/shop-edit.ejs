@@ -34,7 +34,8 @@
           <% } %>
   </div>
 
-  <form method="post" action="/admin/tienda/actualizar" id="editForm" onsubmit="document.getElementById('priceInput').value = document.getElementById('priceInput').value.replace(/[^\d]/g, '')">
+  <form method="post" action="/admin/tienda/actualizar" id="editForm"
+    onsubmit="document.getElementById('priceInput').value = document.getElementById('priceInput').value.replace(/[^\d]/g, '')">
     <input type="hidden" name="id" value="<%= product.id %>" />
     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
@@ -205,8 +206,18 @@
   </form>
 
   <script>
+    function formatPrice() {
+      const input = document.getElementById('priceInput');
+      const value = input.value.replace(/[^\d]/g, '');
+      const numValue = parseInt(value, 10);
+      if (!isNaN(numValue)) {
+        input.value = numValue.toLocaleString('es-CO');
+      }
+    }
+
     function updatePricePreview() {
-      const price = parseFloat(document.getElementById('priceInput').value) || 0;
+      const priceText = document.getElementById('priceInput').value.replace(/[^\d]/g, '');
+      const price = parseFloat(priceText) || 0;
       const disc = parseFloat(document.getElementById('discountInput').value) || 0;
       const preview = document.getElementById('pricePreview');
       if (disc > 0) {
