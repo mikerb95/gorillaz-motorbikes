@@ -55,48 +55,61 @@
                  id="ev-<%= idx %>"
                  data-category="<%= isTaller ? 'taller' : 'club' %>">
           <div class="ev-card-accent"></div>
-          <div class="ev-card-body">
-            <div class="ev-card-meta">
-              <span class="ev-type-chip <%= isTaller ? 'taller' : 'club' %>"><%= typeLabel %></span>
-              <% if (isPast) { %><span class="ev-past-chip">Finalizado</span><% } %>
-            </div>
-            <h3 class="ev-card-title"><%= ev.title %></h3>
-            <% if (ev.description) { %>
-              <p class="ev-card-desc"><%= ev.description %></p>
-            <% } %>
-            <div class="ev-card-footer">
-              <div class="ev-card-info">
-                <span class="ev-info-item">
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  <%= dateStr %>
-                </span>
-                <% if (ev.location) { %>
-                <span class="ev-info-item">
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  <% if (ev.lat && ev.lng) { %>
-                    <a href="https://www.google.com/maps?q=<%= ev.lat %>,<%= ev.lng %>" target="_blank" rel="noopener" class="ev-location-link"><%= ev.location %></a>
-                  <% } else { %>
-                    <%= ev.location %>
+          <div class="ev-card-content">
+            <div class="ev-card-body">
+              <div class="ev-card-meta">
+                <span class="ev-type-chip <%= isTaller ? 'taller' : 'club' %>"><%= typeLabel %></span>
+                <% if (isPast) { %><span class="ev-past-chip">Finalizado</span><% } %>
+              </div>
+              <h3 class="ev-card-title"><%= ev.title %></h3>
+              <% if (ev.description) { %>
+                <p class="ev-card-desc"><%= ev.description %></p>
+              <% } %>
+              <div class="ev-card-footer">
+                <div class="ev-card-info">
+                  <span class="ev-info-item">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <%= dateStr %>
+                  </span>
+                  <% if (ev.location) { %>
+                  <span class="ev-info-item">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <% if (ev.lat && ev.lng) { %>
+                      <a href="https://www.google.com/maps?q=<%= ev.lat %>,<%= ev.lng %>" target="_blank" rel="noopener" class="ev-location-link"><%= ev.location %></a>
+                    <% } else { %>
+                      <%= ev.location %>
+                    <% } %>
+                  </span>
                   <% } %>
-                </span>
+                </div>
+                <% if (!isTaller && !isPast) { %>
+                  <% const regStatus = registrations[ev.id]; %>
+                  <% if (!user) { %>
+                    <a class="btn btn-sm btn-ghost" href="/club/login?return=/eventos">Iniciar sesión</a>
+                  <% } else if (regStatus === 'confirmed') { %>
+                    <span class="ev-reg-badge confirmed">✓ Confirmado</span>
+                  <% } else if (regStatus === 'pending') { %>
+                    <span class="ev-reg-badge pending">⏳ Inscrito</span>
+                  <% } else { %>
+                    <form method="post" action="/club/eventos/<%= ev.id %>/asistencia" style="margin:0">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button type="submit" class="btn btn-sm btn-primary">Inscribirme</button>
+                    </form>
+                  <% } %>
                 <% } %>
               </div>
-              <% if (!isTaller && !isPast) { %>
-                <% const regStatus = registrations[ev.id]; %>
-                <% if (!user) { %>
-                  <a class="btn btn-sm btn-ghost" href="/club/login?return=/eventos">Iniciar sesión</a>
-                <% } else if (regStatus === 'confirmed') { %>
-                  <span class="ev-reg-badge confirmed">✓ Confirmado</span>
-                <% } else if (regStatus === 'pending') { %>
-                  <span class="ev-reg-badge pending">⏳ Inscrito</span>
-                <% } else { %>
-                  <form method="post" action="/club/eventos/<%= ev.id %>/asistencia" style="margin:0">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                    <button type="submit" class="btn btn-sm btn-primary">Inscribirme</button>
-                  </form>
-                <% } %>
-              <% } %>
             </div>
+            <% if (ev.location) { %>
+            <div class="ev-card-map" aria-hidden="true">
+              <% const mapQuery = (ev.lat && ev.lng) ? `${ev.lat},${ev.lng}` : ev.location; %>
+              <iframe 
+                src="https://www.google.com/maps?q=<%= encodeURIComponent(mapQuery) %>&hl=es&z=15&output=embed" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade"
+                frameborder="0">
+              </iframe>
+            </div>
+            <% } %>
           </div>
         </article>
       <% }) %>
