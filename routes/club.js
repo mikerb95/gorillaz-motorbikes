@@ -197,25 +197,42 @@ router.post('/visitas', requireAuth, async (req, res) => {
 });
 
 router.post('/vehiculos', requireAuth, async (req, res) => {
+  const { plate, soatExpires, tecnoExpires } = req.body;
+  const plateUp = (plate || '').trim().toUpperCase();
+  if (!plateUp || !/^[A-Z0-9]{3,7}$/.test(plateUp)) {
+    setFlash(res, 'error', 'La placa no es válida (3–7 caracteres alfanuméricos).');
+    return res.redirect('/club/panel');
+  }
   try {
     const user = await getUserById(req.userId);
-    const { plate, soatExpires, tecnoExpires } = req.body;
-    if (plate && user) {
-      const plateUp   = plate.trim().toUpperCase();
+    if (user) {
+      if ((user.vehicles || []).some(v => v.plate === plateUp)) {
+        setFlash(res, 'error', `La placa ${plateUp} ya está registrada.`);
+        return res.redirect('/club/panel');
+      }
       const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
       const vehicles  = [...(user.vehicles || []), { plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload }];
       await updateUser(user.id, { vehicles });
+      setFlash(res, 'success', `Vehículo ${plateUp} agregado correctamente.`);
     }
-  } catch (e) { console.error('POST /club/vehiculos error:', e.message); }
+  } catch (e) {
+    console.error('POST /club/vehiculos error:', e.message);
+    setFlash(res, 'error', 'No se pudo agregar el vehículo. Intenta de nuevo.');
+  }
   res.redirect('/club/panel');
 });
 
 router.post('/vehiculos/eliminar', requireAuth, async (req, res) => {
   try {
     const user     = await getUserById(req.userId);
-    const vehicles = (user.vehicles || []).filter(v => v.plate !== req.body.plate);
+    const plate    = (req.body.plate || '').toUpperCase();
+    const vehicles = (user.vehicles || []).filter(v => v.plate !== plate);
     await updateUser(user.id, { vehicles });
-  } catch (e) { console.error('POST /club/vehiculos/eliminar error:', e.message); }
+    setFlash(res, 'success', 'Vehículo eliminado.');
+  } catch (e) {
+    console.error('POST /club/vehiculos/eliminar error:', e.message);
+    setFlash(res, 'error', 'No se pudo eliminar el vehículo.');
+  }
   res.redirect('/club/panel');
 });
 
@@ -228,7 +245,11 @@ router.post('/vehiculos/actualizar', requireAuth, async (req, res) => {
       return { ...v, soatExpires: soatExpires ?? v.soatExpires, tecnoExpires: tecnoExpires ?? v.tecnoExpires, qr: v.qr || JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id }) };
     });
     await updateUser(user.id, { vehicles });
-  } catch (e) { console.error('POST /club/vehiculos/actualizar error:', e.message); }
+    setFlash(res, 'success', 'Vehículo actualizado.');
+  } catch (e) {
+    console.error('POST /club/vehiculos/actualizar error:', e.message);
+    setFlash(res, 'error', 'No se pudo actualizar el vehículo.');
+  }
   res.redirect('/club/panel');
 });
 
@@ -237,8 +258,12 @@ router.post('/eventos/:id/asistencia', requireAuth, async (req, res) => {
   const ev      = await require('../db').getEventById(eventId);
   if (!ev) return res.redirect('/eventos');
   try {
-    await registerEventAttendance(eventId, req.userId);
-  } catch { /* UNIQUE constraint: ya inscrito, ignorar */ }
+    const registered = await registerEventAttendance(eventId, req.userId);
+    if (registered) setFlash(res, 'success', `Te inscribiste a: ${ev.title}`);
+    else setFlash(res, 'info', 'Ya estás inscrito a este evento.');
+  } catch {
+    setFlash(res, 'error', 'No se pudo procesar la inscripción.');
+  }
   res.redirect('/eventos');
 });
 
