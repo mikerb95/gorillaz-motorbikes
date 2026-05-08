@@ -587,14 +587,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sticky gooey navbar — floating at top, viscous stick on scroll
   {
     const THRESHOLD = 30;
+    const UNSTICK_MS = 450; // debe coincidir con la transición más larga del estado unsticking
     let sticky = false;
+    let unstickTimer = null;
+
     const checkScroll = () => {
       const nowSticky = window.scrollY > THRESHOLD;
       if (nowSticky === sticky) return;
       sticky = nowSticky;
-      document.body.classList.toggle('nav-is-sticky', nowSticky);
+
+      if (nowSticky) {
+        // Pegarse: cancelar retorno en curso y activar sticky
+        clearTimeout(unstickTimer);
+        document.body.classList.remove('nav-unsticking');
+        document.body.classList.add('nav-is-sticky');
+      } else {
+        // Despegarse: quitar sticky pero mantener el filtro hasta que termine la transición
+        document.body.classList.remove('nav-is-sticky');
+        document.body.classList.add('nav-unsticking');
+        unstickTimer = setTimeout(() => {
+          document.body.classList.remove('nav-unsticking');
+        }, UNSTICK_MS);
+      }
       setHeaderOffset();
     };
+
     window.addEventListener('scroll', checkScroll, { passive: true });
     checkScroll();
   }

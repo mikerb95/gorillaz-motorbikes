@@ -85,9 +85,9 @@ a:hover {
 
 /* ──────────────────────────────────────────
    Sticky Gooey Navbar
-   - At top of page: nav floats (margin-top: 16px, all corners rounded)
-   - After scroll threshold: nav docks to top with a viscous merge effect
-   - SVG gooey filter merges the nav-goo-blob drip with the nav-bar background
+   - Floating at top (default): margin-top 16px, todos los bordes redondeados
+   - Al hacer scroll: se "pega" al top con rebote elástico + efecto gooey viscoso
+   - Al volver al top: nav-unsticking mantiene el filtro hasta que termine la transición
 ────────────────────────────────────────── */
 .nav-goo-blob {
   position: absolute;
@@ -99,9 +99,20 @@ a:hover {
   background: #FF6400;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   pointer-events: none;
-  transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Rebote elástico: la barra se estampa contra el top y vibra antes de quedar fija */
+@keyframes nav-stick-bounce {
+  0%   { transform: translateY(16px); }
+  42%  { transform: translateY(-14px); }
+  60%  { transform: translateY(7px); }
+  76%  { transform: translateY(-4px); }
+  88%  { transform: translateY(1px); }
+  100% { transform: translateY(0); }
+}
+
+/* Estado sticky */
 body.nav-is-sticky .site-header {
   filter: url('#navbar-gooey');
 }
@@ -113,15 +124,33 @@ body.nav-is-sticky .nav-goo-blob {
 body.nav-is-sticky .nav-bar {
   margin-top: 0;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  /* margin-top se aplica instantáneamente; el movimiento visual lo maneja el keyframe */
+  transition: border-radius 0.42s ease;
+  animation: nav-stick-bounce 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Estado unsticking: mantiene el filtro activo durante el retorno
+   para que blob y barra se vean como una sola pieza mientras animan */
+body.nav-unsticking .site-header {
+  filter: url('#navbar-gooey');
+}
+
+body.nav-unsticking .nav-goo-blob {
+  height: 0;
+  transition: height 0.42s ease;
+}
+
+body.nav-unsticking .nav-bar {
+  margin-top: 16px;
+  border-radius: var(--radius-lg);
+  animation: none;
+  transition: margin-top 0.42s ease, border-radius 0.42s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-goo-blob {
-    transition: none
-  }
-  .nav-bar {
-    transition: none
-  }
+  .nav-goo-blob { transition: none }
+  .nav-bar { transition: none }
+  @keyframes nav-stick-bounce { 0%, 100% { transform: none } }
 }
 
 /* Subtle vignette: slightly darker edges, lighter center */
