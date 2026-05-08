@@ -510,7 +510,7 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async
     estimatedDate: estimatedDate || null,
   };
   if (status === 'trabajo_completo' && order && !order.trabajoCompletoAt) {
-    updates.trabajoCompletoAt = new Date().toISOString();
+    updates.trabajoCompletoAt = nowCOT();
   }
   await updateServiceOrder(req.params.id, updates);
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
