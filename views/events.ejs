@@ -145,18 +145,18 @@
             final de la lista.</p>
           <% } %>
             <% } %>
-              </div>
-              <%- include('./partials/footer') %>
+  </div>
+  <%- include('./partials/footer') %>
 
-                <script>
-                  function filterEvents(cat, btn) {
-                    document.querySelectorAll('.ev-filter-btn').forEach(b => {
-                      b.classList.toggle('active', b === btn);
-                      b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
-                    });
-                    document.querySelectorAll('.ev-card').forEach(card => {
-                      const show = cat === 'all' || card.dataset.category === cat;
-                      card.style.display = show ? '' : 'none';
-                    });
-                  }
-                </script>
+    <script>
+      function filterEvents(cat, btn) {
+        document.querySelectorAll('.ev-filter-btn').forEach(b => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+        });
+        document.querySelectorAll('.ev-card').forEach(card => {
+          const show = cat === 'all' || card.dataset.category === cat;
+          card.style.display = show ? '' : 'none';
+        });
+      }
+    </script>
