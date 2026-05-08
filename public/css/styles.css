@@ -61,7 +61,9 @@ a:hover {
   z-index: 100;
   background: transparent;
   padding-left: 12px;
-  padding-right: 12px
+  padding-right: 12px;
+  /* padding se transiciona para que la expansión al 100% sea gradual, no un snap */
+  transition: padding-left 0.32s ease, padding-right 0.32s ease
 }
 
 .nav-bar {
@@ -85,10 +87,14 @@ a:hover {
 
 /* ──────────────────────────────────────────
    Sticky Gooey Navbar
-   - Floating at top (default): margin-top 16px, todos los bordes redondeados
-   - Al hacer scroll: se "pega" al top con rebote elástico + efecto gooey viscoso
-   - Al volver al top: nav-unsticking mantiene el filtro hasta que termine la transición
+   - Floating (default): margen 16px, bordes redondeados, ancho limitado
+   - Al hacer scroll: se expande al 100% del ancho, sube, rebota contra el top
+     y el scaleX simula el líquido espeso que choca contra las paredes
+   - Al volver al top: nav-unsticking mantiene el filtro durante el retorno
 ────────────────────────────────────────── */
+
+/* El blob naranja crece desde el borde superior al activarse sticky.
+   En sticky ocupa el 100% del ancho (junto con el cambio de padding en site-header). */
 .nav-goo-blob {
   position: absolute;
   top: 0;
@@ -99,55 +105,79 @@ a:hover {
   background: #FF6400;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   pointer-events: none;
-  transition: height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.32s ease,
+              border-radius 0.32s ease;
 }
 
-/* Rebote elástico: la barra se estampa contra el top y vibra antes de quedar fija */
+/* Keyframe del rebote:
+   - translateY: la barra sube desde su posición flotante y rebota
+   - scaleX: al llegar al top "salpica" lateralmente como líquido espeso
+     tocando una pared, luego el volumen regresa al centro */
 @keyframes nav-stick-bounce {
-  0%   { transform: translateY(16px); }
-  42%  { transform: translateY(-14px); }
-  60%  { transform: translateY(7px); }
-  76%  { transform: translateY(-4px); }
-  88%  { transform: translateY(1px); }
-  100% { transform: translateY(0); }
+  0%   { transform: translateY(16px)  scaleX(1); }
+  36%  { transform: translateY(-16px) scaleX(1.028); }
+  54%  { transform: translateY(8px)   scaleX(0.985); }
+  70%  { transform: translateY(-4px)  scaleX(1.008); }
+  83%  { transform: translateY(1px)   scaleX(1); }
+  100% { transform: translateY(0)     scaleX(1); }
 }
 
-/* Estado sticky */
+/* ── Estado sticky ── */
 body.nav-is-sticky .site-header {
   filter: url('#navbar-gooey');
+  padding-left: 0;
+  padding-right: 0;
+  /* padding-left/right ya tienen transition en la regla base de .site-header */
 }
 
 body.nav-is-sticky .nav-goo-blob {
   height: 28px;
+  width: 100%;
+  left: 0;
+  transform: none;
+  border-radius: 0;
 }
 
 body.nav-is-sticky .nav-bar {
-  margin-top: 0;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  /* margin-top se aplica instantáneamente; el movimiento visual lo maneja el keyframe */
-  transition: border-radius 0.42s ease;
-  animation: nav-stick-bounce 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  margin: 0;
+  max-width: none;
+  border-radius: 0;
+  transition: none; /* el animation maneja todo el movimiento */
+  animation: nav-stick-bounce 0.68s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Estado unsticking: mantiene el filtro activo durante el retorno
-   para que blob y barra se vean como una sola pieza mientras animan */
+/* ── Estado unsticking ──
+   Mantiene el filtro + ancho completo mientras dura la transición de retorno,
+   así el blob y la barra se encogen como una sola pieza sin duplicarse. */
 body.nav-unsticking .site-header {
   filter: url('#navbar-gooey');
+  padding-left: 0;
+  padding-right: 0;
+  transition: none;
 }
 
 body.nav-unsticking .nav-goo-blob {
   height: 0;
-  transition: height 0.42s ease;
+  width: 100%;
+  left: 0;
+  transform: none;
+  border-radius: 0;
+  transition: height 0.4s ease;
 }
 
 body.nav-unsticking .nav-bar {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
   margin-top: 16px;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   animation: none;
-  transition: margin-top 0.42s ease, border-radius 0.42s ease;
+  transition: margin-top 0.4s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .site-header { transition: none }
   .nav-goo-blob { transition: none }
   .nav-bar { transition: none }
   @keyframes nav-stick-bounce { 0%, 100% { transform: none } }
