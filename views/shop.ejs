@@ -134,14 +134,20 @@
             <% products.forEach(p=> { %>
               <article class="card product-card">
                 <a href="/tienda/<%= p.id %>" class="product-card-link">
-                  <div class="card-media" aria-hidden="true"
-                    style="background-image:url('<%= p.image %>');background-size:cover;background-position:center">
-                    <% if (p.discount> 0) { %>
-                      <span class="product-discount-chip">-<%= p.discount %>%</span>
-                      <% } %>
-                        <% if (typeof p.stock==='number' && p.stock===0) { %>
-                          <span class="product-soldout-chip">Agotado</span>
-                          <% } %>
+                  <% const cardImgs = (p.gallery && p.gallery.length > 0) ? p.gallery : [p.image || '/images/download.png']; %>
+                  <div class="card-media">
+                    <% cardImgs.forEach((img, i) => { %>
+                      <img src="<%= img %>" alt="<%= p.name %> imagen <%= i+1 %>" class="<%= i === 0 ? 'active' : '' %>" loading="lazy">
+                    <% }) %>
+                    <% if (cardImgs.length > 1) { %>
+                      <button type="button" class="slider-arrow slider-prev" data-dir="-1" aria-label="Anterior">&#8249;</button>
+                      <button type="button" class="slider-arrow slider-next" data-dir="1" aria-label="Siguiente">&#8250;</button>
+                      <div class="slider-dots">
+                        <% cardImgs.forEach((_, i) => { %><span class="<%= i === 0 ? 'active' : '' %>"></span><% }) %>
+                      </div>
+                    <% } %>
+                    <% if (p.discount > 0) { %><span class="product-discount-chip">-<%= p.discount %>%</span><% } %>
+                    <% if (typeof p.stock === 'number' && p.stock === 0) { %><span class="product-soldout-chip">Agotado</span><% } %>
                   </div>
                   <div class="card-body">
                     <% if (p.brand) { %><span class="product-brand">
