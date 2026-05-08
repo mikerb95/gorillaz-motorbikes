@@ -1029,7 +1029,7 @@ module.exports = {
   createEnrollment,
   createJobApplication,
   createOrder, updateOrderStatus, getOrderById, getAllOrders, getOrdersByUser, countOrders,
-  createQuotation, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates,
+  createQuotation, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
   logAdminAction, getAdminAuditLog,
