@@ -171,4 +171,46 @@
   <% } %>
 </div>
 
+<script>
+  async function handleCreateImages(input) {
+    const gallery = document.getElementById('createGalleryPreview');
+    const currentCount = gallery.querySelectorAll('.create-img-item').length;
+    const files = Array.from(input.files).slice(0, 5 - currentCount);
+    if (!files.length) return;
+
+    const textEl = document.getElementById('createUploadText');
+    const label  = document.getElementById('createUploadLabel');
+    textEl.textContent = 'Subiendo…';
+    label.style.pointerEvents = 'none';
+    input.value = '';
+
+    const csrf = document.querySelector('#createForm input[name="_csrf"]').value;
+    const formData = new FormData();
+    files.forEach(f => formData.append('images', f));
+
+    try {
+      const res = await fetch('/admin/tienda/upload-image', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrf },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error('Upload failed');
+      (data.urls || []).forEach(url => {
+        const div = document.createElement('div');
+        div.className = 'create-img-item admin-gallery-item';
+        div.innerHTML = `<img src="${url}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:6px" />
+          <input type="hidden" name="existingImages" value="${url}" />
+          <button type="button" class="admin-gallery-remove" onclick="this.closest('.create-img-item').remove()">✕</button>`;
+        gallery.appendChild(div);
+      });
+    } catch {
+      alert('Error al subir imágenes. Intenta de nuevo.');
+    } finally {
+      textEl.textContent = 'Agregar imágenes';
+      label.style.pointerEvents = '';
+    }
+  }
+</script>
+
 <%- include('../partials/admin-foot') %>

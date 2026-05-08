@@ -5011,10 +5011,11 @@ main.schedule-full {
 .ev-card {
   position: relative;
   border-radius: 16px;
-  border: 1.5px solid #e4e4e7;
+  border: 1px solid #e4e4e7;
   background: #fff;
   overflow: hidden;
-  transition: box-shadow .18s, transform .18s
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: box-shadow .2s ease, transform .2s ease;
 }
 
 .ev-card-content {
