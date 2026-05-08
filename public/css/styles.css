@@ -3193,6 +3193,73 @@ main.schedule-full {
   transition: transform .25s ease
 }
 
+.product-card .card-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .3s ease
+}
+
+.product-card .card-media img.active {
+  opacity: 1
+}
+
+.slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,.5);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  opacity: 0;
+  transition: opacity .15s ease;
+  z-index: 3;
+  padding: 0;
+  line-height: 1
+}
+
+.card-media:hover .slider-arrow {
+  opacity: 1
+}
+
+.slider-arrow.slider-prev { left: 8px }
+.slider-arrow.slider-next { right: 8px }
+
+.slider-dots {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 3
+}
+
+.slider-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.55);
+  transition: background .15s, width .15s
+}
+
+.slider-dots span.active {
+  background: #fff;
+  width: 14px;
+  border-radius: 3px
+}
+
 .product-discount-chip {
   position: absolute;
   top: 8px;
