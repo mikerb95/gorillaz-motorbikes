@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(updateSubmenuDepth, 0);
 
   // Mark when page has a full-bleed hero to adjust layout via CSS
-  if (document.querySelector('.hero')) {
+  if (document.querySelector('.hero') || document.querySelector('.services-hero') || document.querySelector('.event-hero') || document.querySelector('.club-hero')) {
     document.body.classList.add('has-hero');
   }
 
