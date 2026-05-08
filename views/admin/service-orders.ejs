@@ -2,12 +2,14 @@
 
 <%
 const STATUS = {
-  pendiente:  { label: 'Pendiente',   cls: 'badge-warning' },
-  en_proceso: { label: 'En proceso',  cls: 'badge-info'    },
-  completado: { label: 'Completado',  cls: 'badge-success' },
-  facturado:  { label: 'Facturado',   cls: 'badge-success' },
+  ingreso_taller:   { label: 'Ingreso a taller',  cls: 'badge-warning' },
+  trabajo_en_curso: { label: 'Trabajo en curso',  cls: 'badge-info'    },
+  en_pausa:         { label: 'En pausa',           cls: 'badge-warning' },
+  trabajo_completo: { label: 'Trabajo completo',  cls: 'badge-success' },
+  entregado:        { label: 'Entregado',          cls: 'badge-success' },
+  facturado:        { label: 'Facturado',          cls: 'badge-success' },
 };
-const counts = { pendiente: 0, en_proceso: 0, completado: 0, facturado: 0 };
+const counts = { ingreso_taller: 0, trabajo_en_curso: 0, en_pausa: 0, trabajo_completo: 0, entregado: 0 };
 orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
 %>
 

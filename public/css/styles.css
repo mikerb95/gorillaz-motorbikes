@@ -83,6 +83,47 @@ a:hover {
   box-shadow: 0 9px 30px rgba(0, 0, 0, .08), 0 3px 10px rgba(0, 0, 0, .05), 0 18px 24px -12px rgba(0, 0, 0, .22)
 }
 
+/* ──────────────────────────────────────────
+   Sticky Gooey Navbar
+   - At top of page: nav floats (margin-top: 16px, all corners rounded)
+   - After scroll threshold: nav docks to top with a viscous merge effect
+   - SVG gooey filter merges the nav-goo-blob drip with the nav-bar background
+────────────────────────────────────────── */
+.nav-goo-blob {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100vw - 24px), 1400px);
+  height: 0;
+  background: #FF6400;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  pointer-events: none;
+  transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body.nav-is-sticky .site-header {
+  filter: url('#navbar-gooey');
+}
+
+body.nav-is-sticky .nav-goo-blob {
+  height: 28px;
+}
+
+body.nav-is-sticky .nav-bar {
+  margin-top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-goo-blob {
+    transition: none
+  }
+  .nav-bar {
+    transition: none
+  }
+}
+
 /* Subtle vignette: slightly darker edges, lighter center */
 .nav-bar::before {
   content: "";

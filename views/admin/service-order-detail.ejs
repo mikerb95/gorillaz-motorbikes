@@ -127,7 +127,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   <% } %>
 
   <!-- Convertir en factura -->
-  <% if (order.status === 'completado' && !order.invoiceId) { %>
+  <% if (order.status === 'trabajo_completo' && !order.invoiceId) { %>
   <div class="crm-card" style="padding:20px 24px;border-top:3px solid #22c55e">
     <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Generar Factura</h2>
     <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/convertir-factura">
