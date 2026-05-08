@@ -4,14 +4,14 @@
 <div class="crm-page-header">
   <h1 class="crm-page-title">Ingresos</h1>
   <form method="get" action="/admin/finanzas/ingresos" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <select name="period" style="padding:6px 10px;border:1px solid #e4e4e7;border-radius:8px;font-size:.82rem;background:#fff" onchange="this.form.submit()">
+    <select name="period" class="crm-select" onchange="this.form.submit()">
       <% availablePeriods.forEach(p => { %>
         <option value="<%= p %>" <%= p === periodParam ? 'selected' : '' %>>
           <% const [py,pm] = p.split('-').map(Number); %><%= MONTH_NAMES[pm-1] %> <%= py %>
         </option>
       <% }) %>
     </select>
-    <select name="source" style="padding:6px 10px;border:1px solid #e4e4e7;border-radius:8px;font-size:.82rem;background:#fff" onchange="this.form.submit()">
+    <select name="source" class="crm-select" onchange="this.form.submit()">
       <option value="todos" <%= source==='todos' ? 'selected':'' %>>Todas las fuentes</option>
       <option value="facturas" <%= source==='facturas' ? 'selected':'' %>>Solo Facturas</option>
       <option value="pedidos" <%= source==='pedidos' ? 'selected':'' %>>Solo Pedidos online</option>

@@ -4588,6 +4588,42 @@ main.schedule-full {
   flex-wrap: wrap
 }
 
+/* ── Standalone selects ── */
+.crm-select {
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: .83rem;
+  font-family: inherit;
+  background: #fff;
+  color: #18181b;
+  transition: border-color .15s;
+  cursor: pointer
+}
+
+.crm-select:focus {
+  outline: none;
+  border-color: #F25C05
+}
+
+.crm-select-inline {
+  border: 1px solid #e4e4e7;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: .78rem;
+  font-family: inherit;
+  background: #fafafa;
+  color: #18181b;
+  transition: border-color .15s;
+  cursor: pointer
+}
+
+.crm-select-inline:focus {
+  outline: none;
+  border-color: #F25C05;
+  background: #fff
+}
+
 /* ── Search bar ── */
 .crm-search-row {
   display: flex;
