@@ -1,0 +1,293 @@
+<%- include('partials/head', { title: 'Consulta tu orden — Gorillaz Motorbikes' }) %>
+
+<style>
+  .orden-wrap {
+    max-width: 520px;
+    margin: 60px auto 80px;
+    padding: 0 16px;
+  }
+  .orden-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .orden-header h1 {
+    font-size: 26px;
+    font-weight: 900;
+    margin: 0 0 8px;
+  }
+  .orden-header p {
+    color: #6b7280;
+    margin: 0;
+    font-size: 15px;
+  }
+  .orden-card {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: grid;
+    gap: 16px;
+  }
+  .orden-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  .orden-field input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color .15s;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .orden-field input:focus {
+    border-color: #111;
+  }
+  .orden-field .hint {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+  .orden-btn {
+    width: 100%;
+    margin-top: 4px;
+  }
+  .orden-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #991b1b;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* Result card */
+  .result-card {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    display: grid;
+    gap: 0;
+    margin-top: 20px;
+  }
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .result-label {
+    font-size: 18px;
+    font-weight: 900;
+    color: #111;
+  }
+  .result-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+  .status-pendiente   { background: #fef9c3; color: #854d0e; }
+  .status-en_proceso  { background: #dbeafe; color: #1e40af; }
+  .status-trabajo_completo { background: #dcfce7; color: #166534; }
+  .status-facturado   { background: #f3f4f6; color: #374151; }
+
+  .result-items {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+  }
+  .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .result-item:last-child { border-bottom: none; }
+  .result-item-name { color: #374151; }
+  .result-item-price { font-weight: 700; color: #111; }
+
+  .result-divider {
+    border: none;
+    border-top: 1.5px solid #e5e7eb;
+    margin: 12px 0;
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 14px;
+  }
+  .result-row.total {
+    font-size: 17px;
+    font-weight: 900;
+    border-top: 2px solid #111;
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+  .result-row.parking {
+    color: #b45309;
+    font-weight: 600;
+  }
+
+  .parking-banner {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #92400e;
+    margin-top: 12px;
+  }
+  .parking-free-banner {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #166534;
+    margin-top: 12px;
+  }
+  .result-moto {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 14px;
+  }
+  .result-moto strong {
+    color: #111;
+    font-size: 15px;
+  }
+
+  @media (max-width: 540px) {
+    .orden-wrap { margin-top: 36px; }
+    .orden-card { padding: 20px 16px; }
+  }
+</style>
+
+<main>
+  <div class="orden-wrap">
+    <div class="orden-header">
+      <h1>Consulta tu orden</h1>
+      <p>Ingresa la placa de tu moto y los últimos 3 dígitos de tu celular para ver el estado y el valor total.</p>
+    </div>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="orden-error"><%= error %></div>
+      <br>
+    <% } %>
+
+    <form class="orden-card" method="post" action="/mi-orden">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <div class="orden-field">
+        <label for="placa">Placa de la moto</label>
+        <input id="placa" name="placa" type="text" required
+          maxlength="7" placeholder="ABC123"
+          value="<%= typeof placaVal !== 'undefined' ? placaVal : '' %>" />
+        <div class="hint">Ingresa la placa tal como está registrada (ej. ABC123)</div>
+      </div>
+
+      <div class="orden-field">
+        <label for="phone_suffix">Últimos 3 dígitos de tu celular</label>
+        <input id="phone_suffix" name="phone_suffix" type="text" required
+          inputmode="numeric" pattern="\d{3}" maxlength="3" placeholder="000"
+          style="letter-spacing: 4px; font-size: 20px; text-align: center;"
+          value="<%= typeof suffixVal !== 'undefined' ? suffixVal : '' %>" />
+        <div class="hint">El número de celular con el que se registró la orden en el taller</div>
+      </div>
+
+      <button class="btn btn-primary orden-btn" type="submit">Consultar orden →</button>
+    </form>
+
+    <% if (typeof order !== 'undefined' && order) { %>
+    <%
+      const statusLabels = {
+        pendiente: 'Pendiente',
+        en_proceso: 'En proceso',
+        trabajo_completo: 'Listo para recoger',
+        facturado: 'Entregado',
+      };
+      const statusLabel = statusLabels[order.status] || order.status;
+    %>
+    <div class="result-card">
+      <div class="result-header">
+        <span class="result-label"><%= order.label %></span>
+        <span class="result-status status-<%= order.status %>"><%= statusLabel %></span>
+      </div>
+
+      <% if (order.motorcycle) { %>
+      <div class="result-moto">Moto: <strong><%= order.motorcycle %></strong></div>
+      <% } %>
+
+      <% if (order.items && order.items.length > 0) { %>
+      <ul class="result-items">
+        <% order.items.forEach(item => { %>
+        <li class="result-item">
+          <span class="result-item-name"><%= item.name || item.description || 'Servicio' %><% if (item.qty && item.qty > 1) { %> &times; <%= item.qty %><% } %></span>
+          <span class="result-item-price">$<%= ((item.price || 0) * (item.qty || 1)).toLocaleString('es-CO') %></span>
+        </li>
+        <% }) %>
+      </ul>
+      <% } %>
+
+      <div class="result-row">
+        <span>Subtotal servicios</span>
+        <span>$<%= order.total.toLocaleString('es-CO') %> COP</span>
+      </div>
+
+      <% if (parking.aplica) { %>
+      <div class="result-row parking">
+        <span>Parqueadero (<%= parking.diasCobro %> día<%= parking.diasCobro !== 1 ? 's' : '' %> × $<%= parking.tarifaPorDia.toLocaleString('es-CO') %>)</span>
+        <span>$<%= parking.totalParq.toLocaleString('es-CO') %> COP</span>
+      </div>
+      <% } %>
+
+      <div class="result-row total">
+        <span>Total a pagar</span>
+        <strong>$<%= (order.total + (parking.aplica ? parking.totalParq : 0)).toLocaleString('es-CO') %> COP</strong>
+      </div>
+
+      <% if (parking.aplica) { %>
+      <div class="parking-banner">
+        Tu moto lleva <strong><%= parking.diasCobro %> día<%= parking.diasCobro !== 1 ? 's' : '' %></strong> de parqueadero cobrado
+        (<%= parking.diasGratis %> día<%= parking.diasGratis !== 1 ? 's' : '' %> gratis agotados).
+        El cargo aumenta cada día adicional.
+      </div>
+      <% } else if (order.trabajoCompletoAt && parking.diasGratis > 0) { %>
+      <div class="parking-free-banner">
+        <% if (parking.diasRestantes > 0) { %>
+        Parqueadero gratuito — te quedan <strong><%= parking.diasRestantes %> día<%= parking.diasRestantes !== 1 ? 's' : '' %></strong> sin costo adicional.
+        <% } else { %>
+        Parqueadero gratuito por hoy.
+        <% } %>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

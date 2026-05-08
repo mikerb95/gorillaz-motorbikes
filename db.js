@@ -1089,6 +1089,14 @@ async function getAdminAuditLog(limit = 100) {
   }));
 }
 
+async function getServiceOrdersByPlate(plate) {
+  const r = await db.execute({
+    sql: `SELECT * FROM service_orders WHERE UPPER(REPLACE(motorcycle, ' ', '')) LIKE ? ORDER BY created_at DESC`,
+    args: [`%${plate.toUpperCase().replace(/\s/g, '')}%`],
+  });
+  return r.rows.map(rowToServiceOrder);
+}
+
 // ── Exports ───────────────────────────────────────────────────────────────
 
 module.exports = {
@@ -1115,4 +1123,5 @@ module.exports = {
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
+  getServiceOrdersByPlate,
 };
