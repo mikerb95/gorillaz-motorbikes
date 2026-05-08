@@ -861,6 +861,7 @@ function rowToServiceOrder(row) {
     notes: row.notes || null,
     estimatedDate: row.estimated_date || null,
     invoiceId: row.invoice_id || null,
+    trabajoCompletoAt: row.trabajo_completo_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -911,7 +912,8 @@ async function updateServiceOrder(id, fields) {
   if (fields.status        !== undefined) { set.push('status = ?');         args.push(fields.status); }
   if (fields.notes         !== undefined) { set.push('notes = ?');          args.push(fields.notes); }
   if (fields.estimatedDate !== undefined) { set.push('estimated_date = ?'); args.push(fields.estimatedDate); }
-  if (fields.invoiceId     !== undefined) { set.push('invoice_id = ?');     args.push(fields.invoiceId); }
+  if (fields.invoiceId          !== undefined) { set.push('invoice_id = ?');           args.push(fields.invoiceId); }
+  if (fields.trabajoCompletoAt  !== undefined) { set.push('trabajo_completo_at = ?');  args.push(fields.trabajoCompletoAt); }
   if (set.length === 0) return;
   set.push('updated_at = ?'); args.push(new Date().toISOString());
   args.push(id);
