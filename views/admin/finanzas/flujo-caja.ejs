@@ -1,0 +1,110 @@
+<%- include('../../partials/admin-head', { title: 'Finanzas — Flujo de Caja' }) %>
+<% const fmt = n => '$' + Number(n).toLocaleString('es-CO'); %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Flujo de Caja</h1>
+  <form method="get" action="/admin/finanzas/flujo-caja" style="display:flex;gap:8px;align-items:center">
+    <select name="year" style="padding:6px 10px;border:1px solid #e4e4e7;border-radius:8px;font-size:.82rem;background:#fff" onchange="this.form.submit()">
+      <% availableYears.forEach(y => { %>
+        <option value="<%= y %>" <%= y === year ? 'selected' : '' %>><%= y %></option>
+      <% }) %>
+    </select>
+  </form>
+</div>
+
+<%- include('../../partials/finanzas-nav') %>
+
+<!-- KPIs anuales -->
+<div class="crm-kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+  <div class="crm-kpi-card" style="cursor:default;border-left:4px solid #22c55e">
+    <div class="crm-kpi-value" style="font-size:.95rem;color:#16a34a"><%= fmt(totIng) %></div>
+    <div class="crm-kpi-label">Ingresos totales <%= year %></div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default;border-left:4px solid #ef4444">
+    <div class="crm-kpi-value" style="font-size:.95rem;color:#dc2626"><%= fmt(totGas) %></div>
+    <div class="crm-kpi-label">Egresos totales <%= year %></div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default;border-left:4px solid <%= totNet >= 0 ? '#3b82f6' : '#f59e0b' %>">
+    <div class="crm-kpi-value" style="font-size:.95rem;color:<%= totNet >= 0 ? '#16a34a' : '#dc2626' %>"><%= fmt(totNet) %></div>
+    <div class="crm-kpi-label">Flujo neto <%= year %></div>
+  </div>
+</div>
+
+<!-- Gráfica anual -->
+<div class="crm-card" style="margin-bottom:20px">
+  <span class="crm-card-title">Flujo mensual <%= year %></span>
+  <div style="display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:30px;position:relative;overflow:hidden">
+    <% months.forEach(m => { %>
+      <%
+        const ingH = maxAbs > 0 ? Math.max(Math.round((m.ing/maxAbs)*100), m.ing>0?2:0) : 0;
+        const gasH = maxAbs > 0 ? Math.max(Math.round((m.gas/maxAbs)*100), m.gas>0?2:0) : 0;
+        const netPos = m.net >= 0;
+      %>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;position:relative" title="<%= m.label %> | Ing: <%= fmt(m.ing) %> | Eg: <%= fmt(m.gas) %> | Neto: <%= fmt(m.net) %>">
+        <div style="flex:1;display:flex;align-items:flex-end;gap:1px;width:100%">
+          <div style="flex:1;height:<%= ingH %>%;background:#22c55e;border-radius:3px 3px 0 0;min-height:<%= m.ing>0?2:0 %>px;opacity:.85"></div>
+          <div style="flex:1;height:<%= gasH %>%;background:#ef4444;border-radius:3px 3px 0 0;min-height:<%= m.gas>0?2:0 %>px;opacity:.85"></div>
+        </div>
+        <div style="position:absolute;bottom:0;font-size:.6rem;color:#a1a1aa;white-space:nowrap"><%= MONTH_NAMES[m.m-1].slice(0,3) %></div>
+      </div>
+    <% }) %>
+  </div>
+  <div style="display:flex;gap:16px;font-size:.73rem;color:#52525b;margin-top:4px">
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#22c55e;border-radius:2px;display:inline-block"></span>Ingresos</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;display:inline-block"></span>Egresos</span>
+  </div>
+</div>
+
+<!-- Tabla flujo de caja -->
+<div class="crm-card">
+  <span class="crm-card-title">Estado mensual del flujo de caja — <%= year %></span>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Mes</th>
+          <th style="text-align:right">Ingresos</th>
+          <th style="text-align:right">Egresos</th>
+          <th style="text-align:right">Flujo Neto</th>
+          <th style="text-align:right">Acumulado</th>
+          <th>Indicador</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% months.forEach(m => { %>
+          <% const netColor = m.net >= 0 ? '#16a34a' : '#dc2626'; %>
+          <% const acumColor = m.acum >= 0 ? '#16a34a' : '#dc2626'; %>
+          <% const barW = maxAbs > 0 ? Math.min(Math.round((Math.abs(m.net)/maxAbs)*100), 100) : 0; %>
+        <tr>
+          <td style="font-weight:700;font-size:.83rem"><%= m.label %></td>
+          <td style="text-align:right;font-size:.83rem;color:#16a34a"><%= m.ing > 0 ? fmt(m.ing) : '<span class="muted">—</span>' %></td>
+          <td style="text-align:right;font-size:.83rem;color:#dc2626"><%= m.gas > 0 ? fmt(m.gas) : '<span class="muted">—</span>' %></td>
+          <td style="text-align:right;font-weight:700;color:<%= netColor %>">
+            <%= m.net !== 0 ? (m.net > 0 ? '+' : '') + fmt(m.net) : '<span class="muted">—</span>' %>
+          </td>
+          <td style="text-align:right;font-weight:700;color:<%= acumColor %>">
+            <%= fmt(m.acum) %>
+          </td>
+          <td style="width:100px;min-width:80px">
+            <div style="height:8px;background:#f4f4f5;border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:<%= barW %>%;background:<%= m.net >= 0 ? '#22c55e' : '#ef4444' %>;border-radius:4px"></div>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+      <tfoot>
+        <tr style="background:#fafafa;border-top:2px solid #e4e4e7">
+          <td style="font-weight:900;padding:10px 14px">TOTAL <%= year %></td>
+          <td style="text-align:right;font-weight:700;color:#16a34a;padding:10px 14px"><%= fmt(totIng) %></td>
+          <td style="text-align:right;font-weight:700;color:#dc2626;padding:10px 14px"><%= fmt(totGas) %></td>
+          <td style="text-align:right;font-weight:900;font-size:.9rem;color:<%= totNet>=0?'#16a34a':'#dc2626' %>;padding:10px 14px"><%= (totNet>0?'+':'') + fmt(totNet) %></td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <p class="muted" style="font-size:.75rem;margin-top:12px">* El acumulado es la suma del flujo neto desde enero hasta el mes indicado. No incluye saldo inicial de caja.</p>
+</div>
+
+<%- include('../../partials/admin-foot') %>
