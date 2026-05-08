@@ -1,0 +1,100 @@
+<%- include('../partials/admin-head', { title: 'Config Parqueadero' }) %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Configuración de Parqueadero</h1>
+</div>
+
+<% if (flash === 'saved') { %>
+  <div class="alert" style="background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-weight:700">
+    ✓ Configuración guardada correctamente.
+  </div>
+<% } %>
+
+<div style="display:grid;gap:20px;max-width:520px">
+
+  <div class="crm-card" style="padding:24px">
+    <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">Parqueadero en órdenes de servicio</h2>
+    <p class="muted" style="font-size:13px;margin:0 0 20px">
+      Cuando una orden cambia a <strong>Trabajo completo</strong>, comienza a correr un contador de días.
+      Los primeros días son gratuitos; después se cobra una tarifa diaria hasta que la moto sea entregada.
+    </p>
+
+    <form method="post" action="/admin/config-parqueadero">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <div style="display:grid;gap:16px">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Días gratuitos
+          </label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input
+              type="number"
+              name="diasGratis"
+              value="<%= config.diasGratis %>"
+              min="0"
+              max="30"
+              style="width:90px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none"
+            />
+            <span style="font-size:13px;color:#6b7280">días sin cobro desde que el trabajo queda completo</span>
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Tarifa por día (COP)
+          </label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:14px;color:#6b7280;font-weight:700">$</span>
+            <input
+              type="number"
+              name="tarifaPorDia"
+              value="<%= config.tarifaPorDia %>"
+              min="0"
+              step="500"
+              style="width:130px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none"
+            />
+            <span style="font-size:13px;color:#6b7280">COP por día de parqueadero</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div style="margin-top:20px;padding:14px 16px;background:#fefce8;border:1px solid #fde68a;border-radius:12px">
+        <div style="font-size:11px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Ejemplo</div>
+        <p id="parqPreview" style="font-size:13px;color:#374151;margin:0;line-height:1.6"></p>
+      </div>
+
+      <div style="margin-top:20px">
+        <button class="btn btn-primary" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const diasInput  = document.querySelector('[name=diasGratis]');
+  const tarifaInput = document.querySelector('[name=tarifaPorDia]');
+  const preview    = document.getElementById('parqPreview');
+
+  function fmt(n) { return '$' + Number(n).toLocaleString('es-CO') + ' COP'; }
+
+  function update() {
+    const dias   = parseInt(diasInput.value, 10)   || 0;
+    const tarifa = parseInt(tarifaInput.value, 10) || 0;
+    const ejemplo = dias + 2;
+    const cobro   = 2 * tarifa;
+    preview.textContent =
+      `Si la moto lleva ${ejemplo} día${ejemplo !== 1 ? 's' : ''} en "Trabajo completo": ` +
+      `${dias} día${dias !== 1 ? 's' : ''} gratis + 2 días cobrados = ${fmt(cobro)} de parqueadero acumulado.`;
+  }
+
+  diasInput.addEventListener('input', update);
+  tarifaInput.addEventListener('input', update);
+  update();
+})();
+</script>
+
+<%- include('../partials/admin-foot') %>
