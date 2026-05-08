@@ -3,6 +3,7 @@ const jwt     = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config');
 const { getUserById, getAllEvents } = require('../db');
 const catalog = require('../data/catalog');
+const { readFlash } = require('../helpers/flash');
 
 const jwtCart = (req, res, next) => {
   const token = req.cookies.jwt;
