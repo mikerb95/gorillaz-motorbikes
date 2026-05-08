@@ -72,8 +72,8 @@
         <div class="crm-form-grid cols-3" style="margin-bottom:12px">
           <div class="crm-form-group">
             <label>Precio (COP) <span class="required">*</span></label>
-            <input type="number" name="price" id="priceInput" value="<%= product.price %>" min="0" required
-              oninput="updatePricePreview()" />
+            <input type="text" name="price" id="priceInput" value="<%= Number(product.price).toLocaleString('es-CO') %>" min="0" required
+              oninput="formatPrice(); updatePricePreview()" />
           </div>
           <div class="crm-form-group">
             <label>Descuento (%)</label>
