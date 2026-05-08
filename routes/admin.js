@@ -142,7 +142,10 @@ router.post('/eventos/asistencia/confirmar', requireAuth, requireAdmin, async (r
 
 router.post('/eventos/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const ev = await getEventById(req.body.id);
-  await deleteEvent(req.body.id);
+  await Promise.all([
+    deleteEvent(req.body.id),
+    cancelEventAttendances(req.body.id),
+  ]);
   await logAdminAction(res.locals.user.id, res.locals.user.name, 'eliminar_evento', 'event', req.body.id, { title: ev ? ev.title : null });
   res.redirect('/admin/eventos');
 });
