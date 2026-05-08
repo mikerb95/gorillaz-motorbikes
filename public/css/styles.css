@@ -148,7 +148,7 @@ body.nav-is-sticky .nav-bar {
   max-width: none;
   border-radius: 0;
   /* margin-top 0.18s: movimiento vertical mínimo, casi imperceptible */
-  transition: margin-top 0.18s ease, border-radius 0.22s ease;
+  transition: margin-top 0.18s ease;
   animation: nav-liquid-splat 0.75s ease forwards;
 }
 
