@@ -2,7 +2,7 @@
 const express  = require('express');
 const path     = require('path');
 const fs       = require('fs');
-const { createQuotation, getQuotationById } = require('../db');
+const { createQuotation, getQuotationById, updateQuotationPhone } = require('../db');
 const { products } = require('../data/catalog');
 
 const router = express.Router();
