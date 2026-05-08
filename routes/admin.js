@@ -29,6 +29,7 @@ const {
 
 const COTIZADOR_CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
 const SERVICES_CATALOG_PATH   = path.join(__dirname, '..', 'data', 'services-catalog.json');
+const PARQUEADERO_CONFIG_PATH = path.join(__dirname, '..', 'data', 'parqueadero-config.json');
 
 function loadCotizadorConfig() {
   try { return JSON.parse(fs.readFileSync(COTIZADOR_CONFIG_PATH, 'utf8')); }
@@ -36,6 +37,13 @@ function loadCotizadorConfig() {
 }
 function saveCotizadorConfig(cfg) {
   try { fs.writeFileSync(COTIZADOR_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
+}
+function loadParqueaderoConfig() {
+  try { return JSON.parse(fs.readFileSync(PARQUEADERO_CONFIG_PATH, 'utf8')); }
+  catch { return { diasGratis: 3, tarifaPorDia: 7000 }; }
+}
+function saveParqueaderoConfig(cfg) {
+  try { fs.writeFileSync(PARQUEADERO_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
 }
 function loadServicesCatalog() {
   try { return JSON.parse(fs.readFileSync(SERVICES_CATALOG_PATH, 'utf8')); }
