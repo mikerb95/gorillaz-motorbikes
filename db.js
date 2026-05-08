@@ -795,6 +795,13 @@ async function getQuotationById(id) {
   return rowToQuotation(r.rows[0] || null);
 }
 
+async function updateQuotationPhone(id, clientPhone, clientPhoneCountry) {
+  await db.execute({
+    sql: 'UPDATE quotations SET client_phone = ?, client_phone_country = ? WHERE id = ?',
+    args: [clientPhone || null, clientPhoneCountry || '+57', id],
+  });
+}
+
 async function getAllQuotations() {
   const r = await db.execute('SELECT * FROM quotations ORDER BY created_at DESC');
   return r.rows.map(rowToQuotation);
