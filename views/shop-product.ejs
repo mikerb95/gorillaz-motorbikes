@@ -190,11 +190,47 @@
     </main>
 
     <script>
-        function switchImage(thumb, src) {
-            document.getElementById('pdpMainImg').src = src;
-            document.querySelectorAll('.pdp-thumb').forEach(t => t.classList.remove('is-active'));
-            thumb.classList.add('is-active');
+        const pdpImgs = <%- JSON.stringify(pdpGallery) %>;
+        let pdpCur = 0;
+
+        function pdpGoTo(idx) {
+            pdpCur = (idx + pdpImgs.length) % pdpImgs.length;
+            const mainImg = document.getElementById('pdpMainImg');
+            mainImg.classList.add('fade-out');
+            setTimeout(() => {
+                mainImg.src = pdpImgs[pdpCur];
+                mainImg.classList.remove('fade-out');
+            }, 150);
+            document.querySelectorAll('.pdp-thumb').forEach((t, i) => {
+                t.classList.toggle('is-active', i === pdpCur);
+            });
+            // Scroll thumb into view
+            const activeThumb = document.querySelectorAll('.pdp-thumb')[pdpCur];
+            activeThumb?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
+
+        document.querySelectorAll('.pdp-thumb').forEach(btn => {
+            btn.addEventListener('click', () => pdpGoTo(parseInt(btn.dataset.idx)));
+        });
+
+        document.getElementById('pdpPrev')?.addEventListener('click', () => pdpGoTo(pdpCur - 1));
+        document.getElementById('pdpNext')?.addEventListener('click', () => pdpGoTo(pdpCur + 1));
+
+        // Keyboard navigation
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft') pdpGoTo(pdpCur - 1);
+            if (e.key === 'ArrowRight') pdpGoTo(pdpCur + 1);
+        });
+
+        // Touch / swipe
+        let pdpTx = 0;
+        const pdpMainEl = document.getElementById('pdpMainImage');
+        pdpMainEl?.addEventListener('touchstart', e => { pdpTx = e.touches[0].clientX; }, { passive: true });
+        pdpMainEl?.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - pdpTx;
+            if (Math.abs(dx) > 40) pdpGoTo(pdpCur + (dx < 0 ? 1 : -1));
+        });
+
         function changeQty(delta) {
             const input = document.getElementById('pdpQty');
             const max = parseInt(input.max) || 99;
