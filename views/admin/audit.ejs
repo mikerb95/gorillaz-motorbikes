@@ -1,0 +1,117 @@
+<%- include('../partials/admin-head', { title: 'Auditoría' }) %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Auditoría de acciones</h1>
+  <span class="badge badge-muted"><%= logs.length %> entradas</span>
+</div>
+
+<!-- Filters -->
+<div class="crm-search-row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+  <input class="crm-search-input" type="text" id="auditSearch"
+    placeholder="Buscar por admin, acción o recurso…" style="flex:1;min-width:200px" />
+  <select id="auditTypeFilter" class="crm-search-input" style="max-width:200px">
+    <option value="">Todas las acciones</option>
+    <option value="crear_evento">Crear evento</option>
+    <option value="actualizar_evento">Actualizar evento</option>
+    <option value="eliminar_evento">Eliminar evento</option>
+    <option value="confirmar_asistencia">Confirmar asistencia</option>
+    <option value="actualizar_usuario">Actualizar usuario</option>
+    <option value="eliminar_usuario">Eliminar usuario</option>
+  </select>
+  <a href="/admin/auditoria?limit=500" class="btn btn-ghost btn-sm">Ver más (500)</a>
+</div>
+
+<div class="crm-card" style="padding:0;overflow:hidden;margin-top:4px">
+  <% if (!logs || logs.length === 0) { %>
+    <div style="padding:40px;text-align:center;color:#71717a">No hay registros de auditoría aún.</div>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table" id="auditTable">
+      <thead>
+        <tr>
+          <th style="width:160px">Fecha</th>
+          <th>Admin</th>
+          <th>Acción</th>
+          <th>Tipo</th>
+          <th>Detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% logs.forEach(log => { %>
+          <%
+            const actionLabels = {
+              crear_evento:        { label: 'Crear evento',         cls: 'badge-success' },
+              actualizar_evento:   { label: 'Actualizar evento',    cls: 'badge-info' },
+              eliminar_evento:     { label: 'Eliminar evento',      cls: 'badge-danger' },
+              confirmar_asistencia:{ label: 'Confirmar asistencia', cls: 'badge-orange' },
+              actualizar_usuario:  { label: 'Actualizar usuario',   cls: 'badge-info' },
+              eliminar_usuario:    { label: 'Eliminar usuario',     cls: 'badge-danger' },
+            };
+            const a = actionLabels[log.action] || { label: log.action, cls: 'badge-muted' };
+            const targetLabels = { event: 'Evento', user: 'Usuario', attendance: 'Asistencia' };
+            const date = new Date(log.createdAt);
+            const dateStr = date.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+            const timeStr = date.toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
+          %>
+          <tr class="audit-row"
+              data-search="<%= (log.adminName + ' ' + log.action + ' ' + (log.targetType||'')).toLowerCase() %>"
+              data-action="<%= log.action %>">
+            <td style="font-size:.78rem;white-space:nowrap;color:#52525b">
+              <%= dateStr %><br>
+              <span style="color:#a1a1aa"><%= timeStr %></span>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="crm-user-circle" style="width:28px;height:28px;font-size:.75rem;flex-shrink:0">
+                  <%= log.adminName.charAt(0).toUpperCase() %>
+                </div>
+                <span style="font-size:.85rem;font-weight:600"><%= log.adminName %></span>
+              </div>
+            </td>
+            <td><span class="badge <%= a.cls %>"><%= a.label %></span></td>
+            <td style="font-size:.82rem;color:#52525b">
+              <%= targetLabels[log.targetType] || log.targetType %>
+              <% if (log.targetId) { %>
+                <br><span style="font-size:.72rem;color:#a1a1aa;font-family:monospace"><%= log.targetId.slice(0,8) %>…</span>
+              <% } %>
+            </td>
+            <td style="font-size:.8rem;color:#52525b;max-width:280px">
+              <% if (log.details) { %>
+                <% if (log.details.title) { %><strong><%= log.details.title %></strong><br><% } %>
+                <% if (log.details.name)  { %><strong><%= log.details.name %></strong><% if (log.details.email) { %> · <%= log.details.email %><% } %><br><% } %>
+                <% if (log.details.pts !== undefined) { %><span class="badge badge-orange">+<%= log.details.pts %> pts</span><% } %>
+                <% if (log.details.membershipLevel) { %>Membresía: <em><%= log.details.membershipLevel %></em><% } %>
+                <% if (log.details.role) { %>Rol: <em><%= log.details.role %></em><% } %>
+                <% if (log.details.category) { %><span class="badge <%= log.details.category === 'taller' ? 'badge-warning' : 'badge-info' %>"><%= log.details.category %></span><% } %>
+              <% } else { %>
+                <span style="color:#d4d4d8">—</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<script>
+const searchInput  = document.getElementById('auditSearch');
+const typeFilter   = document.getElementById('auditTypeFilter');
+const rows         = document.querySelectorAll('.audit-row');
+
+function applyFilters() {
+  const q    = searchInput.value.toLowerCase().trim();
+  const type = typeFilter.value;
+  rows.forEach(row => {
+    const matchQ    = !q    || row.dataset.search.includes(q);
+    const matchType = !type || row.dataset.action === type;
+    row.style.display = matchQ && matchType ? '' : 'none';
+  });
+}
+
+searchInput.addEventListener('input', applyFilters);
+typeFilter.addEventListener('change', applyFilters);
+</script>
+
+<%- include('../partials/admin-foot') %>
