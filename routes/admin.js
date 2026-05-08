@@ -45,6 +45,11 @@ function loadParqueaderoConfig() {
 function saveParqueaderoConfig(cfg) {
   try { fs.writeFileSync(PARQUEADERO_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
 }
+// Colombia es UTC-5 sin cambio de horario de verano
+function nowCOT() {
+  const cot = new Date(Date.now() - 5 * 60 * 60 * 1000);
+  return cot.toISOString().replace('Z', '-05:00');
+}
 function loadServicesCatalog() {
   try { return JSON.parse(fs.readFileSync(SERVICES_CATALOG_PATH, 'utf8')); }
   catch { return []; }
