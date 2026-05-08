@@ -649,12 +649,26 @@ async function countOrders() {
 // ── Score ─────────────────────────────────────────────────────────────────
 
 async function addUserScore(userId, points, concept, description) {
-  const user = await getUserById(userId);
-  if (!user) return;
-  const newScore = (user.score || 0) + points;
-  const entry = { date: new Date().toISOString().slice(0, 10), points, concept, description };
-  const history = [entry, ...(user.scoreHistory || [])].slice(0, 100);
-  await updateUser(userId, { score: newScore, scoreHistory: history });
+  const tx = await db.transaction('write');
+  try {
+    const r = await tx.execute({
+      sql: 'SELECT score, score_history FROM users WHERE id = ? AND deleted_at IS NULL',
+      args: [userId],
+    });
+    if (!r.rows[0]) { await tx.rollback(); return; }
+    const row        = r.rows[0];
+    const newScore   = (Number(row.score) || 0) + points;
+    const entry      = { date: new Date().toISOString().slice(0, 10), points, concept, description };
+    const history    = [entry, ...safeJson(row.score_history, [])].slice(0, 100);
+    await tx.execute({
+      sql: 'UPDATE users SET score = ?, score_history = ? WHERE id = ?',
+      args: [newScore, JSON.stringify(history), userId],
+    });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
 }
 
 async function getLeaderboard(limit = 10) {
