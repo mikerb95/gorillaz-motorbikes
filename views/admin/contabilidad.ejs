@@ -1,0 +1,233 @@
+<%- include('../partials/admin-head', { title: 'Contabilidad' }) %>
+
+<%
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const METHOD_LABELS = { efectivo:'Efectivo', tarjeta:'Tarjeta', transferencia:'Transferencia', nequi:'Nequi', daviplata:'Daviplata', bold:'Bold Online', cheque:'Cheque' };
+const currentPeriodLabel = `${MONTH_NAMES[pMonth - 1]} ${pYear}`;
+const fmt = n => '$' + Number(n).toLocaleString('es-CO');
+%>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Contabilidad</h1>
+  <form method="get" action="/admin/contabilidad" style="display:flex;gap:8px;align-items:center">
+    <select name="period" class="crm-select" onchange="this.form.submit()" style="min-width:160px">
+      <% availablePeriods.forEach(p => { %>
+        <option value="<%= p %>" <%= p === periodParam ? 'selected' : '' %>>
+          <% const [py,pm] = p.split('-').map(Number); %><%= MONTH_NAMES[pm-1] %> <%= py %>
+        </option>
+      <% }) %>
+    </select>
+  </form>
+</div>
+
+<!-- KPIs globales -->
+<div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:6px">
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-icon green">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    </div>
+    <div class="crm-kpi-value" style="font-size:1rem"><%= fmt(totalGeneral) %></div>
+    <div class="crm-kpi-label">Total recaudado</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-icon blue">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    </div>
+    <div class="crm-kpi-value" style="font-size:1rem"><%= fmt(totalFacturas) %></div>
+    <div class="crm-kpi-label">Facturas pagadas (<%= invoiceCount %>)</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-icon orange">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="crm-kpi-value" style="font-size:1rem"><%= fmt(totalPendiente) %></div>
+    <div class="crm-kpi-label">Pendiente por cobrar</div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-icon amber">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    </div>
+    <div class="crm-kpi-value" style="font-size:1rem"><%= fmt(totalPedidos) %></div>
+    <div class="crm-kpi-label">Pedidos online (<%= orderCount %>)</div>
+  </div>
+</div>
+
+<!-- KPI período seleccionado -->
+<div class="crm-card" style="margin-bottom:20px;background:linear-gradient(135deg,#1a2a1a 0%,#0f1a0f 100%);border-color:rgba(34,197,94,.25)">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5);margin-bottom:4px">Período seleccionado</div>
+      <div style="font-size:1.1rem;font-weight:800;color:#fff"><%= currentPeriodLabel %></div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:2rem;font-weight:900;color:#22c55e"><%= fmt(totalPeriodo) %></div>
+      <div style="font-size:.8rem;color:rgba(255,255,255,.5)"><%= periodoFacturas.length %> factura<%= periodoFacturas.length !== 1 ? 's' : '' %> + <%= periodoPedidos.length %> pedido<%= periodoPedidos.length !== 1 ? 's' : '' %></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 280px;gap:20px;margin-bottom:20px">
+
+  <!-- Gráfica de barras mensual -->
+  <div class="crm-card">
+    <div class="crm-card-header" style="margin-bottom:16px">
+      <span class="crm-card-title">Ingresos últimos 12 meses</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:28px;position:relative">
+      <% monthlyData.forEach(m => { %>
+        <%
+          const pct = maxMonthly > 0 ? Math.round((m.total / maxMonthly) * 100) : 0;
+          const invPct = maxMonthly > 0 ? Math.round((m.invoices / maxMonthly) * 100) : 0;
+          const ordPct = maxMonthly > 0 ? Math.round((m.orders / maxMonthly) * 100) : 0;
+          const isSelected = m.key === periodParam;
+        %>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%">
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;width:100%">
+            <div title="<%= m.label %>: <%= fmt(m.total) %>" style="width:100%;display:flex;flex-direction:column;gap:0;cursor:pointer" onclick="window.location='/admin/contabilidad?period=<%= m.key %>'">
+              <% if (m.orders > 0) { %>
+                <div style="width:100%;height:<%= ordPct %>%;min-height:<%= m.orders>0?2:0 %>px;background:<%= isSelected ? '#F25C05' : 'rgba(242,92,5,.45)' %>;border-radius:3px 3px 0 0;transition:background .2s"></div>
+              <% } %>
+              <% if (m.invoices > 0) { %>
+                <div style="width:100%;height:<%= invPct %>%;min-height:<%= m.invoices>0?2:0 %>px;background:<%= isSelected ? '#22c55e' : 'rgba(34,197,94,.5)' %>;border-radius:<%= m.orders>0?'0':'3px 3px' %> 0 0;transition:background .2s"></div>
+              <% } %>
+              <% if (m.total === 0) { %>
+                <div style="width:100%;height:3px;background:rgba(255,255,255,.08);border-radius:3px 3px 0 0"></div>
+              <% } %>
+            </div>
+          </div>
+          <div style="font-size:.6rem;color:rgba(255,255,255,<%= isSelected ? '.9' : '.4' %>);text-align:center;position:absolute;bottom:0;white-space:nowrap;font-weight:<%= isSelected ? '700' : '400' %>"><%= m.shortLabel %></div>
+        </div>
+      <% }) %>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:.73rem;color:rgba(255,255,255,.5)">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:rgba(34,197,94,.7);border-radius:2px;display:inline-block"></span>Facturas</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:rgba(242,92,5,.7);border-radius:2px;display:inline-block"></span>Pedidos</span>
+    </div>
+  </div>
+
+  <!-- Desglose por método de pago -->
+  <div class="crm-card">
+    <div class="crm-card-header" style="margin-bottom:16px">
+      <span class="crm-card-title">Por método de pago</span>
+    </div>
+    <% if (Object.keys(byMethod).length === 0) { %>
+      <p class="muted" style="font-size:.83rem;text-align:center;padding:24px 0">Sin datos</p>
+    <% } else { %>
+      <% const methodMax = Math.max(...Object.values(byMethod), 1); %>
+      <% Object.entries(byMethod).sort((a,b) => b[1]-a[1]).forEach(([method, amount]) => { %>
+        <%
+          const pct2 = Math.round((amount / methodMax) * 100);
+          const label2 = METHOD_LABELS[method] || method;
+        %>
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px">
+            <span style="color:rgba(255,255,255,.75);text-transform:capitalize"><%= label2 %></span>
+            <span style="color:#22c55e;font-weight:700"><%= fmt(amount) %></span>
+          </div>
+          <div style="height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:<%= pct2 %>%;background:#22c55e;border-radius:3px;transition:width .3s"></div>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+</div>
+
+<!-- Tabla movimientos del período -->
+<div class="crm-card">
+  <div class="crm-card-header" style="margin-bottom:12px">
+    <span class="crm-card-title">Movimientos — <%= currentPeriodLabel %></span>
+    <span class="badge badge-success" style="margin-left:8px"><%= movements.length %> movimiento<%= movements.length !== 1 ? 's' : '' %></span>
+  </div>
+  <% if (movements.length === 0) { %>
+    <p class="muted" style="text-align:center;padding:40px 0;font-size:.88rem">No hay movimientos registrados para este período.</p>
+  <% } else { %>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Referencia</th>
+          <th>Fecha</th>
+          <th>Método</th>
+          <th style="text-align:right">Total</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% movements.forEach(mov => { %>
+        <tr>
+          <td>
+            <% if (mov.type === 'factura') { %>
+              <span class="badge badge-success" style="font-size:.72rem">Factura</span>
+            <% } else { %>
+              <span class="badge badge-info" style="font-size:.72rem">Pedido</span>
+            <% } %>
+          </td>
+          <td style="font-weight:600;font-size:.85rem"><%= mov.label %></td>
+          <td class="muted" style="font-size:.8rem;white-space:nowrap">
+            <%= new Date(mov.date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+          </td>
+          <td style="font-size:.82rem;text-transform:capitalize">
+            <%= METHOD_LABELS[mov.method] || mov.method || '—' %>
+          </td>
+          <td style="text-align:right;font-weight:700;color:#22c55e"><%= fmt(mov.total) %></td>
+          <td>
+            <% if (mov.detail) { %>
+              <a class="btn btn-ghost btn-sm" href="<%= mov.detail %>">Ver</a>
+            <% } else { %>
+              <span class="muted" style="font-size:.78rem">—</span>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid rgba(255,255,255,.12)">
+          <td colspan="4" style="font-weight:700;font-size:.88rem;padding-top:10px">Total del período</td>
+          <td style="text-align:right;font-weight:900;font-size:1rem;color:#22c55e;padding-top:10px"><%= fmt(totalPeriodo) %></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<!-- Resumen anual -->
+<div class="crm-card" style="margin-top:20px">
+  <div class="crm-card-header" style="margin-bottom:12px">
+    <span class="crm-card-title">Resumen mensual</span>
+  </div>
+  <div class="crm-table-wrap">
+    <table class="crm-table">
+      <thead>
+        <tr><th>Mes</th><th style="text-align:right">Facturas</th><th style="text-align:right">Pedidos</th><th style="text-align:right">Total</th></tr>
+      </thead>
+      <tbody>
+        <% monthlyData.forEach(m => { %>
+        <tr style="<%= m.key === periodParam ? 'background:rgba(34,197,94,.07)' : '' %>">
+          <td style="font-weight:<%= m.key === periodParam ? '700' : '400' %>">
+            <%= m.label %>
+            <% if (m.key === periodParam) { %><span class="badge badge-success" style="margin-left:6px;font-size:.65rem">Actual</span><% } %>
+          </td>
+          <td style="text-align:right;font-size:.85rem"><%= m.invoices > 0 ? fmt(m.invoices) : '<span class="muted">—</span>' %></td>
+          <td style="text-align:right;font-size:.85rem"><%= m.orders > 0 ? fmt(m.orders) : '<span class="muted">—</span>' %></td>
+          <td style="text-align:right;font-weight:700;color:<%= m.total > 0 ? '#22c55e' : 'rgba(255,255,255,.35)' %>"><%= m.total > 0 ? fmt(m.total) : '—' %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid rgba(255,255,255,.12)">
+          <td style="font-weight:700;padding-top:10px">Total general</td>
+          <td style="text-align:right;font-weight:700;padding-top:10px"><%= fmt(totalFacturas) %></td>
+          <td style="text-align:right;font-weight:700;padding-top:10px"><%= fmt(totalPedidos) %></td>
+          <td style="text-align:right;font-weight:900;font-size:1rem;color:#22c55e;padding-top:10px"><%= fmt(totalGeneral) %></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/admin-foot') %>
