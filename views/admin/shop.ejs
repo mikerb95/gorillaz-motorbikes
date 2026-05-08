@@ -11,7 +11,7 @@
 <!-- Create form -->
 <div class="crm-card" id="newProductCard" style="margin-bottom:18px">
   <div class="crm-card-title">Crear producto</div>
-  <form method="post" action="/admin/tienda/crear" id="createForm">
+  <form method="post" action="/admin/tienda/crear" id="createForm" onsubmit="document.getElementById('createPriceInput').value = document.getElementById('createPriceInput').value.replace(/[^\d]/g, '')">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
     <div class="crm-form-grid">
       <div class="crm-form-group">
@@ -20,7 +20,8 @@
       </div>
       <div class="crm-form-group">
         <label>Precio (COP) <span class="required">*</span></label>
-        <input type="number" name="price" min="0" required placeholder="0" />
+        <input type="text" name="price" id="createPriceInput" min="0" required placeholder="0"
+          oninput="formatCreatePrice(); updateCreatePricePreview()" />
       </div>
       <div class="crm-form-group">
         <label>Categoría <span class="required">*</span></label>
@@ -45,7 +46,8 @@
       </div>
       <div class="crm-form-group">
         <label>Descuento (%)</label>
-        <input type="number" name="discount" min="0" max="100" value="0" />
+        <input type="number" name="discount" id="createDiscountInput" min="0" max="100" value="0"
+          oninput="updateCreatePricePreview()" />
       </div>
       <div class="crm-form-group">
         <label>Tags (coma)</label>
@@ -55,6 +57,7 @@
         <label>Descripción</label>
         <textarea name="description" rows="2" placeholder="Descripción del producto…"></textarea>
       </div>
+      <div id="createPricePreview" style="display:none;padding:10px 12px;background:#f0fdf4;border-radius:8px;font-size:.85rem;color:#16a34a;font-weight:700;margin-bottom:12px"></div>
       <div class="crm-form-group crm-form-full">
         <label>Imágenes</label>
         <div id="createGalleryPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
@@ -171,7 +174,28 @@
   <% } %>
 </div>
 
-<script>
+<script>  function formatCreatePrice() {
+    const input = document.getElementById('createPriceInput');
+    const value = input.value.replace(/[^\d]/g, '');
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue)) {
+      input.value = numValue.toLocaleString('es-CO');
+    }
+  }
+
+  function updateCreatePricePreview() {
+    const priceText = document.getElementById('createPriceInput').value.replace(/[^\d]/g, '');
+    const price = parseFloat(priceText) || 0;
+    const disc = parseFloat(document.getElementById('createDiscountInput').value) || 0;
+    const preview = document.getElementById('createPricePreview');
+    if (disc > 0) {
+      const final = Math.round(price * (1 - disc / 100));
+      preview.style.display = 'block';
+      preview.textContent = 'Precio final con ' + disc + '% dto: $' + final.toLocaleString('es-CO');
+    } else {
+      preview.style.display = 'none';
+    }
+  }
   async function handleCreateImages(input) {
     const gallery = document.getElementById('createGalleryPreview');
     const currentCount = gallery.querySelectorAll('.create-img-item').length;
