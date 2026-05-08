@@ -263,11 +263,11 @@ router.get('/tienda/:id/editar', requireAuth, requireAdmin, (req, res) => {
   res.render('admin/shop-edit', { product, categories: catalog.categories || [] });
 });
 
-router.post('/tienda/crear', requireAuth, requireAdmin, uploadProduct, (req, res) => {
-  const { id, name, price, category, description, brand, sku, stock, discount, tags } = req.body;
+router.post('/tienda/crear', requireAuth, requireAdmin, (req, res) => {
+  const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
   if (!catalog.products) catalog.products = [];
   const prodId    = id && id.trim() ? id.trim() : uuidv4();
-  const gallery   = req.blobUrls || [];
+  const gallery   = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
   const mainImage = gallery.length > 0 ? gallery[0] : '/images/download.png';
   if (name && category) {
     catalog.products.push({ id: prodId, name, price: parseInt(price || '0', 10) || 0, category, image: mainImage, gallery: gallery.length > 0 ? gallery : ['/images/download.png'], brand: (brand || '').trim(), sku: (sku || '').trim(), stock: parseInt(stock || '0', 10), discount: Math.min(100, Math.max(0, parseInt(discount || '0', 10))), tags: (tags || '').split(',').map(t => t.trim()).filter(Boolean), description: description || '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
@@ -276,7 +276,7 @@ router.post('/tienda/crear', requireAuth, requireAdmin, uploadProduct, (req, res
   res.redirect('/admin/tienda');
 });
 
-router.post('/tienda/actualizar', requireAuth, requireAdmin, uploadProduct, (req, res) => {
+router.post('/tienda/actualizar', requireAuth, requireAdmin, (req, res) => {
   const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
   const p = (catalog.products || []).find(x => x.id === id);
   if (p) {
@@ -289,8 +289,7 @@ router.post('/tienda/actualizar', requireAuth, requireAdmin, uploadProduct, (req
     if (stock       !== undefined) p.stock       = parseInt(stock || '0', 10);
     if (discount    !== undefined) p.discount    = Math.min(100, Math.max(0, parseInt(discount || '0', 10)));
     if (tags        !== undefined) p.tags        = (tags || '').split(',').map(t => t.trim()).filter(Boolean);
-    const kept    = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
-    const gallery = [...kept, ...(req.blobUrls || [])];
+    const gallery = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
     if (gallery.length > 0) { p.gallery = gallery; p.image = gallery[0]; }
     p.updatedAt = new Date().toISOString();
     writeCatalog(catalog);
