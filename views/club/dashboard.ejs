@@ -2,10 +2,19 @@
 
 <style>
 /* ── Club Panel — Dark Moto Club Theme ── */
+
+/* El <main> global tiene padding-top: var(--header-offset) que genera
+   un gap blanco visible antes del panel oscuro. Lo anulamos aquí y lo
+   absorbemos dentro del propio panel para que el fondo oscuro lo cubra. */
+main {
+  padding-top: 0 !important;
+}
+
 .club-panel {
   background: #0d0d0d;
   min-height: 100vh;
   color: #f0f0f0;
+  padding-top: var(--header-offset);
   padding-bottom: 72px;
 }
 
