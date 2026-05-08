@@ -3,23 +3,32 @@
     <main>
         <section class="services-hero">
             <div class="services-hero-inner container">
-                <h1 class="section-title"><%= service.title %></h1>
-                <p class="section-subtitle"><%= service.desc %></p>
+                <h1 class="section-title">
+                    <%= service.title %>
+                </h1>
+                <p class="section-subtitle">
+                    <%= service.desc %>
+                </p>
                 <div class="btn-row" style="margin-top: 30px;">
-                    <a class="btn" href="/servicios/agendar?service=<%= encodeURIComponent(service.title) %>">Agendar servicio</a>
+                    <a class="btn" href="/servicios/agendar?service=<%= encodeURIComponent(service.title) %>">Agendar
+                        servicio</a>
                     <a class="btn btn-outline" href="/servicios">Ver más servicios</a>
                 </div>
             </div>
-            <div class="services-hero-bg" aria-hidden="true"
-                style="background-image: url('<%= service.img %>');"></div>
+            <div class="services-hero-bg" aria-hidden="true" style="background-image: url('<%= service.img %>');"></div>
             <div class="services-hero-gradient" aria-hidden="true"></div>
         </section>
 
         <section class="page-content container" style="padding: 60px 20px;">
             <div class="article-body">
-                <h2>Servicio especializado en <%= service.title.toLowerCase() %></h2>
-                <p><%= service.desc %></p>
-                <p>En Gorillaz Motorbikes nos aseguramos de que tu motocicleta reciba el mejor trato posible con herramientas y personal capacitado. ¡Agenda tu cita de <%= service.title.toLowerCase() %> de forma rápida y sencilla para que tu moto esté siempre lista para rodar!</p>
+                <h2>Servicio especializado en <%= service.title.toLowerCase() %>
+                </h2>
+                <p>
+                    <%= service.desc %>
+                </p>
+                <p>En Gorillaz Motorbikes nos aseguramos de que tu motocicleta reciba el mejor trato posible con
+                    herramientas y personal capacitado. ¡Agenda tu cita de <%= service.title.toLowerCase() %> de forma
+                        rápida y sencilla para que tu moto esté siempre lista para rodar!</p>
             </div>
         </section>
     </main>
