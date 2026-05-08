@@ -26,7 +26,7 @@
   <% if (product.updatedAt) { %><span>Actualizado: <%= new Date(product.updatedAt).toLocaleDateString('es-CO') %></span><% } %>
 </div>
 
-<form method="post" action="/admin/tienda/actualizar" enctype="multipart/form-data" id="editForm">
+<form method="post" action="/admin/tienda/actualizar" id="editForm">
   <input type="hidden" name="id" value="<%= product.id %>" />
   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
