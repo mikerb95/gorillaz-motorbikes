@@ -519,73 +519,8 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) 
   res.redirect('/admin/facturas/' + req.params.id);
 });
 
-// ── Contabilidad ──────────────────────────────────────────────────────────
+// ── Contabilidad → redirige al módulo de finanzas ─────────────────────────
 
-router.get('/contabilidad', requireAuth, requireAdmin, async (req, res) => {
-  const [invoices, orders] = await Promise.all([getAllInvoices(), getAllOrders()]);
-
-  const now        = new Date();
-  const periodParam = req.query.period || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const [pYear, pMonth] = periodParam.split('-').map(Number);
-
-  const inPeriod = (dateStr) => {
-    const d = new Date(dateStr);
-    return d.getFullYear() === pYear && (d.getMonth() + 1) === pMonth;
-  };
-
-  const paidInvoices  = invoices.filter(i => i.status === 'pagada');
-  const pendingInvoices = invoices.filter(i => i.status === 'pendiente');
-  const canceledInvoices = invoices.filter(i => i.status === 'anulada');
-  const paidOrders    = orders.filter(o => o.status === 'paid');
-
-  const totalFacturas    = paidInvoices.reduce((s, i) => s + i.total, 0);
-  const totalPedidos     = paidOrders.reduce((s, o) => s + o.total, 0);
-  const totalPendiente   = pendingInvoices.reduce((s, i) => s + i.total, 0);
-  const totalAnuladas    = canceledInvoices.reduce((s, i) => s + i.total, 0);
-  const totalGeneral     = totalFacturas + totalPedidos;
-
-  const periodoFacturas  = paidInvoices.filter(i => inPeriod(i.createdAt));
-  const periodoPedidos   = paidOrders.filter(o => inPeriod(o.createdAt));
-  const totalPeriodo     = periodoFacturas.reduce((s, i) => s + i.total, 0) + periodoPedidos.reduce((s, o) => s + o.total, 0);
-
-  const byMethod = {};
-  paidInvoices.forEach(i => {
-    const m = i.paymentMethod || 'efectivo';
-    byMethod[m] = (byMethod[m] || 0) + i.total;
-  });
-
-  const monthlyData = [];
-  for (let offset = 11; offset >= 0; offset--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-    const y = d.getFullYear();
-    const m = d.getMonth() + 1;
-    const key = `${y}-${String(m).padStart(2, '0')}`;
-    const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    const invTotal = paidInvoices.filter(i => { const di = new Date(i.createdAt); return di.getFullYear() === y && (di.getMonth() + 1) === m; }).reduce((s, i) => s + i.total, 0);
-    const ordTotal = paidOrders.filter(o => { const do2 = new Date(o.createdAt); return do2.getFullYear() === y && (do2.getMonth() + 1) === m; }).reduce((s, o) => s + o.total, 0);
-    monthlyData.push({ key, label: `${monthNames[m - 1]} ${y}`, shortLabel: monthNames[m - 1], invoices: invTotal, orders: ordTotal, total: invTotal + ordTotal });
-  }
-  const maxMonthly = Math.max(...monthlyData.map(d => d.total), 1);
-
-  const movements = [
-    ...periodoFacturas.map(i => ({ type: 'factura', label: i.label || i.id.slice(0, 8), date: i.createdAt, total: i.total, method: i.paymentMethod, detail: `/admin/facturas/${i.id}` })),
-    ...periodoPedidos.map(o => ({ type: 'pedido',  label: `Pedido ${o.id.slice(0, 8)}`, date: o.createdAt, total: o.total, method: 'bold', detail: null })),
-  ].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const availablePeriods = [];
-  for (let offset = 11; offset >= 0; offset--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-    availablePeriods.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-  }
-
-  res.render('admin/contabilidad', {
-    periodParam, pYear, pMonth,
-    totalFacturas, totalPedidos, totalPendiente, totalAnuladas, totalGeneral,
-    totalPeriodo, periodoFacturas, periodoPedidos,
-    byMethod, monthlyData, maxMonthly,
-    movements, availablePeriods,
-    invoiceCount: paidInvoices.length, orderCount: paidOrders.length,
-  });
-});
+router.get('/contabilidad', (req, res) => res.redirect(301, '/admin/finanzas'));
 
 module.exports = router;
