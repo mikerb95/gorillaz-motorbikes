@@ -1,10 +1,14 @@
 module.exports = {
   categories: [
-    { slug: 'naked', name: 'Naked' },
-    { slug: 'adventure', name: 'Adventure' },
-    { slug: 'sport', name: 'Sport' },
-    { slug: 'scooter', name: 'Scooter' },
-    { slug: 'enduro', name: 'Enduro' }
+    { slug: 'indumentaria', name: 'Indumentaria' },
+    { slug: 'repuestos', name: 'Repuestos' },
+    { slug: 'accesorios', name: 'Accesorios' },
+    { slug: 'cuidado-limpieza', name: 'Lujos, cuidado y limpieza' },
+    { slug: 'consumibles', name: 'Consumibles' },
+    { slug: 'tecnologia', name: 'Tecnología' },
+    { slug: 'carga', name: 'Carga' },
+    { slug: 'guantes', name: 'Guantes' },
+    { slug: 'cascos', name: 'Cascos' }
   ],
   products: [
     { id: 'nk-helmet-pro', name: 'Casco Pro Naked', price: 320000, category: 'naked', image: '/images/download.png', gallery: ['/images/download.png'], brand: 'Gorillaz', sku: 'NK-CAS-001', stock: 15, discount: 0, tags: ['casco', 'naked', 'protección'], description: 'Casco profesional para motos naked con ventilación avanzada y visor antirayaduras.', createdAt: '2026-01-15T10:00:00.000Z', updatedAt: '2026-01-15T10:00:00.000Z' },
