@@ -484,6 +484,13 @@ async function deleteEvent(id) {
   await db.execute({ sql: `UPDATE events SET deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?`, args: [id] });
 }
 
+async function cancelEventAttendances(eventId) {
+  await db.execute({
+    sql: "UPDATE event_attendances SET status = 'cancelled' WHERE event_id = ? AND status != 'confirmed'",
+    args: [eventId],
+  });
+}
+
 // ── Newsletter ────────────────────────────────────────────────────────────
 
 async function getNewsletterByEmail(email) {
