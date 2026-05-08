@@ -583,6 +583,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (blob.classList.contains('is-visible') && lastEl) setToEl(lastEl);
     });
   }
+
+  // Sticky gooey navbar — floating at top, viscous stick on scroll
+  {
+    const THRESHOLD = 30;
+    let sticky = false;
+    const checkScroll = () => {
+      const nowSticky = window.scrollY > THRESHOLD;
+      if (nowSticky === sticky) return;
+      sticky = nowSticky;
+      document.body.classList.toggle('nav-is-sticky', nowSticky);
+      setHeaderOffset();
+    };
+    window.addEventListener('scroll', checkScroll, { passive: true });
+    checkScroll();
+  }
 });
 
 // Background slideshow for home hero

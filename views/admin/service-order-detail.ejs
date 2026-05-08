@@ -2,18 +2,20 @@
 
 <%
 const STATUS_OPTS = [
-  { v: 'pendiente',  l: 'Pendiente'  },
-  { v: 'en_proceso', l: 'En proceso' },
-  { v: 'completado', l: 'Completado' },
+  { v: 'ingreso_taller',   l: 'Ingreso a taller'  },
+  { v: 'trabajo_en_curso', l: 'Trabajo en curso'  },
+  { v: 'en_pausa',         l: 'En pausa'          },
+  { v: 'trabajo_completo', l: 'Trabajo completo'  },
+  { v: 'entregado',        l: 'Entregado'         },
 ];
-const STATUS_CLS = { pendiente:'badge-warning', en_proceso:'badge-info', completado:'badge-success', facturado:'badge-success' };
+const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-info', en_pausa:'badge-warning', trabajo_completo:'badge-success', entregado:'badge-success', facturado:'badge-success' };
 %>
 
 <div class="crm-page-header" style="flex-wrap:wrap;gap:10px">
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <a class="btn btn-ghost btn-sm" href="/admin/ordenes-servicio">← Órdenes</a>
     <h1 class="crm-page-title" style="margin:0">Orden <span style="color:var(--brand)"><%= order.label %></span></h1>
-    <span class="badge <%= STATUS_CLS[order.status] || 'badge-warning' %>" style="font-size:.85rem"><%= order.status.replace('_',' ') %></span>
+    <span class="badge <%= STATUS_CLS[order.status] || 'badge-warning' %>" style="font-size:.85rem"><%= (STATUS_OPTS.find(s => s.v === order.status) || { l: order.status }).l %></span>
   </div>
   <% if (order.quotationId) { %>
     <a class="btn btn-ghost btn-sm" href="/admin/cotizaciones/<%= order.quotationId %>">Ver cotización origen →</a>
