@@ -126,6 +126,61 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   </div>
   <% } %>
 
+  <!-- Parqueadero -->
+  <% if (order.trabajoCompletoAt) {
+    const tcAt        = new Date(order.trabajoCompletoAt);
+    const ahora       = new Date();
+    const msTotal     = ahora - tcAt;
+    const diasTotal   = Math.floor(msTotal / (1000 * 60 * 60 * 24));
+    const diasGratis  = parqueaderoConfig.diasGratis;
+    const tarifa      = parqueaderoConfig.tarifaPorDia;
+    const diasCobro   = Math.max(0, diasTotal - diasGratis);
+    const totalParq   = diasCobro * tarifa;
+    const diasRestantes = Math.max(0, diasGratis - diasTotal);
+    const cobrando    = diasTotal > diasGratis;
+  %>
+  <div class="crm-card" style="padding:20px 24px;border-left:4px solid <%= cobrando ? '#f59e0b' : '#22c55e' %>">
+    <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 12px">
+      Parqueadero
+    </h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;font-size:13px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Trabajo completado</div>
+        <div style="font-weight:700"><%= tcAt.toLocaleString('es-CO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Días en taller</div>
+        <div style="font-weight:700"><%= diasTotal %> día<%= diasTotal !== 1 ? 's' : '' %></div>
+      </div>
+      <% if (!cobrando) { %>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Días gratis restantes</div>
+        <div style="font-weight:700;color:#16a34a"><%= diasRestantes %> día<%= diasRestantes !== 1 ? 's' : '' %></div>
+      </div>
+      <% } else { %>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Días cobrados</div>
+        <div style="font-weight:700;color:#d97706"><%= diasCobro %> día<%= diasCobro !== 1 ? 's' : '' %> × $<%= tarifa.toLocaleString('es-CO') %></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Total parqueadero</div>
+        <div style="font-weight:900;font-size:16px;color:#b45309">$<%= totalParq.toLocaleString('es-CO') %></div>
+      </div>
+      <% } %>
+    </div>
+    <% if (cobrando) { %>
+    <p style="margin:10px 0 0;font-size:12px;color:#92400e;background:#fef3c7;border-radius:8px;padding:8px 12px">
+      La moto lleva <strong><%= diasCobro %> día<%= diasCobro !== 1 ? 's' : '' %></strong> cobrando parqueadero
+      (<%= diasGratis %> día<%= diasGratis !== 1 ? 's' : '' %> gratis agotados).
+    </p>
+    <% } else { %>
+    <p style="margin:10px 0 0;font-size:12px;color:#166534;background:#f0fdf4;border-radius:8px;padding:8px 12px">
+      Parqueadero gratuito por <%= diasGratis - diasTotal > 0 ? diasGratis - diasTotal + ' día' + (diasGratis - diasTotal !== 1 ? 's' : '') + ' más' : 'hoy' %>.
+    </p>
+    <% } %>
+  </div>
+  <% } %>
+
   <!-- Convertir en factura -->
   <% if (order.status === 'trabajo_completo' && !order.invoiceId) { %>
   <div class="crm-card" style="padding:20px 24px;border-top:3px solid #22c55e">
