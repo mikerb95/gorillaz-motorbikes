@@ -73,7 +73,9 @@ a:hover {
   box-shadow: 0 9px 30px rgba(0, 0, 0, .08), 0 3px 10px rgba(0, 0, 0, .05);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  position: relative
+  position: relative;
+  transition: margin-top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-radius 0.42s cubic-bezier(0.34, 1.56, 0.64, 1)
 }
 
 /* Emphasize bottom shadow for navbar */
