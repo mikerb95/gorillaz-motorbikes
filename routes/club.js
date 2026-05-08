@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const jwt    = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { setFlash } = require('../helpers/flash');
 
 function validateRegistration({ name, email, password, phone, cedula }) {
   if (!name || name.trim().length < 2 || name.trim().length > 100)
