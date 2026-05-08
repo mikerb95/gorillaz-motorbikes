@@ -17,11 +17,12 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
   <h1 class="crm-page-title">Órdenes de Servicio</h1>
 </div>
 
-<div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.pendiente %></div><div class="crm-kpi-label">Pendientes</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.en_proceso %></div><div class="crm-kpi-label">En proceso</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.completado %></div><div class="crm-kpi-label">Completadas</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.facturado %></div><div class="crm-kpi-label">Facturadas</div></div>
+<div class="crm-kpi-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px">
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.ingreso_taller %></div><div class="crm-kpi-label">Ingreso a taller</div></div>
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.trabajo_en_curso %></div><div class="crm-kpi-label">Trabajo en curso</div></div>
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.en_pausa %></div><div class="crm-kpi-label">En pausa</div></div>
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.trabajo_completo %></div><div class="crm-kpi-label">Trabajo completo</div></div>
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.entregado %></div><div class="crm-kpi-label">Entregados</div></div>
 </div>
 
 <div class="crm-card">
