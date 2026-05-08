@@ -15,7 +15,7 @@ const {
   getAllUsers, getUserById, updateUser, deleteUser,
   getAllEvents, createEvent, getEventById, updateEvent, deleteEvent,
   getEventAttendances, getAttendanceById, confirmEventAttendance,
-  logAdminAction,
+  logAdminAction, getAdminAuditLog,
   getAllAppointments, createAppointment, updateAppointment, deleteAppointment,
   addUserScore,
   getAllOrders, countOrders, updateOrderStatus,
