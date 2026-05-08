@@ -160,6 +160,12 @@ router.post('/usuarios/eliminar', requireAuth, requireAdmin, async (req, res) =>
   res.redirect('/admin/usuarios');
 });
 
+router.get('/auditoria', requireAuth, requireAdmin, async (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit || '200', 10), 500);
+  const logs  = await getAdminAuditLog(limit);
+  res.render('admin/audit', { logs, limit });
+});
+
 router.get('/citas', requireAuth, requireAdmin, async (req, res) => {
   const appointments = await getAllAppointments();
   res.render('admin/appointments', { appointments });
