@@ -1,9 +1,30 @@
 'use strict';
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const { createAppointment } = require('../db');
+const { createAppointment, getServiceOrdersByPlate } = require('../db');
 const { computeDemandMap } = require('../helpers/appointments');
 const { resendClient } = require('../config');
+
+const PARQUEADERO_CONFIG_PATH = path.join(__dirname, '..', 'data', 'parqueadero-config.json');
+function loadParqueaderoConfig() {
+  try { return JSON.parse(fs.readFileSync(PARQUEADERO_CONFIG_PATH, 'utf8')); }
+  catch { return { diasGratis: 3, tarifaPorDia: 7000 }; }
+}
+
+function calcParking(order, config) {
+  if (!order.trabajoCompletoAt) return { aplica: false };
+  const tcAt = new Date(order.trabajoCompletoAt);
+  const now = new Date();
+  const diasTotal = Math.floor((now - tcAt) / (1000 * 60 * 60 * 24));
+  const diasGratis = config.diasGratis;
+  const tarifaPorDia = config.tarifaPorDia;
+  const diasCobro = Math.max(0, diasTotal - diasGratis);
+  const totalParq = diasCobro * tarifaPorDia;
+  const diasRestantes = Math.max(0, diasGratis - diasTotal);
+  return { aplica: diasCobro > 0, diasTotal, diasGratis, tarifaPorDia, diasCobro, totalParq, diasRestantes };
+}
 
 const router = express.Router();
 const SERVICES = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'];
