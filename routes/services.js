@@ -9,17 +9,66 @@ const router = express.Router();
 const SERVICES = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'];
 
 const servicesData = [
+  { 
+    slug: 'mecanica', 
+    title: 'Mecánica Especializada y Mantenimiento', 
+    desc: 'Diagnóstico, mantenimiento preventivo y correctivo. Trabajamos con control de calidad para que tu moto rinda al máximo.', 
+    img: '/images/services/mecanica.webp',
+    details: 'Nuestro servicio de <strong>mecánica para motos</strong> incluye una revisión completa de sistemas de frenos, transmisión, refrigeración y motor. Contamos con herramientas especializadas y protocolos de calidad que garantizan que tu moto salga lista para la ruta o la ciudad de forma segura.'
+  },
+  { 
+    slug: 'pintura', 
+    title: 'Pintura y Restauración Estética', 
+    desc: 'Acabados profesionales, retoques y protección. Cuidamos el detalle y la durabilidad.', 
+    img: '/images/services/pintura.webp',
+    details: 'Reparamos rayones, abolladuras y restauramos el color original o aplicamos pintura personalizada según tus requerimientos. Usamos pinturas de alta resistencia y acabados con barniz protector de la mayor durabilidad.'
+  },
+  { 
+    slug: 'alistamiento-tecnomecanica', 
+    title: 'Alistamiento Tecnomecánica', 
+    desc: 'Revisión integral y ajustes previos a la inspección para evitar sorpresas y rechazos.', 
+    img: '/images/services/alistamiento.webp',
+    details: 'Realizamos inspección de gases, frenos, luces, desgaste de llantas y nivel sonoro. Garantizamos que tu moto apruebe la revisión técnico mecánica reglamentaria al primer intento.'
+  },
+  { 
+    slug: 'electricidad', 
+    title: 'Servicio de Electricidad', 
+    desc: 'Sistema de carga, arranque e iluminación. Diagnóstico electrónico confiable.', 
+    img: '/images/services/electricidad.webp',
+    details: 'Arreglamos cortos circuitos, adaptaciones de exploradoras, problemas en la batería y estatores. Tu seguridad nocturna y el encendido de la moto están garantizados.'
+  },
+  { 
+    slug: 'torno', 
+    title: 'Torno y Fresado', 
+    desc: 'Fabricación y ajuste de componentes a medida según especificación.', 
+    img: '/images/services/torno.webp',
+    details: 'Diseñamos y reparamos bujes, ejes, roscas dañadas y realizamos soldaduras especializadas. Si una pieza ya no se consigue, nosotros la fabricamos.' //
+  },
+  { 
+    slug: 'prensa', 
+    title: 'Servicio de Prensa', 
+    desc: 'Montaje y desmontaje seguro de rodamientos y piezas a presión.', 
+    img: '/images/services/prensa.webp',
+    details: 'Extraemos rodamientos, cunas de dirección y pasadores empleando prensas hidráulicas, con lo que evitamos golpear y deformar tu moto.'
+  },
+  { 
+    slug: 'mecanica-rapida', 
+    title: 'Mecánica Rápida (Express)', 
+    desc: 'Servicios ágiles como cambios de aceite y ajustes menores con cita.', 
+    img: '/images/services/mecanica-rapida.webp',
+    details: 'Cambio de aceite, pastillas de freno, tensado y lubricación de cadena en tiempo récord para que sigas rodando sin perder tu día.'
+  },
+  { 
+    slug: 'escaneo-de-motos', 
+    title: 'Escaneo de Motos (Inyección)', 
+    desc: 'Diagnóstico computarizado para detectar fallas electrónicas con precisión.', 
+    img: '/images/services/scaneo.webp',
+    details: 'Contamos con escáneres multimarca para apagar testigos de motor, chequear valores en tiempo real de inyectores, sensores TPS y módulos ABS.'
+  },
+  // Servicios que usan sus propias vistas personalizadas
   { slug: 'lavado-motos', title: 'Lavado de motos', desc: 'Limpieza profunda con productos especializados para cuidar la pintura y componentes de tu máquina.', img: '/images/services/lavado-motos.webp' },
   { slug: 'lavado-cascos', title: 'Lavado de cascos', desc: 'Desinfección y limpieza interna y externa para mantener tu seguridad y confort al rodar.', img: '/images/services/lavado-cascos.webp' },
-  { slug: 'detailing-motos', title: 'Detailing de motos', desc: 'Restauración estética detallada, polichado y protección cerámica para un brillo único.', img: '/images/services/detailing-motos.webp' },
-  { slug: 'mecanica', title: 'Mecánica', desc: 'Diagnóstico, mantenimiento preventivo y correctivo. Trabajamos con control de calidad para que tu moto rinda al máximo.', img: '/images/services/mecanica.webp' },
-  { slug: 'pintura', title: 'Pintura', desc: 'Acabados profesionales, retoques y protección. Cuidamos el detalle y la durabilidad.', img: '/images/services/pintura.webp' },
-  { slug: 'alistamiento-tecnomecanica', title: 'Alistamiento tecnomecánica', desc: 'Revisión integral y ajustes previos a la inspección para evitar sorpresas y rechazos.', img: '/images/services/alistamiento.webp' },
-  { slug: 'electricidad', title: 'Electricidad', desc: 'Sistema de carga, arranque e iluminación. Diagnóstico electrónico confiable.', img: '/images/services/electricidad.webp' },
-  { slug: 'torno', title: 'Torno', desc: 'Fabricación y ajuste de componentes a medida según especificación.', img: '/images/services/torno.webp' },
-  { slug: 'prensa', title: 'Prensa', desc: 'Montaje y desmontaje seguro de rodamientos y piezas a presión.', img: '/images/services/prensa.webp' },
-  { slug: 'mecanica-rapida', title: 'Mecánica rápida', desc: 'Servicios ágiles como cambios de aceite y ajustes menores con cita.', img: '/images/services/mecanica-rapida.webp' },
-  { slug: 'escaneo-de-motos', title: 'Escaneo de motos', desc: 'Diagnóstico computarizado para detectar fallas electrónicas con precisión.', img: '/images/services/scaneo.webp' },
+  { slug: 'detailing-motos', title: 'Detailing de motos', desc: 'Restauración estética detallada, polichado y protección cerámica para un brillo único.', img: '/images/services/detailing-motos.webp' }
 ];
 
 router.get('/servicios', (req, res) => {
