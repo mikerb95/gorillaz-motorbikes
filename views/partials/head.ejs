@@ -247,6 +247,20 @@
         <% } %>
     </div>
   </header>
+  <% if (typeof flash !== 'undefined' && flash) { %>
+  <div class="flash-toast flash-<%= flash.type %>" id="flashToast" role="alert" aria-live="polite">
+    <% if (flash.type === 'success') { %>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+    <% } else if (flash.type === 'error') { %>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <% } else { %>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <% } %>
+    <span><%= flash.message %></span>
+    <button class="flash-close" onclick="this.parentElement.remove()" aria-label="Cerrar">×</button>
+  </div>
+  <script>setTimeout(() => { const t = document.getElementById('flashToast'); if (t) t.remove(); }, 4000);</script>
+  <% } %>
   <main>
     <a class="whatsapp-fab" href="https://wa.me/573213204299" target="_blank" rel="noopener"
       aria-label="Contactar por WhatsApp">
