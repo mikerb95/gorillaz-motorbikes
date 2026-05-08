@@ -475,7 +475,7 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async
   const { mechanic, status, notes, estimatedDate } = req.body;
   await updateServiceOrder(req.params.id, {
     mechanic:      (mechanic || '').trim() || null,
-    status:        status || 'pendiente',
+    status:        status || 'ingreso_taller',
     notes:         (notes || '').trim() || null,
     estimatedDate: estimatedDate || null,
   });
