@@ -1155,7 +1155,7 @@
     btnSendOrFin.className = 'liq-btn ' + (on ? 'liq-btn-green' : 'liq-btn-primary');
   });
 
-  btnSendOrFin.addEventListener('click', () => {
+  btnSendOrFin.addEventListener('click', async () => {
     if (!waToggle.checked) { resetAll(); return; }
     const digits = waPhone.value.replace(/\D/g, '');
     if (digits.length < 7) {
@@ -1164,8 +1164,19 @@
       setTimeout(() => waPhone.style.borderColor = '', 1600);
       return;
     }
-    const country = waCountry.value.replace('+', '');
-    const url = 'https://wa.me/' + country + digits + '?text=' + encodeURIComponent(buildWhatsAppMsg());
+    const country = waCountry.value;
+    const url = 'https://wa.me/' + country.replace('+', '') + digits + '?text=' + encodeURIComponent(buildWhatsAppMsg());
+
+    // Persistir el número asociado a la cotización
+    if (savedQuoteId) {
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      fetch('/api/liquidador/quotation/' + savedQuoteId + '/phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify({ clientPhone: digits, clientPhoneCountry: country }),
+      }).catch(() => {});  // fire-and-forget, no bloquea la apertura de WA
+    }
+
     const a = document.createElement('a');
     a.href = url;
     a.target = '_blank';

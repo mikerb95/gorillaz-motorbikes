@@ -69,6 +69,19 @@ router.post('/api/liquidador/quotation', async (req, res) => {
   }
 });
 
+router.post('/api/liquidador/quotation/:id/phone', async (req, res) => {
+  try {
+    const { clientPhone, clientPhoneCountry } = req.body;
+    const digits = (clientPhone || '').replace(/\D/g, '');
+    if (!digits) return res.status(400).json({ error: 'Número inválido.' });
+    await updateQuotationPhone(req.params.id, digits, clientPhoneCountry || '+57');
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('POST /api/liquidador/quotation/:id/phone error:', err.message);
+    res.status(500).json({ error: 'Error al guardar el teléfono.' });
+  }
+});
+
 router.get('/cotizacion/:id', async (req, res) => {
   try {
     const quotation = await getQuotationById(req.params.id);
