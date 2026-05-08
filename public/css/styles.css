@@ -88,39 +88,47 @@ a:hover {
 /* ──────────────────────────────────────────
    Sticky Gooey Navbar
    - Floating (default): margen 16px, bordes redondeados, ancho limitado
-   - Al hacer scroll: se expande al 100% del ancho, sube, rebota contra el top
-     y el scaleX simula el líquido espeso que choca contra las paredes
-   - Al volver al top: nav-unsticking mantiene el filtro durante el retorno
+   - Al hacer scroll: el nav-bar sube suavemente (solo margin-top, texto quieto).
+     El blob oscila como líquido que salpica, el scaleX en el nav-bar
+     simula la ola que llega a las paredes DESPUÉS de que la barra toca el tope.
+   - Al volver al top: nav-unsticking mantiene el filtro durante el retorno.
 ────────────────────────────────────────── */
 
-/* El blob naranja crece desde el borde superior al activarse sticky.
-   En sticky ocupa el 100% del ancho (junto con el cambio de padding en site-header). */
 .nav-goo-blob {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(calc(100vw - 24px), 1400px);
+  left: 0;
+  width: 100%;
   height: 0;
   background: #FF6400;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   pointer-events: none;
-  transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              width 0.32s ease,
-              border-radius 0.32s ease;
 }
 
-/* Keyframe del rebote:
-   - translateY: la barra sube desde su posición flotante y rebota
-   - scaleX: al llegar al top "salpica" lateralmente como líquido espeso
-     tocando una pared, luego el volumen regresa al centro */
-@keyframes nav-stick-bounce {
-  0%   { transform: translateY(16px)  scaleX(1); }
-  36%  { transform: translateY(-16px) scaleX(1.028); }
-  54%  { transform: translateY(8px)   scaleX(0.985); }
-  70%  { transform: translateY(-4px)  scaleX(1.008); }
-  83%  { transform: translateY(1px)   scaleX(1); }
-  100% { transform: translateY(0)     scaleX(1); }
+/* El blob simula líquido que cae y salpica contra la superficie:
+   la altura oscila con border-radius asimétrico que cambia en cada frame,
+   creando una forma orgánica en lugar de un rectángulo uniforme. */
+@keyframes goo-blob-liquid {
+  0%   { height: 0px;  border-radius: 0 0 80% 80%  / 0 0 200% 200%; }
+  20%  { height: 56px; border-radius: 0 0 15% 85%  / 0 0 25%  55%;  }
+  38%  { height: 16px; border-radius: 0 0 85% 15%  / 0 0 55%  35%;  }
+  55%  { height: 40px; border-radius: 0 0 45% 55%  / 0 0 70%  80%;  }
+  70%  { height: 22px; border-radius: 0 0 60% 40%  / 0 0 50%  60%;  }
+  82%  { height: 30px; border-radius: 0 0 20% 20%;                   }
+  92%  { height: 26px; border-radius: 0 0 10% 10%;                   }
+  100% { height: 28px; border-radius: 0;                              }
+}
+
+/* El nav-bar NO usa translateY: el texto no se mueve verticalmente.
+   Solo usa scaleX, retardado para que el "splash" ocurra cuando
+   el bar ya llegó al top (después de que el margin-top terminó). */
+@keyframes nav-liquid-splat {
+  0%,  20% { transform: scaleX(1); }     /* barra llegando al top */
+  44%      { transform: scaleX(1.03); }  /* ola llega a los bordes */
+  61%      { transform: scaleX(0.988); } /* rebote hacia adentro   */
+  75%      { transform: scaleX(1.009); } /* segunda ola pequeña    */
+  87%      { transform: scaleX(0.998); }
+  100%     { transform: scaleX(1); }
 }
 
 /* ── Estado sticky ── */
@@ -128,28 +136,25 @@ body.nav-is-sticky .site-header {
   filter: url('#navbar-gooey');
   padding-left: 0;
   padding-right: 0;
-  /* padding-left/right ya tienen transition en la regla base de .site-header */
 }
 
 body.nav-is-sticky .nav-goo-blob {
-  height: 28px;
-  width: 100%;
-  left: 0;
-  transform: none;
-  border-radius: 0;
+  transition: none;
+  animation: goo-blob-liquid 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 body.nav-is-sticky .nav-bar {
   margin: 0;
   max-width: none;
   border-radius: 0;
-  transition: none; /* el animation maneja todo el movimiento */
-  animation: nav-stick-bounce 0.68s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  /* margin-top 0.18s: movimiento vertical mínimo, casi imperceptible */
+  transition: margin-top 0.18s ease, border-radius 0.22s ease;
+  animation: nav-liquid-splat 0.75s ease forwards;
 }
 
 /* ── Estado unsticking ──
-   Mantiene el filtro + ancho completo mientras dura la transición de retorno,
-   así el blob y la barra se encogen como una sola pieza sin duplicarse. */
+   Mantiene el filtro activo durante el retorno para que el blob y la barra
+   se contraigan como una sola pieza sin verse duplicadas. */
 body.nav-unsticking .site-header {
   filter: url('#navbar-gooey');
   padding-left: 0;
@@ -160,10 +165,9 @@ body.nav-unsticking .site-header {
 body.nav-unsticking .nav-goo-blob {
   height: 0;
   width: 100%;
-  left: 0;
-  transform: none;
   border-radius: 0;
-  transition: height 0.4s ease;
+  animation: none;
+  transition: height 0.38s ease;
 }
 
 body.nav-unsticking .nav-bar {
@@ -173,14 +177,13 @@ body.nav-unsticking .nav-bar {
   margin-top: 16px;
   border-radius: 0;
   animation: none;
-  transition: margin-top 0.4s ease;
+  transition: margin-top 0.38s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-header { transition: none }
-  .nav-goo-blob { transition: none }
-  .nav-bar { transition: none }
-  @keyframes nav-stick-bounce { 0%, 100% { transform: none } }
+  .site-header  { transition: none }
+  .nav-goo-blob { transition: none; animation: none }
+  .nav-bar      { transition: none; animation: none }
 }
 
 /* Subtle vignette: slightly darker edges, lighter center */
