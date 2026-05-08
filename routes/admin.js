@@ -476,17 +476,23 @@ router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) 
   if (!order) return res.redirect('/admin/ordenes-servicio');
   const quotation = order.quotationId ? await getQuotationById(order.quotationId) : null;
   const invoice   = order.invoiceId   ? await getInvoiceById(order.invoiceId)     : null;
-  res.render('admin/service-order-detail', { order, quotation, invoice });
+  const parqueaderoConfig = loadParqueaderoConfig();
+  res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig });
 });
 
 router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { mechanic, status, notes, estimatedDate } = req.body;
-  await updateServiceOrder(req.params.id, {
+  const order = await getServiceOrderById(req.params.id);
+  const updates = {
     mechanic:      (mechanic || '').trim() || null,
     status:        status || 'ingreso_taller',
     notes:         (notes || '').trim() || null,
     estimatedDate: estimatedDate || null,
-  });
+  };
+  if (status === 'trabajo_completo' && order && !order.trabajoCompletoAt) {
+    updates.trabajoCompletoAt = new Date().toISOString();
+  }
+  await updateServiceOrder(req.params.id, updates);
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
