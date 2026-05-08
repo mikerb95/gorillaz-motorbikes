@@ -66,6 +66,9 @@ router.post('/login', authLimiter, async (req, res) => {
   const { email, password, returnTo } = req.body;
   const safeReturn = (returnTo || '').toString().trim();
   const redirectTo = safeReturn.startsWith('/') && !safeReturn.startsWith('//') ? safeReturn : '/club/panel';
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+    return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn });
+  }
   try {
     const user = await getUserByEmail(email);
     if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn });
