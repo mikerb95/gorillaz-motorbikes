@@ -160,8 +160,8 @@ const STATUS_CLS   = { pendiente:'badge-warning', pagada:'badge-success', anulad
     });
 
     y+=10;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
     if(INV.tax>0){
-      doc.setFont('helvetica','normal'); doc.setFontSize(10);
       doc.text('Subtotal:',148,y,{align:'right'}); doc.text('$'+INV.subtotal.toLocaleString('es-CO'),196,y,{align:'right'}); y+=7;
       doc.text('IVA:',148,y,{align:'right'}); doc.text('$'+INV.tax.toLocaleString('es-CO'),196,y,{align:'right'}); y+=5;
     }
