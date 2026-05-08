@@ -143,4 +143,46 @@ router.get('/servicios/:slug', (req, res, next) => {
 
 router.get(['/agendar-servicio', '/servicios/agenda', '/agenda-servicio', '/agenda'], (req, res) => res.redirect('/servicios/agendar'));
 
+// ── Mi Orden (consulta pública de orden de servicio) ──────────────────────
+
+router.get('/mi-orden', (req, res) => {
+  res.render('mi-orden');
+});
+
+router.post('/mi-orden', async (req, res) => {
+  const { placa, phone_suffix } = req.body;
+
+  if (!placa || !phone_suffix) {
+    return res.render('mi-orden', { error: 'Por favor completa todos los campos.', placaVal: placa || '', suffixVal: phone_suffix || '' });
+  }
+
+  const suffix = phone_suffix.replace(/\D/g, '').slice(-3);
+  if (suffix.length !== 3) {
+    return res.render('mi-orden', { error: 'Ingresa exactamente los últimos 3 dígitos de tu celular.', placaVal: placa, suffixVal: phone_suffix });
+  }
+
+  try {
+    const orders = await getServiceOrdersByPlate(placa.trim());
+
+    if (orders.length === 0) {
+      return res.render('mi-orden', { error: 'No encontramos ninguna orden para esa placa. Verifica que esté bien escrita o consulta en el taller.', placaVal: placa, suffixVal: phone_suffix });
+    }
+
+    const order = orders.find(o => {
+      const phone = (o.clientPhone || '').replace(/\D/g, '');
+      return phone.slice(-3) === suffix;
+    });
+
+    if (!order) {
+      return res.render('mi-orden', { error: 'Los datos no coinciden. Verifica la placa y los últimos 3 dígitos de tu celular.', placaVal: placa, suffixVal: phone_suffix });
+    }
+
+    const parking = calcParking(order, loadParqueaderoConfig());
+    res.render('mi-orden', { order, parking, placaVal: placa, suffixVal: phone_suffix });
+  } catch (e) {
+    console.error('POST /mi-orden error:', e.message);
+    res.render('mi-orden', { error: 'Error al consultar. Por favor intenta de nuevo.', placaVal: placa, suffixVal: phone_suffix });
+  }
+});
+
 module.exports = router;
