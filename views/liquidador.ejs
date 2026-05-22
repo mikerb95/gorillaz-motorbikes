@@ -1234,10 +1234,16 @@
     doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
     doc.text('Cotización N° ' + (savedLabel || savedConsecutive), 196, 20, { align: 'right' });
 
-    // Title
+    // Title + moto
     doc.setTextColor(17, 17, 17);
     doc.setFontSize(14); doc.setFont('helvetica', 'bold');
     doc.text('COTIZACIÓN', 14, 40);
+    const motoVal = motoField ? motoField.value.trim() : '';
+    if (motoVal) {
+      doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+      doc.setTextColor(107, 114, 128);
+      doc.text('Moto / Placa: ' + motoVal, 14, 47);
+    }
 
     // Table header helper
     function drawTableHeader(doc, startY) {
@@ -1256,7 +1262,7 @@
     }
 
     // Table header
-    let y = 50;
+    let y = motoVal ? 57 : 50;
     y = drawTableHeader(doc, y);
 
     // Rows

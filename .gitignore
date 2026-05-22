@@ -28,3 +28,6 @@ dist/
 .env
 .vercel
 .env*.local
+runt-snapshot.png
+runt-snapshot.html
+
