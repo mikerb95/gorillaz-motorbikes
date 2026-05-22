@@ -241,6 +241,24 @@
 .ev-map-container { margin-top: 8px; border-radius: 10px; overflow: hidden; border: 1px solid #e4e4e7; }
 .ev-map { height: 260px; width: 100%; background: #f4f4f5; }
 .ev-map-hint { font-size: .75rem; color: #71717a; margin: 4px 0 0; }
+
+.ev-search-wrap { position: relative; }
+.ev-search-wrap input { width: 100%; }
+.ev-search-dropdown {
+  display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000;
+  background: #fff; border: 1px solid #e4e4e7; border-top: none;
+  border-radius: 0 0 8px 8px; margin: 0; padding: 0; list-style: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1); max-height: 220px; overflow-y: auto;
+}
+.ev-search-dropdown.open { display: block; }
+.ev-search-dropdown li {
+  padding: 9px 12px; font-size: .82rem; color: #18181b; cursor: pointer;
+  border-bottom: 1px solid #f4f4f5; line-height: 1.35;
+}
+.ev-search-dropdown li:last-child { border-bottom: none; }
+.ev-search-dropdown li:hover { background: #f4f4f5; }
+.ev-search-dropdown li.ev-search-msg { color: #71717a; cursor: default; }
+.ev-search-dropdown li.ev-search-msg:hover { background: none; }
 </style>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/TDI=" crossorigin=""></script>
