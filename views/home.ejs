@@ -247,26 +247,71 @@
     </section>
 
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "AutoRepair",
-    "name": "Gorillaz Motorbikes",
-    "url": "https://gorillazmotorbikes.com",
-    "logo": "https://gorillazmotorbikes.com/images/nobg_logo/logo_transp.png",
-    "image": "https://gorillazmotorbikes.com/images/og-default.jpg",
-    "description": "Taller de motos en Bogotá: mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo computarizado, torno y tienda de accesorios.",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Bogotá",
-      "addressCountry": "CO"
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "AutoRepair",
+      "name": "Gorillaz Motorbikes",
+      "url": "https://gorillazmotorbikes.com",
+      "logo": "https://gorillazmotorbikes.com/images/nobg_logo/logo_transp.png",
+      "image": "https://gorillazmotorbikes.com/images/og-default.jpg",
+      "description": "Taller de motos en Bogotá: mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo computarizado, torno y tienda de accesorios.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Bogotá",
+        "addressLocality": "Bogotá",
+        "addressRegion": "Cundinamarca",
+        "addressCountry": "CO"
+      },
+      "telephone": "+573213204299",
+      "sameAs": [
+        "https://www.facebook.com/gorillazmotorbikes",
+        "https://www.instagram.com/gorillazmotorbikes"
+      ],
+      "priceRange": "$$",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+          "opens": "08:00",
+          "closes": "18:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "08:00",
+          "closes": "14:00"
+        }
+      ],
+      "hasMap": "https://maps.google.com/?q=Gorillaz+Motorbikes+Bogot%C3%A1",
+      "areaServed": {
+        "@type": "City",
+        "name": "Bogotá"
+      },
+      "knowsAbout": [
+        "Mecánica de motos",
+        "Pintura de motos",
+        "Electricidad de motos",
+        "Alistamiento tecnomecánica",
+        "Escaneo computarizado",
+        "Accesorios para motos"
+      ]
     },
-    "telephone": "+573213204299",
-    "sameAs": [
-      "https://www.facebook.com/gorillazmotorbikes",
-      "https://www.instagram.com/gorillazmotorbikes"
-    ],
-    "priceRange": "$$"
-  }
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Gorillaz Motorbikes",
+      "url": "https://gorillazmotorbikes.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://gorillazmotorbikes.com/tienda?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
   </script>
 
   <%- include('partials/footer') %>
