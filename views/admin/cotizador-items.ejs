@@ -25,7 +25,10 @@ const catalogProducts  = services.filter(s => s.type === 'product');
 <!-- Tabs -->
 <div style="display:flex;gap:4px;margin-bottom:18px;border-bottom:2px solid #e5e7eb">
   <button class="liq-tab active" data-tab="servicios" style="padding:9px 18px;border:none;background:none;font-size:13px;font-weight:800;cursor:pointer;border-bottom:2px solid var(--brand);margin-bottom:-2px;color:var(--brand);font-family:inherit">
-    Servicios (<%= services.length %>)
+    Servicios (<%= catalogServices.length %>)
+  </button>
+  <button class="liq-tab" data-tab="repuestos" style="padding:9px 18px;border:none;background:none;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:#6b7280;font-family:inherit">
+    Repuestos / Materiales (<%= catalogProducts.length %>)
   </button>
   <button class="liq-tab" data-tab="productos" style="padding:9px 18px;border:none;background:none;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:#6b7280;font-family:inherit">
     Productos del catálogo (<%= products.length %>)
@@ -56,7 +59,7 @@ const catalogProducts  = services.filter(s => s.type === 'product');
 
   <!-- Lista de servicios -->
   <div class="crm-card">
-    <% if (services.length === 0) { %>
+    <% if (catalogServices.length === 0) { %>
       <p class="muted" style="padding:28px;text-align:center">No hay servicios configurados.</p>
     <% } else { %>
     <div class="crm-table-wrap">
@@ -69,7 +72,7 @@ const catalogProducts  = services.filter(s => s.type === 'product');
           </tr>
         </thead>
         <tbody>
-          <% services.forEach((svc, idx) => { %>
+          <% catalogServices.forEach((svc, idx) => { %>
           <tr id="row-<%= svc.id %>">
             <td class="muted" style="font-size:.8rem"><%= idx + 1 %></td>
 
