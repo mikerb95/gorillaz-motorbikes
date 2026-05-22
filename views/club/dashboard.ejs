@@ -273,15 +273,32 @@
         <div class="cp-card">
           <h2>Historial de puntos</h2>
           <% if (!user.scoreHistory || user.scoreHistory.length === 0) { %>
-            <div class="cp-empty">
-              <div class="cp-empty-icon" aria-hidden="true">⚡</div>
-              <div class="cp-empty-text">Aún no tienes puntos</div>
-              <ul class="cp-how-to-earn">
-                <li><span aria-hidden="true">🏪</span> Visita al taller — <strong>+<%= SCORE_POINTS.visita %> pts</strong></li>
-                <li><span aria-hidden="true">🔩</span> Mantenimiento — <strong>+<%= SCORE_POINTS.mantenimiento %> pts</strong></li>
-                <li><span aria-hidden="true">🏍️</span> Rodada — <strong>+<%= SCORE_POINTS.rodada %> pts</strong></li>
-                <li><span aria-hidden="true">🎉</span> Evento — <strong>+<%= SCORE_POINTS.evento %> pts</strong></li>
-              </ul>
+            <div class="cp-pts-empty">
+              <div class="cp-pts-empty-icon" aria-hidden="true">⚡</div>
+              <p class="cp-pts-empty-title">Aún no tienes puntos</p>
+              <p class="cp-pts-empty-sub">Gana puntos participando en estas actividades</p>
+              <div class="cp-earn-grid">
+                <div class="cp-earn-item">
+                  <span class="cp-earn-emoji" aria-hidden="true">🏪</span>
+                  <span class="cp-earn-label">Visita al taller</span>
+                  <span class="cp-earn-badge">+<%= SCORE_POINTS.visita %> pts</span>
+                </div>
+                <div class="cp-earn-item">
+                  <span class="cp-earn-emoji" aria-hidden="true">🔩</span>
+                  <span class="cp-earn-label">Mantenimiento</span>
+                  <span class="cp-earn-badge">+<%= SCORE_POINTS.mantenimiento %> pts</span>
+                </div>
+                <div class="cp-earn-item">
+                  <span class="cp-earn-emoji" aria-hidden="true">🏍️</span>
+                  <span class="cp-earn-label">Rodada</span>
+                  <span class="cp-earn-badge">+<%= SCORE_POINTS.rodada %> pts</span>
+                </div>
+                <div class="cp-earn-item">
+                  <span class="cp-earn-emoji" aria-hidden="true">🎉</span>
+                  <span class="cp-earn-label">Evento</span>
+                  <span class="cp-earn-badge">+<%= SCORE_POINTS.evento %> pts</span>
+                </div>
+              </div>
             </div>
           <% } else { %>
             <div>
