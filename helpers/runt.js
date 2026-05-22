@@ -5,21 +5,17 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
 chromium.use(StealthPlugin());
 
+// URL del formulario de consulta ciudadana
 const RUNT_URL = 'https://www.runt.gov.co/consultaCiudadana/#/consulta/vehiculo';
 
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
 
-/**
- * Normaliza una cadena de fecha al formato ISO YYYY-MM-DD.
- * Soporta: "DD/MM/YYYY", "DD-MM-YYYY", "DD/MM/YY", y variaciones con espacios.
- */
+// Normaliza fechas DD/MM/YYYY o DD-MM-YYYY a ISO YYYY-MM-DD
 function normalizarFecha(raw) {
   if (!raw) return null;
   const s = raw.trim().replace(/\s+/g, '');
-  // Intento directo si ya viene en ISO
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  // Formatos DD/MM/YYYY o DD-MM-YYYY
   const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
   if (!m) return null;
   let [, d, mo, y] = m;
@@ -27,13 +23,31 @@ function normalizarFecha(raw) {
   return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`;
 }
 
+// Expande un mat-expansion-panel y espera a que el contenido sea visible
+async function expandirPanel(page, componentTag) {
+  const header = `${componentTag} .mat-expansion-panel-header`;
+  const content = `${componentTag} .mat-expansion-panel-content`;
+  try {
+    const panel = await page.$(header);
+    if (!panel) return false;
+    const expanded = await page.$eval(header, el => el.getAttribute('aria-expanded'));
+    if (expanded !== 'true') {
+      await panel.click();
+      // Espera a que la animación termine
+      await page.waitForTimeout(600);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Consulta el historial vehicular en el portal RUNT y retorna las fechas de
- * vencimiento del SOAT y la Revisión Técnico-Mecánica (RTM).
+ * Consulta el historial vehicular en el RUNT y retorna las fechas de
+ * vencimiento del SOAT y la Revisión Técnico-Mecánica.
  *
- * @param {string} placa    - Placa del vehículo (ej. "ABC123").
- * @param {string} documento - Número de cédula del propietario.
- * @returns {Promise<{success: boolean, data: {soat_vencimiento: string|null, tecno_vencimiento: string|null}|null, error: string|null}>}
+ * @param {string} placa     Placa del vehículo (ej. "ABC123")
+ * @param {string} documento Número de cédula del propietario
  */
 async function consultarHistorialRunt(placa, documento) {
   let browser = null;
@@ -57,119 +71,148 @@ async function consultarHistorialRunt(placa, documento) {
 
     const page = await context.newPage();
 
-    // Oculta navigator.webdriver incluso con stealth activo (doble capa)
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
     });
 
     await page.goto(RUNT_URL, { waitUntil: 'networkidle', timeout: 30_000 });
 
-    // ── Selección de tipo de consulta ────────────────────────────────────────
-    // El portal RUNT muestra un select/radio de tipo de búsqueda.
-    // Selecciona "Procedencia Nacional / Placa y Propietario".
-    await page.selectOption('select[name="tipoBusqueda"], #tipoBusqueda', {
-      label: /procedencia nacional/i,
-    }).catch(() => {
-      // Si es un radio button en vez de select
-      page.click('input[type="radio"][value*="NACIONAL"], label:has-text("Procedencia Nacional")');
-    });
+    // ── Espera a que Angular cargue el formulario ────────────────────────────
+    // El formulario usa Angular Material. Esperamos cualquier input visible.
+    await page.waitForSelector('input, mat-select', { timeout: 15_000 });
+    await page.waitForTimeout(1500); // Angular termina de renderizar
 
-    // ── Relleno del formulario ───────────────────────────────────────────────
+    // ── Rellena los campos del formulario ────────────────────────────────────
     const placaMayus = placa.toUpperCase().trim();
 
-    await page.fill('input[name="placa"], #placa, input[placeholder*="placa" i]', placaMayus);
-    await page.fill(
-      'input[name="cedula"], input[name="documento"], #nroDocumento, input[placeholder*="documento" i]',
-      documento.trim()
-    );
+    // Intenta los selectores más comunes para Angular Material
+    const selectorPlaca = [
+      'input[formcontrolname="placa"]',
+      'input[formcontrolname="numeroPlaca"]',
+      'input[id*="placa" i]',
+      'input[placeholder*="placa" i]',
+      'input[name*="placa" i]',
+    ].join(', ');
+
+    const selectorDoc = [
+      'input[formcontrolname="documento"]',
+      'input[formcontrolname="numeroDocumento"]',
+      'input[formcontrolname="cedula"]',
+      'input[id*="documento" i]',
+      'input[id*="cedula" i]',
+      'input[placeholder*="documento" i]',
+      'input[placeholder*="cédula" i]',
+      'input[name*="documento" i]',
+    ].join(', ');
+
+    await page.fill(selectorPlaca, placaMayus).catch(() => null);
+    await page.fill(selectorDoc, documento.trim()).catch(() => null);
 
     // ── TODO: INTEGRAR PASARELA DE CAPTCHA ──────────────────────────────────
     //
-    // El RUNT usa reCAPTCHA v2/v3 o un control visual personalizado.
-    // Para automatización desatendida, integra un servicio de resolución:
+    // El RUNT puede usar reCAPTCHA v2/v3 antes de mostrar resultados.
     //
     // Opción A – 2Captcha (reCAPTCHA v2):
-    //   const Captcha2 = require('2captcha');
-    //   const solver = new Captcha2.Solver(process.env.TWOCAPTCHA_API_KEY);
+    //   const { Solver } = require('2captcha');
+    //   const solver = new Solver(process.env.TWOCAPTCHA_API_KEY);
     //   const siteKey = await page.getAttribute('.g-recaptcha', 'data-sitekey');
     //   const { data: token } = await solver.recaptcha(siteKey, page.url());
-    //   await page.evaluate(t => { document.getElementById('g-recaptcha-response').value = t; }, token);
+    //   await page.evaluate(t => {
+    //     document.getElementById('g-recaptcha-response').value = t;
+    //   }, token);
     //
-    // Opción B – Anti-Captcha:
-    //   const AntiCaptcha = require('anticaptcha');
-    //   ... (misma lógica, API compatible)
-    //
-    // Opción C – Modo asistido (pruebas):
-    //   El script espera a que el usuario resuelva el captcha manualmente.
-    //   Lanza el navegador con headless: false y aumenta el timeout.
+    // Opción B – 2Captcha (reCAPTCHA v3):
+    //   const { data: token } = await solver.recaptchaV3(siteKey, page.url(), 'consultar');
+    //   await page.evaluate(t => {
+    //     document.getElementById('g-recaptcha-response').value = t;
+    //   }, token);
     // ─────────────────────────────────────────────────────────────────────────
 
-    // Envío del formulario
-    await Promise.all([
-      page.click(
-        'button[type="submit"], input[type="submit"], button:has-text("Consultar"), button:has-text("Buscar")'
-      ),
-      // Espera la tabla de resultados hasta 30 s (tiempo para resolver captcha asistido)
-      page.waitForSelector(
-        'table.resultado, table[class*="result"], .informacion-vehiculo, #datosVehiculo',
-        { timeout: 30_000 }
-      ),
-    ]);
+    // Envía el formulario
+    await page.click([
+      'button[type="submit"]',
+      'button:has-text("Consultar")',
+      'button:has-text("Buscar")',
+      'input[type="submit"]',
+    ].join(', ')).catch(() => null);
 
-    // ── Extracción de fechas ─────────────────────────────────────────────────
-    const data = await page.evaluate(() => {
-      /**
-       * Busca en el DOM la celda que sigue al encabezado que coincide con `keyword`.
-       * Recorre todas las filas de tablas y divs con estructura label/valor.
-       */
-      function buscarValor(keyword) {
-        const re = new RegExp(keyword, 'i');
-
-        // Estrategia 1: tablas <th>/<td>
-        for (const th of document.querySelectorAll('th, td.label, td.titulo')) {
-          if (re.test(th.textContent)) {
-            const td = th.nextElementSibling || th.parentElement?.nextElementSibling?.querySelector('td');
-            if (td) return td.textContent;
-          }
-        }
-
-        // Estrategia 2: filas con dos columnas (label | valor)
-        for (const tr of document.querySelectorAll('tr')) {
-          const cells = tr.querySelectorAll('td');
-          if (cells.length >= 2 && re.test(cells[0].textContent)) {
-            return cells[1].textContent;
-          }
-        }
-
-        // Estrategia 3: dt/dd
-        for (const dt of document.querySelectorAll('dt')) {
-          if (re.test(dt.textContent)) {
-            const dd = dt.nextElementSibling;
-            if (dd && dd.tagName === 'DD') return dd.textContent;
-          }
-        }
-
-        // Estrategia 4: divs con clase que contenga "valor" o "value"
-        for (const el of document.querySelectorAll('[class*="valor"], [class*="value"], [class*="dato"]')) {
-          const label = el.previousElementSibling;
-          if (label && re.test(label.textContent)) return el.textContent;
-        }
-
-        return null;
-      }
-
-      return {
-        soat_raw: buscarValor('soat.*venc|venc.*soat|vigencia.*soat'),
-        tecno_raw: buscarValor('tecno.?mec|rtm.*venc|venc.*rtm|revis.*t[eé]cn|vigencia.*revis'),
-      };
+    // ── Espera la página de resultados (hasta 60 s para resolver captcha) ────
+    // El componente raíz de resultados es 'cyrconsultavehiculo-info-vehiculo-detallada'
+    await page.waitForSelector('cyrconsultavehiculo-info-vehiculo-detallada', {
+      timeout: 60_000,
     });
 
-    const soat_vencimiento = normalizarFecha(data.soat_raw);
-    const tecno_vencimiento = normalizarFecha(data.tecno_raw);
+    // ── Expande el panel de SOAT y el de RTM ─────────────────────────────────
+    await expandirPanel(page, 'cyrconsultavehiculo-poliza-soat');
+    await expandirPanel(page, 'cyrconsultavehiculo-rtm');
+
+    // ── Extrae las fechas de vencimiento ─────────────────────────────────────
+    const data = await page.evaluate(() => {
+      // Obtiene el texto de la primera celda de una columna específica
+      function textoDeCelda(scope, columnClass) {
+        const cell = scope.querySelector(`.${columnClass}`);
+        return cell ? cell.textContent.trim() : null;
+      }
+
+      // SOAT: columna fechaFinVigencia (fecha de vencimiento)
+      const soatScope = document.querySelector('cyrconsultavehiculo-poliza-soat');
+      let soat_raw = null;
+      if (soatScope) {
+        // Busca en mat-row la celda de fecha fin vigencia
+        const soatRow = soatScope.querySelector('mat-row, tr');
+        if (soatRow) {
+          soat_raw = textoDeCelda(soatRow, 'mat-column-fechaFinVigencia')
+            || textoDeCelda(soatScope, 'mat-column-fechaFinVigencia');
+        }
+        // Fallback: cualquier texto que parezca fecha después de "Fin Vigencia"
+        if (!soat_raw) {
+          const labels = soatScope.querySelectorAll('mat-header-cell, th');
+          for (const label of labels) {
+            if (/fin.*vigencia/i.test(label.textContent)) {
+              const idx = Array.from(label.parentElement?.children || []).indexOf(label);
+              const dataRow = soatScope.querySelector('mat-row, tr:not(:first-child)');
+              if (dataRow && idx >= 0) {
+                const cells = dataRow.querySelectorAll('mat-cell, td');
+                soat_raw = cells[idx]?.textContent?.trim() || null;
+              }
+            }
+          }
+        }
+      }
+
+      // RTM: columna fechaVigencia (fecha de vencimiento del certificado)
+      const rtmScope = document.querySelector('cyrconsultavehiculo-rtm');
+      let tecno_raw = null;
+      if (rtmScope) {
+        const rtmRow = rtmScope.querySelector('mat-row, tr');
+        if (rtmRow) {
+          tecno_raw = textoDeCelda(rtmRow, 'mat-column-fechaVigencia')
+            || textoDeCelda(rtmScope, 'mat-column-fechaVigencia');
+        }
+        if (!tecno_raw) {
+          const labels = rtmScope.querySelectorAll('mat-header-cell, th');
+          for (const label of labels) {
+            if (/vigencia/i.test(label.textContent)) {
+              const idx = Array.from(label.parentElement?.children || []).indexOf(label);
+              const dataRow = rtmScope.querySelector('mat-row, tr:not(:first-child)');
+              if (dataRow && idx >= 0) {
+                const cells = dataRow.querySelectorAll('mat-cell, td');
+                tecno_raw = cells[idx]?.textContent?.trim() || null;
+              }
+            }
+          }
+        }
+      }
+
+      return { soat_raw, tecno_raw };
+    });
 
     return {
       success: true,
-      data: { soat_vencimiento, tecno_vencimiento },
+      data: {
+        soat_vencimiento: normalizarFecha(data.soat_raw),
+        tecno_vencimiento: normalizarFecha(data.tecno_raw),
+      },
       error: null,
     };
   } catch (err) {
