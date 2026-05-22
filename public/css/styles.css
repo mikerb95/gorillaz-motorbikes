@@ -6272,6 +6272,13 @@ main:has(.club-panel) { padding-top: 0 !important; }
 /* How-to-earn (empty state) */
 .cp-how-to-earn li { font-size: .9em; color: #111; }
 
+/* Earn grid (empty state redesign) */
+.cp-pts-empty-title { color: #111; }
+.cp-pts-empty-sub   { color: #4b5563; }
+.cp-earn-item       { background: #f3f4f6; border-color: #e5e7eb; }
+.cp-earn-label      { color: #111; }
+.cp-earn-badge      { color: #15803d; background: rgba(22,163,74,.12); }
+
 /* Stats (SOAT/Tecno) */
 .cp-stat        { font-size: .82em; }
 .cp-stat.ok     { background: rgba(22,163,74,0.12);  border-color: rgba(22,163,74,0.3);  color: #15803d; }
