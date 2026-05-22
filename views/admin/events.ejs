@@ -206,7 +206,11 @@
                         <ul class="ev-search-dropdown" id="editDropdown-<%= ev.id %>"></ul>
                       </div>
                       <div id="editMapContainer-<%= ev.id %>" class="ev-map-container">
-                        <div id="editMap-<%= ev.id %>" class="ev-map" data-lat="<%= ev.lat || '' %>" data-lng="<%= ev.lng || '' %>"></div>
+                        <div id="editMap-<%= ev.id %>" class="ev-map" data-lat="<%= ev.lat || '' %>" data-lng="<%= ev.lng || '' %>">
+                          <% if (!ev.lat || !ev.lng) { %>
+                          <div class="ev-map-overlay" id="editMapOverlay-<%= ev.id %>">📍 Haz clic para fijar la ubicación</div>
+                          <% } %>
+                        </div>
                       </div>
                       <p class="ev-map-hint">Busca una dirección arriba o haz clic en el mapa para fijar la ubicación exacta.</p>
                     </div>
