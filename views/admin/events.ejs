@@ -318,7 +318,7 @@ function initMap(mapId, latInputId, lngInputId, locationInputId, initLat, initLn
   maps[mapId] = map;
 
   function hideOverlay() {
-    const overlay = document.getElementById(mapId.replace('Map', 'MapOverlay').replace('editMap-', 'editMapOverlay-').replace('createMap', 'createMapOverlay'));
+    const overlay = document.getElementById(mapId.replace('Map', 'MapOverlay'));
     if (overlay) overlay.classList.add('hidden');
   }
 
