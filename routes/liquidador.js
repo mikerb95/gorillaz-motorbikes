@@ -59,9 +59,25 @@ router.get('/api/liquidador/search', (req, res) => {
 router.post('/api/liquidador/quotation', async (req, res) => {
   try {
     const { items, total, clientPhone, clientPhoneCountry, motorcycle, notes } = req.body;
-    if (!Array.isArray(items) || items.length === 0) {
+    if (!Array.isArray(items) || items.length === 0)
       return res.status(400).json({ error: 'Se requiere al menos un ítem.' });
+    if (items.length > 100)
+      return res.status(400).json({ error: 'Máximo 100 ítems por cotización.' });
+    for (const it of items) {
+      if (typeof it.name !== 'string' || it.name.trim().length === 0 || it.name.length > 200)
+        return res.status(400).json({ error: 'Nombre de ítem inválido (máx 200 caracteres).' });
+      const price = Number(it.price);
+      if (!Number.isInteger(price) || price < 1 || price > 9_999_999_999)
+        return res.status(400).json({ error: 'Precio de ítem fuera de rango (1 – 9.999.999.999).' });
+      const qty = Number(it.qty);
+      if (!Number.isInteger(qty) || qty < 1 || qty > 100)
+        return res.status(400).json({ error: 'Cantidad de ítem fuera de rango (1 – 100).' });
     }
+    if (motorcycle && String(motorcycle).length > 80)
+      return res.status(400).json({ error: 'Moto/placa demasiado larga (máx 80 caracteres).' });
+    if (notes && String(notes).length > 500)
+      return res.status(400).json({ error: 'Notas demasiado largas (máx 500 caracteres).' });
+
     const { id, consecutive, label } = await createQuotation({
       items,
       total: Number(total) || 0,
@@ -107,3 +123,4 @@ router.get('/cotizacion/:id', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.invalidateCatalogCache = invalidateCatalogCache;
