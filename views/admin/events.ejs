@@ -417,6 +417,9 @@ function searchLocation(prefix, value) {
           document.getElementById(lngInputId).value = lng.toFixed(6);
           dropdown.innerHTML = '';
           dropdown.classList.remove('open');
+          const overlayId = isCreate ? 'createMapOverlay' : `editMapOverlay-${evId}`;
+          const overlay = document.getElementById(overlayId);
+          if (overlay) overlay.classList.add('hidden');
 
           if (maps[mapId]) {
             maps[mapId].setView([lat, lng], 15);
