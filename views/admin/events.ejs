@@ -244,12 +244,22 @@ const maps = {};
 const markers = {};
 
 function initMap(mapId, latInputId, lngInputId, locationInputId, initLat, initLng) {
-  if (maps[mapId]) return;
-  const map = L.map(mapId).setView(initLat && initLng ? [initLat, initLng] : BOGOTA, initLat && initLng ? 15 : 12);
+  if (maps[mapId]) {
+    maps[mapId].invalidateSize();
+    return;
+  }
+  const el = document.getElementById(mapId);
+  if (!el) return;
+
+  const map = L.map(mapId, { zoomControl: true, scrollWheelZoom: false });
+  map.setView(initLat && initLng ? [initLat, initLng] : BOGOTA, initLat && initLng ? 15 : 12);
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
   }).addTo(map);
+
+  maps[mapId] = map;
 
   if (initLat && initLng) {
     const m = L.marker([initLat, initLng], { draggable: true }).addTo(map);
@@ -281,7 +291,17 @@ function initMap(mapId, latInputId, lngInputId, locationInputId, initLat, initLn
     }
   });
 
-  maps[mapId] = map;
+  requestAnimationFrame(() => map.invalidateSize());
+}
+
+function showMapWhenVisible(mapId, latInputId, lngInputId, locationInputId, initLat, initLng) {
+  const el = document.getElementById(mapId);
+  if (!el) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      initMap(mapId, latInputId, lngInputId, locationInputId, initLat, initLng);
+    });
+  });
 }
 
 async function reverseGeocode(lat, lng, inputId) {
@@ -296,14 +316,15 @@ async function reverseGeocode(lat, lng, inputId) {
 }
 
 function selectCategory(prefix, cat) {
-  const tabs = document.getElementById(prefix === 'create' ? 'createCatTabs' : `editCatTabs-${prefix.replace('edit-','')}`);
+  const id = prefix === 'create' ? '' : prefix.replace('edit-', '');
+  const tabs = document.getElementById(prefix === 'create' ? 'createCatTabs' : `editCatTabs-${id}`);
   if (!tabs) return;
   tabs.querySelectorAll('.ev-cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
 
-  const catInput = document.getElementById(prefix === 'create' ? 'createCategory' : `editCategory-${prefix.replace('edit-','')}`);
+  const catInput = document.getElementById(prefix === 'create' ? 'createCategory' : `editCategory-${id}`);
   if (catInput) catInput.value = cat;
 
-  const typeSelect = document.getElementById(prefix === 'create' ? 'createType' : `editType-${prefix.replace('edit-','')}`);
+  const typeSelect = document.getElementById(prefix === 'create' ? 'createType' : `editType-${id}`);
   if (!typeSelect) return;
 
   if (cat === 'taller') {
@@ -328,20 +349,26 @@ function toggleEvEdit(id) {
     if (mapEl) {
       const lat = parseFloat(mapEl.dataset.lat) || null;
       const lng = parseFloat(mapEl.dataset.lng) || null;
-      setTimeout(() => initMap('editMap-' + id, 'editLat-' + id, 'editLng-' + id, 'editLocation-' + id, lat, lng), 50);
+      showMapWhenVisible('editMap-' + id, 'editLat-' + id, 'editLng-' + id, 'editLocation-' + id, lat, lng);
     }
   }
 }
 
-// Init create map when form opens
-document.querySelector('[onclick*="newEventCard"]').addEventListener('click', () => {
-  setTimeout(() => {
+document.getElementById('newEventCard').closest('.crm-page-header')
+  ? null
+  : null;
+
+(function () {
+  const btn = document.querySelector('[onclick*="newEventCard"]');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
     const card = document.getElementById('newEventCard');
-    if (!card.classList.contains('hidden-card')) {
-      initMap('createMap', 'createLat', 'createLng', 'createLocation', null, null);
+    const isNowVisible = !card.classList.contains('hidden-card');
+    if (isNowVisible) {
+      showMapWhenVisible('createMap', 'createLat', 'createLng', 'createLocation', null, null);
     }
-  }, 50);
-});
+  });
+})();
 </script>
 
 <%- include('../partials/admin-foot') %>
