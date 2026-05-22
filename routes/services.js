@@ -87,7 +87,7 @@ const servicesData = [
     details: 'Contamos con escáneres multimarca para apagar testigos de motor, chequear valores en tiempo real de inyectores, sensores TPS y módulos ABS.'
   },
   // Servicios que usan sus propias vistas personalizadas
-  { slug: 'lavado-motos', title: 'Lavado de motos', desc: 'Limpieza profunda con productos especializados para cuidar la pintura y componentes de tu máquina.', img: '/images/services/lavado-motos.webp' },
+  { slug: 'lavado-motos', title: 'Lavado de motos', desc: 'Limpieza profunda con productos especializados para cuidar la pintura y componentes de tu máquina.', img: '/images/services/lavado-motos.png' },
   { slug: 'lavado-cascos', title: 'Lavado de cascos', desc: 'Desinfección y limpieza interna y externa para mantener tu seguridad y confort al rodar.', img: '/images/services/lavado-cascos.webp' },
   { slug: 'detailing-motos', title: 'Detailing de motos', desc: 'Restauración estética detallada, polichado y protección cerámica para un brillo único.', img: '/images/services/detailing-motos.webp' }
 ];
