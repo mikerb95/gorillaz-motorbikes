@@ -58,6 +58,7 @@ function saveServicesCatalog(list) {
   try { fs.writeFileSync(SERVICES_CATALOG_PATH, JSON.stringify(list, null, 2), 'utf8'); } catch { }
 }
 const { resendClient } = require('../config');
+const { invalidateCatalogCache } = require('./liquidador');
 
 const router = express.Router();
 
