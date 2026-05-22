@@ -6,7 +6,11 @@ const { generarCaptcha, consultarHistorialRunt } = require('../helpers/runt');
 
 // GET /runt → formulario de consulta
 router.get('/', (req, res) => {
-  res.render('runt/consulta', { titulo: 'Consulta RUNT', error: null });
+  res.render('runt/consulta', {
+    title: 'Consulta RUNT | Gorillaz Motorbikes',
+    description: 'Consulta el SOAT y la Revisión Técnico-Mecánica de tu moto.',
+    canonicalPath: '/runt',
+  });
 });
 
 // GET /runt/captcha → genera y retorna imagen del captcha
