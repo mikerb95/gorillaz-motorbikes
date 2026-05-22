@@ -57,11 +57,14 @@
       <!-- Location map picker -->
       <div class="crm-form-group crm-form-full">
         <label>Lugar</label>
-        <input name="location" id="createLocation" placeholder="Haz clic en el mapa para seleccionar…" autocomplete="off" oninput="searchLocation('create', this.value)" />
+        <div class="ev-search-wrap" id="createSearchWrap">
+          <input name="location" id="createLocation" placeholder="Escribe una dirección o haz clic en el mapa…" autocomplete="off" oninput="searchLocation('create', this.value)" onfocus="searchLocation('create', this.value)" />
+          <ul class="ev-search-dropdown" id="createDropdown"></ul>
+        </div>
         <div id="createMapContainer" class="ev-map-container">
           <div id="createMap" class="ev-map"></div>
         </div>
-        <p class="ev-map-hint">Haz clic en el mapa para fijar la ubicación exacta del evento.</p>
+        <p class="ev-map-hint">Busca una dirección arriba o haz clic en el mapa para fijar la ubicación exacta.</p>
       </div>
     </div>
     <div class="crm-form-actions">
