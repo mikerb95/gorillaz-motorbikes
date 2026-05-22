@@ -291,15 +291,36 @@ function initMap(mapId, latInputId, lngInputId, locationInputId, initLat, initLn
   const el = document.getElementById(mapId);
   if (!el) return;
 
-  const map = L.map(mapId, { zoomControl: true, scrollWheelZoom: false });
+  const isTouch = L.Browser.touch;
+  const map = L.map(mapId, { zoomControl: true, scrollWheelZoom: !isTouch });
   map.setView(initLat && initLng ? [initLat, initLng] : BOGOTA, initLat && initLng ? 15 : 12);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  const primaryTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
-  }).addTo(map);
+  });
+  const fallbackTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 19,
+    subdomains: 'abcd'
+  });
+
+  let usingFallback = false;
+  primaryTiles.addTo(map);
+  primaryTiles.on('tileerror', () => {
+    if (!usingFallback) {
+      usingFallback = true;
+      primaryTiles.remove();
+      fallbackTiles.addTo(map);
+    }
+  });
 
   maps[mapId] = map;
+
+  function hideOverlay() {
+    const overlay = document.getElementById(mapId.replace('Map', 'MapOverlay').replace('editMap-', 'editMapOverlay-').replace('createMap', 'createMapOverlay'));
+    if (overlay) overlay.classList.add('hidden');
+  }
 
   if (initLat && initLng) {
     const m = L.marker([initLat, initLng], { draggable: true }).addTo(map);
@@ -317,6 +338,7 @@ function initMap(mapId, latInputId, lngInputId, locationInputId, initLat, initLn
     document.getElementById(latInputId).value = lat.toFixed(6);
     document.getElementById(lngInputId).value = lng.toFixed(6);
     reverseGeocode(lat, lng, locationInputId);
+    hideOverlay();
     if (markers[mapId]) {
       markers[mapId].setLatLng(e.latlng);
     } else {
