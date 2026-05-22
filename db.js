@@ -691,6 +691,14 @@ async function getLeaderboard(limit = 10) {
   }));
 }
 
+async function getUserRank(userId, userScore) {
+  const r = await db.execute({
+    sql: 'SELECT COUNT(*) AS ahead FROM users WHERE score > ? AND deleted_at IS NULL AND role != ?',
+    args: [userScore || 0, 'admin'],
+  });
+  return Number(r.rows[0].ahead) + 1;
+}
+
 // ── Event Attendances ─────────────────────────────────────────────────────
 
 async function registerEventAttendance(eventId, userId) {

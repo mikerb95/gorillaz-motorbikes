@@ -27,3 +27,4 @@ dist/
 .cache/
 .env
 .vercel
+.env*.local
