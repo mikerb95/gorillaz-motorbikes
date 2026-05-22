@@ -800,25 +800,33 @@ function rowToQuotation(row) {
 }
 
 async function createQuotation(data) {
-  const id         = data.id || uuidv4();
-  const now        = new Date().toISOString();
-  const consecutive = await getNextQuotationConsecutive();
-  const label       = fmtConsecutiveLabel(consecutive, now);
-  await db.execute({
-    sql: `INSERT INTO quotations (id, consecutive, items, total, client_phone, client_phone_country, motorcycle, notes, status)
-          VALUES (?,?,?,?,?,?,?,?,?)`,
-    args: [
-      id,
-      consecutive,
-      JSON.stringify(data.items || []),
-      data.total || 0,
-      data.clientPhone || null,
-      data.clientPhoneCountry || '+57',
-      data.motorcycle || null,
-      data.notes || null,
-      'confirmed',
-    ],
-  });
+  const id  = data.id || uuidv4();
+  const now = new Date().toISOString();
+  let consecutive, label;
+  const tx = await db.transaction('write');
+  try {
+    const r = await tx.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM quotations');
+    consecutive = Number(r.rows[0].next);
+    label = fmtConsecutiveLabel(consecutive, now);
+    await tx.execute({
+      sql: `INSERT INTO quotations (id, consecutive, items, total, client_phone, client_phone_country, motorcycle, notes, status)
+            VALUES (?,?,?,?,?,?,?,?,?)`,
+      args: [
+        id, consecutive,
+        JSON.stringify(data.items || []),
+        data.total || 0,
+        data.clientPhone || null,
+        data.clientPhoneCountry || '+57',
+        data.motorcycle || null,
+        data.notes || null,
+        'confirmed',
+      ],
+    });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
   return { id, consecutive, label };
 }
 
