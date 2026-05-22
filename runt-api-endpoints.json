@@ -1,0 +1,126 @@
+[
+  {
+    "method": "GET",
+    "url": "https://www.runt.gov.co/consultaCiudadana/",
+    "headers": {
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    },
+    "body": null
+  },
+  {
+    "method": "GET",
+    "url": "https://portalpublico.runt.gov.co/",
+    "headers": {
+      "upgrade-insecure-requests": "1",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    },
+    "body": null
+  },
+  {
+    "method": "GET",
+    "url": "https://runtproapi.runt.gov.co/CYRConsultaVehiculoMS/configuracion-sesion",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "x-funcionalidad": "SHELL",
+      "referer": "",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "body": null
+  },
+  {
+    "method": "GET",
+    "url": "https://runtproapi.runt.gov.co/CYRConsultaVehiculoMS/tipo-documento",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "x-funcionalidad": "SHELL",
+      "referer": "",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "body": null
+  },
+  {
+    "method": "GET",
+    "url": "https://runtproapi.runt.gov.co/CYRConsultaVehiculoMS/soat/banner",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "x-funcionalidad": "SHELL",
+      "referer": "",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "body": null
+  },
+  {
+    "method": "GET",
+    "url": "https://runtproapi.runt.gov.co/CYRConsultaVehiculoMS/captcha/valida-captcha-recaptcha",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "x-funcionalidad": "SHELL",
+      "referer": "",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "body": null
+  },
+  {
+    "method": "GET",
+    "url": "https://runtproapi.runt.gov.co/CYRConsultaVehiculoMS/captcha/libre-captcha/generar",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "x-funcionalidad": "SHELL",
+      "referer": "",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "body": null
+  },
+  {
+    "method": "POST",
+    "url": "https://runtproapi.runt.gov.co/CYRConsultaVehiculoMS/auth",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0",
+      "x-funcionalidad": "SHELL",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*",
+      "content-type": "application/json"
+    },
+    "body": "{\"procedencia\":\"NACIONAL\",\"tipoConsulta\":\"1\",\"placa\":\"IZW01E\",\"tipoDocumento\":\"C\",\"documento\":\"1014261743\",\"vin\":null,\"soat\":null,\"aseguradora\":\"\",\"rtm\":null,\"reCaptcha\":null,\"captcha\":\"G9oqK\",\"valueCaptchaEncripted\":\"\",\"idLibreCaptcha\":\"d97bb968-1c8a-410a-ae11-6d412c68c924\",\"verBannerSoat\":true,\"configuracion\":{\"tiempoInactividad\":\"900\",\"tiempoCuentaRegresiva\":\"10\"}}"
+  },
+  {
+    "method": "GET",
+    "url": "https://runtproapi.runt.gov.co/CYRConsultaVehiculoMS/responsabilidad-civil/habilitar",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "",
+      "sec-ch-ua": "\"Chromium\";v=\"148\", \"Google Chrome\";v=\"148\", \";Not A Brand\";v=\"99\"",
+      "auth-token": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJKV1RfQ09OU1VMVEFfQ0lVREFEQU5BIiwicHJvY2VkZW5jaWEiOiJOQUNJT05BTCIsInJldmlzaW9uVGVjbmljb01lY2FuaWNhSW5EVE8iOnsiZXN0YWRvRGVsVmVoaWN1bG8iOiJBQ1RJVk8iLCJjbGFzaWZpY2FjaW9uIjpudWxsLCJpZEF1dG9tb3RvciI6bnVsbCwiaWRDbGFzZSI6MTAsInByb2NlZGVuY2lhIjpudWxsLCJ0aXBvQ29uc3VsdGEiOjAsInJ0bSI6bnVsbCwicnRtTm9ybWFsZXMiOm51bGwsInBsYWNhIjpudWxsLCJkaWFzTWF0cmljdWxhZG8iOiIzNDMzIiwiaWRUaXBvU2VydmljaW8iOjF9LCJkb2N1bWVudG8iOiIxMDE0MjYxNzQzIiwicnRtIjpudWxsLCJhc2VndXJhZG9yYSI6IiIsInRpcG9Eb2N1bWVudG8iOiJDIiwiaWRBdXRvbW90b3IiOjIwNTY4NjQ5MCwic2l6ZSI6bnVsbCwidGlwb0NvbnN1bHRhIjoxLCJzb2F0IjpudWxsLCJ2aW4iOm51bGwsImlkTGlicmVDYXB0Y2hhIjoiZDk3YmI5NjgtMWM4YS00MTBhLWFlMTEtNmQ0MTJjNjhjOTI0IiwicGFnZSI6bnVsbCwiZGF0b3NUZWNuaWNvc0luRFRPIjp7ImNsYXNpZmljYWNpb24iOiJNT1RPIiwibnJvUmVnaXN0cm8iOm51bGwsImNhcGFjaWRhZENhcmdhIjpudWxsLCJwZXNvQnJ1dG9WZWhpY3VsYXIiOm51bGwsImlkQ2xhc2VWZWhpY3VsbyI6IjEwIiwibm9FamVzIjpudWxsLCJwYXNhamVyb3NUb3RhbCI6bnVsbCwicGFzYWplcm9zU2VudGFkb3MiOiIyIn0sImV4cCI6MTc3OTQ2ODkwNCwiaWF0IjoxNzc5NDY4MzA0LCJpZFJlZ2lzdHJvIjoyMDU2ODY0OTAsInBsYWNhIjoiSVpXMDFFIn0.NdUWGkItfD-xPnAzu5-Up9Y8i66u9x1Ztb08K2DyXXY",
+      "sec-ch-ua-mobile": "?0",
+      "x-funcionalidad": "SHELL",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+      "accept": "application/json, text/plain, */*"
+    },
+    "body": null
+  }
+]
