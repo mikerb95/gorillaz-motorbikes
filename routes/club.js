@@ -33,7 +33,7 @@ const {
   getAllEvents, getUpcomingEvents,
   registerEventAttendance, getUserEventRegistrations,
   getLeaderboard,
-  addUserScore,
+  addUserScore, getUserRank,
   getQuotationsByMotorcyclePlates,
 } = require('../db');
 
