@@ -25,32 +25,17 @@ const _multerMemory = multer({
   },
 }).array('images', 5);
 
-const PROXY_PREFIX = '/img-proxy?u=';
-
 async function uploadToBlob(buffer, originalName, mimetype) {
   const ext      = path.extname(originalName).toLowerCase();
   const filename = `products/${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
-  const blob     = await put(filename, buffer, { access: 'private', contentType: mimetype });
-  // Store as a proxy URL so the server generates signed URLs on demand
-  return PROXY_PREFIX + encodeURIComponent(blob.url);
-}
-
-function blobUrlFromProxy(proxyUrl) {
-  if (!proxyUrl || !proxyUrl.startsWith(PROXY_PREFIX)) return null;
-  return decodeURIComponent(proxyUrl.slice(PROXY_PREFIX.length));
+  const blob     = await put(filename, buffer, { access: 'public', contentType: mimetype });
+  return blob.url;
 }
 
 async function deleteFromBlob(url) {
   // Skip legacy local URLs (old products uploaded before this migration)
   if (!url || url.startsWith('/images/')) return;
-  const realUrl = blobUrlFromProxy(url) || url;
-  try { await del(realUrl); } catch { }
-}
-
-async function signBlobUrl(proxyUrl) {
-  const realUrl = blobUrlFromProxy(proxyUrl);
-  if (!realUrl) return null;
-  return getDownloadUrl(realUrl, { expiresIn: 3600 });
+  try { await del(url); } catch { }
 }
 
 // Drop-in middleware: parses multipart form, uploads files to Blob,
