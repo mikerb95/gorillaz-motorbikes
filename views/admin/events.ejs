@@ -328,6 +328,90 @@ function showMapWhenVisible(mapId, latInputId, lngInputId, locationInputId, init
   });
 }
 
+const _searchTimers = {};
+
+function searchLocation(prefix, value) {
+  const isCreate = prefix === 'create';
+  const evId = isCreate ? '' : prefix.replace('edit-', '');
+  const dropdownId = isCreate ? 'createDropdown' : `editDropdown-${evId}`;
+  const mapId = isCreate ? 'createMap' : `editMap-${evId}`;
+  const latInputId = isCreate ? 'createLat' : `editLat-${evId}`;
+  const lngInputId = isCreate ? 'createLng' : `editLng-${evId}`;
+  const locationInputId = isCreate ? 'createLocation' : `editLocation-${evId}`;
+
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) return;
+
+  const q = (value || '').trim();
+  clearTimeout(_searchTimers[prefix]);
+
+  if (q.length < 3) {
+    dropdown.innerHTML = '';
+    dropdown.classList.remove('open');
+    return;
+  }
+
+  _searchTimers[prefix] = setTimeout(async () => {
+    dropdown.innerHTML = '<li class="ev-search-msg">Buscando…</li>';
+    dropdown.classList.add('open');
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=co&accept-language=es`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+      const results = await res.json();
+
+      if (!results.length) {
+        dropdown.innerHTML = '<li class="ev-search-msg">Sin resultados.</li>';
+        return;
+      }
+
+      dropdown.innerHTML = '';
+      results.forEach(r => {
+        const li = document.createElement('li');
+        const label = r.display_name.split(',').slice(0, 3).join(', ').trim();
+        li.textContent = label;
+        li.title = r.display_name;
+        li.addEventListener('mousedown', e => {
+          e.preventDefault();
+          const lat = parseFloat(r.lat);
+          const lng = parseFloat(r.lon);
+          document.getElementById(locationInputId).value = label;
+          document.getElementById(latInputId).value = lat.toFixed(6);
+          document.getElementById(lngInputId).value = lng.toFixed(6);
+          dropdown.innerHTML = '';
+          dropdown.classList.remove('open');
+
+          if (maps[mapId]) {
+            maps[mapId].setView([lat, lng], 15);
+            if (markers[mapId]) {
+              markers[mapId].setLatLng([lat, lng]);
+            } else {
+              const m = L.marker([lat, lng], { draggable: true }).addTo(maps[mapId]);
+              markers[mapId] = m;
+              m.on('dragend', () => {
+                const p = m.getLatLng();
+                document.getElementById(latInputId).value = p.lat.toFixed(6);
+                document.getElementById(lngInputId).value = p.lng.toFixed(6);
+                reverseGeocode(p.lat, p.lng, locationInputId);
+              });
+            }
+          }
+        });
+        dropdown.appendChild(li);
+      });
+    } catch {
+      dropdown.innerHTML = '<li class="ev-search-msg">Error al buscar. Intenta de nuevo.</li>';
+    }
+  }, 350);
+}
+
+document.addEventListener('click', e => {
+  document.querySelectorAll('.ev-search-dropdown.open').forEach(d => {
+    if (!d.closest('.ev-search-wrap').contains(e.target)) {
+      d.classList.remove('open');
+    }
+  });
+});
+
 async function reverseGeocode(lat, lng, inputId) {
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`, { headers: { 'Accept-Language': 'es' } });
