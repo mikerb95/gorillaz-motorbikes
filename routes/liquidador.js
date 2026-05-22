@@ -94,7 +94,7 @@ router.get('/cotizacion/:id', async (req, res) => {
     });
   } catch (err) {
     console.error('GET /cotizacion/:id error:', err.message);
-    res.status(500).render('404');
+    res.status(500).render('500');
   }
 });
 
