@@ -54,4 +54,4 @@ const uploadProduct = (req, res, next) => {
   });
 };
 
-module.exports = { saveJSON, writeCatalog, uploadProduct, uploadToBlob, deleteFromBlob, signBlobUrl, blobUrlFromProxy };
+module.exports = { saveJSON, writeCatalog, uploadProduct, uploadToBlob, deleteFromBlob };
