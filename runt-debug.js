@@ -16,19 +16,19 @@ const RUNT_URL = 'https://www.runt.gov.co/consultaCiudadana/#/consulta/vehiculo'
   const page = await context.newPage();
   await page.goto(RUNT_URL, { waitUntil: 'networkidle', timeout: 30_000 });
 
-  // Espera 5 segundos para que cargue todo el JS
-  await page.waitForTimeout(5000);
+  console.log('👉 Llena el formulario, resuelve el captcha y espera los resultados.');
+  console.log('👉 Cuando veas los datos en pantalla, presiona ENTER aquí para capturar.\n');
 
-  // Captura screenshot
+  // Espera a que presiones ENTER en la terminal
+  await new Promise(resolve => process.stdin.once('data', resolve));
+
+  // Captura screenshot y HTML en el momento exacto que indicas
   await page.screenshot({ path: 'runt-snapshot.png', fullPage: true });
-
-  // Vuelca todo el HTML del formulario
   const html = await page.content();
   require('fs').writeFileSync('runt-snapshot.html', html);
 
-  console.log('✅ Screenshot guardado en runt-snapshot.png');
+  console.log('\n✅ Screenshot guardado en runt-snapshot.png');
   console.log('✅ HTML guardado en runt-snapshot.html');
-  console.log('\nBusca en runt-snapshot.html los select, input o labels del formulario.');
 
   await browser.close();
 })();
