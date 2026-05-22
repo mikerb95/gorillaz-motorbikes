@@ -20,11 +20,19 @@ function loadServices() {
   catch { return []; }
 }
 
+let catalogCache = null;
+
 function buildCatalog() {
-  return [
+  if (catalogCache) return catalogCache;
+  catalogCache = [
     ...loadServices(),
     ...products.map(p => ({ id: p.id, name: p.name, type: 'product', brand: p.brand || '' })),
   ];
+  return catalogCache;
+}
+
+function invalidateCatalogCache() {
+  catalogCache = null;
 }
 
 router.get('/liquidador', (req, res) => {
