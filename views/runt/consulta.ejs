@@ -1,0 +1,343 @@
+<%- include('../partials/head', { title: 'Consulta RUNT | Gorillaz Motorbikes', description: 'Consulta el vencimiento del SOAT y la Revisión Técnico-Mecánica de tu moto directamente desde el RUNT.', canonicalPath: '/runt' }) %>
+
+<style>
+.runt-page {
+  padding-top: calc(var(--header-offset, 70px) + 32px);
+  padding-bottom: 64px;
+  min-height: 100vh;
+  background: #fafafa;
+}
+.runt-card {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+.runt-card h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.runt-card p.sub {
+  color: #666;
+  margin-bottom: 28px;
+  font-size: .95rem;
+}
+.runt-field {
+  margin-bottom: 18px;
+}
+.runt-field label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+.runt-field input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color .2s;
+}
+.runt-field input:focus {
+  outline: none;
+  border-color: #e6332a;
+}
+.captcha-wrap {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+.captcha-img-box {
+  flex: 0 0 auto;
+  width: 160px;
+  height: 56px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+.captcha-img-box img { width: 100%; height: 100%; object-fit: cover; }
+.captcha-img-box .reload-hint {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 10px;
+  color: #999;
+}
+.captcha-img-box.loading { opacity: .5; }
+.captcha-input-wrap { flex: 1; }
+.captcha-input-wrap label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+.captcha-input-wrap input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  box-sizing: border-box;
+}
+.captcha-input-wrap input:focus { outline: none; border-color: #e6332a; }
+.btn-consultar {
+  width: 100%;
+  padding: 13px;
+  background: #e6332a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-consultar:hover { background: #c5281f; }
+.btn-consultar:disabled { background: #aaa; cursor: not-allowed; }
+
+/* Resultados */
+.runt-result {
+  margin-top: 28px;
+  display: none;
+}
+.runt-result.visible { display: block; }
+.result-card {
+  background: #fff;
+  border: 1.5px solid #eee;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.result-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+.result-label {
+  font-size: .8rem;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: .05em;
+}
+.result-date {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #222;
+  margin-top: 2px;
+}
+.result-date.vencido { color: #c0392b; }
+.result-date.por-vencer { color: #e67e22; }
+.result-date.vigente { color: #27ae60; }
+.result-date.sin-info { color: #999; font-size: 1rem; font-weight: 400; }
+.error-msg {
+  color: #c0392b;
+  background: #fdf0f0;
+  border: 1px solid #f5c6c6;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: .9rem;
+  margin-top: 16px;
+  display: none;
+}
+.error-msg.visible { display: block; }
+</style>
+
+<div class="runt-page">
+  <div class="runt-card">
+    <h1>Consulta RUNT</h1>
+    <p class="sub">Verifica el vencimiento del SOAT y la Revisión Técnico-Mecánica de tu moto.</p>
+
+    <form id="runtForm" autocomplete="off">
+      <div class="runt-field">
+        <label for="placa">Placa del vehículo</label>
+        <input id="placa" name="placa" type="text" placeholder="Ej: ABC123" maxlength="7" required>
+      </div>
+
+      <div class="runt-field">
+        <label for="documento">Cédula del propietario</label>
+        <input id="documento" name="documento" type="text" placeholder="Número de cédula" inputmode="numeric" required>
+      </div>
+
+      <div class="captcha-wrap">
+        <div class="captcha-img-box" id="captchaBox" title="Clic para recargar el captcha">
+          <span id="captchaPlaceholder" style="color:#aaa;font-size:.8rem;">Cargando...</span>
+          <img id="captchaImg" style="display:none;" alt="Captcha">
+          <span class="reload-hint">↺ recargar</span>
+        </div>
+        <div class="captcha-input-wrap">
+          <label for="captchaCode">Escribe los caracteres</label>
+          <input id="captchaCode" name="captchaCode" type="text" maxlength="8" placeholder="····" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-consultar" id="btnConsultar">Consultar</button>
+    </form>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="runt-result" id="resultado">
+      <div class="result-card">
+        <div class="result-icon">🛡️</div>
+        <div>
+          <div class="result-label">SOAT — Vence el</div>
+          <div class="result-date" id="soatFecha">—</div>
+        </div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🔧</div>
+        <div>
+          <div class="result-label">Rev. Técnico-Mecánica — Vence el</div>
+          <div class="result-date" id="rtmFecha">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let captchaId = null;
+
+  function diasHasta(isoDate) {
+    if (!isoDate) return null;
+    return Math.ceil((new Date(isoDate) - new Date()) / 86400000);
+  }
+
+  function formatearFecha(iso) {
+    if (!iso) return null;
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function estadoFecha(dias) {
+    if (dias === null) return 'sin-info';
+    if (dias < 0) return 'vencido';
+    if (dias <= 30) return 'por-vencer';
+    return 'vigente';
+  }
+
+  async function cargarCaptcha() {
+    const box = document.getElementById('captchaBox');
+    const img = document.getElementById('captchaImg');
+    const ph  = document.getElementById('captchaPlaceholder');
+    box.classList.add('loading');
+    captchaId = null;
+
+    try {
+      const res = await fetch('/runt/captcha');
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error);
+
+      captchaId = json.idLibreCaptcha;
+
+      if (json.imagen) {
+        const src = json.imagen.startsWith('data:') ? json.imagen : `data:image/png;base64,${json.imagen}`;
+        img.src = src;
+        img.style.display = 'block';
+        ph.style.display = 'none';
+      } else {
+        ph.textContent = '⚠ Sin imagen';
+      }
+    } catch (e) {
+      ph.textContent = '⚠ Error';
+      console.error(e);
+    } finally {
+      box.classList.remove('loading');
+    }
+  }
+
+  document.getElementById('captchaBox').addEventListener('click', () => {
+    document.getElementById('captchaCode').value = '';
+    cargarCaptcha();
+  });
+
+  document.getElementById('runtForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn     = document.getElementById('btnConsultar');
+    const errBox  = document.getElementById('errorMsg');
+    const resBox  = document.getElementById('resultado');
+    errBox.classList.remove('visible');
+    resBox.classList.remove('visible');
+    btn.disabled = true;
+    btn.textContent = 'Consultando...';
+
+    const placa     = document.getElementById('placa').value.trim().toUpperCase();
+    const documento = document.getElementById('documento').value.trim();
+    const captcha   = document.getElementById('captchaCode').value.trim().toUpperCase();
+
+    if (!captchaId) {
+      errBox.textContent = 'Genera el captcha primero (clic en la imagen).';
+      errBox.classList.add('visible');
+      btn.disabled = false;
+      btn.textContent = 'Consultar';
+      return;
+    }
+
+    try {
+      const res = await fetch('/runt/consulta', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ placa, documento, idLibreCaptcha: captchaId, captcha }),
+      });
+      const json = await res.json();
+
+      if (!json.ok) {
+        errBox.textContent = json.error || 'Error al consultar el RUNT. Intenta de nuevo.';
+        errBox.classList.add('visible');
+        cargarCaptcha();
+      } else {
+        const soat = json.data.soat_vencimiento;
+        const rtm  = json.data.tecno_vencimiento;
+
+        const soatEl = document.getElementById('soatFecha');
+        const rtmEl  = document.getElementById('rtmFecha');
+
+        if (soat) {
+          const dias = diasHasta(soat);
+          soatEl.textContent = `${formatearFecha(soat)} (${dias >= 0 ? `${dias} días` : 'VENCIDO'})`;
+          soatEl.className = `result-date ${estadoFecha(dias)}`;
+        } else {
+          soatEl.textContent = 'Sin registro en el RUNT';
+          soatEl.className = 'result-date sin-info';
+        }
+
+        if (rtm) {
+          const dias = diasHasta(rtm);
+          rtmEl.textContent = `${formatearFecha(rtm)} (${dias >= 0 ? `${dias} días` : 'VENCIDO'})`;
+          rtmEl.className = `result-date ${estadoFecha(dias)}`;
+        } else {
+          rtmEl.textContent = 'Sin registro en el RUNT';
+          rtmEl.className = 'result-date sin-info';
+        }
+
+        resBox.classList.add('visible');
+      }
+    } catch (err) {
+      errBox.textContent = 'Error de red. Verifica tu conexión e intenta de nuevo.';
+      errBox.classList.add('visible');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Consultar';
+    }
+  });
+
+  // Carga el captcha al abrir la página
+  cargarCaptcha();
+</script>
+
+<%- include('../partials/foot') %>
