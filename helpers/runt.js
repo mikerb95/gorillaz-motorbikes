@@ -40,7 +40,7 @@ async function consultarHistorialRunt(placa, documento) {
 
   try {
     browser = await chromium.launch({
-      headless: true,
+      headless: false, // cambiar a true en producción
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
