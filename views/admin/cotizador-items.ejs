@@ -253,6 +253,7 @@ const catalogProducts  = services.filter(s => s.type === 'product');
 <script>
 (function () {
   // ── Tabs ──────────────────────────────────────────────────────────
+  const TAB_IDS = ['servicios', 'repuestos', 'productos'];
   document.querySelectorAll('.liq-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.liq-tab').forEach(t => {
@@ -265,24 +266,20 @@ const catalogProducts  = services.filter(s => s.type === 'product');
       tab.style.borderBottomColor = 'var(--brand)';
       tab.style.color = 'var(--brand)';
       tab.style.fontWeight = '800';
-      document.getElementById('tab-servicios').style.display = tab.dataset.tab === 'servicios' ? '' : 'none';
-      document.getElementById('tab-productos').style.display  = tab.dataset.tab === 'productos'  ? '' : 'none';
+      TAB_IDS.forEach(id => {
+        document.getElementById('tab-' + id).style.display = tab.dataset.tab === id ? '' : 'none';
+      });
     });
   });
 
-  // ── Inline edit ───────────────────────────────────────────────────
+  // ── Inline edit — Servicios ───────────────────────────────────────
   document.querySelectorAll('.svc-edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.id;
-      toggleEdit(id, true);
-    });
+    btn.addEventListener('click', () => toggleSvc(btn.dataset.id, true));
   });
-
   document.querySelectorAll('.svc-cancel').forEach(btn => {
-    btn.addEventListener('click', () => toggleEdit(btn.dataset.id, false));
+    btn.addEventListener('click', () => toggleSvc(btn.dataset.id, false));
   });
-
-  function toggleEdit(id, editing) {
+  function toggleSvc(id, editing) {
     document.querySelectorAll('.svc-display-' + id).forEach(el => el.style.display = editing ? 'none' : '');
     document.querySelectorAll('.svc-edit-' + id).forEach(el => el.style.display = editing ? '' : 'none');
     document.querySelectorAll('.svc-actions-' + id).forEach(el => el.style.display = editing ? 'none' : '');
@@ -291,6 +288,30 @@ const catalogProducts  = services.filter(s => s.type === 'product');
       if (input) { input.focus(); input.select(); }
     }
   }
+
+  // ── Inline edit — Repuestos ───────────────────────────────────────
+  document.querySelectorAll('.prd-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => togglePrd(btn.dataset.id, true));
+  });
+  document.querySelectorAll('.prd-cancel').forEach(btn => {
+    btn.addEventListener('click', () => togglePrd(btn.dataset.id, false));
+  });
+  function togglePrd(id, editing) {
+    document.querySelectorAll('.prd-display-' + id).forEach(el => el.style.display = editing ? 'none' : '');
+    document.querySelectorAll('.prd-edit-' + id).forEach(el => el.style.display = editing ? '' : 'none');
+    document.querySelectorAll('.prd-actions-' + id).forEach(el => el.style.display = editing ? 'none' : '');
+    if (editing) {
+      const input = document.querySelector('.prd-edit-' + id + ' input[name=name]');
+      if (input) { input.focus(); input.select(); }
+    }
+  }
+
+  // ── Confirm on delete ─────────────────────────────────────────────
+  document.querySelectorAll('form[data-confirm]').forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!confirm(form.dataset.confirm)) e.preventDefault();
+    });
+  });
 })();
 </script>
 
