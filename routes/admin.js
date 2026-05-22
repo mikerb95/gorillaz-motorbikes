@@ -416,6 +416,7 @@ router.post('/cotizador-items/servicio/crear', requireAuth, requireAdmin, (req, 
   const id = 'svc-' + name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
   services.push({ id, name, type: 'service' });
   saveServicesCatalog(services);
+  invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=created');
 });
 
@@ -427,6 +428,7 @@ router.post('/cotizador-items/servicio/actualizar', requireAuth, requireAdmin, (
   const svc = services.find(s => s.id === id);
   if (svc) svc.name = trimmed;
   saveServicesCatalog(services);
+  invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=updated');
 });
 
@@ -434,6 +436,38 @@ router.post('/cotizador-items/servicio/eliminar', requireAuth, requireAdmin, (re
   const { id } = req.body;
   const services = loadServicesCatalog().filter(s => s.id !== id);
   saveServicesCatalog(services);
+  invalidateCatalogCache();
+  res.redirect('/admin/cotizador-items?flash=deleted');
+});
+
+router.post('/cotizador-items/producto/crear', requireAuth, requireAdmin, (req, res) => {
+  const name = (req.body.name || '').trim();
+  if (!name) return res.redirect('/admin/cotizador-items?flash=error-name');
+  const services = loadServicesCatalog();
+  const id = 'prd-' + name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
+  services.push({ id, name, type: 'product' });
+  saveServicesCatalog(services);
+  invalidateCatalogCache();
+  res.redirect('/admin/cotizador-items?flash=created');
+});
+
+router.post('/cotizador-items/producto/actualizar', requireAuth, requireAdmin, (req, res) => {
+  const { id, name } = req.body;
+  const trimmed = (name || '').trim();
+  if (!id || !trimmed) return res.redirect('/admin/cotizador-items?flash=error-name');
+  const services = loadServicesCatalog();
+  const item = services.find(s => s.id === id);
+  if (item) item.name = trimmed;
+  saveServicesCatalog(services);
+  invalidateCatalogCache();
+  res.redirect('/admin/cotizador-items?flash=updated');
+});
+
+router.post('/cotizador-items/producto/eliminar', requireAuth, requireAdmin, (req, res) => {
+  const { id } = req.body;
+  const services = loadServicesCatalog().filter(s => s.id !== id);
+  saveServicesCatalog(services);
+  invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=deleted');
 });
 
