@@ -199,11 +199,14 @@
                     </div>
                     <div class="crm-form-group crm-form-full">
                       <label>Lugar</label>
-                      <input name="location" id="editLocation-<%= ev.id %>" value="<%= ev.location || '' %>" placeholder="Haz clic en el mapa para seleccionar…" autocomplete="off" />
+                      <div class="ev-search-wrap" id="editSearchWrap-<%= ev.id %>">
+                        <input name="location" id="editLocation-<%= ev.id %>" value="<%= ev.location || '' %>" placeholder="Escribe una dirección o haz clic en el mapa…" autocomplete="off" oninput="searchLocation('edit-<%= ev.id %>', this.value)" onfocus="searchLocation('edit-<%= ev.id %>', this.value)" />
+                        <ul class="ev-search-dropdown" id="editDropdown-<%= ev.id %>"></ul>
+                      </div>
                       <div id="editMapContainer-<%= ev.id %>" class="ev-map-container">
                         <div id="editMap-<%= ev.id %>" class="ev-map" data-lat="<%= ev.lat || '' %>" data-lng="<%= ev.lng || '' %>"></div>
                       </div>
-                      <p class="ev-map-hint">Haz clic en el mapa para fijar la ubicación exacta.</p>
+                      <p class="ev-map-hint">Busca una dirección arriba o haz clic en el mapa para fijar la ubicación exacta.</p>
                     </div>
                   </div>
                   <div class="crm-form-actions">
