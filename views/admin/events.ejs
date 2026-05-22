@@ -11,7 +11,7 @@
 </div>
 
 <!-- Create form -->
-<div class="crm-card" id="newEventCard">
+<div class="crm-card hidden-card" id="newEventCard">
   <div class="crm-card-title">Crear evento</div>
   <form method="post" action="/admin/eventos/crear" id="createEventForm">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
