@@ -1,675 +1,8 @@
-<%- include('../partials/head', { title: 'Club — Panel' , user }) %>
-
-<style>
-/* ── Club Panel ── */
-
-main {
-  padding-top: 0 !important;
-}
-
-.club-panel {
-  background: #fff;
-  min-height: 100vh;
-  color: #111;
-  padding-top: var(--header-offset);
-  padding-bottom: 72px;
-}
-
-/* Hero greeting */
-.cp-hero {
-  background: linear-gradient(135deg, #fff5f0 0%, #fff 60%, #fff 100%);
-  border-bottom: 2px solid #F25C05;
-  padding: 36px 0 28px;
-  position: relative;
-  overflow: hidden;
-}
-.cp-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23F25C05' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  pointer-events: none;
-}
-.cp-hero .container {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.cp-hero-greeting {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.cp-hero-icon {
-  width: 56px;
-  height: 56px;
-  background: #F25C05;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  flex-shrink: 0;
-  box-shadow: 0 0 20px rgba(242,92,5,0.5);
-}
-.cp-hero h1 {
-  margin: 0;
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
-  font-weight: 900;
-  color: #111;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-.cp-hero-sub {
-  margin: 2px 0 0;
-  font-size: .85em;
-  color: #F25C05;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.cp-hero-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(0,0,0,0.03);
-  border: 1px solid rgba(242,92,5,0.3);
-  border-radius: 12px;
-  padding: 10px 16px;
-}
-.cp-hero-badge-icon { font-size: 2rem; }
-.cp-hero-badge-name {
-  font-weight: 900;
-  font-size: 1.05rem;
-  color: #111;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.cp-hero-badge-pts {
-  font-size: .82em;
-  color: #6b7280;
-  font-weight: 600;
-}
-
-/* Admin banner */
-.cp-admin-bar {
-  background: #f5f5f5;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 10px 0;
-}
-.cp-admin-bar .container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-/* Section headers */
-.cp-section {
-  padding: 32px 0 0;
-}
-.cp-section-title {
-  font-size: 1rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #F25C05;
-  margin: 0 0 20px;
-  padding-left: 14px;
-  border-left: 3px solid #F25C05;
-  position: relative;
-}
-
-/* Cards */
-.cp-card {
-  background: #f5f5f5;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 20px;
-  color: #111;
-}
-.cp-card h2 {
-  font-size: 1rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b7280;
-  margin: 0 0 16px;
-}
-.cp-card h3 {
-  font-size: .88rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #9ca3af;
-  margin: 14px 0 8px;
-}
-
-/* Grid layouts */
-.cp-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.cp-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-@media (max-width: 768px) {
-  .cp-grid-2 { grid-template-columns: 1fr; }
-  .cp-grid-3 { grid-template-columns: 1fr; }
-}
-@media (min-width: 769px) and (max-width: 1024px) {
-  .cp-grid-3 { grid-template-columns: 1fr 1fr; }
-}
-
-/* Score card */
-.cp-score-card {
-  background: linear-gradient(145deg, #f5f5f5 0%, #fff 100%);
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-}
-.cp-score-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--score-color, #F25C05);
-  box-shadow: 0 0 12px var(--score-color, #F25C05);
-}
-.cp-score-number {
-  font-size: 3.4rem;
-  font-weight: 900;
-  line-height: 1;
-  color: var(--score-color, #F25C05);
-  letter-spacing: -0.02em;
-}
-.cp-score-label {
-  font-size: .75rem;
-  font-weight: 700;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-left: 4px;
-}
-.cp-rank-badge {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: rgba(0,0,0,0.02);
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 10px;
-  padding: 10px 14px;
-  min-width: 80px;
-  text-align: center;
-}
-.cp-rank-icon { font-size: 2.2rem; line-height: 1; }
-.cp-rank-name {
-  font-size: .78rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* Progress bar */
-.cp-progress-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: .78em;
-  color: #9ca3af;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 700;
-}
-.cp-progress-track {
-  background: #e5e7eb;
-  border-radius: 99px;
-  height: 8px;
-  overflow: visible;
-}
-.cp-progress-fill {
-  height: 8px;
-  border-radius: 99px;
-  background: var(--score-color, #F25C05);
-  box-shadow: 0 0 8px var(--score-color, #F25C05);
-  transition: width .5s ease;
-  position: relative;
-}
-
-/* Membership card */
-.cp-membership-level {
-  display: inline-block;
-  background: rgba(242,92,5,0.12);
-  border: 1px solid rgba(242,92,5,0.3);
-  color: #F25C05;
-  font-weight: 900;
-  font-size: .9em;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 6px;
-  padding: 3px 10px;
-  margin-bottom: 14px;
-}
-.cp-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: .88em;
-}
-.cp-info-row:last-child { border-bottom: none; }
-.cp-info-key {
-  color: #9ca3af;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: .78em;
-}
-.cp-info-val {
-  color: #111;
-  font-weight: 700;
-}
-.cp-benefit-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.cp-benefit-list li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: .86em;
-  color: #374151;
-}
-.cp-benefit-list li::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #F25C05;
-  flex-shrink: 0;
-}
-
-/* Event cards */
-.cp-event-card {
-  background: #f5f5f5;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 18px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.cp-event-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: var(--ev-color, #F25C05);
-}
-.cp-event-type {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: .73em;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 3px 10px;
-  border-radius: 99px;
-}
-.cp-event-type.rodada {
-  background: rgba(8,145,178,0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(8,145,178,0.25);
-}
-.cp-event-type.evento {
-  background: rgba(124,58,237,0.15);
-  color: #a78bfa;
-  border: 1px solid rgba(124,58,237,0.25);
-}
-.cp-event-title {
-  font-size: 1rem;
-  font-weight: 900;
-  color: #111;
-  margin: 0;
-  line-height: 1.2;
-}
-.cp-event-meta {
-  font-size: .8em;
-  color: #9ca3af;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-.cp-event-desc {
-  font-size: .86em;
-  color: #6b7280;
-  margin: 0;
-  line-height: 1.5;
-}
-.cp-event-footer { margin-top: auto; }
-.cp-status-confirmed {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(22,163,74,0.12);
-  border: 1px solid rgba(22,163,74,0.3);
-  color: #4ade80;
-  font-size: .78em;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 99px;
-  padding: 4px 12px;
-}
-.cp-status-pending {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(234,179,8,0.1);
-  border: 1px solid rgba(234,179,8,0.25);
-  color: #fbbf24;
-  font-size: .78em;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 99px;
-  padding: 4px 12px;
-}
-
-/* Activity timeline */
-.cp-timeline {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.cp-timeline-item {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
-  position: relative;
-}
-.cp-timeline-item:last-child { border-bottom: none; }
-.cp-timeline-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #F25C05;
-  margin-top: 5px;
-  flex-shrink: 0;
-  box-shadow: 0 0 6px rgba(242,92,5,0.6);
-}
-.cp-timeline-dot.green {
-  background: #4ade80;
-  box-shadow: 0 0 6px rgba(74,222,128,0.5);
-}
-.cp-timeline-content { flex: 1; min-width: 0; }
-.cp-timeline-date {
-  font-size: .75em;
-  color: #9ca3af;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.cp-timeline-desc {
-  font-size: .9em;
-  color: #374151;
-  margin-top: 1px;
-}
-.cp-activity-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: .7em;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 99px;
-  padding: 2px 8px;
-  margin-left: 6px;
-}
-.cp-activity-chip.mtto {
-  background: rgba(251,191,36,0.12);
-  border: 1px solid rgba(251,191,36,0.25);
-  color: #fbbf24;
-}
-.cp-activity-chip.visita {
-  background: rgba(74,222,128,0.1);
-  border: 1px solid rgba(74,222,128,0.2);
-  color: #4ade80;
-}
-
-/* Points history */
-.cp-pts-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-.cp-pts-row:last-child { border-bottom: none; }
-.cp-pts-date {
-  font-size: .75em;
-  color: #9ca3af;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-.cp-pts-desc {
-  font-size: .85em;
-  color: #6b7280;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.cp-pts-value {
-  font-size: .95rem;
-  font-weight: 900;
-  color: #4ade80;
-  white-space: nowrap;
-}
-
-/* Reminders */
-.cp-reminder-item {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
-}
-.cp-reminder-item:last-child { margin-bottom: 0; }
-.cp-reminder-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.cp-plate-badge {
-  font-family: 'Courier New', monospace;
-  font-weight: 900;
-  font-size: 1.1rem;
-  letter-spacing: 0.12em;
-  color: #111;
-  background: #f5f5f5;
-  border: 2px solid #d1d5db;
-  border-radius: 6px;
-  padding: 3px 10px;
-}
-.cp-stat {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: .75em;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 99px;
-  padding: 4px 10px;
-}
-.cp-stat.ok { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); color: #4ade80; }
-.cp-stat.soon { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.2); color: #fbbf24; }
-.cp-stat.expired { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: #f87171; }
-.cp-stat.none { background: rgba(100,100,100,0.08); border: 1px solid #e5e7eb; color: #9ca3af; }
-
-/* Vehicle list */
-.cp-vehicle-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
-  flex-wrap: wrap;
-}
-.cp-vehicle-item:last-child { border-bottom: none; }
-.cp-vehicle-plate {
-  font-family: 'Courier New', monospace;
-  font-weight: 900;
-  font-size: 1.15rem;
-  letter-spacing: 0.15em;
-  color: #111;
-}
-.cp-vehicle-sub {
-  font-size: .75em;
-  color: #9ca3af;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.cp-vehicle-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* Quotation history */
-.cp-quote-item {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 16px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-.cp-quote-item:first-child { padding-top: 0; }
-.cp-quote-item:last-child { border-bottom: none; padding-bottom: 0; }
-.cp-quote-ref {
-  font-size: .85rem;
-  font-weight: 900;
-  color: #F25C05;
-}
-.cp-quote-total {
-  font-size: 1.05rem;
-  font-weight: 900;
-  color: #111;
-}
-
-/* Form inputs inside panel */
-.club-panel label {
-  color: #6b7280;
-  font-size: .78em;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.club-panel input,
-.club-panel select,
-.club-panel textarea {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  color: #111;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: .9em;
-  transition: border-color .2s;
-}
-.club-panel input:focus,
-.club-panel select:focus {
-  outline: none;
-  border-color: #F25C05;
-}
-.club-panel input::placeholder { color: #d1d5db; }
-.club-panel .btn {
-  background: #F25C05;
-  color: #fff;
-  border: none;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.club-panel .btn:hover {
-  background: #d94e04;
-  text-decoration: none;
-}
-.club-panel .btn-outline {
-  background: transparent;
-  border: 1px solid #e5e7eb;
-  color: #6b7280;
-}
-.club-panel .btn-outline:hover {
-  border-color: #F25C05;
-  color: #F25C05;
-  text-decoration: none;
-}
-
-/* Modal theme */
-.club-panel .modal-dialog {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  color: #111;
-}
-.club-panel .modal-header {
-  border-bottom: 1px solid #e5e7eb;
-}
-.club-panel .modal-title { color: #111; }
-.club-panel .modal-close { color: #9ca3af; }
-.club-panel .modal-close:hover { color: #111; }
-.club-panel .modal-actions { border-top: 1px solid #e5e7eb; }
-
-/* Empty states */
-.cp-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 32px 16px;
-  text-align: center;
-  color: #d1d5db;
-}
-.cp-empty-icon { font-size: 2.4rem; opacity: .5; }
-.cp-empty-text { font-size: .85em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
-</style>
+<%- include('../partials/head', { title: 'Mi panel — Gorillaz Motorbikes Club', user, noIndex: true }) %>
 
 <div class="club-panel">
 
-  <% if (user && user.role==='admin' ) { %>
+  <% if (user && user.role === 'admin') { %>
     <div class="cp-admin-bar">
       <div class="container">
         <span style="font-size:.82em;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Panel administrador</span>
@@ -682,14 +15,17 @@ main {
   <div class="cp-hero">
     <div class="container">
       <div class="cp-hero-greeting">
-        <div class="cp-hero-icon">🏍️</div>
+        <div class="cp-hero-avatar" aria-hidden="true"><%= (user.nickname || user.name).charAt(0).toUpperCase() %></div>
         <div>
           <h1>Bienvenido, <%= user.nickname ? user.nickname : user.name %></h1>
           <div class="cp-hero-sub">Gorillaz Motorbikes Club · Bogotá</div>
+          <% if (myRank) { %>
+            <div class="cp-hero-rank">Puesto <strong>#<%= myRank %></strong> en el club</div>
+          <% } %>
         </div>
       </div>
       <div class="cp-hero-badge">
-        <div class="cp-hero-badge-icon"><%= scoreLevel.icon %></div>
+        <div class="cp-hero-badge-icon" aria-hidden="true"><%= scoreLevel.icon %></div>
         <div>
           <div class="cp-hero-badge-name" style="color:<%= scoreLevel.color %>"><%= scoreLevel.name %></div>
           <div class="cp-hero-badge-pts"><%= user.score || 0 %> puntos</div>
@@ -697,6 +33,17 @@ main {
       </div>
     </div>
   </div>
+
+  <!-- ── Quick actions ── -->
+  <nav class="cp-actions-bar" aria-label="Acciones rápidas">
+    <div class="container">
+      <a class="cp-action-chip" href="/servicios/agendar"><span aria-hidden="true">🔧</span> Agendar servicio</a>
+      <a class="cp-action-chip" href="/eventos"><span aria-hidden="true">📅</span> Eventos</a>
+      <a class="cp-action-chip" href="/tienda"><span aria-hidden="true">🛒</span> Tienda</a>
+      <a class="cp-action-chip" href="/cursos"><span aria-hidden="true">🎓</span> Cursos</a>
+      <a class="cp-action-chip" href="#vehiculos"><span aria-hidden="true">🏍️</span> Mi moto</a>
+    </div>
+  </nav>
 
   <div class="container">
 
@@ -708,14 +55,14 @@ main {
         <div class="cp-score-card" style="--score-color:<%= scoreLevel.color %>">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px">
             <div>
-              <div style="font-size:.72em;font-weight:900;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Tu puntaje</div>
+              <p class="cp-card-label">Tu puntaje</p>
               <div style="display:flex;align-items:baseline;gap:4px">
                 <span class="cp-score-number"><%= user.score || 0 %></span>
                 <span class="cp-score-label">pts</span>
               </div>
             </div>
             <div class="cp-rank-badge">
-              <span class="cp-rank-icon"><%= scoreLevel.icon %></span>
+              <span class="cp-rank-icon" aria-hidden="true"><%= scoreLevel.icon %></span>
               <span class="cp-rank-name" style="color:<%= scoreLevel.color %>"><%= scoreLevel.name %></span>
             </div>
           </div>
@@ -741,24 +88,53 @@ main {
                 <span>Hacia <%= nextName %></span>
                 <span><%= sc - fromPts %> / <%= toPts - fromPts %></span>
               </div>
-              <div class="cp-progress-track">
+              <div class="cp-progress-track"
+                   role="progressbar"
+                   aria-valuenow="<%= pct %>"
+                   aria-valuemin="0"
+                   aria-valuemax="100"
+                   aria-label="Progreso hacia <%= nextName %>: <%= pct %>%">
                 <div class="cp-progress-fill" style="width:<%= pct %>%"></div>
               </div>
             </div>
           <% } else { %>
             <div style="font-size:.82em;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:4px">
-              ⚡ Nivel máximo — Leyenda del club
+              <span aria-hidden="true">⚡</span> Nivel máximo — Leyenda del club
             </div>
           <% } %>
 
-          <div style="margin-top:20px;padding-top:14px;border-top:1px solid #e5e7eb">
+          <!-- Levels roadmap -->
+          <%
+            const allLevels = [
+              { name:'Prospecto', icon:'🌱', min:0 },
+              { name:'Miembro',   icon:'✅', min:100 },
+              { name:'Rider',     icon:'🏍️', min:300 },
+              { name:'Gorilla',   icon:'🏆', min:700 },
+              { name:'Legend',    icon:'🦍', min:1500 }
+            ];
+            const currentLvlIdx = allLevels.reduce((acc, lv, i) => sc >= lv.min ? i : acc, 0);
+          %>
+          <div class="cp-levels-map" aria-label="Mapa de niveles del club">
+            <% allLevels.forEach((lv, i) => { %>
+              <div class="cp-level-step<%= i <= currentLvlIdx ? ' active' : '' %><%= i === currentLvlIdx ? ' current' : '' %>">
+                <span class="cp-level-icon" aria-hidden="true"><%= lv.icon %></span>
+                <span class="cp-level-name"><%= lv.name %></span>
+                <span class="cp-level-pts"><%= lv.min > 0 ? lv.min + ' pts' : 'Inicio' %></span>
+              </div>
+              <% if (i < allLevels.length - 1) { %>
+                <div class="cp-level-connector<%= i < currentLvlIdx ? ' filled' : '' %>" aria-hidden="true"></div>
+              <% } %>
+            <% }) %>
+          </div>
+
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">
             <a class="btn btn-sm btn-outline" href="/club/tabla">Ver tabla de posiciones →</a>
           </div>
         </div>
 
         <!-- Membresía -->
         <div class="cp-card">
-          <h2>Membresía</h2>
+          <p class="cp-card-label">Membresía</p>
           <div class="cp-membership-level"><%= user.membership.level %></div>
           <div class="cp-info-row">
             <span class="cp-info-key">Miembro desde</span>
@@ -768,12 +144,23 @@ main {
             <span class="cp-info-key">Vence</span>
             <span class="cp-info-val"><%= user.membership.expires || '—' %></span>
           </div>
-          <h3>Beneficios</h3>
-          <ul class="cp-benefit-list">
-            <% user.membership.benefits.forEach(b => { %>
-              <li><%= b %></li>
-            <% }) %>
-          </ul>
+          <h2 style="font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin:14px 0 8px">Beneficios</h2>
+          <% if (user.membership.benefits && user.membership.benefits.length > 0) { %>
+            <ul class="cp-benefit-list">
+              <% user.membership.benefits.forEach(b => { %>
+                <li><%= b %></li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <div style="margin-top:4px">
+              <p class="cp-motivation-text">Alcanza <strong>100 puntos</strong> para subir a <strong>Miembro</strong> y desbloquear:</p>
+              <ul class="cp-benefit-list cp-benefit-list--locked">
+                <li>Descuentos en servicios de taller</li>
+                <li>Acceso prioritario a rodadas</li>
+                <li>Insignia de miembro activo</li>
+              </ul>
+            </div>
+          <% } %>
         </div>
 
       </div>
@@ -793,7 +180,8 @@ main {
           <article class="cp-event-card" style="--ev-color:<%= isRodada ? '#38bdf8' : '#a78bfa' %>">
             <div>
               <span class="cp-event-type <%= isRodada ? 'rodada' : 'evento' %>">
-                <%= isRodada ? '🏍️ Rodada' : '🎉 Evento' %>
+                <span aria-hidden="true"><%= isRodada ? '🏍️' : '🎉' %></span>
+                <%= isRodada ? 'Rodada' : 'Evento' %>
                 <strong>+<%= pts %> pts</strong>
               </span>
             </div>
@@ -806,9 +194,9 @@ main {
             <% } %>
             <div class="cp-event-footer">
               <% if (regStatus === 'confirmed') { %>
-                <span class="cp-status-confirmed">✓ Confirmado</span>
+                <span class="cp-status-confirmed"><span aria-hidden="true">✓</span> Confirmado</span>
               <% } else if (regStatus === 'pending') { %>
-                <span class="cp-status-pending">⏳ Pendiente</span>
+                <span class="cp-status-pending"><span aria-hidden="true">⏳</span> Pendiente</span>
               <% } else { %>
                 <form method="post" action="/club/eventos/<%= ev.id %>/asistencia">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
@@ -831,21 +219,23 @@ main {
           <h2>Historial de actividades</h2>
           <% if (user.visits.length === 0) { %>
             <div class="cp-empty">
-              <div class="cp-empty-icon">🔩</div>
-              <div class="cp-empty-text">Sin actividades aún</div>
+              <div class="cp-empty-icon" aria-hidden="true">🔩</div>
+              <div class="cp-empty-text">Aún no hay actividades</div>
+              <p class="cp-empty-hint">Visita el taller y registra tu servicio para ganar <strong>+<%= SCORE_POINTS.visita %> puntos</strong></p>
+              <a class="btn btn-sm" href="/servicios/agendar">Agendar servicio</a>
             </div>
           <% } else { %>
             <ul class="cp-timeline">
               <% user.visits.forEach(v => { %>
                 <li class="cp-timeline-item">
-                  <div class="cp-timeline-dot <%= v.type === 'visita' ? 'green' : '' %>"></div>
+                  <div class="cp-timeline-dot <%= v.type === 'visita' ? 'green' : '' %>" aria-hidden="true"></div>
                   <div class="cp-timeline-content">
                     <div class="cp-timeline-date">
                       <%= v.date %>
                       <% if (v.type === 'mantenimiento') { %>
-                        <span class="cp-activity-chip mtto">🔩 Mtto</span>
+                        <span class="cp-activity-chip mtto"><span aria-hidden="true">🔩</span> Mtto</span>
                       <% } else { %>
-                        <span class="cp-activity-chip visita">🏪 Visita</span>
+                        <span class="cp-activity-chip visita"><span aria-hidden="true">🏪</span> Visita</span>
                       <% } %>
                     </div>
                     <div class="cp-timeline-desc"><%= v.service %></div>
@@ -856,7 +246,7 @@ main {
           <% } %>
 
           <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e7eb">
-            <div style="font-size:.75em;font-weight:900;color:#F25C05;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Registrar actividad</div>
+            <div style="font-size:.75em;font-weight:900;color:var(--brand, #F25C05);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Registrar actividad</div>
             <form class="stack" method="post" action="/club/visitas">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <label>
@@ -884,8 +274,14 @@ main {
           <h2>Historial de puntos</h2>
           <% if (!user.scoreHistory || user.scoreHistory.length === 0) { %>
             <div class="cp-empty">
-              <div class="cp-empty-icon">⚡</div>
-              <div class="cp-empty-text">Aún no tienes puntos<br>¡Comienza a participar!</div>
+              <div class="cp-empty-icon" aria-hidden="true">⚡</div>
+              <div class="cp-empty-text">Aún no tienes puntos</div>
+              <ul class="cp-how-to-earn">
+                <li><span aria-hidden="true">🏪</span> Visita al taller — <strong>+<%= SCORE_POINTS.visita %> pts</strong></li>
+                <li><span aria-hidden="true">🔩</span> Mantenimiento — <strong>+<%= SCORE_POINTS.mantenimiento %> pts</strong></li>
+                <li><span aria-hidden="true">🏍️</span> Rodada — <strong>+<%= SCORE_POINTS.rodada %> pts</strong></li>
+                <li><span aria-hidden="true">🎉</span> Evento — <strong>+<%= SCORE_POINTS.evento %> pts</strong></li>
+              </ul>
             </div>
           <% } else { %>
             <div>
@@ -914,13 +310,15 @@ main {
           <h2>SOAT y Tecnomecánica</h2>
           <% if (!reminders || reminders.length === 0) { %>
             <div class="cp-empty">
-              <div class="cp-empty-icon">🏍️</div>
+              <div class="cp-empty-icon" aria-hidden="true">🏍️</div>
               <div class="cp-empty-text">Sin vehículos registrados</div>
+              <p class="cp-empty-hint">Agrega tu moto para recibir alertas de SOAT y tecnomecánica</p>
+              <a class="btn btn-sm btn-outline" href="#vehiculos">Agregar moto</a>
             </div>
           <% } else { %>
             <% reminders.forEach(r => { %>
-              <% const soatState=(r.soat===null) ? 'none' : (r.soat < 0 ? 'expired' : (r.soat <=30 ? 'soon' : 'ok')); %>
-              <% const tecState=(r.tecno===null) ? 'none' : (r.tecno < 0 ? 'expired' : (r.tecno <=30 ? 'soon' : 'ok')); %>
+              <% const soatState = (r.soat === null) ? 'none' : (r.soat < 0 ? 'expired' : (r.soat <= 30 ? 'soon' : 'ok')); %>
+              <% const tecState  = (r.tecno === null) ? 'none' : (r.tecno < 0 ? 'expired' : (r.tecno <= 30 ? 'soon' : 'ok')); %>
               <div class="cp-reminder-item">
                 <div class="cp-reminder-header">
                   <span class="cp-plate-badge"><%= r.plate %></span>
@@ -928,10 +326,10 @@ main {
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
                   <span class="cp-stat <%= soatState %>">
-                    SOAT: <%= r.soat===null ? '—' : (r.soat < 0 ? ('vencido hace ' + Math.abs(r.soat) + 'd') : ('en ' + r.soat + 'd')) %>
+                    SOAT: <%= r.soat === null ? '—' : (r.soat < 0 ? ('vencido hace ' + Math.abs(r.soat) + 'd') : ('en ' + r.soat + 'd')) %>
                   </span>
                   <span class="cp-stat <%= tecState %>">
-                    Tecno: <%= r.tecno===null ? '—' : (r.tecno < 0 ? ('vencido hace ' + Math.abs(r.tecno) + 'd') : ('en ' + r.tecno + 'd')) %>
+                    Tecno: <%= r.tecno === null ? '—' : (r.tecno < 0 ? ('vencido hace ' + Math.abs(r.tecno) + 'd') : ('en ' + r.tecno + 'd')) %>
                   </span>
                 </div>
               </div>
@@ -947,10 +345,13 @@ main {
                     <div class="modal-body">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                       <input type="hidden" name="plate" value="<%= r.plate %>" />
-                      <div class="grid two">
-                        <label>Vence SOAT<input type="date" name="soatExpires" /></label>
-                        <label>Vence Tecno<input type="date" name="tecnoExpires" /></label>
-                      </div>
+                      <fieldset style="border:none;padding:0;margin:0">
+                        <legend class="sr-only">Fechas de vencimiento de <%= r.plate %></legend>
+                        <div class="grid two">
+                          <label>Vence SOAT<input type="date" name="soatExpires" /></label>
+                          <label>Vence Tecno<input type="date" name="tecnoExpires" /></label>
+                        </div>
+                      </fieldset>
                     </div>
                     <div class="modal-actions">
                       <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
@@ -975,7 +376,7 @@ main {
                     <div class="cp-vehicle-sub">QR de identificación</div>
                   </div>
                   <div class="cp-vehicle-actions">
-                    <a class="btn btn-xs btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png">⬇ QR</a>
+                    <a class="btn btn-xs btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png"><span aria-hidden="true">⬇</span> QR</a>
                     <button class="btn btn-xs btn-outline" type="button" data-modal-open="#qr-<%= v.plate %>">Ver QR</button>
                     <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Eliminar vehículo?" style="display:inline">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
@@ -993,7 +394,7 @@ main {
                       <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
                     </div>
                     <div class="modal-body" style="display:grid;justify-items:center;gap:10px">
-                      <img src="/club/vehiculos/<%= v.plate %>/qr.png" alt="Código QR de <%= v.plate %>" style="width:260px;height:260px;image-rendering:pixelated;border-radius:12px;padding:8px;background:#fff" />
+                      <img src="/club/vehiculos/<%= v.plate %>/qr.png" alt="Código QR de la moto con placa <%= v.plate %>" style="width:260px;height:260px;image-rendering:pixelated;border-radius:12px;padding:8px;background:#fff" loading="lazy" />
                       <p style="text-align:center;margin:0;font-size:.84em;color:#6b7280">Usa este código para identificar tu moto en el taller y rodadas.</p>
                     </div>
                     <div class="modal-actions">
@@ -1007,14 +408,17 @@ main {
           <% } %>
 
           <div style="padding-top:16px;border-top:1px solid #e5e7eb">
-            <div style="font-size:.75em;font-weight:900;color:#F25C05;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Agregar vehículo</div>
+            <div style="font-size:.75em;font-weight:900;color:var(--brand, #F25C05);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Agregar vehículo</div>
             <form class="stack" method="post" action="/club/vehiculos">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required /></label>
-              <div class="grid two" style="align-items:end">
-                <label>Vence SOAT<input type="date" name="soatExpires" style="min-width:0" /></label>
-                <label>Vence Tecno<input type="date" name="tecnoExpires" style="min-width:0" /></label>
-              </div>
+              <fieldset style="border:none;padding:0;margin:0">
+                <legend class="sr-only">Fechas de vencimiento de documentos</legend>
+                <div class="grid two" style="align-items:end">
+                  <label>Vence SOAT<input type="date" name="soatExpires" style="min-width:0" /></label>
+                  <label>Vence Tecno<input type="date" name="tecnoExpires" style="min-width:0" /></label>
+                </div>
+              </fieldset>
               <button class="btn" type="submit">Agregar</button>
             </form>
           </div>
@@ -1054,10 +458,7 @@ main {
             </div>
             <div style="text-align:right;flex-shrink:0">
               <div class="cp-quote-total" style="margin-bottom:10px">COP <%= q.total.toLocaleString('es-CO') %></div>
-              <a href="/cotizacion/<%= q.id %>" target="_blank" rel="noopener"
-                 style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#f5f5f5;border:1px solid #e5e7eb;color:#6b7280;border-radius:999px;font-size:.75em;font-weight:900;text-decoration:none;text-transform:uppercase;letter-spacing:.05em;transition:border-color .2s,color .2s"
-                 onmouseover="this.style.borderColor='#F25C05';this.style.color='#F25C05'"
-                 onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#6b7280'">
+              <a href="/cotizacion/<%= q.id %>" target="_blank" rel="noopener" class="cp-link">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 Ver detalle
               </a>
