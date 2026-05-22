@@ -48,7 +48,7 @@ const servicesData = [
     slug: 'alistamiento-tecnomecanica',
     title: 'Alistamiento Tecnomecánica',
     desc: 'Revisión integral y ajustes previos a la inspección para evitar sorpresas y rechazos.',
-    img: '/images/services/alistamiento.webp',
+    img: '/images/services/alisamiento.webp',
     details: 'Realizamos inspección de gases, frenos, luces, desgaste de llantas y nivel sonoro. Garantizamos que tu moto apruebe la revisión técnico mecánica reglamentaria al primer intento.'
   },
   {
