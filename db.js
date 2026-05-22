@@ -984,29 +984,37 @@ function rowToInvoice(row) {
 }
 
 async function createInvoice(data) {
-  const id  = data.id || uuidv4();
-  const now = new Date().toISOString();
-  const r   = await db.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM invoices');
-  const consecutive = Number(r.rows[0].next);
-  const label = fmtLabel('F-', consecutive, now);
+  const id       = data.id || uuidv4();
+  const now      = new Date().toISOString();
   const subtotal = data.subtotal || data.total || 0;
   const tax      = data.tax || 0;
   const total    = subtotal + tax;
-  await db.execute({
-    sql: `INSERT INTO invoices
-          (id, consecutive, label, service_order_id, quotation_id, items, subtotal, tax, total, payment_method, status, notes)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-    args: [
-      id, consecutive, label,
-      data.serviceOrderId,
-      data.quotationId || null,
-      JSON.stringify(data.items || []),
-      subtotal, tax, total,
-      data.paymentMethod || 'efectivo',
-      data.status || 'pendiente',
-      data.notes || null,
-    ],
-  });
+  let consecutive, label;
+  const tx = await db.transaction('write');
+  try {
+    const r = await tx.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM invoices');
+    consecutive = Number(r.rows[0].next);
+    label = fmtLabel('F-', consecutive, now);
+    await tx.execute({
+      sql: `INSERT INTO invoices
+            (id, consecutive, label, service_order_id, quotation_id, items, subtotal, tax, total, payment_method, status, notes)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        id, consecutive, label,
+        data.serviceOrderId,
+        data.quotationId || null,
+        JSON.stringify(data.items || []),
+        subtotal, tax, total,
+        data.paymentMethod || 'efectivo',
+        data.status || 'pendiente',
+        data.notes || null,
+      ],
+    });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
   return { id, consecutive, label };
 }
 
