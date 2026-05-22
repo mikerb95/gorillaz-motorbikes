@@ -25,17 +25,19 @@ const _multerMemory = multer({
   },
 }).array('images', 5);
 
+const BLOB_TOKEN = process.env.WEB_BLOB_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+
 async function uploadToBlob(buffer, originalName, mimetype) {
   const ext      = path.extname(originalName).toLowerCase();
   const filename = `products/${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
-  const blob     = await put(filename, buffer, { access: 'public', contentType: mimetype });
+  const blob     = await put(filename, buffer, { access: 'public', contentType: mimetype, token: BLOB_TOKEN });
   return blob.url;
 }
 
 async function deleteFromBlob(url) {
   // Skip legacy local URLs (old products uploaded before this migration)
   if (!url || url.startsWith('/images/')) return;
-  try { await del(url); } catch { }
+  try { await del(url, { token: BLOB_TOKEN }); } catch { }
 }
 
 // Drop-in middleware: parses multipart form, uploads files to Blob,

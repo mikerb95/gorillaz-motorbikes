@@ -1135,7 +1135,7 @@ module.exports = {
   db, initDb,
   getUserById, getUserByEmail, getUserByCedula, getUserByResetToken,
   getAllUsers, countUsers, createUser, updateUser, deleteUser,
-  addUserScore, getLeaderboard,
+  addUserScore, getLeaderboard, getUserRank,
   getAllAppointments, getAppointmentDates, countAppointments,
   createAppointment, updateAppointment, deleteAppointment,
   getAllEvents, countEvents, createEvent, getEventById, updateEvent, deleteEvent,
