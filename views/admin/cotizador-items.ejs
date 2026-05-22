@@ -2,12 +2,14 @@
 
 <%
 const flashMap = {
-  created:    { msg: 'Servicio añadido.',        color: '#ecfdf5', border: '#6ee7b7', text: '#065f46' },
-  updated:    { msg: 'Servicio actualizado.',     color: '#ecfdf5', border: '#6ee7b7', text: '#065f46' },
-  deleted:    { msg: 'Servicio eliminado.',       color: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
+  created:    { msg: 'Ítem añadido.',        color: '#ecfdf5', border: '#6ee7b7', text: '#065f46' },
+  updated:    { msg: 'Ítem actualizado.',     color: '#ecfdf5', border: '#6ee7b7', text: '#065f46' },
+  deleted:    { msg: 'Ítem eliminado.',       color: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
   'error-name': { msg: 'El nombre no puede estar vacío.', color: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
 };
 const alertInfo = flash ? flashMap[flash] : null;
+const catalogServices  = services.filter(s => s.type === 'service');
+const catalogProducts  = services.filter(s => s.type === 'product');
 %>
 
 <div class="crm-page-header">
