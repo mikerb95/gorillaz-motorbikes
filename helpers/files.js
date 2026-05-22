@@ -2,7 +2,7 @@
 const path   = require('path');
 const fs     = require('fs');
 const multer = require('multer');
-const { put, del } = require('@vercel/blob');
+const { put, del, getDownloadUrl } = require('@vercel/blob');
 
 const saveJSON = (file, data) => {
   try { fs.writeFileSync(path.join(__dirname, '..', 'data', file), JSON.stringify(data, null, 2), 'utf8'); } catch { }
