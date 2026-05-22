@@ -6126,3 +6126,111 @@ main.schedule-full {
 /* ── main padding reset for panel ── */
 .club-panel ~ * { padding-top: 0 !important; }
 main:has(.club-panel) { padding-top: 0 !important; }
+
+/* ── Club Panel: contrast & legibility overrides ── */
+
+/* Cards: more weight against white background */
+.cp-card,
+.cp-event-card {
+  border-color: #c9cdd4;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+.cp-score-card {
+  border-color: #c9cdd4;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* Action chips: darker border + text */
+.cp-action-chip {
+  border-color: #c9cdd4;
+  color: #111;
+  font-size: .9em;
+}
+
+/* Card labels (section headings inside cards) */
+.cp-card-label { font-size: .82em; color: #374151; }
+.cp-card h2    { color: #374151; }
+.cp-card h3    { color: #4b5563; }
+
+/* Section title */
+.cp-section-title { font-size: 1.05rem; }
+
+/* Hero */
+.cp-hero-sub   { font-size: .88em; }
+.cp-hero-rank  { font-size: .83em; color: #374151; }
+.cp-hero-badge-pts { font-size: .88em; color: #374151; }
+
+/* Score card */
+.cp-score-label { font-size: .85rem; color: #4b5563; }
+.cp-rank-name   { font-size: .84rem; }
+.cp-rank-badge  { border-color: #d1d5db; }
+
+/* Progress bar label */
+.cp-progress-label { font-size: .84em; color: #4b5563; }
+.cp-progress-track { background: #d1d5db; }
+
+/* Levels roadmap */
+.cp-level-name { font-size: .72em; color: #111; }
+.cp-level-pts  { font-size: .68em; color: #4b5563; }
+
+/* Membership */
+.cp-info-row   { font-size: .93em; }
+.cp-info-key   { font-size: .82em; color: #4b5563; }
+.cp-benefit-list li { font-size: .92em; color: #111; }
+.cp-motivation-text { font-size: .9em; color: #374151; }
+
+/* Event cards — darker chip colors for contrast on light bg */
+.cp-event-type        { font-size: .8em; }
+.cp-event-type.rodada { background: rgba(3,105,161,0.1); color: #0369a1; border-color: rgba(3,105,161,0.3); }
+.cp-event-type.evento { background: rgba(109,40,217,0.1); color: #6d28d9; border-color: rgba(109,40,217,0.25); }
+.cp-event-meta  { font-size: .88em; color: #4b5563; }
+.cp-event-desc  { font-size: .92em; color: #374151; }
+
+/* Status badges — dark enough to read on white */
+.cp-status-confirmed { background: rgba(21,128,61,0.1); border-color: rgba(21,128,61,0.3); color: #15803d; font-size: .84em; }
+.cp-status-pending   { background: rgba(180,83,9,0.1);  border-color: rgba(180,83,9,0.25); color: #b45309;  font-size: .84em; }
+
+/* Timeline */
+.cp-timeline-date { font-size: .82em; color: #4b5563; }
+.cp-timeline-desc { font-size: .93em; color: #111; }
+.cp-timeline-item { border-bottom-color: #e5e7eb; }
+.cp-timeline-dot.green { background: #16a34a; box-shadow: 0 0 6px rgba(22,163,74,0.5); }
+
+/* Activity chips — dark text */
+.cp-activity-chip      { font-size: .78em; }
+.cp-activity-chip.mtto  { background: rgba(180,83,9,0.1);   border-color: rgba(180,83,9,0.25);  color: #92400e; }
+.cp-activity-chip.visita{ background: rgba(22,163,74,0.1);   border-color: rgba(22,163,74,0.2);  color: #166534; }
+
+/* Points history */
+.cp-pts-row     { border-bottom-color: #e5e7eb; }
+.cp-pts-date    { font-size: .82em; color: #4b5563; }
+.cp-pts-desc    { font-size: .92em; color: #374151; }
+.cp-pts-value   { font-size: 1rem;  color: #16a34a; }
+
+/* How-to-earn (empty state) */
+.cp-how-to-earn li { font-size: .9em; color: #111; }
+
+/* Stats (SOAT/Tecno) */
+.cp-stat        { font-size: .82em; }
+.cp-stat.ok     { background: rgba(22,163,74,0.12);  border-color: rgba(22,163,74,0.3);  color: #15803d; }
+.cp-stat.soon   { background: rgba(180,83,9,0.1);    border-color: rgba(180,83,9,0.25);  color: #b45309; }
+.cp-stat.expired{ background: rgba(220,38,38,0.1);   border-color: rgba(220,38,38,0.25); color: #dc2626; }
+.cp-stat.none   { color: #4b5563; }
+
+/* Reminder items */
+.cp-reminder-item { border-color: #c9cdd4; }
+
+/* Vehicle sub-label */
+.cp-vehicle-sub { font-size: .82em; color: #4b5563; }
+
+/* Quotation */
+.cp-quote-ref   { font-size: .9rem; }
+.cp-quote-total { font-size: 1.1rem; }
+
+/* Empty states */
+.cp-empty-text { font-size: .95em; color: #374151; }
+.cp-empty-hint { font-size: .9em;  color: #374151; }
+
+/* cp-link */
+.cp-link { font-size: .82em; color: #374151; border-color: #c9cdd4; }
+.cp-link:hover { color: var(--brand); border-color: var(--brand); }
