@@ -1169,12 +1169,17 @@
 
     // Persistir el número asociado a la cotización
     if (savedQuoteId) {
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-      fetch('/api/liquidador/quotation/' + savedQuoteId + '/phone', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-        body: JSON.stringify({ clientPhone: digits, clientPhoneCountry: country }),
-      }).catch(() => {});  // fire-and-forget, no bloquea la apertura de WA
+      try {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const phoneRes = await fetch('/api/liquidador/quotation/' + savedQuoteId + '/phone', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+          body: JSON.stringify({ clientPhone: digits, clientPhoneCountry: country }),
+        });
+        if (!phoneRes.ok) throw new Error('HTTP ' + phoneRes.status);
+      } catch {
+        alert('No se pudo guardar el número en la cotización. Anótalo manualmente.');
+      }
     }
 
     const a = document.createElement('a');
