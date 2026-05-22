@@ -899,27 +899,35 @@ function rowToServiceOrder(row) {
 async function createServiceOrder(data) {
   const id  = data.id || uuidv4();
   const now = new Date().toISOString();
-  const r   = await db.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM service_orders');
-  const consecutive = Number(r.rows[0].next);
-  const label = fmtLabel('OS-', consecutive, now);
-  await db.execute({
-    sql: `INSERT INTO service_orders
-          (id, consecutive, label, quotation_id, items, total, motorcycle, client_phone, client_phone_country, mechanic, status, notes, estimated_date)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-    args: [
-      id, consecutive, label,
-      data.quotationId || null,
-      JSON.stringify(data.items || []),
-      data.total || 0,
-      data.motorcycle || null,
-      data.clientPhone || null,
-      data.clientPhoneCountry || '+57',
-      data.mechanic || null,
-      data.status || 'pendiente',
-      data.notes || null,
-      data.estimatedDate || null,
-    ],
-  });
+  let consecutive, label;
+  const tx = await db.transaction('write');
+  try {
+    const r = await tx.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM service_orders');
+    consecutive = Number(r.rows[0].next);
+    label = fmtLabel('OS-', consecutive, now);
+    await tx.execute({
+      sql: `INSERT INTO service_orders
+            (id, consecutive, label, quotation_id, items, total, motorcycle, client_phone, client_phone_country, mechanic, status, notes, estimated_date)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        id, consecutive, label,
+        data.quotationId || null,
+        JSON.stringify(data.items || []),
+        data.total || 0,
+        data.motorcycle || null,
+        data.clientPhone || null,
+        data.clientPhoneCountry || '+57',
+        data.mechanic || null,
+        data.status || 'pendiente',
+        data.notes || null,
+        data.estimatedDate || null,
+      ],
+    });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
   return { id, consecutive, label };
 }
 
