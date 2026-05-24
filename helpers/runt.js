@@ -50,10 +50,12 @@ function normalizarFecha(raw) {
  * También inicializa la sesión HTTP para capturar las cookies necesarias.
  */
 async function generarCaptcha() {
-  // Paso 1 — inicializar sesión (igual que hace Angular al arrancar)
-  const { cookies: sessionCookie } = await fetchJson(`${BASE}/configuracion-sesion`, {
-    headers: HEADERS_BASE,
-  });
+  // Paso 1 — inicializar sesión (captura cookies de sesión, falla suave si no responde)
+  let sessionCookie = '';
+  try {
+    const r = await fetchJson(`${BASE}/configuracion-sesion`, { headers: HEADERS_BASE });
+    sessionCookie = r.cookies;
+  } catch { /* continuar sin cookies de sesión */ }
 
   const headers1 = { ...HEADERS_BASE, ...(sessionCookie ? { cookie: sessionCookie } : {}) };
 
