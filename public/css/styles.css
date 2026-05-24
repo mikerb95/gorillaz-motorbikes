@@ -5983,9 +5983,8 @@ main.schedule-full {
 
 /* ── Quick actions bar ── */
 .cp-actions-bar {
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 12px 0;
+  background: transparent;
+  padding: 4px 0 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
