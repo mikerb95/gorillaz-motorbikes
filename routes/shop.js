@@ -210,9 +210,10 @@ router.get('/carrito', (req, res) => {
   const cart  = recalc(getCart(req));
   const items = Object.entries(cart.items).map(([id, qty]) => {
     const p = catalog.products.find(x => x.id === id);
+    if (!p) { delete cart.items[id]; return null; }
     const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
     return { ...p, qty, unitPrice: finalPrice, total: finalPrice * qty };
-  });
+  }).filter(Boolean);
   res.render('cart', { items, cart });
 });
 
@@ -221,9 +222,10 @@ router.get('/checkout', (req, res) => {
   if (cart.count === 0) return res.redirect('/tienda');
   const items = Object.entries(cart.items).map(([id, qty]) => {
     const p = catalog.products.find(x => x.id === id);
+    if (!p) { delete cart.items[id]; return null; }
     const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
     return { ...p, qty, unitPrice: finalPrice, total: finalPrice * qty };
-  });
+  }).filter(Boolean);
   res.render('checkout', { cart, items });
 });
 
