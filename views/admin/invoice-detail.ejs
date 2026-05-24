@@ -9,7 +9,6 @@ const STATUS_CLS   = { pendiente:'badge-warning', pagada:'badge-success', anulad
 <div class="crm-page-header" style="flex-wrap:wrap;gap:10px">
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <a class="btn btn-ghost btn-sm" href="/admin/facturas">← Facturas</a>
-    <h1 class="crm-page-title" style="margin:0">Factura <span style="color:var(--brand)"><%= invoice.label %></span></h1>
     <span class="badge <%= STATUS_CLS[invoice.status] %>"><%= invoice.status %></span>
   </div>
   <button class="btn btn-ghost btn-sm" id="btnPdf">Descargar PDF</button>
