@@ -77,22 +77,8 @@
                 <form method="post" action="/admin/usuarios/actualizar">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <input type="hidden" name="id" value="<%= u.id %>" />
-                  <div class="crm-form-grid" style="margin-bottom:12px">
-                    <div class="crm-form-group">
-                      <label>Nombre</label>
-                      <input name="name" value="<%= u.name %>" />
-                    </div>
-                    <div class="crm-form-group">
-                      <label>Nivel membresía</label>
-                      <input name="membershipLevel" value="<%= (u.membership && u.membership.level) || '' %>" placeholder="Básica / Premium…" />
-                    </div>
-                    <div class="crm-form-group">
-                      <label>Rol</label>
-                      <select name="role">
-                        <option value="user" <%= u.role !== 'admin' ? 'selected' : '' %>>Usuario</option>
-                        <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
-                      </select>
-                    </div>
+                  <div style="margin-bottom:12px">
+                    <%- include('../partials/profile-fields', { u: u, admin: true }) %>
                   </div>
                   <div class="crm-form-actions">
                     <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
