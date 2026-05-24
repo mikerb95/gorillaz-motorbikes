@@ -252,6 +252,36 @@
   </div>
   <script>setTimeout(() => { const t = document.getElementById('flashToast'); if (t) t.remove(); }, 4000);</script>
   <% } %>
+
+  <!-- Cart drawer -->
+  <div id="cartDrawer" class="cart-drawer" aria-hidden="true" role="dialog" aria-label="Producto añadido al carrito">
+    <div class="cart-drawer-inner">
+      <div class="cart-drawer-header">
+        <span class="cart-drawer-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 4h2l2.5 12h9l2-8H7.2"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>
+          Añadido al carrito
+        </span>
+        <button class="cart-drawer-close" id="cartDrawerClose" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="cart-drawer-product" id="cartDrawerProduct">
+        <img id="cartDrawerImg" src="" alt="" class="cart-drawer-img" width="64" height="64">
+        <div class="cart-drawer-info">
+          <span id="cartDrawerName" class="cart-drawer-name"></span>
+          <span id="cartDrawerPrice" class="cart-drawer-price"></span>
+        </div>
+      </div>
+      <div class="cart-drawer-footer">
+        <div class="cart-drawer-subtotal">
+          Carrito: <strong id="cartDrawerCount"></strong> artículo(s)
+        </div>
+        <a href="/carrito" class="btn btn-primary cart-drawer-cta">Ver carrito →</a>
+      </div>
+    </div>
+  </div>
+  <div id="cartDrawerOverlay" class="cart-drawer-overlay"></div>
+
   <main>
     <a class="whatsapp-fab" href="https://wa.me/573213204299" target="_blank" rel="noopener"
       aria-label="Contactar por WhatsApp">

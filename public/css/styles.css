@@ -3905,6 +3905,135 @@ main.schedule-full {
 }
 
 /* ========================================
+   CART DRAWER
+   ======================================== */
+.cart-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 299;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(360px, 92vw);
+  background: #fff;
+  z-index: 300;
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(.2,.8,.2,1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -6px 0 32px rgba(0,0,0,.12)
+}
+
+.cart-drawer[aria-hidden="false"] {
+  transform: translateX(0)
+}
+
+.cart-drawer[aria-hidden="false"] ~ .cart-drawer-overlay {
+  opacity: 1;
+  pointer-events: auto
+}
+
+.cart-drawer-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px
+}
+
+.cart-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e5e7eb
+}
+
+.cart-drawer-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 800;
+  font-size: .95rem
+}
+
+.cart-drawer-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--muted);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: background .15s
+}
+
+.cart-drawer-close:hover {
+  background: #f3f4f6
+}
+
+.cart-drawer-product {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex: 1
+}
+
+.cart-drawer-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #f3f4f6
+}
+
+.cart-drawer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px
+}
+
+.cart-drawer-name {
+  font-weight: 700;
+  font-size: .95rem;
+  line-height: 1.3
+}
+
+.cart-drawer-price {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--brand)
+}
+
+.cart-drawer-footer {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px
+}
+
+.cart-drawer-subtotal {
+  font-size: .9rem;
+  color: var(--muted)
+}
+
+.cart-drawer-cta {
+  width: 100%;
+  text-align: center
+}
+
+/* ========================================
    ADMIN TABLE
    ======================================== */
 .admin-table-wrap {

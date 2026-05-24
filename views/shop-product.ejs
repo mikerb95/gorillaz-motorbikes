@@ -94,9 +94,12 @@
                                             max="<%= typeof product.stock === 'number' ? product.stock : 99 %>" />
                                         <button type="button" class="pdp-qty-btn" onclick="changeQty(1)">+</button>
                                     </div>
-                                    <button type="button" class="btn btn-primary pdp-add-btn" id="pdpAddCart" <%=(typeof
-                                        product.stock==='number' && product.stock===0) ? 'disabled' : '' %>
-                                        data-id="<%= product.id %>">
+                                    <button type="button" class="btn btn-primary pdp-add-btn" id="pdpAddCart"
+                                        <%=(typeof product.stock==='number' && product.stock===0) ? 'disabled' : '' %>
+                                        data-id="<%= product.id %>"
+                                        data-name="<%= product.name %>"
+                                        data-image="<%= pdpGallery[0] %>"
+                                        data-price="$<%= (product.discount > 0 ? Math.round(product.price * (1 - product.discount / 100)) : product.price).toLocaleString('es-CO') %>">
                                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
                                                 stroke="currentColor" stroke-width="2">
                                                 <path d="M3 4h2l2.5 12h9l2-8H7.2" />
@@ -250,10 +253,17 @@
                 });
                 const data = await res.json();
                 if (data.ok) {
-                    // Update cart badge
                     document.querySelectorAll('.cart-badge').forEach(b => b.textContent = data.cartCount);
-                    // Show toast
-                    showToast(data.message || 'Añadido al carrito');
+                    if (typeof openCartDrawer === 'function') {
+                        openCartDrawer({
+                            name: this.dataset.name,
+                            image: this.dataset.image,
+                            price: this.dataset.price,
+                            count: data.cartCount,
+                        });
+                    } else {
+                        showToast(data.message || 'Añadido al carrito');
+                    }
                 } else {
                     showToast(data.message || 'Error', true);
                 }

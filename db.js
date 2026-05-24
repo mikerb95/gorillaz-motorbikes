@@ -208,6 +208,7 @@ async function initDb() {
     `ALTER TABLE quotations ADD COLUMN motorcycle TEXT`,
     `ALTER TABLE quotations ADD COLUMN notes TEXT`,
     `ALTER TABLE service_orders ADD COLUMN trabajo_completo_at TEXT`,
+    `ALTER TABLE orders ADD COLUMN stock_decremented INTEGER NOT NULL DEFAULT 0`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
@@ -628,6 +629,14 @@ async function updateOrderStatus(id, status, boldPaymentId) {
     sql: 'UPDATE orders SET status = ?, bold_payment_id = ? WHERE id = ?',
     args: [status, boldPaymentId || null, id],
   });
+}
+
+async function claimStockDecrement(id) {
+  const r = await db.execute({
+    sql: 'UPDATE orders SET stock_decremented = 1 WHERE id = ? AND stock_decremented = 0',
+    args: [id],
+  });
+  return (r.rowsAffected ?? r.changes ?? 0) > 0;
 }
 
 async function getOrderById(id) {
@@ -1149,7 +1158,7 @@ module.exports = {
   createNewsletterCampaign, getAllNewsletterCampaigns,
   createEnrollment,
   createJobApplication,
-  createOrder, updateOrderStatus, getOrderById, getAllOrders, getOrdersByUser, countOrders,
+  createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersByUser, countOrders,
   createQuotation, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,

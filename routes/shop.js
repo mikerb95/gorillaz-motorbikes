@@ -6,7 +6,8 @@ const { rateLimit } = require('express-rate-limit');
 const catalog  = require('../data/catalog');
 const { getCart, recalc, saveCart } = require('../helpers/cart');
 const { BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL, resendClient } = require('../config');
-const { createOrder, updateOrderStatus, getOrderById } = require('../db');
+const { createOrder, updateOrderStatus, claimStockDecrement, getOrderById } = require('../db');
+const { decrementStock } = require('../helpers/stock');
 
 const cartLimiter = rateLimit({
   windowMs: 60_000,
@@ -348,8 +349,9 @@ router.get('/payment/return', (req, res) => {
     }
     if (pending?.orderId) {
       updateOrderStatus(pending.orderId, 'paid', boldId)
-        .then(() => getOrderById(pending.orderId))
-        .then(order => order && sendOrderConfirmationEmails(order))
+        .then(() => claimStockDecrement(pending.orderId))
+        .then(claimed => { if (claimed) return getOrderById(pending.orderId); })
+        .then(order => order && (decrementStock(order.items), sendOrderConfirmationEmails(order)))
         .catch(e => console.error('[Orders] post-payment error:', e.message));
     }
     const empty = { items: {}, count: 0, subtotal: 0 };
@@ -398,8 +400,12 @@ router.post('/payment/webhook', async (req, res) => {
     await updateOrderStatus(order_id, newStatus, order_id);
 
     if (newStatus === 'paid') {
+      const claimed = await claimStockDecrement(order_id);
       const order = await getOrderById(order_id);
-      if (order) sendOrderConfirmationEmails(order).catch(e => console.error('[Bold Webhook] email error:', e.message));
+      if (order) {
+        if (claimed) decrementStock(order.items);
+        sendOrderConfirmationEmails(order).catch(e => console.error('[Bold Webhook] email error:', e.message));
+      }
     }
 
     console.log(`[Bold Webhook] Orden ${order_id} → ${newStatus}`);

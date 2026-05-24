@@ -820,6 +820,34 @@ function showToast(msg, isError) {
   toast._timer = setTimeout(() => { toast.classList.remove('toast-show'); }, 3000);
 }
 
+// ── Cart drawer (global) ──
+function openCartDrawer({ name, image, price, count }) {
+  const drawer = document.getElementById('cartDrawer');
+  const overlay = document.getElementById('cartDrawerOverlay');
+  if (!drawer) return;
+  document.getElementById('cartDrawerImg').src = image || '/images/download.png';
+  document.getElementById('cartDrawerImg').alt = name || '';
+  document.getElementById('cartDrawerName').textContent = name || '';
+  document.getElementById('cartDrawerPrice').textContent = price || '';
+  document.getElementById('cartDrawerCount').textContent = count || '';
+  drawer.setAttribute('aria-hidden', 'false');
+  if (overlay) { overlay.style.opacity = '1'; overlay.style.pointerEvents = 'auto'; }
+}
+
+function closeCartDrawer() {
+  const drawer = document.getElementById('cartDrawer');
+  const overlay = document.getElementById('cartDrawerOverlay');
+  if (!drawer) return;
+  drawer.setAttribute('aria-hidden', 'true');
+  if (overlay) { overlay.style.opacity = ''; overlay.style.pointerEvents = ''; }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('cartDrawerClose')?.addEventListener('click', closeCartDrawer);
+  document.getElementById('cartDrawerOverlay')?.addEventListener('click', closeCartDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCartDrawer(); });
+});
+
 // ── AJAX Add-to-cart for shop listing buttons ──
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.btn-add-cart').forEach(btn => {
@@ -841,7 +869,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (data.ok) {
           document.querySelectorAll('.cart-badge').forEach(b => b.textContent = data.cartCount);
-          showToast(data.message || 'Añadido al carrito');
+          openCartDrawer({
+            name: this.dataset.name,
+            image: this.dataset.image,
+            price: this.dataset.price,
+            count: data.cartCount,
+          });
         } else {
           showToast(data.message || 'Error al añadir', true);
         }

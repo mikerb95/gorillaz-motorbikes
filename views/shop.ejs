@@ -166,7 +166,12 @@
                       <span class="price">$<%= p.price.toLocaleString('es-CO') %></span>
                     <% } %>
                   </div>
-                  <button type="button" class="btn btn-add-cart card-add-btn" data-id="<%= p.id %>" <%= (typeof p.stock === 'number' && p.stock === 0) ? 'disabled' : '' %>>
+                  <button type="button" class="btn btn-add-cart card-add-btn"
+                    data-id="<%= p.id %>"
+                    data-name="<%= p.name %>"
+                    data-image="<%= (p.gallery && p.gallery[0]) || p.image || '/images/download.png' %>"
+                    data-price="$<%= (p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price).toLocaleString('es-CO') %>"
+                    <%= (typeof p.stock === 'number' && p.stock === 0) ? 'disabled' : '' %>>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                       <path d="M3 4h2l2.5 12h9l2-8H7.2"/>
                       <circle cx="9" cy="20" r="1.5"/>
