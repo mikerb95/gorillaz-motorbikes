@@ -162,20 +162,42 @@ router.post('/eventos/eliminar', requireAuth, requireAdmin, async (req, res) => 
 
 router.get('/usuarios', requireAuth, requireAdmin, async (req, res) => {
   const users = await getAllUsers();
-  res.render('admin/users', { users });
+  res.render('admin/users', { users, error: null });
 });
 
 router.post('/usuarios/actualizar', requireAuth, requireAdmin, async (req, res) => {
-  const { id, name, membershipLevel, role } = req.body;
+  const {
+    id, name, nickname, cedula, phone, city, birthdate, bloodType,
+    emergencyName, emergencyPhone, clubNotifications, membershipLevel, role,
+  } = req.body;
   const u = await getUserById(id);
-  if (u) {
-    const fields = {};
-    if (name) fields.name = name;
-    if (membershipLevel) fields.membership = { ...u.membership, level: membershipLevel };
-    if (role && ['user', 'admin'].includes(role)) fields.role = role;
-    await updateUser(id, fields);
-    await logAdminAction(res.locals.user.id, res.locals.user.name, 'actualizar_usuario', 'user', id, { name, membershipLevel, role });
+  if (!u) return res.redirect('/admin/usuarios');
+
+  const cedulaTrim = (cedula || '').trim();
+  if (cedulaTrim && cedulaTrim !== (u.cedula || '')) {
+    const existing = await getUserByCedula(cedulaTrim);
+    if (existing && existing.id !== id) {
+      const users = await getAllUsers();
+      return res.status(400).render('admin/users', { users, error: `La cédula ${cedulaTrim} ya está en uso por otro usuario.` });
+    }
   }
+
+  const fields = {
+    nickname: (nickname || '').trim() || null,
+    cedula: cedulaTrim || null,
+    phone: (phone || '').trim() || null,
+    city: (city || '').trim() || null,
+    birthdate: birthdate || null,
+    bloodType: bloodType || null,
+    emergencyName: (emergencyName || '').trim() || null,
+    emergencyPhone: (emergencyPhone || '').trim() || null,
+    clubNotifications: clubNotifications === 'true',
+  };
+  if (name) fields.name = name.trim();
+  if (membershipLevel) fields.membership = { ...u.membership, level: membershipLevel };
+  if (role && ['user', 'admin'].includes(role)) fields.role = role;
+  await updateUser(id, fields);
+  await logAdminAction(res.locals.user.id, res.locals.user.name, 'actualizar_usuario', 'user', id, { name, membershipLevel, role });
   res.redirect('/admin/usuarios');
 });
 
@@ -708,6 +730,10 @@ router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
   const validityDays = Math.max(1, parseInt(req.body.validityDays, 10) || 30);
   savePdfConfig({
     companyName:  (req.body.companyName  || '').trim() || 'GORILLAZ MOTORBIKES',
+    nit:          (req.body.nit          || '').trim(),
+    phone:        (req.body.phone        || '').trim(),
+    email:        (req.body.email        || '').trim(),
+    address:      (req.body.address      || '').trim(),
     website:      (req.body.website      || '').trim(),
     city:         (req.body.city         || '').trim(),
     headerColor:  /^#[0-9a-fA-F]{6}$/.test(req.body.headerColor) ? req.body.headerColor : '#F25C05',
