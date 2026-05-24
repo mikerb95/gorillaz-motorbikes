@@ -7,10 +7,15 @@
       Cotización <span style="color:var(--brand)">#<%= quotation.label %></span>
     </h1>
   </div>
-  <form method="post" action="/admin/cotizaciones/<%= quotation.id %>/eliminar" data-confirm="¿Eliminar cotización #<%= quotation.label %>? Esta acción no se puede deshacer.">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-    <button class="btn btn-danger btn-sm" type="submit">Eliminar cotización</button>
-  </form>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <button id="btnDownloadPdf" class="btn btn-ghost btn-sm">
+      ⬇ Descargar PDF
+    </button>
+    <form method="post" action="/admin/cotizaciones/<%= quotation.id %>/eliminar" data-confirm="¿Eliminar cotización #<%= quotation.label %>? Esta acción no se puede deshacer.">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <button class="btn btn-danger btn-sm" type="submit">Eliminar cotización</button>
+    </form>
+  </div>
 </div>
 
 <div style="display:grid;gap:16px;grid-template-columns:1fr;max-width:860px">
