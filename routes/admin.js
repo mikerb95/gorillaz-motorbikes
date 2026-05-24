@@ -460,26 +460,13 @@ router.post('/clases/diapositiva/eliminar', requireAuth, requireAdmin, (req, res
 });
 
 router.post('/clases/diapositiva/actualizar', requireAuth, requireAdmin, (req, res) => {
-  const { courseKey, topicKey, index, type, heading, content, items } = req.body;
+  const { courseKey, topicKey, index, type, heading, content, items, img } = req.body;
   const idx = parseInt(index, 10);
   const course = classesData[courseKey];
   if (!course || !course.topics || !course.topics[topicKey] || isNaN(idx)) return res.redirect('/admin/clases?flash=error');
   const slides = course.topics[topicKey].slides || [];
   if (idx < 0 || idx >= slides.length) return res.redirect('/admin/clases?flash=error');
-  const slide = {};
-  if (type === 'h1') {
-    slide.h1 = (heading || '').trim();
-    if ((content || '').trim()) slide.p = content.trim();
-  } else if (type === 'h2') {
-    slide.h2 = (heading || '').trim();
-    if ((content || '').trim()) slide.p = content.trim();
-  } else if (type === 'ul') {
-    slide.h2 = (heading || '').trim();
-    slide.ul = (items || '').split('\n').map(s => s.trim()).filter(Boolean);
-  } else {
-    slide.p = (content || '').trim();
-  }
-  slides[idx] = slide;
+  slides[idx] = buildSlide(type, heading, content, items, img);
   saveJSON('classes.json', classesData);
   res.redirect('/admin/clases');
 });
