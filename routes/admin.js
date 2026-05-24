@@ -12,7 +12,7 @@ const { availability }  = require('../helpers/appointments');
 const { SCORE_POINTS }  = require('../helpers/score');
 const {
   countUsers, countEvents, countAppointments,
-  getAllUsers, getUserById, updateUser, deleteUser,
+  getAllUsers, getUserById, getUserByCedula, updateUser, deleteUser,
   getAllEvents, createEvent, getEventById, updateEvent, deleteEvent,
   getEventAttendances, getAttendanceById, confirmEventAttendance, cancelEventAttendances,
   logAdminAction, getAdminAuditLog,
