@@ -14,7 +14,6 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
 <div class="crm-page-header" style="flex-wrap:wrap;gap:10px">
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <a class="btn btn-ghost btn-sm" href="/admin/ordenes-servicio">← Órdenes</a>
-    <h1 class="crm-page-title" style="margin:0">Orden <span style="color:var(--brand)"><%= order.label %></span></h1>
     <span class="badge <%= STATUS_CLS[order.status] || 'badge-warning' %>" style="font-size:.85rem"><%= (STATUS_OPTS.find(s => s.v === order.status) || { l: order.status }).l %></span>
   </div>
   <% if (order.quotationId) { %>
