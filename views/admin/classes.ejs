@@ -1,28 +1,252 @@
 <%- include('../partials/admin-head', { title: 'Clases / Presentaciones' }) %>
 
 <div class="crm-page-header">
-
+  <button class="btn btn-primary btn-sm" type="button"
+    onclick="document.getElementById('newCourseCard').classList.toggle('hidden-card')">
+    + Nuevo curso
+  </button>
 </div>
 
-<p style="color:#71717a;font-size:.85rem;margin:0 0 18px">Selecciona un curso y un tema para iniciar la presentación de clases.</p>
+<% if (flash === 'error') { %>
+  <div class="crm-alert crm-alert-danger" style="margin-bottom:14px">Error al guardar. Verifica los datos.</div>
+<% } %>
+
+<!-- Crear curso -->
+<div class="crm-card hidden-card" id="newCourseCard" style="margin-bottom:14px">
+  <div class="crm-card-title">Nuevo curso</div>
+  <form method="post" action="/admin/clases/curso/crear">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="crm-form-grid">
+      <div class="crm-form-group">
+        <label>Título del curso <span class="required">*</span></label>
+        <input name="title" required placeholder="Ej. Mecánica avanzada" />
+      </div>
+    </div>
+    <div class="crm-form-actions">
+      <button class="btn btn-primary btn-sm" type="submit">Crear curso</button>
+      <button class="btn btn-ghost btn-sm" type="button"
+        onclick="document.getElementById('newCourseCard').classList.add('hidden-card')">Cancelar</button>
+    </div>
+  </form>
+</div>
+
+<% if (!Object.keys(classesData).length) { %>
+  <div class="crm-card" style="text-align:center;color:#71717a;padding:32px">No hay cursos de clases. Crea uno para comenzar.</div>
+<% } %>
 
 <% Object.entries(classesData).forEach(([courseKey, course]) => { %>
-  <div class="crm-card" style="margin-bottom:14px">
-    <div class="crm-card-title"><%= course.title %></div>
-    <% const topics = Object.entries(course.topics || {}); %>
-    <% if (!topics.length) { %>
-      <p style="color:#71717a;font-size:.85rem;margin:0">Sin temas disponibles.</p>
-    <% } else { %>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <% topics.forEach(([topicKey, topic]) => { %>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fafafa;border:1px solid #e4e4e7;border-radius:8px">
-            <strong style="font-size:.85rem"><%= topic.title %></strong>
-            <a class="btn btn-sm btn-primary" href="/clases/<%= courseKey %>/<%= topicKey %>">Iniciar presentación</a>
-          </div>
-        <% }) %>
-      </div>
-    <% } %>
+<div class="crm-card" style="margin-bottom:18px">
+
+  <!-- Cabecera del curso -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div class="crm-card-title" style="margin:0"><%= course.title %></div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-ghost" type="button"
+        onclick="toggleEl('edit-course-<%= courseKey %>')" title="Renombrar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <form method="post" action="/admin/clases/curso/eliminar"
+        data-confirm="¿Eliminar el curso «<%= course.title %>» y todos sus temas?">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <input type="hidden" name="key" value="<%= courseKey %>" />
+        <button class="btn btn-sm btn-danger" type="submit" title="Eliminar curso">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </button>
+      </form>
+    </div>
   </div>
+
+  <!-- Renombrar curso -->
+  <div class="crm-inline-edit" id="edit-course-<%= courseKey %>" style="margin-bottom:12px">
+    <form method="post" action="/admin/clases/curso/actualizar">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="key" value="<%= courseKey %>" />
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <div class="crm-form-group" style="flex:1;margin:0">
+          <label>Título</label>
+          <input name="title" value="<%= course.title %>" required />
+        </div>
+        <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+        <button class="btn btn-ghost btn-sm" type="button"
+          onclick="toggleEl('edit-course-<%= courseKey %>')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Temas del curso -->
+  <% const topics = Object.entries(course.topics || {}); %>
+
+  <% if (!topics.length) { %>
+    <p style="color:#71717a;font-size:.85rem;margin:0 0 12px">Sin temas. Agrega el primero.</p>
+  <% } else { %>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <% topics.forEach(([topicKey, topic]) => { %>
+        <div style="border:1px solid #e4e4e7;border-radius:8px;overflow:hidden">
+
+          <!-- Cabecera del tema -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fafafa">
+            <strong style="font-size:.85rem"><%= topic.title %></strong>
+            <div style="display:flex;gap:6px;align-items:center">
+              <a class="btn btn-sm btn-primary"
+                href="/clases/<%= courseKey %>/<%= topicKey %>">Presentar</a>
+              <button class="btn btn-sm btn-ghost" type="button"
+                onclick="toggleEl('edit-topic-<%= courseKey %>-<%= topicKey %>')" title="Renombrar">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="btn btn-sm btn-ghost" type="button"
+                onclick="toggleEl('slides-<%= courseKey %>-<%= topicKey %>')" title="Ver diapositivas">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <span style="font-size:.75rem;margin-left:3px"><%= (topic.slides || []).length %></span>
+              </button>
+              <form method="post" action="/admin/clases/tema/eliminar"
+                data-confirm="¿Eliminar el tema «<%= topic.title %>»?">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                <button class="btn btn-sm btn-danger" type="submit" title="Eliminar tema">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Renombrar tema -->
+          <div class="crm-inline-edit" id="edit-topic-<%= courseKey %>-<%= topicKey %>">
+            <form method="post" action="/admin/clases/tema/actualizar" style="padding:10px 12px">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+              <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+              <div style="display:flex;gap:8px;align-items:flex-end">
+                <div class="crm-form-group" style="flex:1;margin:0">
+                  <input name="title" value="<%= topic.title %>" required />
+                </div>
+                <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+                <button class="btn btn-ghost btn-sm" type="button"
+                  onclick="toggleEl('edit-topic-<%= courseKey %>-<%= topicKey %>')">Cancelar</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Diapositivas -->
+          <div class="crm-inline-edit" id="slides-<%= courseKey %>-<%= topicKey %>">
+            <div style="padding:10px 12px;border-top:1px solid #e4e4e7">
+
+              <% const slides = topic.slides || []; %>
+              <% if (!slides.length) { %>
+                <p style="font-size:.8rem;color:#71717a;margin:0 0 10px">Sin diapositivas aún.</p>
+              <% } else { %>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+                  <% slides.forEach((slide, idx) => { %>
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:8px 10px;background:#f4f4f5;border-radius:6px;gap:10px">
+                      <div style="font-size:.8rem;flex:1">
+                        <% if (slide.h1) { %><span class="badge badge-muted" style="margin-right:4px">H1</span><strong><%= slide.h1 %></strong><% } %>
+                        <% if (slide.h2) { %><span class="badge badge-muted" style="margin-right:4px">H2</span><strong><%= slide.h2 %></strong><% } %>
+                        <% if (slide.p)  { %> <span style="color:#52525b"><%= slide.p.substring(0, 60) %><%= slide.p.length > 60 ? '…' : '' %></span><% } %>
+                        <% if (slide.ul) { %><span style="color:#71717a"> [<%= slide.ul.length %> ítems]</span><% } %>
+                      </div>
+                      <form method="post" action="/admin/clases/diapositiva/eliminar"
+                        data-confirm="¿Eliminar la diapositiva <%= idx + 1 %>?">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                        <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                        <input type="hidden" name="index" value="<%= idx %>" />
+                        <button class="btn btn-sm btn-danger" type="submit">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        </button>
+                      </form>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } %>
+
+              <!-- Agregar diapositiva -->
+              <button class="btn btn-ghost btn-sm" type="button"
+                onclick="toggleEl('new-slide-<%= courseKey %>-<%= topicKey %>')"
+                style="margin-bottom:8px">+ Agregar diapositiva</button>
+
+              <div class="crm-inline-edit" id="new-slide-<%= courseKey %>-<%= topicKey %>">
+                <form method="post" action="/admin/clases/diapositiva/crear" style="margin-top:8px">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                  <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                  <div class="crm-form-grid">
+                    <div class="crm-form-group">
+                      <label>Tipo</label>
+                      <select name="type" onchange="updateSlideForm(this)">
+                        <option value="h1">Título principal (H1)</option>
+                        <option value="h2">Título secundario (H2)</option>
+                        <option value="ul">Lista con título (H2 + lista)</option>
+                        <option value="p">Solo texto</option>
+                      </select>
+                    </div>
+                    <div class="crm-form-group slide-heading-group">
+                      <label>Título / Encabezado</label>
+                      <input name="heading" placeholder="Título de la diapositiva" />
+                    </div>
+                    <div class="crm-form-group slide-content-group" style="grid-column:1/-1">
+                      <label>Texto / Descripción</label>
+                      <textarea name="content" rows="2" placeholder="Texto descriptivo (opcional)"></textarea>
+                    </div>
+                    <div class="crm-form-group slide-items-group" style="grid-column:1/-1;display:none">
+                      <label>Ítems de lista <small style="color:#71717a">(uno por línea)</small></label>
+                      <textarea name="items" rows="4" placeholder="Ítem 1&#10;Ítem 2&#10;Ítem 3"></textarea>
+                    </div>
+                  </div>
+                  <div class="crm-form-actions">
+                    <button class="btn btn-primary btn-sm" type="submit">Agregar</button>
+                    <button class="btn btn-ghost btn-sm" type="button"
+                      onclick="toggleEl('new-slide-<%= courseKey %>-<%= topicKey %>')">Cancelar</button>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <!-- Agregar tema -->
+  <button class="btn btn-ghost btn-sm" type="button"
+    onclick="toggleEl('new-topic-<%= courseKey %>')">+ Agregar tema</button>
+
+  <div class="crm-inline-edit" id="new-topic-<%= courseKey %>" style="margin-top:10px">
+    <form method="post" action="/admin/clases/tema/crear">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <div class="crm-form-group" style="flex:1;margin:0">
+          <label>Título del tema</label>
+          <input name="title" required placeholder="Ej. Clase 3 - Frenos" />
+        </div>
+        <button class="btn btn-primary btn-sm" type="submit">Crear tema</button>
+        <button class="btn btn-ghost btn-sm" type="button"
+          onclick="toggleEl('new-topic-<%= courseKey %>')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+</div>
 <% }) %>
+
+<script>
+  function toggleEl(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  }
+
+  function updateSlideForm(sel) {
+    const form   = sel.closest('form');
+    const type   = sel.value;
+    const hGroup = form.querySelector('.slide-heading-group');
+    const cGroup = form.querySelector('.slide-content-group');
+    const iGroup = form.querySelector('.slide-items-group');
+    hGroup.style.display = type === 'p' ? 'none' : '';
+    cGroup.style.display = type === 'ul' ? 'none' : '';
+    iGroup.style.display = type === 'ul' ? '' : 'none';
+  }
+</script>
 
 <%- include('../partials/admin-foot') %>
