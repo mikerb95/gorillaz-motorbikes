@@ -11,6 +11,7 @@
       <div class="cart-list">
         <% items.forEach(item => { %>
           <div class="cart-item">
+            <img src="<%= item.image || '/images/download.png' %>" alt="<%= item.name %>" class="cart-thumb" width="64" height="64" loading="lazy">
             <div class="cart-info">
               <strong><%= item.name %></strong>
               <span class="muted">

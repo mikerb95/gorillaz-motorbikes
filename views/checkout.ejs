@@ -59,7 +59,8 @@
         <ul class="checkout-items">
           <% items.forEach(item => { %>
           <li class="checkout-item">
-            <span class="checkout-item-name"><%= item.name %> &times; <%= item.qty %></span>
+            <img src="<%= item.image || '/images/download.png' %>" alt="<%= item.name %>" class="checkout-thumb" width="48" height="48" loading="lazy">
+            <span class="checkout-item-name"><%= item.name %> <span class="checkout-item-qty">&times; <%= item.qty %></span></span>
             <span class="checkout-item-price">$<%= item.total.toLocaleString('es-CO') %></span>
           </li>
           <% }) %>
