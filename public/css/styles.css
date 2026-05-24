@@ -2716,7 +2716,10 @@ main.schedule-full {
 .cart-page {
   background: #f5f0ea;
   min-height: 60vh;
-  padding: 0 0 60px
+  /* El fondo beige sube por detrás de la navbar fija para evitar la franja
+     blanca; el offset del header se compensa con el padding-top interno. */
+  margin-top: calc(-1 * var(--header-offset));
+  padding: var(--header-offset) 0 60px
 }
 
 .cart-page-inner {
