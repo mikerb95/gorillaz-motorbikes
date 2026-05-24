@@ -2,10 +2,19 @@
 const express  = require('express');
 const { v4: uuidv4 } = require('uuid');
 const crypto   = require('crypto');
+const { rateLimit } = require('express-rate-limit');
 const catalog  = require('../data/catalog');
 const { getCart, recalc, saveCart } = require('../helpers/cart');
 const { BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL, resendClient } = require('../config');
 const { createOrder, updateOrderStatus, getOrderById } = require('../db');
+
+const cartLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, message: 'Demasiadas solicitudes. Espera un momento.' },
+});
 
 const BOLD_API_BASE = 'https://integrations.api.bold.co';
 
@@ -170,7 +179,7 @@ router.get('/tienda/:id', (req, res) => {
   res.render('shop-product', { product, category: cat, related });
 });
 
-router.post('/cart/add', (req, res) => {
+router.post('/cart/add', cartLimiter, (req, res) => {
   const { id, qty } = req.body;
   const product = catalog.products.find(p => p.id === id);
   if (!product) return res.status(400).send('Producto no encontrado');
