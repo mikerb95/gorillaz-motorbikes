@@ -22,7 +22,7 @@ const {
   getAllNewsletterSubscribers, getConfirmedNewsletterSubscribers,
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
-  getAllQuotations, getQuotationById, countQuotations,
+  getAllQuotations, getQuotationById, countQuotations, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
 } = require('../db');
