@@ -46,6 +46,14 @@ function loadParqueaderoConfig() {
 function saveParqueaderoConfig(cfg) {
   try { fs.writeFileSync(PARQUEADERO_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
 }
+const PDF_CONFIG_DEFAULTS = { companyName: 'GORILLAZ MOTORBIKES', website: 'gorillazmotorbikes.com', city: 'Bogotá, Colombia', headerColor: '#F25C05', validityDays: 30, footerNote: 'Precios en COP. Cotización no incluye IVA.', showPhone: true, showNotes: true };
+function loadPdfConfig() {
+  try { return { ...PDF_CONFIG_DEFAULTS, ...JSON.parse(fs.readFileSync(PDF_CONFIG_PATH, 'utf8')) }; }
+  catch { return { ...PDF_CONFIG_DEFAULTS }; }
+}
+function savePdfConfig(cfg) {
+  try { fs.writeFileSync(PDF_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
+}
 // Colombia es UTC-5 sin cambio de horario de verano
 function nowCOT() {
   const cot = new Date(Date.now() - 5 * 60 * 60 * 1000);
