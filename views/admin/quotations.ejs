@@ -81,7 +81,7 @@ const thisMonthRev = thisMonthQ.reduce((s,q) => s + q.total, 0);
           </td>
           <td style="white-space:nowrap;display:flex;gap:6px;align-items:center">
             <a class="btn btn-ghost btn-sm" href="/admin/cotizaciones/<%= q.id %>">Ver detalle</a>
-            <form method="post" action="/admin/cotizaciones/<%= q.id %>/eliminar" style="display:inline" onsubmit="return confirm('¿Eliminar cotización #<%= q.label %>? Esta acción no se puede deshacer.')">
+            <form method="post" action="/admin/cotizaciones/<%= q.id %>/eliminar" style="display:inline" data-confirm="¿Eliminar cotización #<%= q.label %>? Esta acción no se puede deshacer.">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
               <button class="btn btn-danger btn-sm" type="submit">Eliminar</button>
             </form>
