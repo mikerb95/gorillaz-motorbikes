@@ -454,6 +454,72 @@ router.post('/clases/diapositiva/eliminar', requireAuth, requireAdmin, (req, res
   res.redirect('/admin/clases');
 });
 
+router.post('/clases/diapositiva/actualizar', requireAuth, requireAdmin, (req, res) => {
+  const { courseKey, topicKey, index, type, heading, content, items } = req.body;
+  const idx = parseInt(index, 10);
+  const course = classesData[courseKey];
+  if (!course || !course.topics || !course.topics[topicKey] || isNaN(idx)) return res.redirect('/admin/clases?flash=error');
+  const slides = course.topics[topicKey].slides || [];
+  if (idx < 0 || idx >= slides.length) return res.redirect('/admin/clases?flash=error');
+  const slide = {};
+  if (type === 'h1') {
+    slide.h1 = (heading || '').trim();
+    if ((content || '').trim()) slide.p = content.trim();
+  } else if (type === 'h2') {
+    slide.h2 = (heading || '').trim();
+    if ((content || '').trim()) slide.p = content.trim();
+  } else if (type === 'ul') {
+    slide.h2 = (heading || '').trim();
+    slide.ul = (items || '').split('\n').map(s => s.trim()).filter(Boolean);
+  } else {
+    slide.p = (content || '').trim();
+  }
+  slides[idx] = slide;
+  saveJSON('classes.json', classesData);
+  res.redirect('/admin/clases');
+});
+
+router.post('/clases/diapositiva/mover', requireAuth, requireAdmin, (req, res) => {
+  const { courseKey, topicKey, index, direction } = req.body;
+  const idx = parseInt(index, 10);
+  const course = classesData[courseKey];
+  if (!course || !course.topics || !course.topics[topicKey] || isNaN(idx)) return res.redirect('/admin/clases');
+  const slides = course.topics[topicKey].slides || [];
+  const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapIdx < 0 || swapIdx >= slides.length) return res.redirect('/admin/clases');
+  [slides[idx], slides[swapIdx]] = [slides[swapIdx], slides[idx]];
+  saveJSON('classes.json', classesData);
+  res.redirect('/admin/clases');
+});
+
+router.post('/clases/diapositiva/duplicar', requireAuth, requireAdmin, (req, res) => {
+  const { courseKey, topicKey, index } = req.body;
+  const idx = parseInt(index, 10);
+  const course = classesData[courseKey];
+  if (!course || !course.topics || !course.topics[topicKey] || isNaN(idx)) return res.redirect('/admin/clases');
+  const slides = course.topics[topicKey].slides || [];
+  if (idx < 0 || idx >= slides.length) return res.redirect('/admin/clases');
+  const copy = JSON.parse(JSON.stringify(slides[idx]));
+  slides.splice(idx + 1, 0, copy);
+  saveJSON('classes.json', classesData);
+  res.redirect('/admin/clases');
+});
+
+router.post('/clases/tema/mover', requireAuth, requireAdmin, (req, res) => {
+  const { courseKey, topicKey, direction } = req.body;
+  const course = classesData[courseKey];
+  if (!course || !course.topics) return res.redirect('/admin/clases');
+  const entries = Object.entries(course.topics);
+  const idx = entries.findIndex(([k]) => k === topicKey);
+  if (idx === -1) return res.redirect('/admin/clases');
+  const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapIdx < 0 || swapIdx >= entries.length) return res.redirect('/admin/clases');
+  [entries[idx], entries[swapIdx]] = [entries[swapIdx], entries[idx]];
+  course.topics = Object.fromEntries(entries);
+  saveJSON('classes.json', classesData);
+  res.redirect('/admin/clases');
+});
+
 // ── Newsletter ────────────────────────────────────────────────────────────
 
 router.get('/newsletter', requireAuth, requireAdmin, async (req, res) => {
