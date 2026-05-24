@@ -487,6 +487,27 @@
     <% } %>
 
   </div><!-- /.container -->
+
+  <!-- ── Editar perfil ── -->
+  <div class="modal" id="editProfile" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-editProfile">
+      <div class="modal-header">
+        <h3 class="modal-title" id="title-editProfile">Editar mi perfil</h3>
+        <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
+      </div>
+      <form method="post" action="/club/perfil">
+        <div class="modal-body">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <%- include('../partials/profile-fields', { u: user, admin: false }) %>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
+          <button class="btn" type="submit">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div><!-- /.club-panel -->
 
 <%- include('../partials/footer') %>
