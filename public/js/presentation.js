@@ -16,6 +16,13 @@
       s.ul.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li);});
       el.appendChild(ul);
     }
+    if (s.img) {
+      const img = document.createElement('img');
+      img.src = s.img;
+      img.className = 'slide-img';
+      img.alt = '';
+      el.appendChild(img);
+    }
     return el;
   };
   slides.forEach(s => deck.appendChild(makeSlide(s)));
