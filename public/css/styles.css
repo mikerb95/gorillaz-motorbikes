@@ -2780,6 +2780,54 @@ main.schedule-full {
   }
 }
 
+.checkout-items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: grid;
+  gap: 8px
+}
+
+.checkout-item {
+  display: flex;
+  align-items: center;
+  gap: 10px
+}
+
+.checkout-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: #f3f4f6
+}
+
+.checkout-item-name {
+  flex: 1;
+  font-size: .9rem;
+  font-weight: 600
+}
+
+.checkout-item-qty {
+  font-weight: 400;
+  color: var(--muted)
+}
+
+.checkout-item-price {
+  font-weight: 700;
+  white-space: nowrap
+}
+
+.cart-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #f3f4f6
+}
+
 /* Auth (GitHub-like) */
 .auth-wrap {
   max-width: 360px;
