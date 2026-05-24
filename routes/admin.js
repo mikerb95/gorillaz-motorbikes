@@ -512,6 +512,37 @@ router.post('/clases/tema/mover', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/clases');
 });
 
+router.post('/clases/diapositiva/upload-imagen', requireAuth, requireAdmin, uploadSlideImage, (req, res) => {
+  if (!req.blobUrl) return res.status(400).json({ ok: false, error: 'No se pudo subir la imagen' });
+  res.json({ ok: true, url: req.blobUrl });
+});
+
+router.get('/clases/curso/:key/exportar', requireAuth, requireAdmin, (req, res) => {
+  const { key } = req.params;
+  const course = classesData[key];
+  if (!course) return res.redirect('/admin/clases');
+  const filename = course.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.json';
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Content-Type', 'application/json');
+  res.send(JSON.stringify(course, null, 2));
+});
+
+router.post('/clases/curso/importar', requireAuth, requireAdmin, (req, res) => {
+  const rawJson = (req.body.json || '').trim();
+  const titleOverride = (req.body.title || '').trim();
+  if (!rawJson) return res.redirect('/admin/clases?flash=error');
+  let data;
+  try { data = JSON.parse(rawJson); } catch { return res.redirect('/admin/clases?flash=error'); }
+  if (!data || typeof data !== 'object' || !data.topics) return res.redirect('/admin/clases?flash=error');
+  if (titleOverride) data.title = titleOverride;
+  if (!data.title) return res.redirect('/admin/clases?flash=error');
+  let key = slugFromTitle(data.title);
+  if (classesData[key]) key = key + '_' + Date.now().toString(36);
+  classesData[key] = data;
+  saveJSON('classes.json', classesData);
+  res.redirect('/admin/clases');
+});
+
 // ── Newsletter ────────────────────────────────────────────────────────────
 
 router.get('/newsletter', requireAuth, requireAdmin, async (req, res) => {
