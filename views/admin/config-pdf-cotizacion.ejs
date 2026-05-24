@@ -1,0 +1,233 @@
+<%- include('../partials/admin-head', { title: 'Config PDF Cotización' }) %>
+
+<div class="crm-page-header">
+  <h1 class="crm-page-title">Config PDF de Cotización</h1>
+</div>
+
+<% if (flash === 'saved') { %>
+  <div class="alert" style="background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-weight:700">
+    ✓ Configuración guardada correctamente.
+  </div>
+<% } %>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1100px;align-items:start">
+
+  <!-- Formulario -->
+  <div style="display:grid;gap:20px">
+
+    <div class="crm-card" style="padding:24px">
+      <h2 style="font-size:15px;font-weight:800;margin:0 0 18px">Empresa</h2>
+      <form id="pdfForm" method="post" action="/admin/config-pdf-cotizacion">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+        <div style="display:grid;gap:14px">
+          <div>
+            <label class="pdf-label">Nombre de la empresa</label>
+            <input type="text" name="companyName" id="fCompanyName" value="<%= config.companyName %>"
+              maxlength="60"
+              style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label class="pdf-label">Sitio web</label>
+              <input type="text" name="website" id="fWebsite" value="<%= config.website %>"
+                maxlength="80" placeholder="gorillazmotorbikes.com"
+                style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+            </div>
+            <div>
+              <label class="pdf-label">Ciudad</label>
+              <input type="text" name="city" id="fCity" value="<%= config.city %>"
+                maxlength="60" placeholder="Bogotá, Colombia"
+                style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center">
+            <div>
+              <label class="pdf-label">Color de cabecera</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="color" name="headerColor" id="fHeaderColor" value="<%= config.headerColor %>"
+                  style="width:48px;height:38px;padding:2px;border:1.5px solid #e5e7eb;border-radius:8px;cursor:pointer" />
+                <input type="text" id="fHeaderColorText" value="<%= config.headerColor %>"
+                  maxlength="7" placeholder="#F25C05"
+                  style="width:90px;padding:10px 10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-family:monospace;outline:none" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="crm-card" style="padding:24px">
+      <h2 style="font-size:15px;font-weight:800;margin:0 0 18px">Pie y validez</h2>
+
+        <div style="display:grid;gap:14px">
+          <div>
+            <label class="pdf-label">Nota al pie (izquierda)</label>
+            <input type="text" name="footerNote" id="fFooterNote" value="<%= config.footerNote %>" form="pdfForm"
+              maxlength="120" placeholder="Válida por 30 días. Precios en COP."
+              style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+            <p class="muted" style="font-size:12px;margin:4px 0 0">El nombre de empresa y ciudad se muestran siempre a la derecha.</p>
+          </div>
+          <div>
+            <label class="pdf-label">Validez (días)</label>
+            <input type="number" name="validityDays" id="fValidityDays" value="<%= config.validityDays %>" form="pdfForm"
+              min="1" max="365" style="width:100px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none" />
+          </div>
+        </div>
+    </div>
+
+    <div class="crm-card" style="padding:24px">
+      <h2 style="font-size:15px;font-weight:800;margin:0 0 18px">Datos opcionales</h2>
+        <div style="display:grid;gap:12px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px">
+            <input type="checkbox" name="showPhone" id="fShowPhone" form="pdfForm" <%= config.showPhone ? 'checked' : '' %>
+              style="width:16px;height:16px;accent-color:var(--brand);cursor:pointer" />
+            Mostrar teléfono del cliente en el PDF
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px">
+            <input type="checkbox" name="showNotes" id="fShowNotes" form="pdfForm" <%= config.showNotes ? 'checked' : '' %>
+              style="width:16px;height:16px;accent-color:var(--brand);cursor:pointer" />
+            Mostrar notas de la cotización en el PDF
+          </label>
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit" form="pdfForm">Guardar cambios</button>
+  </div>
+
+  <!-- Preview -->
+  <div style="position:sticky;top:80px">
+    <div class="crm-card" style="padding:20px">
+      <div style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Vista previa del PDF</div>
+
+      <!-- Mini PDF mockup -->
+      <div id="pdfPreview" style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;font-family:Arial,sans-serif;font-size:10px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+        <!-- Header band -->
+        <div id="previewHeader" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:flex-end">
+          <div>
+            <div id="previewCompany" style="font-size:13px;font-weight:900;color:#fff;line-height:1.2"></div>
+            <div id="previewWebCity" style="font-size:8px;color:rgba(255,255,255,.85);margin-top:2px"></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:8px;color:rgba(255,255,255,.85)">Fecha: <span id="previewDate"></span></div>
+            <div style="font-size:8px;color:rgba(255,255,255,.85)">Cotización N° <strong>0024-MAY26</strong></div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:12px 14px">
+          <div style="font-size:11px;font-weight:900;color:#111;margin-bottom:4px">COTIZACIÓN</div>
+          <div style="font-size:8px;color:#6b7280;margin-bottom:8px">Moto / Placa: <strong>ABC123 — Honda CB190R</strong></div>
+          <div id="previewPhoneLine" style="font-size:8px;color:#6b7280;margin-bottom:10px">Cliente: +57 3001234567</div>
+
+          <!-- Table header -->
+          <div style="background:#f5f5f5;padding:5px 6px;display:grid;grid-template-columns:1fr 40px 60px 60px;gap:4px;font-size:7.5px;font-weight:700;color:#6b7280">
+            <span>ÍTEM</span><span style="text-align:center">CANT.</span><span style="text-align:right">PRECIO</span><span style="text-align:right">SUBTOTAL</span>
+          </div>
+          <div style="border-bottom:1px solid #e5e7eb"></div>
+          <div style="padding:5px 6px;display:grid;grid-template-columns:1fr 40px 60px 60px;gap:4px;font-size:8px">
+            <span>Mecánica general</span><span style="text-align:center">1</span><span style="text-align:right">80.000</span><span style="text-align:right;font-weight:700">80.000</span>
+          </div>
+          <div style="background:#fafafa;padding:5px 6px;display:grid;grid-template-columns:1fr 40px 60px 60px;gap:4px;font-size:8px">
+            <span>Cambio de aceite</span><span style="text-align:center">2</span><span style="text-align:right">40.000</span><span style="text-align:right;font-weight:700">80.000</span>
+          </div>
+
+          <!-- Total bar -->
+          <div id="previewTotalBar" style="margin:8px 0;padding:5px 6px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:9px;font-weight:700;color:#fff">TOTAL:</span>
+            <span style="font-size:10px;font-weight:900;color:#fff">COP 160.000</span>
+          </div>
+
+          <!-- Notes -->
+          <div id="previewNotesBlock" style="margin-top:8px;font-size:8px;color:#374151">
+            <strong>Notas:</strong> Revisar también los frenos traseros según indicación del cliente.
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:6px 14px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between">
+          <div id="previewFooterLeft" style="font-size:7.5px;color:#9ca3af"></div>
+          <div id="previewFooterRight" style="font-size:7.5px;color:#9ca3af"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+.pdf-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 6px;
+}
+</style>
+
+<script>
+(function () {
+  const fields = {
+    companyName:    document.getElementById('fCompanyName'),
+    website:        document.getElementById('fWebsite'),
+    city:           document.getElementById('fCity'),
+    headerColor:    document.getElementById('fHeaderColor'),
+    headerColorTxt: document.getElementById('fHeaderColorText'),
+    validityDays:   document.getElementById('fValidityDays'),
+    footerNote:     document.getElementById('fFooterNote'),
+    showPhone:      document.getElementById('fShowPhone'),
+    showNotes:      document.getElementById('fShowNotes'),
+  };
+
+  // Sync color picker ↔ text input
+  fields.headerColor.addEventListener('input', () => {
+    fields.headerColorTxt.value = fields.headerColor.value;
+    update();
+  });
+  fields.headerColorTxt.addEventListener('input', () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(fields.headerColorTxt.value)) {
+      fields.headerColor.value = fields.headerColorTxt.value;
+    }
+    update();
+  });
+
+  // Preview elements
+  const previewHeader    = document.getElementById('previewHeader');
+  const previewCompany   = document.getElementById('previewCompany');
+  const previewWebCity   = document.getElementById('previewWebCity');
+  const previewDate      = document.getElementById('previewDate');
+  const previewPhoneLine = document.getElementById('previewPhoneLine');
+  const previewTotalBar  = document.getElementById('previewTotalBar');
+  const previewNotesBlock= document.getElementById('previewNotesBlock');
+  const previewFooterLeft = document.getElementById('previewFooterLeft');
+  const previewFooterRight= document.getElementById('previewFooterRight');
+
+  previewDate.textContent = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  function update() {
+    const color   = /^#[0-9a-fA-F]{6}$/.test(fields.headerColorTxt.value) ? fields.headerColorTxt.value : '#F25C05';
+    const company = fields.companyName.value.trim() || 'GORILLAZ MOTORBIKES';
+    const website = fields.website.value.trim();
+    const city    = fields.city.value.trim();
+    const days    = parseInt(fields.validityDays.value, 10) || 30;
+    const note    = fields.footerNote.value.trim() || ('Válida por ' + days + ' días. Precios en COP.');
+
+    previewHeader.style.background    = color;
+    previewTotalBar.style.background  = color;
+    previewCompany.textContent = company;
+    previewWebCity.textContent = [website, city].filter(Boolean).join('  |  ');
+    previewPhoneLine.style.display = fields.showPhone.checked ? '' : 'none';
+    previewNotesBlock.style.display = fields.showNotes.checked ? '' : 'none';
+    previewFooterLeft.textContent  = note;
+    previewFooterRight.textContent = [company, city].filter(Boolean).join(' — ');
+  }
+
+  Object.values(fields).forEach(el => el && el.addEventListener('change', update));
+  ['companyName','website','city','footerNote','validityDays'].forEach(k => fields[k] && fields[k].addEventListener('input', update));
+  update();
+})();
+</script>
+
+<%- include('../partials/admin-foot') %>
