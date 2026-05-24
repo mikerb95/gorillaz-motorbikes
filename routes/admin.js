@@ -608,6 +608,28 @@ router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/cotizador-config?flash=saved');
 });
 
+// ── Configuración PDF de cotización ──────────────────────────────────────
+
+router.get('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
+  const flash = req.query.flash || null;
+  res.render('admin/config-pdf-cotizacion', { config: loadPdfConfig(), flash });
+});
+
+router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
+  const validityDays = Math.max(1, parseInt(req.body.validityDays, 10) || 30);
+  savePdfConfig({
+    companyName:  (req.body.companyName  || '').trim() || 'GORILLAZ MOTORBIKES',
+    website:      (req.body.website      || '').trim(),
+    city:         (req.body.city         || '').trim(),
+    headerColor:  /^#[0-9a-fA-F]{6}$/.test(req.body.headerColor) ? req.body.headerColor : '#F25C05',
+    validityDays,
+    footerNote:   (req.body.footerNote   || '').trim(),
+    showPhone:    req.body.showPhone  === 'on',
+    showNotes:    req.body.showNotes  === 'on',
+  });
+  res.redirect('/admin/config-pdf-cotizacion?flash=saved');
+});
+
 // ── Configuración de parqueadero ──────────────────────────────────────────
 
 router.get('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
