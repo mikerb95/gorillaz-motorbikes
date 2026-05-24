@@ -35,10 +35,13 @@ const RUNT_URL = 'https://www.runt.gov.co/consultaCiudadana/#/consulta/vehiculo'
 
   page.on('response', async res => {
     const url = res.url();
-    if (res.request().method() === 'POST' || url.includes('/api/')) {
+    const isApi = res.request().method() === 'POST' || url.includes('runtproapi') || url.includes('/api/');
+    if (isApi) {
       try {
         const body = await res.json();
-        console.log(`   ✅ Respuesta (${res.status()}):`, JSON.stringify(body).slice(0, 300));
+        const entry = llamadas.find(e => e.url === url && !e.response);
+        if (entry) entry.response = body;
+        console.log(`   ✅ Respuesta (${res.status()}):`, JSON.stringify(body).slice(0, 500));
       } catch { /* no es JSON */ }
     }
   });

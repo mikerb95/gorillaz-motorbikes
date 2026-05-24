@@ -3329,6 +3329,70 @@ main.schedule-full {
   }
 }
 
+.product-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0 0;
+  margin-top: auto
+}
+
+.price-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0
+}
+
+.price-col .price {
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.2
+}
+
+.price-col .price-old {
+  font-size: .75rem;
+  color: var(--muted);
+  text-decoration: line-through;
+  margin-left: 0
+}
+
+.card-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 7px 14px 7px 10px;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  line-height: 1
+}
+
+.card-add-btn:hover:not(:disabled) {
+  background: #d44d00;
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(242,92,5,.35)
+}
+
+.card-add-btn:active:not(:disabled) {
+  transform: scale(.97)
+}
+
+.card-add-btn:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed
+}
+
 .product-card {
   display: flex;
   flex-direction: column

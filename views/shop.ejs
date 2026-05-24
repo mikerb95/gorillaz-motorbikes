@@ -150,37 +150,29 @@
                     <% if (typeof p.stock === 'number' && p.stock === 0) { %><span class="product-soldout-chip">Agotado</span><% } %>
                   </div>
                   <div class="card-body">
-                    <% if (p.brand) { %><span class="product-brand">
-                        <%= p.brand %>
-                      </span>
-                      <% } %>
-                        <h3 class="card-title">
-                          <%= p.name %>
-                        </h3>
-                        <% if (p.description) { %>
-                          <p class="card-text">
-                            <%= p.description.substring(0, 80) %>
-                              <%= p.description.length> 80 ? '...' : '' %>
-                          </p>
-                          <% } %>
-                            <div class="price-row">
-                              <div>
-                                <% if (p.discount> 0) { %>
-                                  <span class="price">$<%= Math.round(p.price * (1 - p.discount /
-                                      100)).toLocaleString('es-CO') %></span>
-                                  <span class="price-old">$<%= p.price.toLocaleString('es-CO') %></span>
-                                  <% } else { %>
-                                    <span class="price">$<%= (p.price).toLocaleString('es-CO') %></span>
-                                    <% } %>
-                              </div>
-                            </div>
+                    <% if (p.brand) { %><span class="product-brand"><%= p.brand %></span><% } %>
+                    <h3 class="card-title"><%= p.name %></h3>
+                    <% if (p.description) { %>
+                      <p class="card-text"><%= p.description.substring(0, 72) %><%= p.description.length > 72 ? '…' : '' %></p>
+                    <% } %>
                   </div>
                 </a>
-                <div class="product-card-actions">
-                  <a href="/tienda/<%= p.id %>" class="btn btn-ghost btn-sm">Ver producto</a>
-                  <button type="button" class="btn btn-primary btn-sm btn-add-cart" data-id="<%= p.id %>" <%=(typeof
-                    p.stock==='number' && p.stock===0) ? 'disabled' : '' %>>
-                    Añadir
+                <div class="product-card-footer">
+                  <div class="price-col">
+                    <% if (p.discount > 0) { %>
+                      <span class="price">$<%= Math.round(p.price * (1 - p.discount / 100)).toLocaleString('es-CO') %></span>
+                      <span class="price-old">$<%= p.price.toLocaleString('es-CO') %></span>
+                    <% } else { %>
+                      <span class="price">$<%= p.price.toLocaleString('es-CO') %></span>
+                    <% } %>
+                  </div>
+                  <button type="button" class="btn-add-cart card-add-btn" data-id="<%= p.id %>" <%= (typeof p.stock === 'number' && p.stock === 0) ? 'disabled' : '' %>>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                      <path d="M3 4h2l2.5 12h9l2-8H7.2"/>
+                      <circle cx="9" cy="20" r="1.5"/>
+                      <circle cx="17" cy="20" r="1.5"/>
+                    </svg>
+                    Agregar
                   </button>
                 </div>
               </article>
