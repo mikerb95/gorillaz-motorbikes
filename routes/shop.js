@@ -242,9 +242,10 @@ router.post('/pagar', async (req, res) => {
   if (!customerName || !customerEmail || !customerPhone || !customerCity || !customerAddress) {
     const items = Object.entries(cart.items).map(([id, qty]) => {
       const p = catalog.products.find(x => x.id === id);
+      if (!p) return null;
       const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
       return { ...p, qty, unitPrice: finalPrice, total: finalPrice * qty };
-    });
+    }).filter(Boolean);
     return res.status(400).render('checkout', {
       cart, items,
       error: 'Por favor completa todos los campos de contacto y envío.',
@@ -266,9 +267,10 @@ router.post('/pagar', async (req, res) => {
   if (stockErrors.length > 0) {
     const items = Object.entries(cart.items).map(([id, qty]) => {
       const p = catalog.products.find(x => x.id === id);
+      if (!p) return null;
       const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
       return { ...p, qty, unitPrice: finalPrice, total: finalPrice * qty };
-    });
+    }).filter(Boolean);
     return res.status(409).render('checkout', {
       cart, items,
       error: `No se puede procesar el pedido: ${stockErrors.join('; ')}. Actualiza tu carrito e intenta de nuevo.`,
