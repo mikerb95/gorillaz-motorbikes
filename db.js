@@ -370,6 +370,15 @@ async function updateUser(id, fields) {
   if (fields.name !== undefined)             { set.push('name = ?');                args.push(fields.name); }
   if (fields.password !== undefined)         { set.push('password = ?');            args.push(fields.password); }
   if (fields.role !== undefined)             { set.push('role = ?');                args.push(fields.role); }
+  if (fields.cedula !== undefined)           { set.push('cedula = ?');              args.push(fields.cedula); }
+  if (fields.phone !== undefined)            { set.push('phone = ?');               args.push(fields.phone); }
+  if (fields.city !== undefined)             { set.push('city = ?');                args.push(fields.city); }
+  if (fields.birthdate !== undefined)        { set.push('birthdate = ?');           args.push(fields.birthdate); }
+  if (fields.nickname !== undefined)         { set.push('nickname = ?');            args.push(fields.nickname); }
+  if (fields.bloodType !== undefined)        { set.push('blood_type = ?');          args.push(fields.bloodType); }
+  if (fields.clubNotifications !== undefined){ set.push('club_notifications = ?');  args.push(fields.clubNotifications ? 1 : 0); }
+  if (fields.emergencyName !== undefined)    { set.push('emergency_name = ?');      args.push(fields.emergencyName); }
+  if (fields.emergencyPhone !== undefined)   { set.push('emergency_phone = ?');     args.push(fields.emergencyPhone); }
   if (fields.membership !== undefined)       { set.push('membership = ?');          args.push(JSON.stringify(fields.membership)); }
   if (fields.visits !== undefined)           { set.push('visits = ?');              args.push(JSON.stringify(fields.visits)); }
   if (fields.vehicles !== undefined)         { set.push('vehicles = ?');            args.push(JSON.stringify(fields.vehicles)); }
