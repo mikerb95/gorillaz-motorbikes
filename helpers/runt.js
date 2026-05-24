@@ -89,32 +89,23 @@ async function autenticar(placa, documento, idLibreCaptcha, captcha) {
  * Retorna { soat_vencimiento, tecno_vencimiento } en formato YYYY-MM-DD.
  */
 async function consultarVigencias(token) {
-  // Llamadas en paralelo a los endpoints de datos
   const [soatData, rtmData] = await Promise.allSettled([
-    get('/poliza-soat', token),
-    get('/revision-tecnico-mecanica', token),
+    get('/soat', token),
+    get('/rtms?tipo=N', token),
   ]);
 
   let soat_vencimiento = null;
   if (soatData.status === 'fulfilled') {
-    const polizas = soatData.value?.polizas ?? soatData.value?.data ?? soatData.value ?? [];
-    const activa = Array.isArray(polizas)
-      ? polizas.find(p => /vigente|activ/i.test(p.estado ?? '')) ?? polizas[0]
-      : polizas;
-    soat_vencimiento = normalizarFecha(
-      activa?.fechaFinVigencia ?? activa?.fechaVencimiento ?? activa?.vigencia
-    );
+    const polizas = Array.isArray(soatData.value) ? soatData.value : [];
+    const activa = polizas.find(p => /vigente/i.test(p.estado ?? '')) ?? polizas[0];
+    soat_vencimiento = normalizarFecha(activa?.fechaVencimSoat);
   }
 
   let tecno_vencimiento = null;
   if (rtmData.status === 'fulfilled') {
-    const certificados = rtmData.value?.certificados ?? rtmData.value?.data ?? rtmData.value ?? [];
-    const vigente = Array.isArray(certificados)
-      ? certificados.find(c => c.vigente === true || c.vigente === 'SI') ?? certificados[0]
-      : certificados;
-    tecno_vencimiento = normalizarFecha(
-      vigente?.fechaVigencia ?? vigente?.fechaVencimiento ?? vigente?.vigencia
-    );
+    const revisiones = rtmData.value?.revisiones ?? [];
+    const vigente = revisiones.find(r => r.vigente === 'SI') ?? revisiones[0];
+    tecno_vencimiento = normalizarFecha(vigente?.fechaVencimientoRvt);
   }
 
   return { soat_vencimiento, tecno_vencimiento };
