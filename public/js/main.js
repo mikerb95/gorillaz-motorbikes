@@ -805,6 +805,54 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// ── Toast notification system (global) ──
+function showToast(msg, isError) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.className = 'toast ' + (isError ? 'toast-error' : 'toast-success') + ' toast-show';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.classList.remove('toast-show'); }, 3000);
+}
+
+// ── AJAX Add-to-cart for shop listing buttons ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.btn-add-cart').forEach(btn => {
+    btn.addEventListener('click', async function (e) {
+      e.preventDefault();
+      const id = this.dataset.id;
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+      this.disabled = true;
+      try {
+        const res = await fetch('/cart/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-Token': csrf
+          },
+          body: JSON.stringify({ id, qty: 1, _csrf: csrf })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          document.querySelectorAll('.cart-badge').forEach(b => b.textContent = data.cartCount);
+          showToast(data.message || 'Añadido al carrito');
+        } else {
+          showToast(data.message || 'Error al añadir', true);
+        }
+      } catch (err) {
+        showToast('Error de conexión', true);
+      }
+      this.disabled = false;
+    });
+  });
+});
+
 // AJAX newsletter submit (avoid page jump to top)
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('.newsletter-form');
@@ -855,71 +903,5 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       alertErr('Error de red. Intenta de nuevo.');
     }
-  });
-
-  // ── Toast notification system ──
-  function showToast(msg, isError) {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'toast';
-      toast.className = 'toast';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = msg;
-    toast.className = 'toast ' + (isError ? 'toast-error' : 'toast-success') + ' toast-show';
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => { toast.classList.remove('toast-show'); }, 3000);
-  }
-
-  // ── AJAX Add-to-cart for shop listing buttons ──
-  document.querySelectorAll('.btn-add-cart').forEach(btn => {
-    btn.addEventListener('click', async function (e) {
-      e.preventDefault();
-      const id = this.dataset.id;
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-      this.disabled = true;
-      try {
-        const res = await fetch('/cart/add', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-Token': csrf
-          },
-          body: JSON.stringify({ id, qty: 1, _csrf: csrf })
-        });
-        const data = await res.json();
-        if (data.ok) {
-          document.querySelectorAll('.cart-badge').forEach(b => b.textContent = data.cartCount);
-          showToast(data.message || 'Añadido al carrito');
-        } else {
-          showToast(data.message || 'Error al añadir', true);
-        }
-      } catch (err) {
-        showToast('Error de conexión', true);
-      }
-      this.disabled = false;
-    });
-  });
-
-  // ── Price slider sync ──
-  document.querySelectorAll('[data-price-slider]').forEach(slider => {
-    const minInput = slider.querySelector('[data-price-min]');
-    const maxInput = slider.querySelector('[data-price-max]');
-    const minText = slider.querySelector('[data-price-min-text]');
-    const maxText = slider.querySelector('[data-price-max-text]');
-    const minHidden = slider.querySelector('[name="min"]');
-    const maxHidden = slider.querySelector('[name="max"]');
-    if (!minInput || !maxInput) return;
-    const fmt = v => parseInt(v).toLocaleString('es-CO');
-    minInput.addEventListener('input', () => {
-      if (minText) minText.textContent = fmt(minInput.value);
-      if (minHidden) minHidden.value = minInput.value;
-    });
-    maxInput.addEventListener('input', () => {
-      if (maxText) maxText.textContent = fmt(maxInput.value);
-      if (maxHidden) maxHidden.value = maxInput.value;
-    });
   });
 });
