@@ -54,7 +54,7 @@ const templateLocals = async (req, res, next) => {
   try {
     res.locals.cartItems = Object.entries(c.items || {}).map(([id, qty]) => {
       const p = (catalog.products || []).find(pp => pp.id === id);
-      return p ? { id, name: p.name, qty, total: (p.price || 0) * qty } : null;
+      return p ? { id, name: p.name, qty, total: Math.round(p.price * (1 - (p.discount || 0) / 100)) * qty } : null;
     }).filter(Boolean);
   } catch { res.locals.cartItems = []; }
 
