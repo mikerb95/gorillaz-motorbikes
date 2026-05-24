@@ -279,9 +279,10 @@ router.post('/pagar', async (req, res) => {
 
   const items = Object.entries(cart.items).map(([id, qty]) => {
     const p = catalog.products.find(x => x.id === id);
+    if (!p) return null;
     const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
     return { id, name: p.name, qty, unitPrice: finalPrice, total: finalPrice * qty };
-  });
+  }).filter(Boolean);
 
   const orderId = uuidv4();
 
