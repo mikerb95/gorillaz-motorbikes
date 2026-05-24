@@ -247,7 +247,7 @@
     doc.text('COP ' + q.total.toLocaleString('es-CO'), 196, y, { align: 'right' });
 
     // Notes
-    if (q.notes) {
+    if (cfg.showNotes && q.notes) {
       y += 14;
       doc.setTextColor(17, 17, 17);
       doc.setFontSize(9); doc.setFont('helvetica', 'bold');
@@ -258,10 +258,13 @@
     }
 
     // Footer
+    const days = cfg.validityDays || 30;
+    const footerLeft  = cfg.footerNote || ('Válida por ' + days + ' días. Precios en COP.');
+    const footerRight = [cfg.companyName, cfg.city].filter(Boolean).join(' — ');
     doc.setTextColor(107, 114, 128);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.text('Válida por 30 días. Precios en COP.', 14, 285);
-    doc.text('Gorillaz Motorbikes — Bogotá, Colombia', 196, 285, { align: 'right' });
+    doc.text(footerLeft, 14, 285);
+    if (footerRight) doc.text(footerRight, 196, 285, { align: 'right' });
 
     doc.save('cotizacion-' + q.label + '.pdf');
   });

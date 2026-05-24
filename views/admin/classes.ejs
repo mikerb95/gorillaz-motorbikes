@@ -80,15 +80,39 @@
     <p style="color:#71717a;font-size:.85rem;margin:0 0 12px">Sin temas. Agrega el primero.</p>
   <% } else { %>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-      <% topics.forEach(([topicKey, topic]) => { %>
+      <% topics.forEach(([topicKey, topic], topicIdx) => { %>
         <div style="border:1px solid #e4e4e7;border-radius:8px;overflow:hidden">
 
           <!-- Cabecera del tema -->
           <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fafafa">
             <strong style="font-size:.85rem"><%= topic.title %></strong>
-            <div style="display:flex;gap:6px;align-items:center">
-              <a class="btn btn-sm btn-primary"
-                href="/clases/<%= courseKey %>/<%= topicKey %>">Presentar</a>
+            <div style="display:flex;gap:4px;align-items:center">
+
+              <!-- Mover tema ↑↓ -->
+              <% if (topicIdx > 0) { %>
+                <form method="post" action="/admin/clases/tema/mover" style="display:inline">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                  <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                  <input type="hidden" name="direction" value="up" />
+                  <button class="btn btn-xs btn-ghost" type="submit" title="Mover arriba">↑</button>
+                </form>
+              <% } else { %>
+                <button class="btn btn-xs btn-ghost" type="button" disabled style="opacity:.3">↑</button>
+              <% } %>
+              <% if (topicIdx < topics.length - 1) { %>
+                <form method="post" action="/admin/clases/tema/mover" style="display:inline">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                  <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                  <input type="hidden" name="direction" value="down" />
+                  <button class="btn btn-xs btn-ghost" type="submit" title="Mover abajo">↓</button>
+                </form>
+              <% } else { %>
+                <button class="btn btn-xs btn-ghost" type="button" disabled style="opacity:.3">↓</button>
+              <% } %>
+
+              <a class="btn btn-sm btn-primary" href="/clases/<%= courseKey %>/<%= topicKey %>">Presentar</a>
               <button class="btn btn-sm btn-ghost" type="button"
                 onclick="toggleEl('edit-topic-<%= courseKey %>-<%= topicKey %>')" title="Renombrar">
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -137,23 +161,121 @@
               <% } else { %>
                 <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
                   <% slides.forEach((slide, idx) => { %>
-                    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:8px 10px;background:#f4f4f5;border-radius:6px;gap:10px">
-                      <div style="font-size:.8rem;flex:1">
-                        <% if (slide.h1) { %><span class="badge badge-muted" style="margin-right:4px">H1</span><strong><%= slide.h1 %></strong><% } %>
-                        <% if (slide.h2) { %><span class="badge badge-muted" style="margin-right:4px">H2</span><strong><%= slide.h2 %></strong><% } %>
-                        <% if (slide.p)  { %> <span style="color:#52525b"><%= slide.p.substring(0, 60) %><%= slide.p.length > 60 ? '…' : '' %></span><% } %>
-                        <% if (slide.ul) { %><span style="color:#71717a"> [<%= slide.ul.length %> ítems]</span><% } %>
+                    <div style="border:1px solid #e4e4e7;border-radius:6px;overflow:hidden">
+
+                      <!-- Fila del slide -->
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f9f9f9;gap:8px">
+                        <div style="font-size:.8rem;flex:1;min-width:0">
+                          <% if (slide.h1) { %><span class="badge badge-orange" style="margin-right:4px">H1</span><strong><%= slide.h1 %></strong><% } %>
+                          <% if (slide.h2) { %><span class="badge badge-muted" style="margin-right:4px">H2</span><strong><%= slide.h2 %></strong><% } %>
+                          <% if (slide.p)  { %> <span style="color:#52525b"><%= slide.p.substring(0, 55) %><%= slide.p.length > 55 ? '…' : '' %></span><% } %>
+                          <% if (slide.ul) { %><span style="color:#71717a"> · [<%= slide.ul.length %> ítems]</span><% } %>
+                          <% if (!slide.h1 && !slide.h2 && !slide.p && !slide.ul) { %><span style="color:#71717a;font-style:italic">Slide vacío</span><% } %>
+                        </div>
+                        <div style="display:flex;gap:3px;flex-shrink:0">
+
+                          <!-- Reordenar ↑↓ -->
+                          <% if (idx > 0) { %>
+                            <form method="post" action="/admin/clases/diapositiva/mover" style="display:inline">
+                              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                              <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                              <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                              <input type="hidden" name="index" value="<%= idx %>" />
+                              <input type="hidden" name="direction" value="up" />
+                              <button class="btn btn-xs btn-ghost" type="submit" title="Subir">↑</button>
+                            </form>
+                          <% } else { %>
+                            <button class="btn btn-xs btn-ghost" disabled style="opacity:.3">↑</button>
+                          <% } %>
+                          <% if (idx < slides.length - 1) { %>
+                            <form method="post" action="/admin/clases/diapositiva/mover" style="display:inline">
+                              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                              <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                              <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                              <input type="hidden" name="index" value="<%= idx %>" />
+                              <input type="hidden" name="direction" value="down" />
+                              <button class="btn btn-xs btn-ghost" type="submit" title="Bajar">↓</button>
+                            </form>
+                          <% } else { %>
+                            <button class="btn btn-xs btn-ghost" disabled style="opacity:.3">↓</button>
+                          <% } %>
+
+                          <!-- Editar -->
+                          <button class="btn btn-xs btn-ghost" type="button"
+                            onclick="toggleEl('edit-slide-<%= courseKey %>-<%= topicKey %>-<%= idx %>')" title="Editar">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+
+                          <!-- Duplicar -->
+                          <form method="post" action="/admin/clases/diapositiva/duplicar" style="display:inline">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                            <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                            <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                            <input type="hidden" name="index" value="<%= idx %>" />
+                            <button class="btn btn-xs btn-ghost" type="submit" title="Duplicar">
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            </button>
+                          </form>
+
+                          <!-- Eliminar -->
+                          <form method="post" action="/admin/clases/diapositiva/eliminar"
+                            data-confirm="¿Eliminar la diapositiva <%= idx + 1 %>?">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                            <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                            <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                            <input type="hidden" name="index" value="<%= idx %>" />
+                            <button class="btn btn-xs btn-danger" type="submit" title="Eliminar">
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                            </button>
+                          </form>
+                        </div>
                       </div>
-                      <form method="post" action="/admin/clases/diapositiva/eliminar"
-                        data-confirm="¿Eliminar la diapositiva <%= idx + 1 %>?">
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                        <input type="hidden" name="courseKey" value="<%= courseKey %>" />
-                        <input type="hidden" name="topicKey" value="<%= topicKey %>" />
-                        <input type="hidden" name="index" value="<%= idx %>" />
-                        <button class="btn btn-sm btn-danger" type="submit">
-                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                        </button>
-                      </form>
+
+                      <!-- Editar slide (inline) -->
+                      <div class="crm-inline-edit" id="edit-slide-<%= courseKey %>-<%= topicKey %>-<%= idx %>">
+                        <form method="post" action="/admin/clases/diapositiva/actualizar"
+                          style="padding:10px 12px;border-top:1px solid #e4e4e7;background:#fff">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                          <input type="hidden" name="courseKey" value="<%= courseKey %>" />
+                          <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                          <input type="hidden" name="index" value="<%= idx %>" />
+                          <%
+                            const sType = slide.h1 ? 'h1' : slide.ul ? 'ul' : slide.h2 ? 'h2' : 'p';
+                            const sHeading = slide.h1 || slide.h2 || '';
+                            const sContent = slide.p || '';
+                            const sItems = (slide.ul || []).join('\n');
+                          %>
+                          <div class="crm-form-grid">
+                            <div class="crm-form-group">
+                              <label>Tipo</label>
+                              <select name="type" onchange="updateSlideForm(this)">
+                                <option value="h1" <%= sType==='h1' ? 'selected' : '' %>>Título principal (H1)</option>
+                                <option value="h2" <%= sType==='h2' ? 'selected' : '' %>>Título secundario (H2)</option>
+                                <option value="ul" <%= sType==='ul' ? 'selected' : '' %>>Lista con título (H2 + lista)</option>
+                                <option value="p"  <%= sType==='p'  ? 'selected' : '' %>>Solo texto</option>
+                              </select>
+                            </div>
+                            <div class="crm-form-group slide-heading-group" style="<%= sType==='p' ? 'display:none' : '' %>">
+                              <label>Título / Encabezado</label>
+                              <input name="heading" value="<%= sHeading %>" />
+                            </div>
+                            <div class="crm-form-group slide-content-group" style="grid-column:1/-1;<%= sType==='ul' ? 'display:none' : '' %>">
+                              <label>Texto / Descripción</label>
+                              <textarea name="content" rows="2"><%= sContent %></textarea>
+                            </div>
+                            <div class="crm-form-group slide-items-group" style="grid-column:1/-1;<%= sType!=='ul' ? 'display:none' : '' %>">
+                              <label>Ítems de lista <small style="color:#71717a">(uno por línea)</small></label>
+                              <textarea name="items" rows="4"><%= sItems %></textarea>
+                            </div>
+                          </div>
+                          <div class="crm-form-actions">
+                            <button class="btn btn-primary btn-sm" type="submit">Guardar cambios</button>
+                            <button class="btn btn-ghost btn-sm" type="button"
+                              onclick="toggleEl('edit-slide-<%= courseKey %>-<%= topicKey %>-<%= idx %>')">Cancelar</button>
+                          </div>
+                        </form>
+                      </div>
+
                     </div>
                   <% }) %>
                 </div>
@@ -243,9 +365,9 @@
     const hGroup = form.querySelector('.slide-heading-group');
     const cGroup = form.querySelector('.slide-content-group');
     const iGroup = form.querySelector('.slide-items-group');
-    hGroup.style.display = type === 'p' ? 'none' : '';
-    cGroup.style.display = type === 'ul' ? 'none' : '';
-    iGroup.style.display = type === 'ul' ? '' : 'none';
+    if (hGroup) hGroup.style.display = type === 'p'  ? 'none' : '';
+    if (cGroup) cGroup.style.display = type === 'ul' ? 'none' : '';
+    if (iGroup) iGroup.style.display = type === 'ul' ? ''     : 'none';
   }
 </script>
 
