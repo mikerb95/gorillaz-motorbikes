@@ -146,6 +146,13 @@
     notes:      <%- JSON.stringify(quotation.notes) %>,
     items:      <%- JSON.stringify(quotation.items) %>,
   };
+  const cfg = <%- JSON.stringify(pdfConfig) %>;
+
+  // Parse header color (#RRGGBB) → [r, g, b]
+  function hexRgb(hex) {
+    const h = hex.replace('#', '');
+    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  }
 
   document.getElementById('btnDownloadPdf').addEventListener('click', () => {
     if (typeof window.jspdf === 'undefined') {
@@ -154,15 +161,17 @@
     }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const [hr, hg, hb] = hexRgb(cfg.headerColor || '#F25C05');
 
     // Header
-    doc.setFillColor(242, 92, 5);
+    doc.setFillColor(hr, hg, hb);
     doc.rect(0, 0, 210, 28, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18); doc.setFont('helvetica', 'bold');
-    doc.text('GORILLAZ MOTORBIKES', 14, 12);
+    doc.text(cfg.companyName || 'GORILLAZ MOTORBIKES', 14, 12);
     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.text('gorillazmotorbikes.com  |  Bogotá, Colombia', 14, 20);
+    const subline = [cfg.website, cfg.city].filter(Boolean).join('  |  ');
+    if (subline) doc.text(subline, 14, 20);
     const dateStr = new Date(q.createdAt).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
     doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
     doc.text('Cotización N° ' + q.label, 196, 20, { align: 'right' });
@@ -180,8 +189,9 @@
       doc.text('Moto / Placa: ' + motoLine, 14, 47);
       y = 47;
     }
-    if (q.phone) {
-      doc.setFontSize(9);
+    if (cfg.showPhone && q.phone) {
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+      doc.setTextColor(107, 114, 128);
       doc.text('Cliente: ' + q.phone, 14, y + 6);
       y += 6;
     }
@@ -229,7 +239,7 @@
 
     // Total
     y += 12;
-    doc.setFillColor(242, 92, 5);
+    doc.setFillColor(hr, hg, hb);
     doc.rect(120, y - 6, 76, 11, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(11); doc.setFont('helvetica', 'bold');
