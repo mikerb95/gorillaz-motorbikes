@@ -7,7 +7,7 @@
       Cotización <span style="color:var(--brand)">#<%= quotation.label %></span>
     </h1>
   </div>
-  <form method="post" action="/admin/cotizaciones/<%= quotation.id %>/eliminar" onsubmit="return confirm('¿Eliminar cotización #<%= quotation.label %>? Esta acción no se puede deshacer.')">
+  <form method="post" action="/admin/cotizaciones/<%= quotation.id %>/eliminar" data-confirm="¿Eliminar cotización #<%= quotation.label %>? Esta acción no se puede deshacer.">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
     <button class="btn btn-danger btn-sm" type="submit">Eliminar cotización</button>
   </form>
