@@ -508,7 +508,7 @@ router.get('/cotizaciones', requireAuth, requireAdmin, async (req, res) => {
 router.get('/cotizaciones/:id', requireAuth, requireAdmin, async (req, res) => {
   const quotation = await getQuotationById(req.params.id);
   if (!quotation) return res.redirect('/admin/cotizaciones');
-  res.render('admin/quotation-detail', { quotation });
+  res.render('admin/quotation-detail', { quotation, pdfConfig: loadPdfConfig() });
 });
 
 router.post('/cotizaciones/:id/eliminar', requireAuth, requireAdmin, async (req, res) => {
