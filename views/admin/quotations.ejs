@@ -57,9 +57,13 @@ const thisMonthRev = thisMonthQ.reduce((s,q) => s + q.total, 0);
             <span style="font-size:.76rem"><%= new Date(q.createdAt).toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' }) %></span>
           </td>
           <td>
+            <% if (q.plate) { %>
+              <span class="badge badge-info" style="font-size:.78rem;font-weight:900;letter-spacing:.5px"><%= q.plate %></span>
+            <% } %>
             <% if (q.motorcycle) { %>
-              <strong style="font-size:.85rem"><%= q.motorcycle %></strong>
-            <% } else { %>
+              <div style="font-size:.82rem;margin-top:<%= q.plate ? '3px' : '0' %>"><%= q.motorcycle %></div>
+            <% } %>
+            <% if (!q.plate && !q.motorcycle) { %>
               <span class="muted" style="font-size:.82rem">—</span>
             <% } %>
           </td>

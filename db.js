@@ -207,6 +207,7 @@ async function initDb() {
     `ALTER TABLE newsletter ADD COLUMN confirm_token TEXT`,
     `ALTER TABLE quotations ADD COLUMN motorcycle TEXT`,
     `ALTER TABLE quotations ADD COLUMN notes TEXT`,
+    `ALTER TABLE quotations ADD COLUMN plate TEXT`,
     `ALTER TABLE service_orders ADD COLUMN trabajo_completo_at TEXT`,
     `ALTER TABLE orders ADD COLUMN stock_decremented INTEGER NOT NULL DEFAULT 0`,
   ];
@@ -810,6 +811,7 @@ function rowToQuotation(row) {
     clientPhone: row.client_phone,
     clientPhoneCountry: row.client_phone_country,
     motorcycle: row.motorcycle || null,
+    plate: row.plate || null,
     notes: row.notes || null,
     status: row.status,
     createdAt: row.created_at,
@@ -826,8 +828,8 @@ async function createQuotation(data) {
     consecutive = Number(r.rows[0].next);
     label = fmtConsecutiveLabel(consecutive, now);
     await tx.execute({
-      sql: `INSERT INTO quotations (id, consecutive, items, total, client_phone, client_phone_country, motorcycle, notes, status)
-            VALUES (?,?,?,?,?,?,?,?,?)`,
+      sql: `INSERT INTO quotations (id, consecutive, items, total, client_phone, client_phone_country, motorcycle, plate, notes, status)
+            VALUES (?,?,?,?,?,?,?,?,?,?)`,
       args: [
         id, consecutive,
         JSON.stringify(data.items || []),
@@ -835,6 +837,7 @@ async function createQuotation(data) {
         data.clientPhone || null,
         data.clientPhoneCountry || '+57',
         data.motorcycle || null,
+        data.plate || null,
         data.notes || null,
         'confirmed',
       ],

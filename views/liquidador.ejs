@@ -653,18 +653,33 @@
       </div>
 
       <!-- Moto / Placa -->
-      <div style="margin-bottom:16px">
-        <label style="display:block;font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
-          Moto / Placa <span style="font-weight:400;color:#9ca3af">(opcional)</span>
-        </label>
-        <input
-          id="motoField"
-          type="text"
-          placeholder="Ej: Honda CB190R — ABC123"
-          style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:#fafafa;box-sizing:border-box;text-transform:uppercase"
-          maxlength="80"
-          aria-label="Moto o placa del cliente"
-        />
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:16px;align-items:end">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Moto <span style="font-weight:400;color:#9ca3af">(opcional)</span>
+          </label>
+          <input
+            id="motoField"
+            type="text"
+            placeholder="Ej: Honda CB190R"
+            style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:#fafafa;box-sizing:border-box"
+            maxlength="80"
+            aria-label="Modelo de la moto"
+          />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Placa
+          </label>
+          <input
+            id="plateField"
+            type="text"
+            placeholder="ABC123"
+            style="width:110px;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:#fafafa;box-sizing:border-box;text-transform:uppercase;letter-spacing:1px;font-weight:700"
+            maxlength="20"
+            aria-label="Placa del cliente"
+          />
+        </div>
       </div>
 
       <div class="liq-footer-actions" style="margin-top:16px">
@@ -808,11 +823,19 @@
   const btnConfirm     = document.getElementById('btnConfirmSummary');
   const consecNum      = document.getElementById('liqConsecNum');
   const motoField      = document.getElementById('motoField');
+  const plateField     = document.getElementById('plateField');
   if (motoField) {
     motoField.addEventListener('input', () => {
       const pos = motoField.selectionStart;
       motoField.value = motoField.value.toUpperCase();
       motoField.setSelectionRange(pos, pos);
+    });
+  }
+  if (plateField) {
+    plateField.addEventListener('input', () => {
+      const pos = plateField.selectionStart;
+      plateField.value = plateField.value.toUpperCase();
+      plateField.setSelectionRange(pos, pos);
     });
   }
   const waToggle       = document.getElementById('waToggle');
@@ -1130,6 +1153,7 @@
           clientPhone: null,
           clientPhoneCountry: '+57',
           motorcycle: motoField ? motoField.value.trim() || null : null,
+          plate: plateField ? plateField.value.trim().toUpperCase() || null : null,
         }),
       });
       const data = await res.json();

@@ -58,7 +58,7 @@ router.get('/api/liquidador/search', (req, res) => {
 
 router.post('/api/liquidador/quotation', async (req, res) => {
   try {
-    const { items, total, clientPhone, clientPhoneCountry, motorcycle, notes } = req.body;
+    const { items, total, clientPhone, clientPhoneCountry, motorcycle, plate, notes } = req.body;
     if (!Array.isArray(items) || items.length === 0)
       return res.status(400).json({ error: 'Se requiere al menos un ítem.' });
     if (items.length > 100)
@@ -75,6 +75,8 @@ router.post('/api/liquidador/quotation', async (req, res) => {
     }
     if (motorcycle && String(motorcycle).length > 80)
       return res.status(400).json({ error: 'Moto/placa demasiado larga (máx 80 caracteres).' });
+    if (plate && String(plate).length > 20)
+      return res.status(400).json({ error: 'Placa demasiado larga (máx 20 caracteres).' });
     if (notes && String(notes).length > 500)
       return res.status(400).json({ error: 'Notas demasiado largas (máx 500 caracteres).' });
 
@@ -84,6 +86,7 @@ router.post('/api/liquidador/quotation', async (req, res) => {
       clientPhone: clientPhone || null,
       clientPhoneCountry: clientPhoneCountry || '+57',
       motorcycle: motorcycle || null,
+      plate: plate ? String(plate).toUpperCase().trim() : null,
       notes: notes || null,
     });
     res.json({ ok: true, id, consecutive, label });
