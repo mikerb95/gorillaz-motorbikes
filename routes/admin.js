@@ -420,11 +420,7 @@ router.post('/clases/tema/eliminar', requireAuth, requireAdmin, (req, res) => {
 
 // ── Clases: Diapositivas ──────────────────────────────────────────────────
 
-router.post('/clases/diapositiva/crear', requireAuth, requireAdmin, (req, res) => {
-  const { courseKey, topicKey, type, heading, content, items } = req.body;
-  const course = classesData[courseKey];
-  if (!course || !course.topics || !course.topics[topicKey]) return res.redirect('/admin/clases?flash=error');
-  if (!course.topics[topicKey].slides) course.topics[topicKey].slides = [];
+function buildSlide(type, heading, content, items, img) {
   const slide = {};
   if (type === 'h1') {
     slide.h1 = (heading || '').trim();
@@ -438,7 +434,16 @@ router.post('/clases/diapositiva/crear', requireAuth, requireAdmin, (req, res) =
   } else {
     slide.p = (content || '').trim();
   }
-  course.topics[topicKey].slides.push(slide);
+  if ((img || '').trim()) slide.img = img.trim();
+  return slide;
+}
+
+router.post('/clases/diapositiva/crear', requireAuth, requireAdmin, (req, res) => {
+  const { courseKey, topicKey, type, heading, content, items, img } = req.body;
+  const course = classesData[courseKey];
+  if (!course || !course.topics || !course.topics[topicKey]) return res.redirect('/admin/clases?flash=error');
+  if (!course.topics[topicKey].slides) course.topics[topicKey].slides = [];
+  course.topics[topicKey].slides.push(buildSlide(type, heading, content, items, img));
   saveJSON('classes.json', classesData);
   res.redirect('/admin/clases');
 });
