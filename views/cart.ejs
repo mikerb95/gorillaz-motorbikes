@@ -1,52 +1,167 @@
-<%- include('partials/head', { title: 'Carrito' }) %>
+<%- include('partials/head', { title: 'Tu carrito' }) %>
 
-<main class="container">
-  <section class="section">
-    <h1 class="section-title">Tu Carrito</h1>
+<%
+  const FREE_THRESHOLD = 300000;
+  const remaining = Math.max(0, FREE_THRESHOLD - cart.subtotal);
+  const freeProgress = Math.min(100, Math.round((cart.subtotal / FREE_THRESHOLD) * 100));
+%>
+
+<div class="cart-page">
+  <div class="cart-page-inner">
 
     <% if (items.length === 0) { %>
-      <p>Tu carrito está vacío.</p>
-      <a class="btn" href="/tienda">Ir a la tienda</a>
+      <div class="cart-empty">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M3 4h2l2.5 12h9l2-8H7.2"/>
+          <circle cx="9" cy="20" r="1.5"/>
+          <circle cx="17" cy="20" r="1.5"/>
+        </svg>
+        <h1>Tu carrito está vacío</h1>
+        <p>Todavía no agregaste ningún producto.</p>
+        <a class="btn btn-primary" href="/tienda">Ver productos</a>
+      </div>
+
     <% } else { %>
-      <div class="cart-list">
-        <% items.forEach(item => { %>
-          <div class="cart-item">
-            <img src="<%= item.image || '/images/download.png' %>" alt="<%= item.name %>" class="cart-thumb" width="64" height="64" loading="lazy">
-            <div class="cart-info">
-              <strong><%= item.name %></strong>
-              <span class="muted">
-                $<%= item.unitPrice.toLocaleString('es-CO') %> c/u
-                <% if (item.discount > 0) { %><span class="price-old" style="font-size:.8em">$<%= item.price.toLocaleString('es-CO') %></span><% } %>
+
+      <div class="cart-topbar">
+        <a href="/tienda" class="cart-back-link">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Seguir comprando
+        </a>
+        <h1 class="cart-title">Tu carrito</h1>
+      </div>
+
+      <div class="cart-layout">
+
+        <!-- ── Items column ── -->
+        <div class="cart-items-col">
+
+          <% items.forEach(item => { %>
+          <div class="cart-item-card">
+            <button type="button" class="cart-item-remove" data-id="<%= item.id %>" aria-label="Eliminar <%= item.name %>">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            <a href="/tienda/<%= item.id %>" class="cart-item-img-link">
+              <img src="<%= item.image || '/images/download.png' %>" alt="<%= item.name %>" class="cart-item-img" width="88" height="88" loading="lazy">
+            </a>
+
+            <div class="cart-item-body">
+              <a href="/tienda/<%= item.id %>" class="cart-item-name"><%= item.name %></a>
+              <span class="cart-item-unit">
+                $<%= item.unitPrice.toLocaleString('es-CO') %> / unidad
+                <% if (item.discount > 0) { %>
+                  <span class="price-old">$<%= item.price.toLocaleString('es-CO') %></span>
+                <% } %>
               </span>
+
+              <form method="post" action="/cart/update" class="cart-qty-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="id" value="<%= item.id %>">
+                <div class="cart-qty-controls">
+                  <button type="button" class="cart-qty-btn" data-delta="-1" aria-label="Disminuir">−</button>
+                  <input type="number" name="qty" value="<%= item.qty %>" min="0" class="cart-qty-input" readonly>
+                  <button type="button" class="cart-qty-btn" data-delta="1" aria-label="Aumentar">+</button>
+                </div>
+              </form>
             </div>
-            <form method="post" action="/cart/update" class="cart-actions">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <input type="hidden" name="id" value="<%= item.id %>" />
-              <input type="number" min="0" name="qty" value="<%= item.qty %>" />
-              <span class="line-total">$<%= item.total.toLocaleString('es-CO') %></span>
-              <button class="btn" type="submit">Actualizar</button>
+
+            <span class="cart-item-total">$<%= item.total.toLocaleString('es-CO') %></span>
+          </div>
+          <% }) %>
+
+          <div class="cart-clear-row">
+            <form method="post" action="/cart/clear">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="cart-clear-btn">Vaciar carrito</button>
             </form>
           </div>
-        <% }) %>
-      </div>
 
-      <div class="cart-summary">
-        <form method="post" action="/cart/clear">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button class="btn btn-ghost" type="submit">Vaciar carrito</button>
-        </form>
-        <div class="totals">
-          <span>Subtotal:</span>
-          <strong>$<%= cart.subtotal.toLocaleString('es-CO') %></strong>
         </div>
-      </div>
 
-      <div class="actions-row">
-        <a class="btn btn-ghost" href="/tienda">Seguir comprando</a>
-        <a class="btn btn-primary" href="/checkout">Proceder al pago</a>
+        <!-- ── Summary panel ── -->
+        <aside class="cart-summary-panel">
+          <h2 class="cart-summary-title">Resumen del pedido</h2>
+
+          <div class="cart-summary-rows">
+            <div class="cart-summary-row">
+              <span>Subtotal</span>
+              <span>$<%= cart.subtotal.toLocaleString('es-CO') %></span>
+            </div>
+            <div class="cart-summary-row">
+              <span>Envío</span>
+              <span class="<%= remaining === 0 ? 'free-ship-label' : '' %>">
+                <%= remaining === 0 ? 'Gratis' : 'Calculado al pagar' %>
+              </span>
+            </div>
+          </div>
+
+          <div class="free-ship-bar-wrap">
+            <% if (remaining > 0) { %>
+              <p class="free-ship-hint">Te faltan <strong>$<%= remaining.toLocaleString('es-CO') %></strong> para envío gratis</p>
+            <% } else { %>
+              <p class="free-ship-hint free-ship-achieved">¡Tienes envío gratis!</p>
+            <% } %>
+            <div class="free-ship-bar">
+              <div class="free-ship-progress" style="width:<%= freeProgress %>%"></div>
+            </div>
+          </div>
+
+          <div class="cart-total-row">
+            <div>
+              <span class="cart-total-label">Total</span>
+              <span class="cart-total-note">IVA incluido</span>
+            </div>
+            <span class="cart-total-amount">$<%= cart.subtotal.toLocaleString('es-CO') %></span>
+          </div>
+
+          <a href="/checkout" class="btn btn-primary cart-checkout-btn">
+            Ir a pagar
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+
+          <div class="cart-trust-badges">
+            <span>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Pago 100% seguro
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              Bold certificado
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              Política de cambios
+            </span>
+          </div>
+        </aside>
+
       </div>
     <% } %>
-  </section>
-</main>
+  </div>
+</div>
+
+<script>
+  // +/− qty controls
+  document.querySelectorAll('.cart-qty-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const form = btn.closest('.cart-qty-form');
+      const input = form.querySelector('.cart-qty-input');
+      const val = Math.max(0, parseInt(input.value || '1') + parseInt(btn.dataset.delta));
+      input.value = val;
+      form.submit();
+    });
+  });
+
+  // × remove (sets qty to 0)
+  document.querySelectorAll('.cart-item-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.cart-item-card');
+      const form = card.querySelector('.cart-qty-form');
+      form.querySelector('.cart-qty-input').value = 0;
+      form.submit();
+    });
+  });
+</script>
 
 <%- include('partials/footer') %>
