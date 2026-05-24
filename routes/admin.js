@@ -398,6 +398,11 @@ router.get('/cotizaciones/:id', requireAuth, requireAdmin, async (req, res) => {
   res.render('admin/quotation-detail', { quotation });
 });
 
+router.post('/cotizaciones/:id/eliminar', requireAuth, requireAdmin, async (req, res) => {
+  await deleteQuotation(req.params.id);
+  res.redirect('/admin/cotizaciones');
+});
+
 // ── Ítems del cotizador (servicios + productos) ───────────────────────────
 
 router.get('/cotizador-items', requireAuth, requireAdmin, (req, res) => {
