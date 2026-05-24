@@ -5962,16 +5962,35 @@ main.schedule-full {
 }
 
 /* ── Admin banner ── */
-.cp-admin-bar {
-  background: #f5f5f5;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 10px 0;
-}
-.cp-admin-bar .container {
+.cp-hero-aside {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 12px;
+}
+.cp-admin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--ink);
+  color: #fff !important;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+  transition: background .15s ease, transform .15s ease;
+}
+.cp-admin-link:hover {
+  background: #000;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.cp-admin-link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 /* ── Quick actions bar ── */
