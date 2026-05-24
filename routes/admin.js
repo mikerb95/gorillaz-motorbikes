@@ -7,7 +7,7 @@ const courses     = require('../data/courses.json');
 const classesData = require('../data/classes.json');
 const catalog     = require('../data/catalog');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { saveJSON, writeCatalog, uploadProduct, deleteFromBlob } = require('../helpers/files');
+const { saveJSON, writeCatalog, uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
 const { availability }  = require('../helpers/appointments');
 const { SCORE_POINTS }  = require('../helpers/score');
 const {

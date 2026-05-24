@@ -56,4 +56,30 @@ const uploadProduct = (req, res, next) => {
   });
 };
 
-module.exports = { saveJSON, writeCatalog, uploadProduct, uploadToBlob, deleteFromBlob };
+const _multerSingle = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /\.(jpg|jpeg|png|webp|avif)$/i;
+    cb(null, allowed.test(path.extname(file.originalname)));
+  },
+}).single('img');
+
+const uploadSlideImage = (req, res, next) => {
+  _multerSingle(req, res, async (err) => {
+    if (err) return next(err);
+    try {
+      if (req.file) {
+        const ext      = path.extname(req.file.originalname).toLowerCase();
+        const filename = `classes/${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+        const blob     = await put(filename, req.file.buffer, { access: 'public', contentType: req.file.mimetype, token: BLOB_TOKEN });
+        req.blobUrl    = blob.url;
+      }
+      next();
+    } catch (e) {
+      next(e);
+    }
+  });
+};
+
+module.exports = { saveJSON, writeCatalog, uploadProduct, uploadSlideImage, uploadToBlob, deleteFromBlob };
