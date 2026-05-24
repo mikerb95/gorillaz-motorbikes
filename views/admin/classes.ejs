@@ -1,10 +1,46 @@
 <%- include('../partials/admin-head', { title: 'Clases / Presentaciones' }) %>
 
+<style>
+  #previewDialog {
+    width: 90vw; max-width: 820px; height: 72vh;
+    border-radius: 14px; border: 1px solid #e4e4e7;
+    padding: 0; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  }
+  #previewDialog::backdrop { background: rgba(0,0,0,.55); }
+  .preview-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: #fafafa;
+    border-bottom: 1px solid #e4e4e7;
+  }
+  .preview-title { flex: 1; font-size: .85rem; font-weight: 700; color: #18181b; }
+  .preview-counter { font-size: .8rem; color: #71717a; }
+  #previewDeck {
+    height: calc(72vh - 50px); overflow: hidden;
+    display: grid; grid-auto-flow: column; grid-auto-columns: 100%; gap: 0;
+  }
+  .preview-slide {
+    display: grid; align-content: center; justify-items: center;
+    text-align: center; gap: 10px; padding: 28px 32px; overflow: hidden;
+  }
+  .preview-slide h1 { font-size: 28px; line-height: 1.15; margin: 0; }
+  .preview-slide h2 { font-size: 20px; line-height: 1.2; margin: 0; }
+  .preview-slide p  { font-size: 14px; margin: 0; max-width: 600px; }
+  .preview-slide ul { font-size: 14px; display: grid; gap: 6px; margin: 0; list-style: disc; text-align: left; }
+  .preview-slide li { margin-left: 18px; }
+  .preview-slide img { max-width: 100%; max-height: 30vh; border-radius: 8px; object-fit: contain; }
+  .slide-thumb {
+    width: 80px; height: 52px; border-radius: 5px; object-fit: cover;
+    border: 1px solid #e4e4e7; flex-shrink: 0;
+  }
+</style>
+
 <div class="crm-page-header">
-  <button class="btn btn-primary btn-sm" type="button"
-    onclick="document.getElementById('newCourseCard').classList.toggle('hidden-card')">
-    + Nuevo curso
-  </button>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-primary btn-sm" type="button"
+      onclick="toggleEl('newCourseCard')">+ Nuevo curso</button>
+    <button class="btn btn-ghost btn-sm" type="button"
+      onclick="toggleEl('importCourseCard')">Importar JSON</button>
+  </div>
 </div>
 
 <% if (flash === 'error') { %>
@@ -25,7 +61,32 @@
     <div class="crm-form-actions">
       <button class="btn btn-primary btn-sm" type="submit">Crear curso</button>
       <button class="btn btn-ghost btn-sm" type="button"
-        onclick="document.getElementById('newCourseCard').classList.add('hidden-card')">Cancelar</button>
+        onclick="toggleEl('newCourseCard')">Cancelar</button>
+    </div>
+  </form>
+</div>
+
+<!-- Importar curso -->
+<div class="crm-card hidden-card" id="importCourseCard" style="margin-bottom:14px">
+  <div class="crm-card-title">Importar curso desde JSON</div>
+  <form method="post" action="/admin/clases/curso/importar">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="crm-form-grid">
+      <div class="crm-form-group">
+        <label>Título (opcional — sobreescribe el del JSON)</label>
+        <input name="title" placeholder="Dejar vacío para usar el del JSON" />
+      </div>
+      <div class="crm-form-group" style="grid-column:1/-1">
+        <label>JSON del curso <span class="required">*</span></label>
+        <textarea name="json" rows="8" required
+          placeholder='{"title":"Nombre","topics":{"Clase_1":{"title":"Clase 1","slides":[]}}}'
+          style="font-family:monospace;font-size:.78rem"></textarea>
+      </div>
+    </div>
+    <div class="crm-form-actions">
+      <button class="btn btn-primary btn-sm" type="submit">Importar</button>
+      <button class="btn btn-ghost btn-sm" type="button"
+        onclick="toggleEl('importCourseCard')">Cancelar</button>
     </div>
   </form>
 </div>
@@ -41,6 +102,9 @@
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <div class="crm-card-title" style="margin:0"><%= course.title %></div>
     <div style="display:flex;gap:6px">
+      <a class="btn btn-sm btn-ghost" href="/admin/clases/curso/<%= courseKey %>/exportar" title="Exportar JSON" download>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </a>
       <button class="btn btn-sm btn-ghost" type="button"
         onclick="toggleEl('edit-course-<%= courseKey %>')" title="Renombrar">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -112,6 +176,10 @@
                 <button class="btn btn-xs btn-ghost" type="button" disabled style="opacity:.3">↓</button>
               <% } %>
 
+              <button class="btn btn-sm btn-ghost" type="button"
+                onclick="openPreview('<%= courseKey %>', '<%= topicKey %>', <%- JSON.stringify(topic.title) %>)" title="Vista previa">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
               <a class="btn btn-sm btn-primary" href="/clases/<%= courseKey %>/<%= topicKey %>">Presentar</a>
               <button class="btn btn-sm btn-ghost" type="button"
                 onclick="toggleEl('edit-topic-<%= courseKey %>-<%= topicKey %>')" title="Renombrar">
@@ -165,12 +233,15 @@
 
                       <!-- Fila del slide -->
                       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f9f9f9;gap:8px">
+                        <% if (slide.img) { %>
+                          <img src="<%= slide.img %>" class="slide-thumb" alt="imagen" />
+                        <% } %>
                         <div style="font-size:.8rem;flex:1;min-width:0">
                           <% if (slide.h1) { %><span class="badge badge-orange" style="margin-right:4px">H1</span><strong><%= slide.h1 %></strong><% } %>
                           <% if (slide.h2) { %><span class="badge badge-muted" style="margin-right:4px">H2</span><strong><%= slide.h2 %></strong><% } %>
                           <% if (slide.p)  { %> <span style="color:#52525b"><%= slide.p.substring(0, 55) %><%= slide.p.length > 55 ? '…' : '' %></span><% } %>
                           <% if (slide.ul) { %><span style="color:#71717a"> · [<%= slide.ul.length %> ítems]</span><% } %>
-                          <% if (!slide.h1 && !slide.h2 && !slide.p && !slide.ul) { %><span style="color:#71717a;font-style:italic">Slide vacío</span><% } %>
+                          <% if (!slide.h1 && !slide.h2 && !slide.p && !slide.ul && !slide.img) { %><span style="color:#71717a;font-style:italic">Slide vacío</span><% } %>
                         </div>
                         <div style="display:flex;gap:3px;flex-shrink:0">
 
@@ -239,6 +310,7 @@
                           <input type="hidden" name="courseKey" value="<%= courseKey %>" />
                           <input type="hidden" name="topicKey" value="<%= topicKey %>" />
                           <input type="hidden" name="index" value="<%= idx %>" />
+                          <input type="hidden" name="img" value="<%= slide.img || '' %>" id="img-edit-<%= courseKey %>-<%= topicKey %>-<%= idx %>" />
                           <%
                             const sType = slide.h1 ? 'h1' : slide.ul ? 'ul' : slide.h2 ? 'h2' : 'p';
                             const sHeading = slide.h1 || slide.h2 || '';
@@ -267,6 +339,22 @@
                               <label>Ítems de lista <small style="color:#71717a">(uno por línea)</small></label>
                               <textarea name="items" rows="4"><%= sItems %></textarea>
                             </div>
+                            <div class="crm-form-group" style="grid-column:1/-1">
+                              <label>Imagen (opcional)</label>
+                              <div style="display:flex;align-items:center;gap:10px">
+                                <input type="file" accept="image/*"
+                                  onchange="uploadSlideImg(this,'img-edit-<%= courseKey %>-<%= topicKey %>-<%= idx %>','thumb-edit-<%= courseKey %>-<%= topicKey %>-<%= idx %>')" />
+                                <% if (slide.img) { %>
+                                  <img id="thumb-edit-<%= courseKey %>-<%= topicKey %>-<%= idx %>"
+                                    src="<%= slide.img %>" class="slide-thumb" alt="imagen actual" />
+                                  <button type="button" class="btn btn-xs btn-ghost"
+                                    onclick="clearSlideImg('img-edit-<%= courseKey %>-<%= topicKey %>-<%= idx %>','thumb-edit-<%= courseKey %>-<%= topicKey %>-<%= idx %>')">Quitar</button>
+                                <% } else { %>
+                                  <img id="thumb-edit-<%= courseKey %>-<%= topicKey %>-<%= idx %>"
+                                    src="" class="slide-thumb" alt="" style="display:none" />
+                                <% } %>
+                              </div>
+                            </div>
                           </div>
                           <div class="crm-form-actions">
                             <button class="btn btn-primary btn-sm" type="submit">Guardar cambios</button>
@@ -287,10 +375,12 @@
                 style="margin-bottom:8px">+ Agregar diapositiva</button>
 
               <div class="crm-inline-edit" id="new-slide-<%= courseKey %>-<%= topicKey %>">
+                <% const nsId = courseKey + '-' + topicKey; %>
                 <form method="post" action="/admin/clases/diapositiva/crear" style="margin-top:8px">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <input type="hidden" name="courseKey" value="<%= courseKey %>" />
                   <input type="hidden" name="topicKey" value="<%= topicKey %>" />
+                  <input type="hidden" name="img" value="" id="img-new-<%= nsId %>" />
                   <div class="crm-form-grid">
                     <div class="crm-form-group">
                       <label>Tipo</label>
@@ -312,6 +402,14 @@
                     <div class="crm-form-group slide-items-group" style="grid-column:1/-1;display:none">
                       <label>Ítems de lista <small style="color:#71717a">(uno por línea)</small></label>
                       <textarea name="items" rows="4" placeholder="Ítem 1&#10;Ítem 2&#10;Ítem 3"></textarea>
+                    </div>
+                    <div class="crm-form-group" style="grid-column:1/-1">
+                      <label>Imagen (opcional)</label>
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <input type="file" accept="image/*"
+                          onchange="uploadSlideImg(this,'img-new-<%= nsId %>','thumb-new-<%= nsId %>')" />
+                        <img id="thumb-new-<%= nsId %>" src="" class="slide-thumb" alt="" style="display:none" />
+                      </div>
                     </div>
                   </div>
                   <div class="crm-form-actions">
@@ -353,7 +451,22 @@
 </div>
 <% }) %>
 
+<!-- Dialog de vista previa -->
+<dialog id="previewDialog">
+  <div class="preview-bar">
+    <span class="preview-title" id="previewTitle"></span>
+    <button class="btn btn-xs btn-ghost" onclick="previewGo(-1)">←</button>
+    <span class="preview-counter" id="previewCounter"></span>
+    <button class="btn btn-xs btn-ghost" onclick="previewGo(1)">→</button>
+    <button class="btn btn-xs btn-ghost" onclick="document.getElementById('previewDialog').close()" title="Cerrar">✕</button>
+  </div>
+  <div id="previewDeck"></div>
+</dialog>
+
 <script>
+  const CLASSES_DATA = <%- JSON.stringify(classesData) %>;
+  let _previewSlides = [], _previewIdx = 0;
+
   function toggleEl(id) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('open');
@@ -369,6 +482,84 @@
     if (cGroup) cGroup.style.display = type === 'ul' ? 'none' : '';
     if (iGroup) iGroup.style.display = type === 'ul' ? ''     : 'none';
   }
+
+  async function uploadSlideImg(input, hiddenId, thumbId) {
+    const file = input.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('img', file);
+    fd.append('_csrf', document.querySelector('meta[name="csrf-token"]').content);
+    try {
+      const r = await fetch('/admin/clases/diapositiva/upload-imagen', { method: 'POST', body: fd });
+      const data = await r.json();
+      if (data.ok && data.url) {
+        document.getElementById(hiddenId).value = data.url;
+        const thumb = document.getElementById(thumbId);
+        thumb.src = data.url;
+        thumb.style.display = '';
+      }
+    } catch (e) {
+      alert('Error al subir la imagen');
+    }
+  }
+
+  function clearSlideImg(hiddenId, thumbId) {
+    document.getElementById(hiddenId).value = '';
+    const thumb = document.getElementById(thumbId);
+    thumb.src = '';
+    thumb.style.display = 'none';
+  }
+
+  function makePreviewSlide(s) {
+    const el = document.createElement('div');
+    el.className = 'preview-slide';
+    if (s.h1) { const h = document.createElement('h1'); h.textContent = s.h1; el.appendChild(h); }
+    if (s.h2) { const h = document.createElement('h2'); h.textContent = s.h2; el.appendChild(h); }
+    if (s.p)  { const p = document.createElement('p');  p.textContent = s.p;  el.appendChild(p); }
+    if (Array.isArray(s.ul)) {
+      const ul = document.createElement('ul');
+      s.ul.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+      el.appendChild(ul);
+    }
+    if (s.img) {
+      const img = document.createElement('img');
+      img.src = s.img; img.alt = '';
+      el.appendChild(img);
+    }
+    return el;
+  }
+
+  function openPreview(courseKey, topicKey, title) {
+    const course = CLASSES_DATA[courseKey];
+    if (!course) return;
+    _previewSlides = (course.topics[topicKey] || {}).slides || [];
+    _previewIdx    = 0;
+    const deck = document.getElementById('previewDeck');
+    deck.innerHTML = '';
+    _previewSlides.forEach(s => deck.appendChild(makePreviewSlide(s)));
+    deck.style.setProperty('--pi', '0');
+    document.getElementById('previewTitle').textContent = title;
+    updatePreviewCounter();
+    document.getElementById('previewDialog').showModal();
+  }
+
+  function updatePreviewCounter() {
+    document.getElementById('previewCounter').textContent =
+      _previewSlides.length ? (_previewIdx + 1) + ' / ' + _previewSlides.length : '0 slides';
+    document.getElementById('previewDeck').style.transform =
+      'translateX(calc(' + _previewIdx + ' * -100%))';
+  }
+
+  function previewGo(d) {
+    _previewIdx = Math.max(0, Math.min(_previewSlides.length - 1, _previewIdx + d));
+    updatePreviewCounter();
+  }
+
+  document.getElementById('previewDialog').addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') { previewGo(1); e.preventDefault(); }
+    if (e.key === 'ArrowLeft')  { previewGo(-1); e.preventDefault(); }
+    if (e.key === 'Escape')     { document.getElementById('previewDialog').close(); }
+  });
 </script>
 
 <%- include('../partials/admin-foot') %>
