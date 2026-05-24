@@ -30,6 +30,7 @@ const {
 const COTIZADOR_CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
 const SERVICES_CATALOG_PATH   = path.join(__dirname, '..', 'data', 'services-catalog.json');
 const PARQUEADERO_CONFIG_PATH = path.join(__dirname, '..', 'data', 'parqueadero-config.json');
+const PDF_CONFIG_PATH         = path.join(__dirname, '..', 'data', 'quotation-pdf-config.json');
 
 function loadCotizadorConfig() {
   try { return JSON.parse(fs.readFileSync(COTIZADOR_CONFIG_PATH, 'utf8')); }
