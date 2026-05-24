@@ -880,6 +880,10 @@ async function countQuotations() {
   return Number(r.rows[0].n);
 }
 
+async function deleteQuotation(id) {
+  await db.execute({ sql: 'DELETE FROM quotations WHERE id = ?', args: [id] });
+}
+
 // ── Service Orders ────────────────────────────────────────────────────────
 
 function fmtLabel(prefix, consecutive, createdAt) {
