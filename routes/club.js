@@ -200,6 +200,37 @@ router.post('/visitas', requireAuth, async (req, res) => {
   res.redirect('/club/panel');
 });
 
+router.post('/perfil', requireAuth, async (req, res) => {
+  const user = await getUserById(req.userId);
+  if (!user) return res.redirect('/club/login');
+  const { name, nickname, phone, city, bloodType, emergencyName, emergencyPhone, clubNotifications } = req.body;
+  if (!name || name.trim().length < 2 || name.trim().length > 100) {
+    setFlash(res, 'error', 'El nombre debe tener entre 2 y 100 caracteres.');
+    return res.redirect('/club/panel');
+  }
+  if (phone && !/^[+\d\s\-()ñ]{7,25}$/.test(phone.trim())) {
+    setFlash(res, 'error', 'El teléfono no es válido.');
+    return res.redirect('/club/panel');
+  }
+  try {
+    await updateUser(user.id, {
+      name: name.trim(),
+      nickname: (nickname || '').trim() || null,
+      phone: (phone || '').trim() || null,
+      city: (city || '').trim() || null,
+      bloodType: bloodType || null,
+      emergencyName: (emergencyName || '').trim() || null,
+      emergencyPhone: (emergencyPhone || '').trim() || null,
+      clubNotifications: clubNotifications === 'true',
+    });
+    setFlash(res, 'success', 'Perfil actualizado.');
+  } catch (e) {
+    console.error('POST /club/perfil error:', e.message);
+    setFlash(res, 'error', 'No se pudo actualizar el perfil.');
+  }
+  res.redirect('/club/panel');
+});
+
 router.post('/vehiculos', requireAuth, async (req, res) => {
   const { plate, soatExpires, tecnoExpires } = req.body;
   const plateUp = (plate || '').trim().toUpperCase();
