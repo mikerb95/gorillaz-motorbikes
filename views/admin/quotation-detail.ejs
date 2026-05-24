@@ -163,18 +163,26 @@
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const [hr, hg, hb] = hexRgb(cfg.headerColor || '#F25C05');
 
-    // Header
+    // Header — calculate height dynamically based on filled fields
+    const hdrLines = [];
+    if (cfg.nit)     hdrLines.push('NIT: ' + cfg.nit);
+    const contact = [cfg.phone, cfg.email].filter(Boolean).join('  ·  ');
+    if (contact)     hdrLines.push(contact);
+    if (cfg.address) hdrLines.push(cfg.address);
+    const webCity = [cfg.website, cfg.city].filter(Boolean).join('  |  ');
+    if (webCity)     hdrLines.push(webCity);
+    const hdrH = 20 + hdrLines.length * 5;
+
     doc.setFillColor(hr, hg, hb);
-    doc.rect(0, 0, 210, 28, 'F');
+    doc.rect(0, 0, 210, hdrH, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
-    doc.text(cfg.companyName || 'GORILLAZ MOTORBIKES', 14, 12);
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    const subline = [cfg.website, cfg.city].filter(Boolean).join('  |  ');
-    if (subline) doc.text(subline, 14, 20);
+    doc.setFontSize(15); doc.setFont('helvetica', 'bold');
+    doc.text(cfg.companyName || 'GORILLAZ MOTORBIKES', 14, 11);
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    hdrLines.forEach((line, i) => doc.text(line, 14, 17 + i * 5));
     const dateStr = new Date(q.createdAt).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-    doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
-    doc.text('Cotización N° ' + q.label, 196, 20, { align: 'right' });
+    doc.text('Fecha: ' + dateStr, 196, 11, { align: 'right' });
+    doc.text('Cotización N° ' + q.label, 196, 17, { align: 'right' });
 
     // Title + moto/placa
     doc.setTextColor(17, 17, 17);
