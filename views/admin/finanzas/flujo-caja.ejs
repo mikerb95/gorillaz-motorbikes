@@ -2,7 +2,7 @@
 <% const fmt = n => '$' + Number(n).toLocaleString('es-CO'); %>
 
 <div class="crm-page-header">
-  <h1 class="crm-page-title">Flujo de Caja</h1>
+
   <form method="get" action="/admin/finanzas/flujo-caja" style="display:flex;gap:8px;align-items:center">
     <select name="year" class="crm-select" onchange="this.form.submit()">
       <% availableYears.forEach(y => { %>

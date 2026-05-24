@@ -8,7 +8,7 @@ const fmt = n => '$' + Number(n).toLocaleString('es-CO');
 %>
 
 <div class="crm-page-header">
-  <h1 class="crm-page-title">Contabilidad</h1>
+
   <form method="get" action="/admin/contabilidad" style="display:flex;gap:8px;align-items:center">
     <select name="period" class="crm-select" onchange="this.form.submit()" style="min-width:160px">
       <% availablePeriods.forEach(p => { %>

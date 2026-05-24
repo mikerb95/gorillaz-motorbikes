@@ -3,7 +3,7 @@
 <% const delta = (v, cls) => v === null ? '' : `<span style="font-size:.72rem;color:${v>0?'#16a34a':'#dc2626'};margin-left:6px">${v>0?'↑':'↓'}${Math.abs(v)}%</span>`; %>
 
 <div class="crm-page-header">
-  <h1 class="crm-page-title">Estado de Resultados (P&L)</h1>
+
   <form method="get" action="/admin/finanzas/estado-resultados" style="display:flex;gap:8px;align-items:center">
     <select name="period" class="crm-select" onchange="this.form.submit()">
       <% availablePeriods.forEach(p => { %>

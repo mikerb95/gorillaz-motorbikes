@@ -2,7 +2,7 @@
 <% const fmt = n => '$' + Number(n).toLocaleString('es-CO'); %>
 
 <div class="crm-page-header">
-  <h1 class="crm-page-title">Ingresos</h1>
+
   <form method="get" action="/admin/finanzas/ingresos" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <select name="period" class="crm-select" onchange="this.form.submit()">
       <% availablePeriods.forEach(p => { %>
