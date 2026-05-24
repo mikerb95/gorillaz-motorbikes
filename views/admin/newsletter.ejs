@@ -86,7 +86,7 @@
             </td>
             <td style="font-size:.8rem;color:#71717a"><%= new Date(s.created_at).toLocaleDateString('es-CO') %></td>
             <td>
-              <form action="/admin/newsletter/eliminar" method="post" onsubmit="return confirm('¿Eliminar este suscriptor?')">
+              <form action="/admin/newsletter/eliminar" method="post" data-confirm="¿Eliminar este suscriptor?">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <input type="hidden" name="email" value="<%= s.email %>">
                 <button class="crm-btn-icon crm-btn-danger" type="submit" title="Eliminar">

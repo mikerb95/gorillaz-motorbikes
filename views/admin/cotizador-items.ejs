@@ -306,12 +306,6 @@ const catalogProducts  = services.filter(s => s.type === 'product');
     }
   }
 
-  // ── Confirm on delete ─────────────────────────────────────────────
-  document.querySelectorAll('form[data-confirm]').forEach(form => {
-    form.addEventListener('submit', e => {
-      if (!confirm(form.dataset.confirm)) e.preventDefault();
-    });
-  });
 })();
 </script>
 
