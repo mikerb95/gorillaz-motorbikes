@@ -3331,9 +3331,11 @@ main.schedule-full {
 
 .product-card-footer {
   display: flex;
-  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   padding: 10px 0 0;
   margin-top: auto
 }
@@ -3341,28 +3343,32 @@ main.schedule-full {
 .price-col {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
+  flex: 1 1 0;
   min-width: 0
 }
 
 .price-col .price {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 900;
-  line-height: 1.2
+  line-height: 1.2;
+  white-space: nowrap
 }
 
 .price-col .price-old {
-  font-size: .75rem;
+  font-size: .72rem;
   color: var(--muted);
   text-decoration: line-through;
-  margin-left: 0
+  margin-left: 0;
+  line-height: 1.3
 }
 
 .card-add-btn {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
+  align-self: flex-end;
   padding: 6px 13px 6px 10px;
   font-size: .78rem;
   font-family: inherit;
@@ -3371,13 +3377,13 @@ main.schedule-full {
 }
 
 .card-add-btn:disabled {
-  background: #d1d5db;
-  border-color: #d1d5db;
-  color: #9ca3af;
+  background: #d1d5db !important;
+  border-color: #d1d5db !important;
+  color: #9ca3af !important;
   cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-  filter: none
+  box-shadow: none !important;
+  transform: none !important;
+  filter: none !important
 }
 
 .product-card {
