@@ -2071,6 +2071,11 @@ main.schedule-full {
     gap: 10px
   }
 
+  /* Show text labels next to the icon-only Eventos/Carrito rows */
+  .nav .nav-mobile-label {
+    display: inline-block
+  }
+
   /* Hide floating badge in the mobile panel to keep rows uniform */
   .nav[data-open="true"] .cart-badge {
     display: none
