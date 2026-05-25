@@ -345,15 +345,20 @@ async function countUsers() {
 
 async function createUser(data) {
   const id = data.id || uuidv4();
+  const firstName = (data.firstName || '').trim();
+  const lastName  = (data.lastName  || '').trim();
+  const fullName  = (firstName + ' ' + lastName).trim() || data.name || '';
   await db.execute({
     sql: `INSERT INTO users
-            (id, name, email, password, role, cedula, phone, city, birthdate,
+            (id, name, first_name, last_name, email, password, role, cedula, phone, city, birthdate,
              nickname, blood_type, club_notifications, membership, visits, vehicles,
              emergency_name, emergency_phone)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       id,
-      data.name,
+      fullName,
+      firstName,
+      lastName,
       data.email,
       data.password,
       data.role || 'user',
@@ -377,6 +382,8 @@ async function createUser(data) {
 async function updateUser(id, fields) {
   const set = [];
   const args = [];
+  if (fields.firstName !== undefined)        { set.push('first_name = ?');          args.push((fields.firstName || '').trim()); }
+  if (fields.lastName !== undefined)         { set.push('last_name = ?');           args.push((fields.lastName  || '').trim()); }
   if (fields.name !== undefined)             { set.push('name = ?');                args.push(fields.name); }
   if (fields.password !== undefined)         { set.push('password = ?');            args.push(fields.password); }
   if (fields.role !== undefined)             { set.push('role = ?');                args.push(fields.role); }
