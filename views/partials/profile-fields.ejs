@@ -25,8 +25,16 @@
     <input name="phone" type="tel" value="<%= u.phone || '' %>" />
   </div>
   <div class="crm-form-group">
-    <label>Ciudad</label>
-    <input name="city" value="<%= u.city || '' %>" />
+    <label>Departamento</label>
+    <select class="dept-select" name="department" data-location-group="<%= u.id %>" data-current-dept="<%= u.department || '' %>">
+      <option value="">— Seleccione —</option>
+    </select>
+  </div>
+  <div class="crm-form-group">
+    <label>Ciudad / Municipio</label>
+    <select class="city-select" name="city" data-location-group="<%= u.id %>" data-current="<%= u.city || '' %>">
+      <option value="">— Seleccione un departamento —</option>
+    </select>
   </div>
   <% if (admin) { %>
   <div class="crm-form-group">

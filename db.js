@@ -26,6 +26,7 @@ async function initDb() {
       cedula TEXT,
       phone TEXT,
       city TEXT,
+      department TEXT,
       birthdate TEXT,
       nickname TEXT,
       blood_type TEXT,
