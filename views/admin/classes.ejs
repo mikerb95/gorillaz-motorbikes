@@ -49,7 +49,7 @@
 <% } %>
 
 <!-- Crear curso -->
-<div class="crm-card hidden-card" id="newCourseCard" style="margin-bottom:14px">
+<div class="crm-card crm-inline-edit" id="newCourseCard" style="margin-bottom:14px">
   <div class="crm-card-title">Nuevo curso</div>
   <form method="post" action="/admin/clases/curso/crear">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
