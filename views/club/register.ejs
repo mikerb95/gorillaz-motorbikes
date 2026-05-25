@@ -106,54 +106,91 @@
             </div>
           </fieldset>
 
-          <!-- ── 3. DATOS DE LA MOTO ───────────────────────────── -->
-          <fieldset class="register-section">
-            <legend class="register-legend">Mi moto <span class="legend-note">(opcional)</span></legend>
-            <div class="register-grid">
-              <div class="field">
-                <label for="vehicleBrand">Marca</label>
-                <input id="vehicleBrand" name="vehicleBrand" placeholder="Ej. Yamaha, Honda, Bajaj…" />
-              </div>
-              <div class="field">
-                <label for="vehicleModel">Modelo</label>
-                <input id="vehicleModel" name="vehicleModel" placeholder="Ej. MT-07, CB500F…" />
-              </div>
-              <div class="field">
-                <label for="vehicleYear">Año</label>
-                <input id="vehicleYear" name="vehicleYear" type="number" min="1990" max="2030" placeholder="Ej. 2022" />
-              </div>
-              <div class="field">
-                <label for="vehiclePlate">Placa</label>
-                <input id="vehiclePlate" name="vehiclePlate" placeholder="Ej. ABC12D"
-                  style="text-transform:uppercase"
-                  oninput="this.value=this.value.toUpperCase()" />
-              </div>
-              <div class="field">
-                <label for="vehicleCC">Cilindraje (cc)</label>
-                <input id="vehicleCC" name="vehicleCC" type="number" min="50" max="2500" placeholder="Ej. 600" />
-              </div>
-              <div class="field">
-                <label for="vehicleColor">Color</label>
-                <input id="vehicleColor" name="vehicleColor" placeholder="Ej. Negro mate" />
-              </div>
-            </div>
+          <!-- ── 3. MOTOS ──────────────────────────────────────── -->
+          <fieldset class="register-section" id="vehiclesSection">
+            <legend class="register-legend">Mis motos <span class="legend-note">(opcional)</span></legend>
+            <p class="section-hint">Registra una o varias motos. La información de documentos nos ayuda a recordarte sus vencimientos.</p>
+
+            <div id="vehiclesList"></div>
+
+            <button type="button" id="addVehicleBtn" class="btn btn-ghost btn-sm" style="margin-top:4px">
+              + Agregar otra moto
+            </button>
           </fieldset>
 
-          <!-- ── 4. SOAT Y TECNOMECÁNICA ───────────────────────── -->
-          <fieldset class="register-section">
-            <legend class="register-legend">Documentos del vehículo <span class="legend-note">(opcional)</span></legend>
-            <p class="section-hint">Esta información nos ayuda a recordarte cuando vencen tus documentos.</p>
-            <div class="register-grid">
-              <div class="field">
-                <label for="soatExpires">Vencimiento SOAT</label>
-                <input id="soatExpires" name="soatExpires" type="date" />
+          <template id="vehicleTemplate">
+            <div class="vehicle-block">
+              <div class="vehicle-block-header">
+                <span class="vehicle-block-num"></span>
+                <button type="button" class="vehicle-remove-btn btn btn-ghost btn-sm">Eliminar</button>
               </div>
-              <div class="field">
-                <label for="tecnoExpires">Vencimiento Tecnomecánica</label>
-                <input id="tecnoExpires" name="tecnoExpires" type="date" />
+              <div class="register-grid">
+                <div class="field">
+                  <label>Marca</label>
+                  <input name="vehicleBrand[]" placeholder="Ej. Yamaha, Honda, Bajaj…" />
+                </div>
+                <div class="field">
+                  <label>Modelo</label>
+                  <input name="vehicleModel[]" placeholder="Ej. MT-07, CB500F…" />
+                </div>
+                <div class="field">
+                  <label>Año</label>
+                  <input name="vehicleYear[]" type="number" min="1990" max="2030" placeholder="Ej. 2022" />
+                </div>
+                <div class="field">
+                  <label>Placa</label>
+                  <input name="vehiclePlate[]" placeholder="Ej. ABC12D"
+                    style="text-transform:uppercase"
+                    oninput="this.value=this.value.toUpperCase()" />
+                </div>
+                <div class="field">
+                  <label>Cilindraje (cc)</label>
+                  <input name="vehicleCC[]" type="number" min="50" max="2500" placeholder="Ej. 600" />
+                </div>
+                <div class="field">
+                  <label>Color</label>
+                  <input name="vehicleColor[]" placeholder="Ej. Negro mate" />
+                </div>
+                <div class="field">
+                  <label>Vencimiento SOAT</label>
+                  <input name="soatExpires[]" type="date" />
+                </div>
+                <div class="field">
+                  <label>Vencimiento Tecnomecánica</label>
+                  <input name="tecnoExpires[]" type="date" />
+                </div>
               </div>
             </div>
-          </fieldset>
+          </template>
+
+          <script>
+            (function () {
+              var list = document.getElementById('vehiclesList');
+              var tmpl = document.getElementById('vehicleTemplate');
+              var addBtn = document.getElementById('addVehicleBtn');
+
+              function renumber() {
+                list.querySelectorAll('.vehicle-block').forEach(function (block, i) {
+                  block.querySelector('.vehicle-block-num').textContent = 'Moto ' + (i + 1);
+                  var rmBtn = block.querySelector('.vehicle-remove-btn');
+                  rmBtn.style.display = list.children.length > 1 ? '' : 'none';
+                });
+              }
+
+              function addBlock() {
+                var clone = tmpl.content.cloneNode(true);
+                clone.querySelector('.vehicle-remove-btn').addEventListener('click', function () {
+                  this.closest('.vehicle-block').remove();
+                  renumber();
+                });
+                list.appendChild(clone);
+                renumber();
+              }
+
+              addBtn.addEventListener('click', addBlock);
+              addBlock(); // start with one block
+            })();
+          </script>
 
           <!-- ── 5. ACCESO ─────────────────────────────────────── -->
           <fieldset class="register-section">
