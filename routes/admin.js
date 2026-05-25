@@ -167,7 +167,7 @@ router.get('/usuarios', requireAuth, requireAdmin, async (req, res) => {
 
 router.post('/usuarios/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const {
-    id, name, nickname, cedula, phone, city, birthdate, bloodType,
+    id, firstName, lastName, nickname, cedula, phone, city, birthdate, bloodType,
     emergencyName, emergencyPhone, clubNotifications, membershipLevel, role,
   } = req.body;
   const u = await getUserById(id);
@@ -182,6 +182,8 @@ router.post('/usuarios/actualizar', requireAuth, requireAdmin, async (req, res) 
     }
   }
 
+  const fn = (firstName || '').trim();
+  const ln = (lastName  || '').trim();
   const fields = {
     nickname: (nickname || '').trim() || null,
     cedula: cedulaTrim || null,
@@ -193,11 +195,15 @@ router.post('/usuarios/actualizar', requireAuth, requireAdmin, async (req, res) 
     emergencyPhone: (emergencyPhone || '').trim() || null,
     clubNotifications: clubNotifications === 'true',
   };
-  if (name) fields.name = name.trim();
+  if (fn || ln) {
+    fields.firstName = fn;
+    fields.lastName  = ln;
+    fields.name      = (fn + ' ' + ln).trim();
+  }
   if (membershipLevel) fields.membership = { ...u.membership, level: membershipLevel };
   if (role && ['user', 'admin'].includes(role)) fields.role = role;
   await updateUser(id, fields);
-  await logAdminAction(res.locals.user.id, res.locals.user.name, 'actualizar_usuario', 'user', id, { name, membershipLevel, role });
+  await logAdminAction(res.locals.user.id, res.locals.user.name, 'actualizar_usuario', 'user', id, { name: fields.name, membershipLevel, role });
   res.redirect('/admin/usuarios');
 });
 
