@@ -1,0 +1,1213 @@
+<%- include('../partials/admin-head', { title: 'Ayuda' }) %>
+
+<style>
+  .help-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .help-tab-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 2px solid #e5e7eb;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all .15s ease;
+    font-family: inherit;
+  }
+  .help-tab-btn.active {
+    background: #F25C05;
+    border-color: #F25C05;
+    color: #fff;
+  }
+  .help-tab-btn:hover:not(.active) {
+    border-color: #F25C05;
+    color: #F25C05;
+  }
+  .help-panel { display: none; }
+  .help-panel.active { display: block; }
+
+  .help-section {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .help-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+    background: #fff;
+    border-bottom: 1px solid transparent;
+    transition: background .12s ease;
+  }
+  .help-section-header:hover { background: #fafafa; }
+  .help-section-header.open { border-bottom-color: #e5e7eb; }
+  .help-section-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .help-section-icon.orange { background: #fff3e8; color: #F25C05; }
+  .help-section-icon.blue   { background: #eff6ff; color: #2563eb; }
+  .help-section-icon.green  { background: #f0fdf4; color: #16a34a; }
+  .help-section-icon.purple { background: #faf5ff; color: #7c3aed; }
+  .help-section-icon.amber  { background: #fffbeb; color: #d97706; }
+  .help-section-icon.red    { background: #fef2f2; color: #dc2626; }
+  .help-section-icon.teal   { background: #f0fdfa; color: #0d9488; }
+  .help-section-icon.pink   { background: #fdf2f8; color: #db2777; }
+  .help-section-title {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 800;
+    color: #111827;
+  }
+  .help-section-subtitle {
+    font-size: 12px;
+    color: #9ca3af;
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+  }
+  .help-chevron {
+    color: #9ca3af;
+    transition: transform .2s ease;
+    flex-shrink: 0;
+  }
+  .help-section-header.open .help-chevron {
+    transform: rotate(180deg);
+  }
+  .help-section-body {
+    display: none;
+    padding: 20px 22px 24px;
+  }
+  .help-section-body.open { display: block; }
+
+  .help-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: steps;
+  }
+  .help-steps li {
+    counter-increment: steps;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 13.5px;
+    color: #374151;
+    line-height: 1.6;
+  }
+  .help-steps li::before {
+    content: counter(steps);
+    min-width: 24px;
+    height: 24px;
+    background: #F25C05;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .help-bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .help-bullets li {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13.5px;
+    color: #374151;
+    line-height: 1.6;
+  }
+  .help-bullets li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #F25C05;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 7px;
+  }
+  .help-note {
+    background: #fff3e8;
+    border-left: 3px solid #F25C05;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #92400e;
+    margin-top: 14px;
+  }
+  .help-note strong { color: #78350f; }
+  .help-info {
+    background: #eff6ff;
+    border-left: 3px solid #2563eb;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #1e40af;
+    margin-top: 14px;
+  }
+  .help-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+  }
+  .help-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .help-card h4 {
+    font-size: 13px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 6px;
+  }
+  .help-card p {
+    font-size: 12.5px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+  }
+  .help-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  .badge-admin { background: #fef3c7; color: #92400e; }
+  .badge-client { background: #dcfce7; color: #166534; }
+  .badge-both { background: #ede9fe; color: #5b21b6; }
+  .help-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .help-table th {
+    background: #f3f4f6;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 700;
+    color: #374151;
+    font-size: 12px;
+  }
+  .help-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+  }
+  .help-table tr:last-child td { border-bottom: none; }
+  .help-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 16px 0;
+  }
+  .help-subsection-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #374151;
+    margin: 16px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .help-subsection-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: #F25C05;
+    border-radius: 2px;
+  }
+</style>
+
+<div class="crm-page-header">
+  <div>
+    <h1 class="crm-page-title">Manual de Ayuda</h1>
+    <p class="crm-page-desc">Instrucciones completas del sistema — panel de administración y sitio web</p>
+  </div>
+</div>
+
+<div class="help-tabs" id="helpTabs">
+  <button class="help-tab-btn active" data-tab="admin">Panel de Administración</button>
+  <button class="help-tab-btn" data-tab="cliente">Sitio Web — Clientes</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  PANEL DE ADMINISTRACIÓN                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="help-panel active" id="tab-admin">
+
+  <!-- DASHBOARD -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon orange">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Dashboard <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Página de inicio del panel — /admin</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">El Dashboard es la vista principal del panel. Muestra un resumen en tiempo real de todas las operaciones del negocio.</p>
+      <p class="help-subsection-title">Indicadores KPI</p>
+      <div class="help-grid">
+        <div class="help-card"><h4>Usuarios</h4><p>Total de miembros del club registrados.</p></div>
+        <div class="help-card"><h4>Citas</h4><p>Total de citas de servicio agendadas.</p></div>
+        <div class="help-card"><h4>Eventos</h4><p>Eventos creados en el sistema.</p></div>
+        <div class="help-card"><h4>Cursos</h4><p>Cursos disponibles en catálogo.</p></div>
+        <div class="help-card"><h4>Productos</h4><p>Referencias activas en la tienda.</p></div>
+        <div class="help-card"><h4>Pedidos</h4><p>Pedidos en línea recibidos.</p></div>
+        <div class="help-card"><h4>Suscriptores</h4><p>Emails confirmados en newsletter.</p></div>
+        <div class="help-card"><h4>Órdenes activas</h4><p>Órdenes de servicio en proceso.</p></div>
+        <div class="help-card"><h4>Facturas pendientes</h4><p>Facturas sin cobrar.</p></div>
+        <div class="help-card"><h4>Cotizaciones</h4><p>Cotizaciones emitidas.</p></div>
+      </div>
+      <p class="help-subsection-title">Accesos rápidos</p>
+      <p style="font-size:13.5px;color:#374151;line-height:1.6">Debajo de los KPI hay un grid de accesos directos a los módulos más usados. Al hacer clic en cualquier KPI también navega directamente al módulo correspondiente.</p>
+    </div>
+  </div>
+
+  <!-- USUARIOS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon blue">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Usuarios <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Gestión de miembros del club — /admin/usuarios</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Administra todos los miembros registrados en el Club Gorillaz. Desde aquí puedes consultar perfiles, ver el historial de puntos y eliminar cuentas.</p>
+      <p class="help-subsection-title">Lo que puedes hacer</p>
+      <ul class="help-bullets">
+        <li>Ver la lista de todos los miembros con nombre, cédula, ciudad, nivel y fecha de registro.</li>
+        <li>Buscar usuarios por nombre o email usando la barra de búsqueda.</li>
+        <li>Hacer clic en un usuario para ver su perfil completo: vehículos registrados, historial de puntos, visitas y datos de contacto.</li>
+        <li>Ver el nivel de membresía actual: Prospecto, Miembro, Rider, Gorilla o Gorilla Legend.</li>
+        <li>Eliminar un usuario (se hace borrado lógico, el registro queda en la base de datos con fecha de eliminación).</li>
+        <li>Asignar o cambiar el rol de un usuario (usuario normal o admin).</li>
+      </ul>
+      <p class="help-subsection-title">Sistema de Niveles</p>
+      <table class="help-table">
+        <tr><th>Nivel</th><th>Puntos necesarios</th></tr>
+        <tr><td>Prospecto</td><td>0 puntos</td></tr>
+        <tr><td>Miembro</td><td>100 puntos</td></tr>
+        <tr><td>Rider</td><td>300 puntos</td></tr>
+        <tr><td>Gorilla</td><td>700 puntos</td></tr>
+        <tr><td>Gorilla Legend</td><td>1.500 puntos</td></tr>
+      </table>
+      <div class="help-note"><strong>Nota:</strong> Los puntos se asignan automáticamente al registrar asistencia a eventos y rodadas, o cuando el cliente lleva su moto a servicio.</div>
+    </div>
+  </div>
+
+  <!-- CITAS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon orange">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Citas <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Solicitudes de servicio recibidas — /admin/citas</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Muestra todas las citas de servicio que los clientes han solicitado desde el sitio web. Cada fila muestra el cliente, el tipo de servicio, la fecha/hora solicitada y el estado actual.</p>
+      <p class="help-subsection-title">Estados de una cita</p>
+      <table class="help-table">
+        <tr><th>Estado</th><th>Significado</th></tr>
+        <tr><td>Pendiente</td><td>Solicitud recibida, aún no confirmada.</td></tr>
+        <tr><td>Confirmada</td><td>El taller confirmó la fecha y hora.</td></tr>
+        <tr><td>Completada</td><td>El servicio fue realizado.</td></tr>
+        <tr><td>Cancelada</td><td>La cita fue cancelada.</td></tr>
+      </table>
+      <p class="help-subsection-title">Acciones disponibles</p>
+      <ul class="help-bullets">
+        <li>Cambiar el estado de cualquier cita desde el menú desplegable de cada fila.</li>
+        <li>Ver las notas que el cliente dejó al agendar.</li>
+        <li>Eliminar una cita del sistema.</li>
+      </ul>
+      <div class="help-info"><strong>Consejo:</strong> Para bloquear fechas en el calendario de citas (ej. días festivos o sin personal), usa el módulo <strong>Calendario</strong>.</div>
+    </div>
+  </div>
+
+  <!-- AGENDA SERVICIOS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon teal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Agenda Servicios <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Vista de demanda del taller — /admin/agenda-servicios</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Vista administrativa de la disponibilidad del taller. Muestra qué días están más ocupados, cuáles están bloqueados y cómo se distribuyen las citas.</p>
+      <ul class="help-bullets">
+        <li>Visualiza un mapa de calor por fechas: verde (libre), amarillo (moderado), rojo (lleno).</li>
+        <li>Filtra las citas por servicio o rango de fechas.</li>
+        <li>Identifica rápidamente los días de mayor demanda para planificar el personal.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CALENDARIO -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon blue">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Calendario <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Bloqueo de fechas — /admin/calendario</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Permite bloquear fechas específicas para que los clientes no puedan agendar citas en esos días (festivos, vacaciones del taller, días sin personal, etc.).</p>
+      <ul class="help-steps">
+        <li>Selecciona una o varias fechas en el calendario haciendo clic sobre ellas.</li>
+        <li>Haz clic en <strong>Bloquear fecha</strong> para que esa fecha quede inhabilitada para nuevas citas.</li>
+        <li>Para desbloquear, selecciona la fecha bloqueada y haz clic en <strong>Desbloquear</strong>.</li>
+      </ul>
+      <div class="help-note"><strong>Importante:</strong> Las fechas bloqueadas no aparecerán como disponibles en el formulario de agendamiento del sitio web.</div>
+    </div>
+  </div>
+
+  <!-- EVENTOS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon purple">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Eventos <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Gestión de eventos del club — /admin/eventos</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Crea y gestiona todos los eventos del club: rodadas, encuentros, caminatas, eventos especiales y más. Los eventos publicados aparecen automáticamente en el sitio web.</p>
+      <p class="help-subsection-title">Crear un evento</p>
+      <ul class="help-steps">
+        <li>Haz clic en <strong>Nuevo evento</strong>.</li>
+        <li>Ingresa el título, fecha, hora de salida, lugar de encuentro y descripción.</li>
+        <li>Selecciona el <strong>tipo</strong> (Rodada, Encuentro, Caminata, Otro) y la <strong>categoría</strong> de nivel (Principiante, Intermedio, Experto).</li>
+        <li>Opcionalmente agrega coordenadas GPS (lat/lng) para mostrar un mapa del punto de encuentro.</li>
+        <li>Guarda y el evento queda visible en el sitio inmediatamente.</li>
+      </ul>
+      <p class="help-subsection-title">Gestionar asistencia</p>
+      <ul class="help-bullets">
+        <li>Haz clic en <strong>Ver asistentes</strong> en cualquier evento para ver quiénes se inscribieron.</li>
+        <li>Puedes confirmar o cancelar la asistencia de cada miembro manualmente.</li>
+        <li>Al confirmar asistencia, el sistema puede asignar puntos automáticamente al usuario.</li>
+      </ul>
+      <p class="help-subsection-title">Puntos por tipo de evento</p>
+      <table class="help-table">
+        <tr><th>Tipo</th><th>Puntos</th></tr>
+        <tr><td>Rodada</td><td>30 puntos</td></tr>
+        <tr><td>Encuentro</td><td>25 puntos</td></tr>
+        <tr><td>Caminata</td><td>25 puntos</td></tr>
+        <tr><td>Evento general</td><td>25 puntos</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- CURSOS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon green">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Cursos <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Gestión de cursos e inscripciones — /admin/cursos</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Gestiona el catálogo de cursos que ofrece el taller (mecánica, mantenimiento, manejo, etc.) y revisa las inscripciones recibidas.</p>
+      <p class="help-subsection-title">Catálogo de cursos</p>
+      <ul class="help-bullets">
+        <li>Los cursos se definen en el archivo <code>data/courses.json</code> del servidor.</li>
+        <li>Cada curso tiene: título, slug único, descripción, syllabus, duración, precio, horario, requisitos y resultados de aprendizaje.</li>
+        <li>Los cambios al catálogo requieren editar el archivo JSON y reiniciar el servidor (contactar al desarrollador).</li>
+      </ul>
+      <p class="help-subsection-title">Inscripciones</p>
+      <ul class="help-bullets">
+        <li>Haz clic en <strong>Ver inscripciones</strong> en cualquier curso para ver los estudiantes inscritos.</li>
+        <li>Cada inscripción muestra: nombre, email, teléfono, fecha y notas adicionales del estudiante.</li>
+        <li>Puedes eliminar inscripciones individuales si es necesario.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CLASES -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon blue">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Clases <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Material didáctico con diapositivas — /admin/clases</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Módulo de presentaciones de diapositivas para impartir clases al personal del taller o en cursos presenciales. Las diapositivas se muestran en pantalla completa.</p>
+      <p class="help-subsection-title">Gestionar diapositivas</p>
+      <ul class="help-steps">
+        <li>Selecciona el curso y el tema que deseas gestionar.</li>
+        <li>Usa el botón <strong>Subir imagen</strong> para agregar una nueva diapositiva (se sube a Vercel Blob automáticamente).</li>
+        <li>Reordena las diapositivas arrastrándolas a la posición deseada.</li>
+        <li>Elimina diapositivas individuales con el botón de eliminar en cada una.</li>
+      </ul>
+      <p class="help-subsection-title">Ver presentación</p>
+      <ul class="help-bullets">
+        <li>Haz clic en <strong>Ver presentación</strong> para abrir el visor de diapositivas en pantalla completa.</li>
+        <li>Navega con las flechas del teclado ← → o con los botones en pantalla.</li>
+        <li>La URL de cada presentación es: <code>/clases/{curso}/{tema}</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TIENDA -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon amber">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Tienda — Productos <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Catálogo de productos e inventario — /admin/tienda</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Gestiona todos los productos de la tienda en línea: crea nuevos artículos, edita precios, administra el stock y sube imágenes.</p>
+      <p class="help-subsection-title">Crear o editar un producto</p>
+      <ul class="help-steps">
+        <li>Haz clic en <strong>Nuevo producto</strong> o en el ícono de editar de un producto existente.</li>
+        <li>Completa: nombre, precio, categoría, marca, SKU, descripción y tags de búsqueda.</li>
+        <li>Sube la imagen principal y las imágenes de galería (se almacenan en Vercel Blob / CDN).</li>
+        <li>Define el stock disponible y el porcentaje de descuento (0 = sin descuento).</li>
+        <li>Guarda. El producto aparece instantáneamente en la tienda del sitio web.</li>
+      </ul>
+      <p class="help-subsection-title">Control de inventario</p>
+      <ul class="help-bullets">
+        <li>El stock se descuenta automáticamente cuando se confirma un pago en línea.</li>
+        <li>Desde la lista de productos puedes ver el stock actual de cada referencia.</li>
+        <li>Cuando el stock llega a 0, el producto deja de mostrarse como disponible para compra.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PEDIDOS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon green">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H5a2 2 0 00-2 2"/><path d="M9 3H5a2 2 0 00-2 2v4"/><rect x="9" y="11" width="13" height="10" rx="2"/><rect x="9" y="3" width="13" height="6" rx="2"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Pedidos <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Órdenes de compra en línea — /admin/pedidos</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Muestra todas las órdenes de compra generadas desde la tienda en línea, con los detalles del pago procesado a través de Bold.</p>
+      <p class="help-subsection-title">Estados de un pedido</p>
+      <table class="help-table">
+        <tr><th>Estado</th><th>Descripción</th></tr>
+        <tr><td>Pendiente</td><td>El cliente inició el proceso pero el pago no se ha confirmado.</td></tr>
+        <tr><td>Pagado</td><td>Bold confirmó el pago exitosamente. El stock ya fue descontado.</td></tr>
+        <tr><td>Enviado</td><td>El pedido fue despachado al cliente.</td></tr>
+        <tr><td>Completado</td><td>El cliente recibió su pedido.</td></tr>
+        <tr><td>Cancelado</td><td>Pedido cancelado o pago fallido.</td></tr>
+      </table>
+      <p class="help-subsection-title">Acciones</p>
+      <ul class="help-bullets">
+        <li>Cambia el estado del pedido desde el selector en cada fila.</li>
+        <li>Haz clic en el número de pedido para ver los artículos, cantidades, datos del cliente y referencia de pago Bold.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- COTIZACIONES -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon orange">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Cotizaciones <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Presupuestos de servicios y productos — /admin/cotizaciones</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Lista todas las cotizaciones generadas, tanto desde el Liquidador del sitio web como directamente en el admin. Cada cotización tiene un número consecutivo único.</p>
+      <p class="help-subsection-title">Ver una cotización</p>
+      <ul class="help-steps">
+        <li>Haz clic en el número de cotización para ver el detalle completo: cliente, moto, ítems, precios y total.</li>
+        <li>Desde la vista de detalle puedes <strong>Descargar PDF</strong> para enviarla al cliente.</li>
+        <li>También puedes <strong>Crear Orden de Servicio</strong> directamente desde la cotización aprobada.</li>
+      </ul>
+      <p class="help-subsection-title">Estados de cotización</p>
+      <table class="help-table">
+        <tr><th>Estado</th><th>Descripción</th></tr>
+        <tr><td>Pendiente</td><td>Enviada al cliente, esperando respuesta.</td></tr>
+        <tr><td>Aprobada</td><td>Cliente aceptó. Lista para convertir en orden.</td></tr>
+        <tr><td>Rechazada</td><td>Cliente no aceptó la propuesta.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ÓRDENES DE SERVICIO -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon teal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Órdenes de Servicio <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Órdenes de trabajo del taller — /admin/ordenes-servicio</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Las Órdenes de Servicio (OS) son el documento de trabajo interno del taller. Se crean a partir de una cotización aprobada o directamente.</p>
+      <p class="help-subsection-title">Flujo de trabajo</p>
+      <ul class="help-steps">
+        <li>La OS se crea desde una cotización aprobada (botón "Crear Orden de Servicio") o directamente en <strong>/admin/ordenes-servicio</strong>.</li>
+        <li>Asigna un mecánico responsable a la orden.</li>
+        <li>Actualiza el estado a medida que avanza el trabajo: Pendiente → En proceso → Listo.</li>
+        <li>Cuando el trabajo esté terminado, genera la <strong>Factura</strong> desde la misma orden.</li>
+      </ul>
+      <p class="help-subsection-title">Estados de la OS</p>
+      <table class="help-table">
+        <tr><th>Estado</th><th>Descripción</th></tr>
+        <tr><td>Pendiente</td><td>Orden creada, trabajo no iniciado.</td></tr>
+        <tr><td>En proceso</td><td>Mecánico trabajando activamente.</td></tr>
+        <tr><td>Listo</td><td>Trabajo terminado, listo para entregar.</td></tr>
+        <tr><td>Entregado</td><td>Moto entregada al cliente.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- FACTURAS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon green">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Facturas <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Facturación de servicios — /admin/facturas</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Gestiona todas las facturas generadas por servicios del taller. Las facturas se numeran de forma consecutiva y se pueden descargar en PDF.</p>
+      <p class="help-subsection-title">Generar una factura</p>
+      <ul class="help-steps">
+        <li>Desde la vista de detalle de una Orden de Servicio, haz clic en <strong>Generar Factura</strong>.</li>
+        <li>Confirma los ítems, cantidades y precios. Puedes agregar o quitar ítems antes de facturar.</li>
+        <li>Selecciona el método de pago (efectivo, transferencia, tarjeta).</li>
+        <li>La factura queda registrada con número consecutivo automático.</li>
+      </ul>
+      <p class="help-subsection-title">Estados de factura</p>
+      <table class="help-table">
+        <tr><th>Estado</th><th>Descripción</th></tr>
+        <tr><td>Pendiente</td><td>Generada pero no cobrada aún.</td></tr>
+        <tr><td>Pagada</td><td>El cliente realizó el pago.</td></tr>
+        <tr><td>Anulada</td><td>Factura cancelada.</td></tr>
+      </table>
+      <div class="help-note"><strong>Nota:</strong> Las facturas pendientes aparecen en el módulo de Finanzas → Cuentas por Cobrar.</div>
+    </div>
+  </div>
+
+  <!-- NEWSLETTER -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon blue">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Newsletter <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Suscriptores y campañas de email — /admin/newsletter</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Gestiona la lista de suscriptores y envía campañas de email a todos los contactos confirmados. El envío usa el servicio <strong>Resend</strong>.</p>
+      <p class="help-subsection-title">Suscriptores</p>
+      <ul class="help-bullets">
+        <li>Solo aparecen suscriptores con email <strong>confirmado</strong> (el cliente hizo clic en el link de confirmación).</li>
+        <li>Puedes eliminar suscriptores individuales si lo solicitan.</li>
+        <li>El contador muestra el total de emails confirmados disponibles para envío.</li>
+      </ul>
+      <p class="help-subsection-title">Enviar una campaña</p>
+      <ul class="help-steps">
+        <li>Haz clic en <strong>Nueva campaña</strong>.</li>
+        <li>Escribe el asunto del email.</li>
+        <li>Redacta el contenido en HTML o texto plano.</li>
+        <li>Haz clic en <strong>Enviar</strong>. El email se manda a todos los suscriptores confirmados.</li>
+        <li>El sistema guarda el historial de campañas enviadas con la fecha y cantidad de destinatarios.</li>
+      </ul>
+      <div class="help-note"><strong>Importante:</strong> Una campaña enviada no puede deshacerse. Revisa bien el contenido antes de enviar.</div>
+    </div>
+  </div>
+
+  <!-- ÍTEMS DEL COTIZADOR -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon amber">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Ítems del Cotizador <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Catálogo de servicios para cotizaciones — /admin/cotizador-items</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Define la lista de servicios y productos disponibles en el Liquidador (cotizador rápido del sitio web y del admin). Estos ítems aparecen en los resultados de búsqueda al crear una cotización.</p>
+      <ul class="help-steps">
+        <li>Haz clic en <strong>Nuevo ítem</strong>.</li>
+        <li>Ingresa el nombre del servicio o producto, y su precio base.</li>
+        <li>Guarda. El ítem queda disponible inmediatamente en el buscador del Liquidador.</li>
+      </ul>
+      <ul class="help-bullets">
+        <li>Puedes editar el nombre o precio de cualquier ítem existente.</li>
+        <li>Puedes eliminar ítems que ya no se ofrezcan.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CONFIG LIQUIDADOR -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon orange">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Config Liquidador <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Mensajes de WhatsApp del cotizador — /admin/cotizador-config</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Personaliza el mensaje que se genera cuando el cliente hace clic en "Enviar por WhatsApp" desde el Liquidador del sitio web.</p>
+      <ul class="help-bullets">
+        <li><strong>Encabezado:</strong> Texto que aparece al inicio del mensaje (ej. "🏍️ *Cotización Gorillaz Motorbikes*").</li>
+        <li><strong>Prefijo de ítem:</strong> Carácter que antecede cada línea de producto/servicio (ej. "•", "-", "→").</li>
+        <li><strong>Pie de página:</strong> Texto que cierra el mensaje (ej. sitio web, teléfono).</li>
+        <li><strong>Nota:</strong> Mensaje adicional opcional al final.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CONFIG PDF -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon red">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Config PDF <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Plantilla del PDF de cotizaciones — /admin/config-pdf-cotizacion</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Configura los datos de la empresa que aparecen en el encabezado del PDF de cotizaciones que se descarga desde el admin.</p>
+      <div class="help-grid">
+        <div class="help-card"><h4>Nombre empresa</h4><p>Razón social que aparece en el PDF.</p></div>
+        <div class="help-card"><h4>NIT</h4><p>Número de identificación tributaria.</p></div>
+        <div class="help-card"><h4>Teléfono y email</h4><p>Datos de contacto en el encabezado.</p></div>
+        <div class="help-card"><h4>Dirección y ciudad</h4><p>Ubicación del taller.</p></div>
+        <div class="help-card"><h4>Color de encabezado</h4><p>Color corporativo del header del PDF.</p></div>
+        <div class="help-card"><h4>Vigencia (días)</h4><p>Días de validez de la cotización.</p></div>
+        <div class="help-card"><h4>Nota de pie</h4><p>Texto legal o aclaratoria al final del PDF.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG PARQUEADERO -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon teal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Config Parqueadero <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Tarifas de parqueo — /admin/config-parqueadero</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Configura las tarifas del servicio de parqueadero que se integran en el cálculo automático del Liquidador cuando el cliente deja la moto varios días.</p>
+      <ul class="help-bullets">
+        <li><strong>Días gratis:</strong> Número de días sin cobro tras el servicio (ej. 3 días).</li>
+        <li><strong>Tarifa por día:</strong> Valor en COP por día adicional de parqueo.</li>
+      </ul>
+      <div class="help-info"><strong>Ejemplo:</strong> Si días gratis = 3 y tarifa = $7.000/día, a partir del día 4 se cobra $7.000 por cada día adicional que la moto permanezca en el taller.</div>
+    </div>
+  </div>
+
+  <!-- FINANZAS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon green">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Finanzas <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Reportes financieros del negocio — /admin/finanzas</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Módulo financiero completo con múltiples reportes. Consolida ingresos por servicios, pedidos online y egresos registrados.</p>
+
+      <p class="help-subsection-title">Dashboard Financiero — /admin/finanzas</p>
+      <ul class="help-bullets">
+        <li>Resumen del mes actual: ingresos totales, egresos totales y utilidad neta.</li>
+        <li>Gráfica de ingresos vs egresos por mes (últimos 12 meses).</li>
+        <li>Distribución de ingresos por categoría.</li>
+      </ul>
+
+      <p class="help-subsection-title">Ingresos — /admin/finanzas/ingresos</p>
+      <ul class="help-bullets">
+        <li>Detalle de todos los ingresos: facturas pagadas + pedidos online completados.</li>
+        <li>Filtra por rango de fechas o método de pago.</li>
+        <li>Exporta el reporte en PDF o Excel.</li>
+      </ul>
+
+      <p class="help-subsection-title">Egresos — /admin/finanzas/egresos</p>
+      <ul class="help-steps">
+        <li>Haz clic en <strong>Registrar gasto</strong>.</li>
+        <li>Selecciona la categoría (Insumos, Nómina, Servicios públicos, Arrendamiento, Otros).</li>
+        <li>Ingresa descripción, monto, fecha y método de pago.</li>
+        <li>Guarda. El gasto queda incluido en los reportes financieros.</li>
+      </ul>
+
+      <p class="help-subsection-title">Estado de Resultados — /admin/finanzas/estado-resultados</p>
+      <ul class="help-bullets">
+        <li>P&L (Pérdidas y Ganancias) del período seleccionado.</li>
+        <li>Muestra: ingresos brutos, egresos por categoría, utilidad bruta y utilidad neta.</li>
+        <li>Permite comparar meses o años.</li>
+      </ul>
+
+      <p class="help-subsection-title">Flujo de Caja — /admin/finanzas/flujo-caja</p>
+      <ul class="help-bullets">
+        <li>Vista cronológica de entradas y salidas de dinero.</li>
+        <li>Saldo proyectado día a día.</li>
+        <li>Útil para planificar pagos y detectar períodos de déficit.</li>
+      </ul>
+
+      <p class="help-subsection-title">Cuentas por Cobrar — /admin/finanzas/cuentas-cobrar</p>
+      <ul class="help-bullets">
+        <li>Lista de facturas en estado "Pendiente" (servicios no cobrados).</li>
+        <li>Muestra el cliente, moto, total y días transcurridos desde la emisión.</li>
+        <li>Desde aquí puedes marcar una factura como pagada directamente.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- AUDITORÍA -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon red">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Auditoría <span class="help-badge badge-admin">Admin</span></div>
+        <span class="help-section-subtitle">Registro de acciones administrativas — /admin/auditoria</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">El log de auditoría registra automáticamente todas las acciones importantes realizadas por los administradores. Es de solo lectura y no puede modificarse.</p>
+      <ul class="help-bullets">
+        <li>Registra: quién hizo la acción, qué acción fue, sobre qué registro, y cuándo.</li>
+        <li>Útil para rastrear cambios, eliminaciones o acciones sensibles.</li>
+        <li>Filtra por administrador, tipo de acción o rango de fechas.</li>
+      </ul>
+      <div class="help-note"><strong>Importante:</strong> No hay forma de eliminar entradas del log de auditoría desde el panel. Esto es intencional para garantizar la trazabilidad.</div>
+    </div>
+  </div>
+
+</div><!-- /tab-admin -->
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SITIO WEB — CLIENTES                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="help-panel" id="tab-cliente">
+
+  <!-- PÁGINA DE INICIO -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon orange">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Página de Inicio <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Vitrina principal del sitio — /</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">La página de inicio muestra el slideshow principal con imágenes del taller, productos destacados de la tienda, y accesos a los principales servicios.</p>
+      <ul class="help-bullets">
+        <li>El <strong>slideshow</strong> muestra imágenes rotativas del taller y la comunidad.</li>
+        <li>La sección de <strong>productos destacados</strong> muestra artículos seleccionados de la tienda.</li>
+        <li>Los botones de navegación llevan a: Servicios, Tienda, Club, Eventos y Cursos.</li>
+        <li>El pie de página tiene links a: Privacidad, Términos, Licencia, Misión, Visión y FAQ.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SERVICIOS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon teal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Servicios <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Catálogo y agendamiento — /servicios</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">El catálogo de servicios muestra todos los trabajos que realiza el taller con descripción, tiempo estimado y precio referencial.</p>
+      <p class="help-subsection-title">Servicios disponibles</p>
+      <div class="help-grid">
+        <div class="help-card"><h4>Mecánica general</h4><p>Revisión y reparación integral de la moto.</p></div>
+        <div class="help-card"><h4>Pintura</h4><p>Trabajo de pintura y acabados.</p></div>
+        <div class="help-card"><h4>Tecnomecánica</h4><p>Alistamiento para revisión técnico-mecánica.</p></div>
+        <div class="help-card"><h4>Electricidad</h4><p>Diagnóstico y reparación eléctrica.</p></div>
+        <div class="help-card"><h4>Torno y prensa</h4><p>Trabajos de rectificación y prensado.</p></div>
+        <div class="help-card"><h4>Mecánica rápida</h4><p>Cambio de aceite, filtros y revisiones express.</p></div>
+        <div class="help-card"><h4>Escaneo</h4><p>Diagnóstico con scanner electrónico.</p></div>
+        <div class="help-card"><h4>Lavado y detailing</h4><p>Lavado completo y detailing profesional.</p></div>
+      </div>
+      <p class="help-subsection-title">Agendar una cita</p>
+      <ul class="help-steps">
+        <li>Ve a <strong>/servicios/agendar</strong> o haz clic en "Agendar cita" en la página de servicios.</li>
+        <li>Completa el formulario: nombre, email, teléfono, tipo de servicio.</li>
+        <li>Selecciona una fecha disponible en el calendario (las fechas bloqueadas o saturadas no aparecen).</li>
+        <li>Elige la hora disponible.</li>
+        <li>Agrega notas opcionales sobre el estado de tu moto.</li>
+        <li>Envía el formulario. Recibirás confirmación por email.</li>
+      </ul>
+      <div class="help-info"><strong>Nota:</strong> La disponibilidad de fechas se actualiza en tiempo real según la demanda y los bloqueos configurados por el taller.</div>
+    </div>
+  </div>
+
+  <!-- TIENDA -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon amber">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Tienda en Línea <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Compra de productos — /tienda</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">La tienda en línea permite comprar accesorios, repuestos y productos relacionados con motos. El pago se procesa a través de Bold.</p>
+      <p class="help-subsection-title">Cómo comprar</p>
+      <ul class="help-steps">
+        <li>Navega el catálogo en <strong>/tienda</strong>. Puedes filtrar por categoría o buscar por nombre.</li>
+        <li>Haz clic en un producto para ver sus detalles, galería de imágenes y descripción completa.</li>
+        <li>Haz clic en <strong>Agregar al carrito</strong>. El ícono del carrito en la barra superior se actualiza.</li>
+        <li>Puedes continuar comprando o ir al carrito para revisar los artículos.</li>
+        <li>En el carrito, ajusta cantidades o elimina productos.</li>
+        <li>Haz clic en <strong>Proceder al pago</strong>. Ingresa tu nombre, email y dirección.</li>
+        <li>Serás redirigido a Bold para completar el pago con tarjeta de crédito/débito o PSE.</li>
+        <li>Al confirmarse el pago, recibirás un email de confirmación con el resumen de tu pedido.</li>
+      </ul>
+      <p class="help-subsection-title">Seguimiento de pedido</p>
+      <ul class="help-bullets">
+        <li>Después del pago verás una pantalla de confirmación con el número de pedido.</li>
+        <li>El taller actualizará el estado del pedido (Pagado → Enviado → Completado).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CURSOS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon green">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Cursos <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Inscripción a cursos del taller — /cursos</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">El taller ofrece cursos de mecánica, mantenimiento, manejo seguro y más. Los clientes pueden inscribirse directamente desde el sitio.</p>
+      <ul class="help-steps">
+        <li>Navega a <strong>/cursos</strong> para ver todos los cursos disponibles.</li>
+        <li>Haz clic en un curso para ver el syllabus completo, duración, precio, horario y requisitos.</li>
+        <li>Haz clic en <strong>Inscribirme</strong>.</li>
+        <li>Completa el formulario con nombre, email, teléfono y notas.</li>
+        <li>El equipo del taller te contactará para confirmar y dar instrucciones de pago.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- EVENTOS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon purple">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Eventos <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Rodadas y encuentros del club — /eventos</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Muestra todos los próximos eventos del Club Gorillaz: rodadas, encuentros, caminatas y eventos especiales.</p>
+      <ul class="help-bullets">
+        <li>Cada evento muestra: título, fecha, lugar de encuentro, tipo de actividad y nivel requerido.</li>
+        <li>Si el evento tiene coordenadas, se muestra un mapa con el punto exacto de salida.</li>
+        <li>Los miembros del club pueden registrar su asistencia desde su <strong>Panel de Miembro</strong>.</li>
+        <li>La asistencia confirmada suma puntos al perfil del miembro automáticamente.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CLUB GORILLAZ -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon orange">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Club Gorillaz <span class="help-badge badge-client">Miembros</span></div>
+        <span class="help-section-subtitle">Comunidad de moteros — /club</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">El Club Gorillaz es la comunidad de moteros del taller. Los miembros acumulan puntos por actividades, suben de nivel y aparecen en el leaderboard.</p>
+
+      <p class="help-subsection-title">Registro — /club/registro</p>
+      <ul class="help-steps">
+        <li>Haz clic en <strong>Únete al club</strong> o ve a <strong>/club/registro</strong>.</li>
+        <li>Completa: nombre completo, cédula, email, contraseña, teléfono, ciudad y fecha de nacimiento.</li>
+        <li>Opcionalmente agrega tu tipo de sangre y apodo (nickname).</li>
+        <li>Acepta los términos y condiciones.</li>
+        <li>Tu cuenta queda activa inmediatamente. Nivel inicial: <strong>Prospecto</strong>.</li>
+      </ul>
+
+      <p class="help-subsection-title">Inicio de sesión — /club/login</p>
+      <ul class="help-steps">
+        <li>Ve a <strong>/club/login</strong> e ingresa tu email y contraseña.</li>
+        <li>Si olvidaste tu contraseña, haz clic en <strong>¿Olvidaste tu contraseña?</strong></li>
+        <li>Ingresa tu email, recibirás un enlace para resetearla (válido por tiempo limitado).</li>
+      </ul>
+
+      <p class="help-subsection-title">Panel de Miembro — /club/panel</p>
+      <ul class="help-bullets">
+        <li>Ve tu puntaje total, nivel actual y progreso hacia el siguiente nivel.</li>
+        <li>Consulta el historial detallado de cómo ganaste cada punto.</li>
+        <li>Ve los próximos eventos del club y regístralos en tu asistencia.</li>
+        <li>Gestiona los vehículos registrados en tu perfil (marca, modelo, año, placa).</li>
+        <li>Genera el <strong>QR de tu vehículo</strong> para identificación rápida.</li>
+      </ul>
+
+      <p class="help-subsection-title">Perfil — /club/perfil</p>
+      <ul class="help-bullets">
+        <li>Actualiza tus datos de contacto, foto de perfil y preferencias.</li>
+        <li>Agrega o edita tus vehículos: marca, modelo, año, cilindraje, placa.</li>
+        <li>Cambia tu contraseña desde la sección de seguridad.</li>
+      </ul>
+
+      <p class="help-subsection-title">Leaderboard — /club/leaderboard</p>
+      <ul class="help-bullets">
+        <li>Ranking de todos los miembros ordenados por puntaje total.</li>
+        <li>Ve tu posición en la comunidad y cuántos puntos te faltan para superar al siguiente.</li>
+        <li>Filtra por nivel o ciudad.</li>
+      </ul>
+
+      <p class="help-subsection-title">Cómo ganar puntos</p>
+      <table class="help-table">
+        <tr><th>Actividad</th><th>Puntos</th></tr>
+        <tr><td>Participar en una rodada</td><td>30 pts</td></tr>
+        <tr><td>Asistir a un encuentro</td><td>25 pts</td></tr>
+        <tr><td>Participar en una caminata</td><td>25 pts</td></tr>
+        <tr><td>Asistir a un evento</td><td>25 pts</td></tr>
+        <tr><td>Llevar la moto a mantenimiento</td><td>20 pts</td></tr>
+        <tr><td>Visita al taller</td><td>10 pts</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- LIQUIDADOR -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon blue">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Liquidador <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Cotización rápida de servicios — /liquidador</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">El Liquidador es una herramienta de cotización rápida que permite al cliente (o al asesor del taller) armar un presupuesto al instante y enviarlo por WhatsApp.</p>
+      <ul class="help-steps">
+        <li>Ve a <strong>/liquidador</strong>.</li>
+        <li>Ingresa el nombre del servicio o producto en el buscador. Aparecerán sugerencias del catálogo.</li>
+        <li>Selecciona el ítem y ajusta la cantidad. Repite para cada servicio que desees cotizar.</li>
+        <li>El total se calcula automáticamente.</li>
+        <li>Si la moto quedó varios días, ingresa la fecha de ingreso para calcular el parqueo automáticamente.</li>
+        <li>Haz clic en <strong>Enviar por WhatsApp</strong> para abrir WhatsApp con el mensaje de cotización pre-armado.</li>
+      </ul>
+      <div class="help-info"><strong>Consejo:</strong> El liquidador también está disponible para uso interno del taller desde el panel de administración.</div>
+    </div>
+  </div>
+
+  <!-- RUNT -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon teal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Consulta RUNT <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Estado de SOAT y RTM — /runt</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Permite consultar el estado del SOAT (seguro obligatorio) y la RTM (revisión técnico-mecánica) de cualquier vehículo registrado en Colombia, usando el RUNT.</p>
+      <ul class="help-steps">
+        <li>Ve a <strong>/runt</strong>.</li>
+        <li>Ingresa la placa del vehículo.</li>
+        <li>Resuelve el captcha de verificación que aparece.</li>
+        <li>Haz clic en <strong>Consultar</strong>. El sistema consultará el RUNT automáticamente.</li>
+        <li>Verás el estado actual del SOAT (vigente/vencido/fecha de vencimiento) y de la RTM.</li>
+      </ul>
+      <div class="help-note"><strong>Nota:</strong> Esta consulta depende de la disponibilidad del servicio RUNT. Si el captcha no carga, recarga la página.</div>
+    </div>
+  </div>
+
+  <!-- NEWSLETTER -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon blue">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Newsletter <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Suscripción al boletín — footer del sitio</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Los visitantes pueden suscribirse al boletín informativo de Gorillaz Motorbikes para recibir novedades, promociones y eventos.</p>
+      <ul class="help-steps">
+        <li>En el pie de página del sitio, ingresa tu email en el campo de suscripción.</li>
+        <li>Haz clic en <strong>Suscribirse</strong>.</li>
+        <li>Recibirás un email de confirmación. Debes hacer clic en el enlace para activar la suscripción.</li>
+        <li>Una vez confirmado, recibirás los emails de las campañas del taller.</li>
+      </ul>
+      <p class="help-subsection-title">Cancelar suscripción</p>
+      <ul class="help-bullets">
+        <li>En cualquier email del boletín hay un enlace de "Cancelar suscripción" al final.</li>
+        <li>Al hacer clic, se te eliminará automáticamente de la lista sin necesidad de iniciar sesión.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TRABAJA CON NOSOTROS -->
+  <div class="help-section">
+    <div class="help-section-header" onclick="toggleSection(this)">
+      <div class="help-section-icon purple">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+      </div>
+      <div>
+        <div class="help-section-title">Trabaja con Nosotros <span class="help-badge badge-client">Público</span></div>
+        <span class="help-section-subtitle">Aplicación a vacantes — /trabaja</span>
+      </div>
+      <svg class="help-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="help-section-body">
+      <p style="font-size:13.5px;color:#374151;margin:0 0 12px;line-height:1.6">Interesados en trabajar en Gorillaz Motorbikes pueden enviar su hoja de vida directamente desde el sitio.</p>
+      <ul class="help-steps">
+        <li>Ve a <strong>/trabaja</strong> para ver las vacantes disponibles.</li>
+        <li>Haz clic en <strong>Aplicar</strong> en la vacante de tu interés.</li>
+        <li>Completa el formulario: nombre, email, teléfono, experiencia, habilidades y mensaje.</li>
+        <li>Envía el formulario. El equipo de Gorillaz revisará tu aplicación y se pondrá en contacto.</li>
+      </ul>
+      <div class="help-note"><strong>Nota:</strong> Las aplicaciones recibidas se pueden revisar desde el panel de administración en la sección de solicitudes de empleo.</div>
+    </div>
+  </div>
+
+</div><!-- /tab-cliente -->
+
+<script>
+  function toggleSection(header) {
+    const body = header.nextElementSibling;
+    const isOpen = header.classList.contains('open');
+    header.classList.toggle('open', !isOpen);
+    body.classList.toggle('open', !isOpen);
+  }
+
+  document.getElementById('helpTabs').addEventListener('click', function(e) {
+    const btn = e.target.closest('.help-tab-btn');
+    if (!btn) return;
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.help-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.help-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+  });
+</script>
+
+<%- include('../partials/admin-foot') %>

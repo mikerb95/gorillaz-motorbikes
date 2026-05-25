@@ -21,6 +21,7 @@
       img.src = s.img;
       img.className = 'slide-img';
       img.alt = '';
+      img.onerror = function() { this.style.display = 'none'; };
       el.appendChild(img);
     }
     return el;
