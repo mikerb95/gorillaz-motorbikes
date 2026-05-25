@@ -243,9 +243,14 @@ function safeJson(str, fallback) {
 
 function rowToUser(row) {
   if (!row) return null;
+  const firstName = row.first_name || '';
+  const lastName  = row.last_name  || '';
+  const name      = (firstName + ' ' + lastName).trim() || row.name || '';
   return {
     id: row.id,
-    name: row.name,
+    name,
+    firstName,
+    lastName,
     email: row.email,
     password: row.password,
     role: row.role || 'user',
