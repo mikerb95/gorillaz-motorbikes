@@ -700,6 +700,36 @@ main.container {
   .sub-inner {
     margin: 0
   }
+
+  /* Logged-in action bar: stack greeting above buttons and let buttons wrap
+     instead of cramming into a single horizontal row */
+  .sub-embed {
+    padding: 8px 12px 12px
+  }
+
+  .sub-embed .sub-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 0
+  }
+
+  .sub-embed .sub-left {
+    padding: 0 2px
+  }
+
+  .sub-right {
+    flex-wrap: wrap;
+    gap: 8px
+  }
+
+  .sub-right .sub-btn,
+  .sub-right form .sub-btn {
+    flex: 1 1 auto;
+    text-align: center;
+    white-space: nowrap;
+    padding: 10px 12px
+  }
 }
 
 /* Admin only top action on dashboard */
