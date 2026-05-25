@@ -456,10 +456,10 @@
 <dialog id="previewDialog">
   <div class="preview-bar">
     <span class="preview-title" id="previewTitle"></span>
-    <button class="btn btn-xs btn-ghost" onclick="previewGo(-1)">←</button>
+    <button class="btn btn-xs btn-ghost" onclick="previewGo(-1)" aria-label="Anterior">←</button>
     <span class="preview-counter" id="previewCounter"></span>
-    <button class="btn btn-xs btn-ghost" onclick="previewGo(1)">→</button>
-    <button class="btn btn-xs btn-ghost" onclick="document.getElementById('previewDialog').close()" title="Cerrar">✕</button>
+    <button class="btn btn-xs btn-ghost" onclick="previewGo(1)" aria-label="Siguiente">→</button>
+    <button class="btn btn-xs btn-ghost" onclick="document.getElementById('previewDialog').close()" aria-label="Cerrar">✕</button>
   </div>
   <div id="previewDeck"></div>
 </dialog>
