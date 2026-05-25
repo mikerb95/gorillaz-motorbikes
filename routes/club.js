@@ -91,7 +91,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
 router.get('/registro', (req, res) => {
   if (req.userId) return res.redirect('/club/panel');
-  res.render('club/register', { error: null });
+  res.render('club/register', { error: null, googleEnabled: !!GOOGLE_CLIENT_ID });
 });
 
 router.post('/registro', authLimiter, async (req, res) => {
