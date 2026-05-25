@@ -423,6 +423,11 @@ body.has-subbar .nav-bar .header-inner {
   line-height: 1
 }
 
+/* Text label for icon-only links (Eventos, Carrito); only shown in the mobile overlay */
+.nav-mobile-label {
+  display: none
+}
+
 /* Orange blob background under brand and menu items */
 .nav-blob {
   position: absolute;
