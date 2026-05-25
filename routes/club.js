@@ -91,7 +91,7 @@ router.get('/registro', (req, res) => {
 });
 
 router.post('/registro', authLimiter, async (req, res) => {
-  const { firstName, lastName, cedula, phone, birthdate, bloodType, city, nickname, clubNotifications, emergencyName, emergencyPhone, vehicleBrand, vehicleModel, vehicleYear, vehiclePlate, vehicleCC, vehicleColor, soatExpires, tecnoExpires, email, password, confirmPassword } = req.body;
+  const { firstName, lastName, cedula, phone, birthdate, bloodType, city, department, nickname, clubNotifications, emergencyName, emergencyPhone, vehicleBrand, vehicleModel, vehicleYear, vehiclePlate, vehicleCC, vehicleColor, soatExpires, tecnoExpires, email, password, confirmPassword } = req.body;
   const validationError = validateRegistration({ firstName, lastName, email, password, phone, cedula });
   if (validationError) return res.status(400).render('club/register', { error: validationError });
   if (password !== confirmPassword) return res.status(400).render('club/register', { error: 'Las contraseñas no coinciden' });
