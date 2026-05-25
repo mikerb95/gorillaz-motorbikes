@@ -205,18 +205,25 @@ router.post('/visitas', requireAuth, async (req, res) => {
 router.post('/perfil', requireAuth, async (req, res) => {
   const user = await getUserById(req.userId);
   if (!user) return res.redirect('/club/login');
-  const { name, nickname, phone, city, bloodType, emergencyName, emergencyPhone, clubNotifications } = req.body;
-  if (!name || name.trim().length < 2 || name.trim().length > 100) {
-    setFlash(res, 'error', 'El nombre debe tener entre 2 y 100 caracteres.');
+  const { firstName, lastName, nickname, phone, city, bloodType, emergencyName, emergencyPhone, clubNotifications } = req.body;
+  if (!firstName || firstName.trim().length < 2 || firstName.trim().length > 50) {
+    setFlash(res, 'error', 'El nombre debe tener entre 2 y 50 caracteres.');
+    return res.redirect('/club/panel');
+  }
+  if (!lastName || lastName.trim().length < 2 || lastName.trim().length > 50) {
+    setFlash(res, 'error', 'El apellido debe tener entre 2 y 50 caracteres.');
     return res.redirect('/club/panel');
   }
   if (phone && !/^[+\d\s\-()ñ]{7,25}$/.test(phone.trim())) {
     setFlash(res, 'error', 'El teléfono no es válido.');
     return res.redirect('/club/panel');
   }
+  const name = (firstName.trim() + ' ' + lastName.trim()).trim();
   try {
     await updateUser(user.id, {
-      name: name.trim(),
+      name,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
       nickname: (nickname || '').trim() || null,
       phone: (phone || '').trim() || null,
       city: (city || '').trim() || null,
