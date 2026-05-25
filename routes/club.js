@@ -72,20 +72,24 @@ router.post('/login', authLimiter, async (req, res) => {
   const { email, password, returnTo } = req.body;
   const safeReturn = (returnTo || '').toString().trim();
   const redirectTo = safeReturn.startsWith('/') && !safeReturn.startsWith('//') ? safeReturn : '/club/panel';
+  const gEnabled = !!GOOGLE_CLIENT_ID;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
-    return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn });
+    return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn, googleEnabled: gEnabled });
   }
   try {
     const user = await getUserByEmail(email);
-    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn });
+    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled });
+    if (!user.password || user.password === '$google$') {
+      return res.status(401).render('club/login', { error: 'Esta cuenta usa Google para iniciar sesión.', returnTo: safeReturn, googleEnabled: gEnabled });
+    }
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn });
+    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled });
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
     res.redirect(redirectTo);
   } catch (e) {
     console.error('POST /club/login error:', e);
-    res.status(500).render('club/login', { error: 'Error del servidor', returnTo: safeReturn });
+    res.status(500).render('club/login', { error: 'Error del servidor', returnTo: safeReturn, googleEnabled: gEnabled });
   }
 });
 
@@ -233,7 +237,7 @@ router.get('/auth/google/callback', authLimiter, async (req, res) => {
         firstName: given_name || email.split('@')[0],
         lastName: family_name || '',
         email,
-        password: null,
+        password: '$google$',
         googleId,
         avatarUrl: picture || null,
       });

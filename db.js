@@ -21,7 +21,7 @@ async function initDb() {
       first_name TEXT NOT NULL DEFAULT '',
       last_name TEXT NOT NULL DEFAULT '',
       email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
+      password TEXT,
       role TEXT NOT NULL DEFAULT 'user',
       cedula TEXT,
       phone TEXT,
