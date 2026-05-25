@@ -23,4 +23,8 @@ const BOLD_API_KEY      = process.env.BOLD_API_KEY    || '';
 const BOLD_SECRET_KEY   = process.env.BOLD_SECRET_KEY || '';
 const BOLD_REDIRECT_URL = process.env.BOLD_REDIRECT_URL || 'http://localhost:3000/payment/return';
 
-module.exports = { JWT_SECRET, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, resendClient, BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL };
+const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID     || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const APP_URL              = process.env.APP_URL || 'http://localhost:3000';
+
+module.exports = { JWT_SECRET, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, resendClient, BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL };
