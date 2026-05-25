@@ -18,6 +18,8 @@ async function initDb() {
     `CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      first_name TEXT NOT NULL DEFAULT '',
+      last_name TEXT NOT NULL DEFAULT '',
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'user',
@@ -210,6 +212,9 @@ async function initDb() {
     `ALTER TABLE quotations ADD COLUMN plate TEXT`,
     `ALTER TABLE service_orders ADD COLUMN trabajo_completo_at TEXT`,
     `ALTER TABLE orders ADD COLUMN stock_decremented INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE users ADD COLUMN first_name TEXT NOT NULL DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN last_name TEXT NOT NULL DEFAULT ''`,
+    `UPDATE users SET first_name = TRIM(SUBSTR(name, 1, INSTR(name || ' ', ' ') - 1)), last_name = TRIM(SUBSTR(name, INSTR(name || ' ', ' '))) WHERE first_name = ''`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
