@@ -550,17 +550,38 @@ router.get('/clases/curso/:key/exportar', requireAuth, requireAdmin, (req, res) 
 });
 
 router.post('/clases/curso/importar', requireAuth, requireAdmin, (req, res) => {
-  const rawJson = (req.body.json || '').trim();
+  const rawJson     = (req.body.json  || '').trim();
   const titleOverride = (req.body.title || '').trim();
   if (!rawJson) return res.redirect('/admin/clases?flash=error');
   let data;
   try { data = JSON.parse(rawJson); } catch { return res.redirect('/admin/clases?flash=error'); }
-  if (!data || typeof data !== 'object' || !data.topics) return res.redirect('/admin/clases?flash=error');
-  if (titleOverride) data.title = titleOverride;
-  if (!data.title) return res.redirect('/admin/clases?flash=error');
-  let key = slugFromTitle(data.title);
+  if (!data || typeof data !== 'object') return res.redirect('/admin/clases?flash=error');
+
+  const finalTitle = (titleOverride || String(data.title || '')).trim();
+  if (!finalTitle) return res.redirect('/admin/clases?flash=error');
+
+  const rawTopics = (data.topics && typeof data.topics === 'object') ? data.topics : {};
+  const sanitized = { title: finalTitle, topics: {} };
+  for (const [tk, tv] of Object.entries(rawTopics)) {
+    if (!tv || typeof tv !== 'object') continue;
+    sanitized.topics[tk] = {
+      title: String(tv.title || tk).trim(),
+      slides: Array.isArray(tv.slides) ? tv.slides.map(s => {
+        if (!s || typeof s !== 'object') return null;
+        const sl = {};
+        if (typeof s.h1  === 'string' && s.h1.trim())  sl.h1  = s.h1.trim();
+        if (typeof s.h2  === 'string' && s.h2.trim())  sl.h2  = s.h2.trim();
+        if (typeof s.p   === 'string' && s.p.trim())   sl.p   = s.p.trim();
+        if (Array.isArray(s.ul)) sl.ul = s.ul.filter(i => typeof i === 'string' && i.trim()).map(i => i.trim());
+        if (typeof s.img === 'string' && s.img.trim()) sl.img = s.img.trim();
+        return Object.keys(sl).length ? sl : null;
+      }).filter(Boolean) : [],
+    };
+  }
+
+  let key = slugFromTitle(finalTitle) || 'curso';
   if (classesData[key]) key = key + '_' + Date.now().toString(36);
-  classesData[key] = data;
+  classesData[key] = sanitized;
   saveJSON('classes.json', classesData);
   res.redirect('/admin/clases');
 });
