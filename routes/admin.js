@@ -384,7 +384,7 @@ function slugFromTitle(t) {
 router.post('/clases/curso/crear', requireAuth, requireAdmin, (req, res) => {
   const title = (req.body.title || '').trim();
   if (!title) return res.redirect('/admin/clases?flash=error');
-  let key = slugFromTitle(title);
+  let key = slugFromTitle(title) || 'curso';
   if (classesData[key]) key = key + '_' + Date.now().toString(36);
   classesData[key] = { title, topics: {} };
   saveJSON('classes.json', classesData);
@@ -445,16 +445,16 @@ router.post('/clases/tema/eliminar', requireAuth, requireAdmin, (req, res) => {
 function buildSlide(type, heading, content, items, img) {
   const slide = {};
   if (type === 'h1') {
-    slide.h1 = (heading || '').trim();
-    if ((content || '').trim()) slide.p = content.trim();
+    if ((heading || '').trim()) slide.h1 = heading.trim();
+    if ((content || '').trim()) slide.p  = content.trim();
   } else if (type === 'h2') {
-    slide.h2 = (heading || '').trim();
-    if ((content || '').trim()) slide.p = content.trim();
+    if ((heading || '').trim()) slide.h2 = heading.trim();
+    if ((content || '').trim()) slide.p  = content.trim();
   } else if (type === 'ul') {
-    slide.h2 = (heading || '').trim();
+    if ((heading || '').trim()) slide.h2 = heading.trim();
     slide.ul = (items || '').split('\n').map(s => s.trim()).filter(Boolean);
   } else {
-    slide.p = (content || '').trim();
+    if ((content || '').trim()) slide.p = content.trim();
   }
   if ((img || '').trim()) slide.img = img.trim();
   return slide;
