@@ -101,7 +101,7 @@ router.post('/registro', authLimiter, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const vehicles = (vehicleBrand || vehiclePlate) ? [{ brand: vehicleBrand, model: vehicleModel, year: vehicleYear, plate: vehiclePlate, cc: vehicleCC, color: vehicleColor, soatExpires: soatExpires || null, tecnoExpires: tecnoExpires || null }] : [];
     const newUser = await createUser({
-      firstName, lastName, email, password: hashedPassword, cedula, phone, birthdate, bloodType: bloodType || null, city,
+      firstName, lastName, email, password: hashedPassword, cedula, phone, birthdate, bloodType: bloodType || null, city, department: department || null,
       nickname, clubNotifications: clubNotifications === 'true',
       emergencyName, emergencyPhone,
       vehicles,
@@ -205,7 +205,7 @@ router.post('/visitas', requireAuth, async (req, res) => {
 router.post('/perfil', requireAuth, async (req, res) => {
   const user = await getUserById(req.userId);
   if (!user) return res.redirect('/club/login');
-  const { firstName, lastName, nickname, phone, city, bloodType, emergencyName, emergencyPhone, clubNotifications } = req.body;
+  const { firstName, lastName, nickname, phone, city, department, bloodType, emergencyName, emergencyPhone, clubNotifications } = req.body;
   if (!firstName || firstName.trim().length < 2 || firstName.trim().length > 50) {
     setFlash(res, 'error', 'El nombre debe tener entre 2 y 50 caracteres.');
     return res.redirect('/club/panel');
