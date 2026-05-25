@@ -79,7 +79,9 @@
 
       <div class="runt-field">
         <label for="placa">Placa del vehículo</label>
-        <input id="placa" type="text" placeholder="Ej: ABC123" maxlength="7" required>
+        <input id="placa" type="text" placeholder="Ej: ABC123" maxlength="7" required
+          style="text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()">
       </div>
 
       <div class="runt-field">
