@@ -1,8 +1,8 @@
 'use strict';
-/* Departamentos y municipios de Colombia — DANE 2024 */
+/* Departamentos y municipios de Colombia — DANE 2024 (1102 municipios) */
 const COLOMBIA_DATA = [
   ['Bogotá D.C.', ['Bogotá']],
-  ['Amazonas', ['Leticia', 'Puerto Nariño']],
+  ['Amazonas', ['Leticia','Puerto Nariño']],
   ['Antioquia', [
     'Abejorral','Abriaquí','Alejandría','Amagá','Amalfi','Andes','Angelópolis','Angostura',
     'Anorí','Anzá','Apartadó','Arboletes','Argelia','Armenia','Barbosa','Bello','Betania',
@@ -23,9 +23,7 @@ const COLOMBIA_DATA = [
     'Valparaíso','Vegachí','Venecia','Vigía del Fuerte','Yalí','Yarumal','Yolombó',
     'Yondó','Zaragoza'
   ]],
-  ['Arauca', [
-    'Arauca','Arauquita','Cravo Norte','Fortul','Puerto Rondón','Saravena','Tame'
-  ]],
+  ['Arauca', ['Arauca','Arauquita','Cravo Norte','Fortul','Puerto Rondón','Saravena','Tame']],
   ['Atlántico', [
     'Barranquilla','Baranoa','Campo de la Cruz','Candelaria','Galapa','Juan de Acosta',
     'Luruaco','Malambo','Manatí','Palmar de Varela','Piojó','Polonuevo','Ponedera',
@@ -121,18 +119,12 @@ const COLOMBIA_DATA = [
     'Quipile','Ricaurte','San Antonio del Tequendama','San Bernardo','San Cayetano',
     'San Francisco','San Juan de Río Seco','Sasaima','Sesquilé','Sibaté','Silvania',
     'Simijaca','Soacha','Sopó','Subachoque','Suesca','Supatá','Susa','Sutatausa',
-    'Tabio','Tausa','Tena','El Peñón de Tequendama','Tibacuy','Tibirita','Tocaima',
-    'Tocancipá','Topaipí','Ubalá','Ubaque','Villa de San Diego de Ubaté','Une','Útica',
-    'Venecia','Vergara','Vianí','Villagómez','Villapinzón','Villeta','Viotá',
-    'Yacopí','Zipacón','Zipaquirá'
+    'Tabio','Tausa','Tena','Tibacuy','Tibirita','Tocaima','Tocancipá','Topaipí',
+    'Ubalá','Ubaque','Villa de San Diego de Ubaté','Une','Útica','Venecia','Vergara',
+    'Vianí','Villagómez','Villapinzón','Villeta','Viotá','Yacopí','Zipacón','Zipaquirá'
   ]],
-  ['Guainía', [
-    'Inírida','Barranco Minas','Cacahual','La Guadalupe','Mapiripana','Morichal Nuevo',
-    'Pana Pana','Puerto Colombia','San Felipe'
-  ]],
-  ['Guaviare', [
-    'San José del Guaviare','Calamar','El Retorno','Miraflores'
-  ]],
+  ['Guainía', ['Inírida','Barranco Minas','Cacahual','La Guadalupe','Mapiripana','Morichal Nuevo','Pana Pana','Puerto Colombia','San Felipe']],
+  ['Guaviare', ['San José del Guaviare','Calamar','El Retorno','Miraflores']],
   ['Huila', [
     'Neiva','Acevedo','Agrado','Aipe','Algeciras','Altamira','Baraya','Campoalegre',
     'Colombia','Elías','Garzón','Gigante','Guadalupe','Hobo','Íquira','Isnos',
@@ -194,9 +186,7 @@ const COLOMBIA_DATA = [
     'La Virginia','Marsella','Mistrató','Palestina','Quinchía','Santa Rosa de Cabal',
     'Santuario'
   ]],
-  ['San Andrés y Providencia', [
-    'San Andrés','Providencia y Santa Catalina'
-  ]],
+  ['San Andrés y Providencia', ['San Andrés','Providencia y Santa Catalina']],
   ['Santander', [
     'Bucaramanga','Aguada','Albania','Aratoca','Barbosa','Barichara','Barrancabermeja',
     'Betulia','Bolívar','Cabrera','California','Capitanejo','Carcasí','Cepitá',
@@ -235,84 +225,108 @@ const COLOMBIA_DATA = [
     'Pradera','Restrepo','Riofrío','Roldanillo','San Pedro','Sevilla','Toro','Trujillo',
     'Tuluá','Ulloa','Versalles','Vijes','Yotoco','Yumbo','Zarzal'
   ]],
-  ['Vaupés', [
-    'Mitú','Carurú','Taraira'
-  ]],
-  ['Vichada', [
-    'Puerto Carreño','Cumaribo','La Primavera','Santa Rosalía'
-  ]],
+  ['Vaupés', ['Mitú','Carurú','Taraira']],
+  ['Vichada', ['Puerto Carreño','Cumaribo','La Primavera','Santa Rosalía']],
 ];
 
 (function () {
-  function buildOptions(cities, selected) {
-    let html = '<option value="">— Municipio —</option>';
+  function buildCityOptions(cities, selected) {
+    var html = '<option value="">— Municipio —</option>';
     cities.forEach(function (c) {
       html += '<option value="' + c + '"' + (c === selected ? ' selected' : '') + '>' + c + '</option>';
     });
     return html;
   }
 
+  function buildDeptOptions(selected) {
+    var html = '<option value="">— Departamento —</option>';
+    COLOMBIA_DATA.forEach(function (d) {
+      html += '<option value="' + d[0] + '"' + (d[0] === selected ? ' selected' : '') + '>' + d[0] + '</option>';
+    });
+    return html;
+  }
+
+  function findEntry(deptName) {
+    return COLOMBIA_DATA.find(function (d) { return d[0] === deptName; }) || null;
+  }
+
   function getDeptForCity(city) {
-    for (let i = 0; i < COLOMBIA_DATA.length; i++) {
+    for (var i = 0; i < COLOMBIA_DATA.length; i++) {
       if (COLOMBIA_DATA[i][1].indexOf(city) !== -1) return COLOMBIA_DATA[i][0];
     }
     return '';
   }
 
-  function initPair(deptSel, citySel) {
-    const existingCity = citySel.dataset.current || '';
-    if (existingCity) {
-      const dept = getDeptForCity(existingCity);
-      if (dept) {
-        deptSel.value = dept;
-        const entry = COLOMBIA_DATA.find(function (d) { return d[0] === dept; });
-        if (entry) citySel.innerHTML = buildOptions(entry[1], existingCity);
+  /* Collect groups: { groupKey → { depts:[], cities:[] } } */
+  function collectGroups() {
+    var groups = {};
+    document.querySelectorAll('.dept-select[data-location-group]').forEach(function (el) {
+      var g = el.dataset.locationGroup;
+      if (!groups[g]) groups[g] = { depts: [], cities: [] };
+      groups[g].depts.push(el);
+    });
+    document.querySelectorAll('.city-select[data-location-group]').forEach(function (el) {
+      var g = el.dataset.locationGroup;
+      if (!groups[g]) groups[g] = { depts: [], cities: [] };
+      groups[g].cities.push(el);
+    });
+    return groups;
+  }
+
+  function initGroup(group) {
+    /* Build dept options if not done yet */
+    group.depts.forEach(function (deptSel) {
+      if (!deptSel.dataset.built) {
+        var currentCity = (group.cities[0] && group.cities[0].dataset.current) || '';
+        var currentDept = deptSel.dataset.currentDept || (currentCity ? getDeptForCity(currentCity) : '');
+        deptSel.innerHTML = buildDeptOptions(currentDept);
+        deptSel.dataset.built = '1';
+
+        /* Pre-populate city selects if a dept is already known */
+        if (currentDept) {
+          var entry = findEntry(currentDept);
+          if (entry) {
+            group.cities.forEach(function (citySel) {
+              citySel.innerHTML = buildCityOptions(entry[1], citySel.dataset.current || '');
+            });
+          }
+        }
       }
-    }
-    deptSel.addEventListener('change', function () {
-      const entry = COLOMBIA_DATA.find(function (d) { return d[0] === this.value; }, this);
-      citySel.innerHTML = entry ? buildOptions(entry[1], '') : '<option value="">— Seleccione un departamento —</option>';
+
+      /* Attach change listener only once */
+      if (!deptSel.dataset.listenerAdded) {
+        deptSel.dataset.listenerAdded = '1';
+        deptSel.addEventListener('change', function () {
+          var entry = findEntry(this.value);
+          group.cities.forEach(function (citySel) {
+            citySel.innerHTML = entry
+              ? buildCityOptions(entry[1], '')
+              : '<option value="">— Seleccione un departamento —</option>';
+          });
+          /* Keep all dept selects in the group in sync */
+          group.depts.forEach(function (d) { if (d !== deptSel) d.value = deptSel.value; });
+        });
+      }
     });
   }
 
   function initAll() {
-    document.querySelectorAll('.dept-select').forEach(function (deptSel) {
-      const target = deptSel.dataset.cityTarget;
-      const citySel = document.querySelector(target);
-      if (citySel) initPair(deptSel, citySel);
-    });
-  }
-
-  /* Build dept options once */
-  function buildDeptOptions(deptSel) {
-    if (deptSel.dataset.built) return;
-    deptSel.dataset.built = '1';
-    let html = '<option value="">— Departamento —</option>';
-    COLOMBIA_DATA.forEach(function (d) {
-      html += '<option value="' + d[0] + '">' + d[0] + '</option>';
-    });
-    deptSel.innerHTML = html;
-  }
-
-  /* Wait for DOM; also re-init when modals open (new elements in view) */
-  function setup() {
-    document.querySelectorAll('.dept-select').forEach(buildDeptOptions);
-    initAll();
+    var groups = collectGroups();
+    Object.keys(groups).forEach(function (key) { initGroup(groups[key]); });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup);
+    document.addEventListener('DOMContentLoaded', initAll);
   } else {
-    setup();
+    initAll();
   }
 
-  /* Re-run when a modal opens (city select may have been hidden before) */
+  /* Re-init when modals open (selects may have been in a collapsed/hidden section) */
   document.addEventListener('click', function (e) {
-    const opener = e.target.closest('[data-modal-open]');
-    if (!opener) return;
-    setTimeout(function () {
-      document.querySelectorAll('.dept-select').forEach(buildDeptOptions);
-      initAll();
-    }, 0);
+    if (e.target.closest('[data-modal-open]')) setTimeout(initAll, 0);
+  });
+  /* Re-init when admin inline-edit rows toggle */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[onclick*="toggleEdit"]')) setTimeout(initAll, 50);
   });
 })();
