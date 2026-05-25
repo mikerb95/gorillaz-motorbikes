@@ -167,6 +167,83 @@ router.post('/reset-password', async (req, res) => {
   res.redirect('/club/login');
 });
 
+// ── Google OAuth ──────────────────────────────────────────────────────────
+
+const GOOGLE_AUTH_URL     = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL    = 'https://oauth2.googleapis.com/token';
+const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo';
+
+router.get('/auth/google', (req, res) => {
+  if (!GOOGLE_CLIENT_ID) return res.redirect('/club/login');
+  const state = crypto.randomBytes(16).toString('hex');
+  res.cookie('g_state', state, { httpOnly: true, maxAge: 600_000, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: `${APP_URL}/club/auth/google/callback`,
+    response_type: 'code',
+    scope: 'openid email profile',
+    state,
+    access_type: 'online',
+    prompt: 'select_account',
+  });
+  res.redirect(`${GOOGLE_AUTH_URL}?${params.toString()}`);
+});
+
+router.get('/auth/google/callback', authLimiter, async (req, res) => {
+  const { code, state, error } = req.query;
+  if (error || !code) return res.redirect('/club/login?google=denied');
+
+  const savedState = req.cookies.g_state;
+  res.clearCookie('g_state');
+  if (!state || state !== savedState) return res.redirect('/club/login?google=error');
+
+  try {
+    const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: `${APP_URL}/club/auth/google/callback`,
+        grant_type: 'authorization_code',
+      }),
+    });
+    const tokens = await tokenRes.json();
+    if (!tokens.access_token) throw new Error('No access_token from Google');
+
+    const profileRes = await fetch(GOOGLE_USERINFO_URL, {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+    const profile = await profileRes.json();
+    const { sub: googleId, email, given_name, family_name, picture } = profile;
+    if (!googleId || !email) throw new Error('Incomplete Google profile');
+
+    let user = await getUserByGoogleId(googleId);
+    if (!user) user = await getUserByEmail(email);
+
+    if (user) {
+      if (!user.googleId) await updateUser(user.id, { googleId, avatarUrl: picture || null });
+    } else {
+      user = await createUser({
+        firstName: given_name || email.split('@')[0],
+        lastName: family_name || '',
+        email,
+        password: null,
+        googleId,
+        avatarUrl: picture || null,
+      });
+    }
+
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    res.redirect('/club/panel');
+  } catch (e) {
+    console.error('Google OAuth callback error:', e.message);
+    res.redirect('/club/login?google=error');
+  }
+});
+
 router.post('/logout', (req, res) => {
   res.clearCookie('jwt');
   res.redirect('/');
