@@ -2067,7 +2067,7 @@ main.schedule-full {
   }
 
   /* Hide floating badge in the mobile panel to keep rows uniform */
-  .nav[data-open=”true”] .cart-badge {
+  .nav[data-open="true"] .cart-badge {
     display: none
   }
 
