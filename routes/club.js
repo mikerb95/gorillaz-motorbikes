@@ -99,7 +99,17 @@ router.post('/registro', authLimiter, async (req, res) => {
     if (await getUserByEmail(email)) return res.status(400).render('club/register', { error: 'El correo ya está en uso' });
     if (cedula && await getUserByCedula(cedula)) return res.status(400).render('club/register', { error: 'La cédula ya está en uso' });
     const hashedPassword = await bcrypt.hash(password, 10);
-    const vehicles = (vehicleBrand || vehiclePlate) ? [{ brand: vehicleBrand, model: vehicleModel, year: vehicleYear, plate: vehiclePlate, cc: vehicleCC, color: vehicleColor, soatExpires: soatExpires || null, tecnoExpires: tecnoExpires || null }] : [];
+    const brands      = [].concat(req.body['vehicleBrand[]']  || req.body.vehicleBrand  || []);
+    const models      = [].concat(req.body['vehicleModel[]']  || req.body.vehicleModel  || []);
+    const years       = [].concat(req.body['vehicleYear[]']   || req.body.vehicleYear   || []);
+    const plates      = [].concat(req.body['vehiclePlate[]']  || req.body.vehiclePlate  || []);
+    const ccs         = [].concat(req.body['vehicleCC[]']     || req.body.vehicleCC     || []);
+    const colors      = [].concat(req.body['vehicleColor[]']  || req.body.vehicleColor  || []);
+    const soats       = [].concat(req.body['soatExpires[]']   || req.body.soatExpires   || []);
+    const tecnos      = [].concat(req.body['tecnoExpires[]']  || req.body.tecnoExpires  || []);
+    const vehicles = brands
+      .map((b, i) => ({ brand: b, model: models[i] || '', year: years[i] || '', plate: (plates[i] || '').toUpperCase(), cc: ccs[i] || '', color: colors[i] || '', soatExpires: soats[i] || null, tecnoExpires: tecnos[i] || null }))
+      .filter(v => v.brand || v.plate);
     const newUser = await createUser({
       firstName, lastName, email, password: hashedPassword, cedula, phone, birthdate, bloodType: bloodType || null, city, department: department || null,
       nickname, clubNotifications: clubNotifications === 'true',
