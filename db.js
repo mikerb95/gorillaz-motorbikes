@@ -364,15 +364,15 @@ async function createUser(data) {
     sql: `INSERT INTO users
             (id, name, first_name, last_name, email, password, role, cedula, phone, city, department, birthdate,
              nickname, blood_type, club_notifications, membership, visits, vehicles,
-             emergency_name, emergency_phone)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+             emergency_name, emergency_phone, google_id, avatar_url)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       id,
       fullName,
       firstName,
       lastName,
       data.email,
-      data.password,
+      data.password || null,
       data.role || 'user',
       data.cedula || null,
       data.phone || null,
@@ -387,6 +387,8 @@ async function createUser(data) {
       JSON.stringify(data.vehicles || []),
       data.emergencyName || null,
       data.emergencyPhone || null,
+      data.googleId || null,
+      data.avatarUrl || null,
     ],
   });
   return getUserById(id);
