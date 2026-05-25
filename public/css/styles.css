@@ -5221,6 +5221,32 @@ main.schedule-full {
   border-color: #F25C05
 }
 
+.crm-filter-label {
+  display: block;
+  font-size: .72rem;
+  font-weight: 600;
+  color: #71717a;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: .4px
+}
+
+.crm-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: .85rem;
+  font-family: inherit;
+  background: #fff
+}
+
+.crm-input:focus {
+  outline: none;
+  border-color: #F25C05
+}
+
 /* ── Users mobile card list (hidden on desktop) ── */
 .crm-user-cards {
   display: none
