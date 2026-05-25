@@ -61,7 +61,11 @@ router.get('/', async (req, res) => {
 router.get('/login', (req, res) => {
   const returnTo = (req.query.return || '').toString().trim();
   const safeReturn = returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '';
-  res.render('club/login', { error: null, returnTo: safeReturn });
+  const googleErr = req.query.google;
+  const googleErrorMsg = googleErr === 'denied' ? null
+    : googleErr === 'error' ? 'Hubo un problema al autenticarte con Google. Intenta de nuevo.'
+    : null;
+  res.render('club/login', { error: googleErrorMsg, returnTo: safeReturn, googleEnabled: !!GOOGLE_CLIENT_ID });
 });
 
 router.post('/login', authLimiter, async (req, res) => {
