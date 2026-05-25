@@ -217,6 +217,8 @@ async function initDb() {
     `ALTER TABLE users ADD COLUMN last_name TEXT NOT NULL DEFAULT ''`,
     `UPDATE users SET first_name = TRIM(SUBSTR(name, 1, INSTR(name || ' ', ' ') - 1)), last_name = TRIM(SUBSTR(name, INSTR(name || ' ', ' '))) WHERE first_name = ''`,
     `ALTER TABLE users ADD COLUMN department TEXT`,
+    `ALTER TABLE users ADD COLUMN google_id TEXT`,
+    `ALTER TABLE users ADD COLUMN avatar_url TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
@@ -273,6 +275,8 @@ function rowToUser(row) {
     emergencyPhone: row.emergency_phone,
     resetToken: row.reset_token,
     resetTokenExpiry: row.reset_token_expiry,
+    googleId: row.google_id || null,
+    avatarUrl: row.avatar_url || null,
     createdAt: row.created_at,
   };
 }
