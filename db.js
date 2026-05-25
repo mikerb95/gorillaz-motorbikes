@@ -259,6 +259,7 @@ function rowToUser(row) {
     cedula: row.cedula,
     phone: row.phone,
     city: row.city,
+    department: row.department,
     birthdate: row.birthdate,
     nickname: row.nickname,
     bloodType: row.blood_type,
