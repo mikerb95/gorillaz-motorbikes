@@ -340,6 +340,11 @@ async function getUserByResetToken(token) {
   return rowToUser(r.rows[0] || null);
 }
 
+async function getUserByGoogleId(googleId) {
+  const r = await db.execute({ sql: 'SELECT * FROM users WHERE google_id = ? AND deleted_at IS NULL', args: [googleId] });
+  return rowToUser(r.rows[0] || null);
+}
+
 async function getAllUsers() {
   const r = await db.execute('SELECT * FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC');
   return r.rows.map(rowToUser);

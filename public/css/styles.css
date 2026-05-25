@@ -2043,10 +2043,13 @@ main.schedule-full {
     align-items: stretch
   }
 
-  /* Mobile links unified like “Inicio” */
-  .nav-links a,
-  .nav-cta a,
-  .nav-cta form button {
+  /* Mobile links unified like “Inicio”.
+     Prefixed with .site-header so these beat the desktop rule
+     `.site-header .nav-cta a` (0,2,1, white text) that otherwise renders
+     the CTA links white-on-white inside the panel. */
+  .site-header .nav-links a,
+  .site-header .nav-cta a,
+  .site-header .nav-cta form button {
     display: block;
     width: 100%;
     text-align: left;
@@ -2060,9 +2063,9 @@ main.schedule-full {
     letter-spacing: .6px
   }
 
-  .nav-links a:hover,
-  .nav-cta a:hover,
-  .nav-cta form button:hover {
+  .site-header .nav-links a:hover,
+  .site-header .nav-cta a:hover,
+  .site-header .nav-cta form button:hover {
     background: #f3f4f6 !important;
     text-decoration: none
   }
