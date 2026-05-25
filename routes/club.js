@@ -25,12 +25,12 @@ function validateRegistration({ firstName, lastName, email, password, phone, ced
 }
 const QRCode = require('qrcode');
 
-const { JWT_SECRET, resendClient }  = require('../config');
+const { JWT_SECRET, resendClient, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL } = require('../config');
 const { requireAuth }               = require('../middleware/auth');
 const { authLimiter }               = require('../middleware/auth');
 const { getScoreLevel, SCORE_POINTS } = require('../helpers/score');
 const {
-  getUserById, getUserByEmail, getUserByCedula, getUserByResetToken,
+  getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId,
   updateUser, createUser,
   getAllEvents, getUpcomingEvents,
   registerEventAttendance, getUserEventRegistrations,
