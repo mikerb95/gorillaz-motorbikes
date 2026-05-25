@@ -164,6 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isSubmenuParent) closeNav();
       });
     });
+
+    // Close menu when tapping outside the panel (it no longer covers the full screen)
+    document.addEventListener('click', (e) => {
+      if (nav.getAttribute('data-open') !== 'true') return;
+      if (nav.contains(e.target) || toggle.contains(e.target)) return;
+      closeNav();
+    });
   }
 
   // Touch-friendly submenus: tap parent link toggles submenu on mobile
