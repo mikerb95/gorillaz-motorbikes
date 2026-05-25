@@ -185,17 +185,18 @@
     doc.text('Cotización N° ' + q.label, 196, 17, { align: 'right' });
 
     // Title + moto/placa
+    const bodyStart = hdrH + 10;
     doc.setTextColor(17, 17, 17);
     doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-    doc.text('COTIZACIÓN', 14, 40);
+    doc.text('COTIZACIÓN', 14, bodyStart);
 
-    let y = 40;
+    let y = bodyStart;
     const motoLine = [q.plate, q.motorcycle].filter(Boolean).join(' — ');
     if (motoLine) {
       doc.setFontSize(10); doc.setFont('helvetica', 'normal');
       doc.setTextColor(107, 114, 128);
-      doc.text('Moto / Placa: ' + motoLine, 14, 47);
-      y = 47;
+      doc.text('Moto / Placa: ' + motoLine, 14, y + 7);
+      y += 7;
     }
     if (cfg.showPhone && q.phone) {
       doc.setFontSize(9); doc.setFont('helvetica', 'normal');
