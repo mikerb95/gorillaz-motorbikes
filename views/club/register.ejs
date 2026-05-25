@@ -40,8 +40,16 @@
                 <input id="phone" name="phone" type="tel" placeholder="Ej. 3201234567" required />
               </div>
               <div class="field">
-                <label for="city">Ciudad <span class="req">*</span></label>
-                <input id="city" name="city" placeholder="Ej. Bogotá" required />
+                <label for="dept-register">Departamento <span class="req">*</span></label>
+                <select id="dept-register" class="dept-select" name="department" data-location-group="register">
+                  <option value="">— Seleccione —</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="city-register">Ciudad / Municipio <span class="req">*</span></label>
+                <select id="city-register" class="city-select" name="city" data-location-group="register" required>
+                  <option value="">— Seleccione un departamento —</option>
+                </select>
               </div>
               <div class="field">
                 <label for="birthdate">Fecha de nacimiento</label>
