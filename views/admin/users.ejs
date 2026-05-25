@@ -1,7 +1,6 @@
 <%- include('../partials/admin-head', { title: 'Usuarios' }) %>
 
 <div class="crm-page-header">
-
   <span class="badge badge-info"><%= users.length %> registrados</span>
 </div>
 
@@ -11,9 +10,37 @@
   </div>
 <% } %>
 
-<!-- Search -->
-<div class="crm-search-row">
-  <input class="crm-search-input" type="text" id="userSearch" placeholder="Buscar por nombre, email o ciudad…" />
+<!-- Filters -->
+<div class="crm-filter-bar" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:flex-end">
+  <div style="flex:1;min-width:180px">
+    <label class="crm-filter-label">Buscar</label>
+    <input class="crm-search-input" style="width:100%;box-sizing:border-box" type="text" id="userSearch" placeholder="Nombre, email, ciudad o placa…" />
+  </div>
+  <div style="min-width:130px">
+    <label class="crm-filter-label">Rol</label>
+    <select class="crm-select" id="filterRol">
+      <option value="">Todos</option>
+      <option value="admin">Admin</option>
+      <option value="user">Usuario</option>
+    </select>
+  </div>
+  <div style="min-width:150px">
+    <label class="crm-filter-label">Ciudad</label>
+    <select class="crm-select" id="filterCiudad">
+      <option value="">Todas</option>
+    </select>
+  </div>
+  <div style="min-width:130px">
+    <label class="crm-filter-label">Registro desde</label>
+    <input class="crm-input" type="date" id="filterDesde" />
+  </div>
+  <div style="min-width:130px">
+    <label class="crm-filter-label">Registro hasta</label>
+    <input class="crm-input" type="date" id="filterHasta" />
+  </div>
+  <div style="padding-bottom:1px">
+    <button class="btn btn-ghost btn-sm" id="clearFilters" type="button">Limpiar</button>
+  </div>
 </div>
 
 <!-- Desktop table -->
@@ -28,6 +55,7 @@
           <th>Rol</th>
           <th>Membresía</th>
           <th>Ciudad</th>
+          <th>Placas</th>
           <th>Teléfono</th>
           <th>Registro</th>
           <th style="width:110px">Acciones</th>
@@ -35,7 +63,13 @@
       </thead>
       <tbody>
         <% users.forEach(u => { %>
-          <tr data-search="<%= (u.name + ' ' + u.email + ' ' + (u.city || '')).toLowerCase() %>">
+          <% const plates = (u.vehicles || []).map(v => v.plate).filter(Boolean); %>
+          <% const fechaISO = u.createdAt ? new Date(u.createdAt).toISOString().slice(0,10) : ''; %>
+          <tr
+            data-search="<%= (u.name + ' ' + u.email + ' ' + (u.city || '') + ' ' + plates.join(' ')).toLowerCase() %>"
+            data-rol="<%= u.role || 'user' %>"
+            data-ciudad="<%= (u.city || '').toLowerCase().trim() %>"
+            data-fecha="<%= fechaISO %>">
             <td>
               <div class="crm-user-circle"><%= u.name.charAt(0).toUpperCase() %></div>
             </td>
@@ -56,6 +90,17 @@
               <% if (lvlD) { %><span class="badge badge-info"><%= lvlD %></span><% } else { %><span class="badge badge-muted">—</span><% } %>
             </td>
             <td style="font-size:.8rem;color:#52525b"><%= u.city || '—' %></td>
+            <td>
+              <% if (plates.length) { %>
+                <div style="display:flex;flex-wrap:wrap;gap:4px">
+                  <% plates.forEach(p => { %>
+                    <span class="badge badge-muted" style="font-size:.7rem;letter-spacing:.5px;font-weight:700"><%= p %></span>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <span style="color:#a1a1aa;font-size:.8rem">—</span>
+              <% } %>
+            </td>
             <td style="font-size:.8rem;color:#52525b"><%= u.phone || '—' %></td>
             <td style="font-size:.75rem;color:#71717a">
               <% if (u.createdAt) { %><%= new Date(u.createdAt).toLocaleDateString('es-CO') %><% } else { %>—<% } %>
@@ -78,7 +123,7 @@
           </tr>
           <!-- Inline edit row -->
           <tr>
-            <td colspan="9" style="padding:0;border:none">
+            <td colspan="10" style="padding:0;border:none">
               <div class="crm-inline-edit" id="edit-<%= u.id %>">
                 <form method="post" action="/admin/usuarios/actualizar">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
@@ -103,7 +148,13 @@
 <!-- Mobile card list -->
 <ul class="crm-user-cards" id="userCardsMobile">
   <% users.forEach(u => { %>
-  <li class="crm-user-card" data-search="<%= (u.name + ' ' + u.email + ' ' + (u.city || '')).toLowerCase() %>">
+  <% const platesM = (u.vehicles || []).map(v => v.plate).filter(Boolean); %>
+  <% const fechaISOM = u.createdAt ? new Date(u.createdAt).toISOString().slice(0,10) : ''; %>
+  <li class="crm-user-card"
+    data-search="<%= (u.name + ' ' + u.email + ' ' + (u.city || '') + ' ' + platesM.join(' ')).toLowerCase() %>"
+    data-rol="<%= u.role || 'user' %>"
+    data-ciudad="<%= (u.city || '').toLowerCase().trim() %>"
+    data-fecha="<%= fechaISOM %>">
     <div class="crm-uc-header">
       <div class="crm-user-circle crm-uc-avatar"><%= u.name.charAt(0).toUpperCase() %></div>
       <div class="crm-uc-identity">
@@ -132,6 +183,9 @@
       <% } %>
       <% const lvlM = u.membership && u.membership.level; %>
       <% if (lvlM) { %><span class="badge badge-info"><%= lvlM %></span><% } %>
+      <% platesM.forEach(p => { %>
+        <span class="badge badge-muted" style="font-size:.68rem;letter-spacing:.5px;font-weight:700"><%= p %></span>
+      <% }) %>
     </div>
 
     <% if (u.phone || u.city || u.createdAt) { %>
@@ -179,22 +233,66 @@
     if (el) el.classList.toggle('open');
   }
 
-  const searchInput = document.getElementById('userSearch');
-  searchInput.addEventListener('input', function () {
-    const q = this.value.toLowerCase().trim();
+  // Populate city dropdown from data
+  (function () {
+    const cities = new Set();
+    document.querySelectorAll('[data-ciudad]').forEach(el => {
+      const c = el.dataset.ciudad;
+      if (c) cities.add(c);
+    });
+    const sel = document.getElementById('filterCiudad');
+    [...cities].sort().forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c.charAt(0).toUpperCase() + c.slice(1);
+      sel.appendChild(opt);
+    });
+  })();
 
-    // Filter desktop table rows
+  function applyFilters() {
+    const q      = document.getElementById('userSearch').value.toLowerCase().trim();
+    const rol    = document.getElementById('filterRol').value;
+    const ciudad = document.getElementById('filterCiudad').value;
+    const desde  = document.getElementById('filterDesde').value;
+    const hasta  = document.getElementById('filterHasta').value;
+
+    function matches(el) {
+      if (q      && !el.dataset.search.includes(q))         return false;
+      if (rol    && el.dataset.rol    !== rol)               return false;
+      if (ciudad && el.dataset.ciudad !== ciudad)            return false;
+      const fecha = el.dataset.fecha || '';
+      if (desde  && fecha < desde)                           return false;
+      if (hasta  && fecha > hasta)                           return false;
+      return true;
+    }
+
+    // Desktop table rows
     document.querySelectorAll('#usersTable tbody tr[data-search]').forEach(row => {
-      const match = !q || row.dataset.search.includes(q);
-      row.style.display = match ? '' : 'none';
+      const show = matches(row);
+      row.style.display = show ? '' : 'none';
       const next = row.nextElementSibling;
-      if (next && !next.dataset.search) next.style.display = match ? '' : 'none';
+      if (next && !next.dataset.search) next.style.display = show ? '' : 'none';
     });
 
-    // Filter mobile cards
+    // Mobile cards
     document.querySelectorAll('#userCardsMobile .crm-user-card').forEach(card => {
-      card.style.display = (!q || card.dataset.search.includes(q)) ? '' : 'none';
+      card.style.display = matches(card) ? '' : 'none';
     });
+  }
+
+  document.getElementById('userSearch').addEventListener('input', applyFilters);
+  document.getElementById('filterRol').addEventListener('change', applyFilters);
+  document.getElementById('filterCiudad').addEventListener('change', applyFilters);
+  document.getElementById('filterDesde').addEventListener('change', applyFilters);
+  document.getElementById('filterHasta').addEventListener('change', applyFilters);
+
+  document.getElementById('clearFilters').addEventListener('click', function () {
+    document.getElementById('userSearch').value   = '';
+    document.getElementById('filterRol').value    = '';
+    document.getElementById('filterCiudad').value = '';
+    document.getElementById('filterDesde').value  = '';
+    document.getElementById('filterHasta').value  = '';
+    applyFilters();
   });
 </script>
 
