@@ -2087,10 +2087,10 @@ main.schedule-full {
     display: none
   }
 
-  /* On mobile overlay, restore dark text for contrast */
-  .nav a,
-  .nav-cta a,
-  .nav-cta form button {
+  /* On mobile overlay, restore dark text for contrast (high specificity to win) */
+  .site-header .nav a,
+  .site-header .nav-cta a,
+  .site-header .nav-cta form button {
     color: #111 !important;
   }
 
