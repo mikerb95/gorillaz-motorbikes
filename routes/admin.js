@@ -871,4 +871,10 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) 
 
 router.get('/contabilidad', (req, res) => res.redirect(301, '/admin/finanzas'));
 
+// ── Ayuda ──────────────────────────────────────────────────────────────────
+
+router.get('/ayuda', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/ayuda', { title: 'Ayuda' });
+});
+
 module.exports = router;
