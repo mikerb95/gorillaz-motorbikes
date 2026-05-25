@@ -113,7 +113,8 @@
               <div class="field">
                 <label for="vehiclePlate">Placa</label>
                 <input id="vehiclePlate" name="vehiclePlate" placeholder="Ej. ABC12D"
-                  style="text-transform:uppercase" />
+                  style="text-transform:uppercase"
+                  oninput="this.value=this.value.toUpperCase()" />
               </div>
               <div class="field">
                 <label for="vehicleCC">Cilindraje (cc)</label>
