@@ -227,6 +227,7 @@ router.post('/perfil', requireAuth, async (req, res) => {
       nickname: (nickname || '').trim() || null,
       phone: (phone || '').trim() || null,
       city: (city || '').trim() || null,
+      department: (department || '').trim() || null,
       bloodType: bloodType || null,
       emergencyName: (emergencyName || '').trim() || null,
       emergencyPhone: (emergencyPhone || '').trim() || null,
