@@ -2113,6 +2113,11 @@ main.schedule-full {
     display: inline-flex
   }
 
+  /* Submenus (incl. Tienda megamenu) stay collapsed until the parent is tapped */
+  .nav-item.has-submenu>.nav-submenu {
+    display: none
+  }
+
   /* Touch-accessible submenus on mobile */
   .nav-item.has-submenu.submenu-touch-open>.nav-submenu {
     display: flex;
