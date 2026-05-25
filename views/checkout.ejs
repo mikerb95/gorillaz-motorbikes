@@ -1,98 +1,176 @@
 <%- include('partials/head', { title: 'Checkout' }) %>
 
-<main class="container">
-  <section class="section">
-    <h1 class="section-title">Checkout</h1>
-    <p class="section-subtitle">Revisa tu pedido y completa el pago de forma segura</p>
+<div class="co-page">
 
-    <% if (typeof error !== 'undefined' && error) { %>
-      <div class="alert alert-error"><%= error %></div>
-    <% } %>
+  <!-- Progress steps -->
+  <div class="co-steps-wrap">
+    <ol class="co-steps">
+      <li class="co-step co-step--done">
+        <span class="co-step__dot">✓</span>
+        <span class="co-step__label">Carrito</span>
+      </li>
+      <div class="co-step__line co-step__line--done"></div>
+      <li class="co-step co-step--active">
+        <span class="co-step__dot">2</span>
+        <span class="co-step__label">Datos &amp; Pago</span>
+      </li>
+      <div class="co-step__line"></div>
+      <li class="co-step">
+        <span class="co-step__dot">3</span>
+        <span class="co-step__label">Confirmación</span>
+      </li>
+    </ol>
+  </div>
 
-    <div class="checkout-grid">
-      <form class="payment-form" method="post" action="/pagar">
+  <div class="co-layout">
+
+    <!-- LEFT: form -->
+    <div class="co-main">
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+
+      <form method="post" action="/pagar">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
-        <h2>Datos de contacto y envío</h2>
+        <!-- Section 1: Shipping info -->
+        <div class="co-card">
+          <div class="co-card__header">
+            <span class="co-section-num">1</span>
+            <h2 class="co-card__title">Información de envío</h2>
+          </div>
 
-        <% if (!user) { %>
-          <p class="checkout-login-hint muted">
-            ¿Tienes cuenta? <a href="/club/login?return=/checkout">Inicia sesión</a> para autocompletar tus datos.
-          </p>
-        <% } %>
+          <% if (!user) { %>
+            <p class="co-login-hint">
+              ¿Tienes cuenta? <a href="/club/login?return=/checkout">Inicia sesión</a> para autocompletar tus datos.
+            </p>
+          <% } %>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="customer_name">Nombre completo <span class="required">*</span></label>
+          <div class="co-field">
+            <label for="customer_name">Nombre completo <span class="co-required">*</span></label>
             <input id="customer_name" name="customer_name" type="text" required
-              value="<%= user ? user.name : '' %>" placeholder="Tu nombre completo" />
+              value="<%= user ? user.name : '' %>" placeholder="Juan García" />
           </div>
-          <div class="form-group">
-            <label for="customer_email">Correo electrónico <span class="required">*</span></label>
-            <input id="customer_email" name="customer_email" type="email" required
-              value="<%= user ? user.email : '' %>" placeholder="correo@ejemplo.com" />
+
+          <div class="co-row">
+            <div class="co-field">
+              <label for="customer_email">Correo electrónico <span class="co-required">*</span></label>
+              <input id="customer_email" name="customer_email" type="email" required
+                value="<%= user ? user.email : '' %>" placeholder="tu@correo.com" />
+            </div>
+            <div class="co-field">
+              <label for="customer_phone">Teléfono <span class="co-required">*</span></label>
+              <input id="customer_phone" name="customer_phone" type="tel" required
+                value="<%= user && user.phone ? user.phone : '' %>" placeholder="300 000 0000" />
+            </div>
+          </div>
+
+          <div class="co-field">
+            <label for="customer_address">Dirección de entrega <span class="co-required">*</span></label>
+            <input id="customer_address" name="customer_address" type="text" required
+              value="" placeholder="Calle 123 # 45-67, Apto 8" />
+          </div>
+
+          <div class="co-row">
+            <div class="co-field">
+              <label for="customer_city">Ciudad <span class="co-required">*</span></label>
+              <input id="customer_city" name="customer_city" type="text" required
+                value="<%= user && user.city ? user.city : '' %>" placeholder="Bogotá, Medellín…" />
+            </div>
+            <div class="co-field">
+              <label for="customer_dept">Departamento</label>
+              <input id="customer_dept" name="customer_dept" type="text"
+                value="" placeholder="Cundinamarca, Antioquia…" />
+            </div>
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="customer_phone">Teléfono / Celular <span class="required">*</span></label>
-            <input id="customer_phone" name="customer_phone" type="tel" required
-              value="<%= user && user.phone ? user.phone : '' %>" placeholder="300 000 0000" />
+        <!-- Section 2: Payment -->
+        <div class="co-card">
+          <div class="co-card__header">
+            <span class="co-section-num">2</span>
+            <h2 class="co-card__title">Método de pago</h2>
           </div>
-          <div class="form-group">
-            <label for="customer_city">Ciudad <span class="required">*</span></label>
-            <input id="customer_city" name="customer_city" type="text" required
-              value="<%= user && user.city ? user.city : '' %>" placeholder="Bogotá, Medellín…" />
+
+          <div class="co-payment-option co-payment-option--selected">
+            <span class="co-payment-radio"></span>
+            <div class="co-payment-info">
+              <strong>Bold</strong>
+              <span class="co-payment-desc">Tarjeta, PSE, Nequi, Daviplata</span>
+            </div>
+            <div class="co-payment-badges">
+              <span class="co-badge">PSE</span>
+              <span class="co-badge">Visa</span>
+              <span class="co-badge">MC</span>
+              <span class="co-badge">Nequi</span>
+            </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="customer_address">Dirección de envío <span class="required">*</span></label>
-          <input id="customer_address" name="customer_address" type="text" required
-            value="" placeholder="Calle 123 # 45-67, Apto 8" />
-        </div>
-
-        <hr class="checkout-divider" />
-
-        <h2>Resumen del pedido</h2>
-        <ul class="checkout-items">
-          <% items.forEach(item => { %>
-          <li class="checkout-item">
-            <img src="<%= item.image || '/images/download.png' %>" alt="<%= item.name %>" class="checkout-thumb" width="48" height="48" loading="lazy">
-            <span class="checkout-item-name"><%= item.name %> <span class="checkout-item-qty">&times; <%= item.qty %></span></span>
-            <span class="checkout-item-price">$<%= item.total.toLocaleString('es-CO') %></span>
-          </li>
-          <% }) %>
-        </ul>
-
-        <div class="summary-row summary-total">
-          <span>Total</span>
-          <strong>$<%= cart.subtotal.toLocaleString('es-CO') %> COP</strong>
-        </div>
-
-        <button class="btn btn-primary btn-bold-pay" type="submit">
-          Pagar con Bold &rarr;
+        <button class="co-pay-btn" type="submit">
+          Confirmar y pagar
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
         </button>
-        <p class="muted">Serás redirigido a la pasarela segura de Bold para completar tu pago.</p>
-      </form>
+        <p class="co-secure-note">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+          Pago cifrado y seguro. Al continuar aceptas nuestros <a href="/terminos" class="co-terms-link">Términos y Condiciones</a>.
+        </p>
 
-      <aside class="order-summary">
-        <h2>¿Cómo funciona?</h2>
-        <ol class="bold-steps">
-          <li>Completa tus datos de contacto</li>
-          <li>Haz clic en <strong>Pagar con Bold</strong></li>
-          <li>Elige tu método de pago: tarjeta, Nequi, Daviplata u otros</li>
-          <li>Completa el pago en el sitio seguro de Bold</li>
-          <li>Regresa aquí para ver tu confirmación</li>
-        </ol>
-        <div class="bold-badge">
-          <img src="/images/payments/bold-badge.svg" alt="Pago seguro con Bold" onerror="this.style.display='none'" />
-          <p class="muted small">Pagos procesados de forma segura por <strong>Bold</strong></p>
-        </div>
-      </aside>
+      </form>
     </div>
-  </section>
-</main>
+
+    <!-- RIGHT: order summary -->
+    <aside class="co-summary">
+      <h2 class="co-summary__title">Tu pedido</h2>
+
+      <ul class="co-summary-items">
+        <% items.forEach(item => { %>
+        <li class="co-summary-item">
+          <div class="co-summary-img-wrap">
+            <img src="<%= item.image || '/images/download.png' %>" alt="<%= item.name %>"
+              class="co-summary-thumb" width="56" height="56" loading="lazy">
+            <span class="co-summary-qty"><%= item.qty %></span>
+          </div>
+          <span class="co-summary-name"><%= item.name %></span>
+          <span class="co-summary-price">$<%= item.total.toLocaleString('es-CO') %></span>
+        </li>
+        <% }) %>
+      </ul>
+
+      <div class="co-summary-totals">
+        <div class="co-totals-row">
+          <span>Subtotal</span>
+          <span>$<%= cart.subtotal.toLocaleString('es-CO') %></span>
+        </div>
+        <div class="co-totals-row">
+          <span>Envío</span>
+          <span class="co-shipping-note">Calculado al confirmar</span>
+        </div>
+        <div class="co-totals-divider"></div>
+        <div class="co-totals-row co-totals-row--total">
+          <span>Total</span>
+          <strong>$<%= cart.subtotal.toLocaleString('es-CO') %> <small>COP</small></strong>
+        </div>
+      </div>
+
+      <ul class="co-trust-list">
+        <li>
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+          Pago 100% seguro con SSL
+        </li>
+        <li>
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+          Devolución garantizada
+        </li>
+        <li>
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+          Procesado por <strong>Bold</strong> — pasarela certificada
+        </li>
+      </ul>
+    </aside>
+
+  </div>
+</div>
 
 <%- include('partials/footer') %>
