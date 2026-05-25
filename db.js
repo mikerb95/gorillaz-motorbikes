@@ -216,6 +216,7 @@ async function initDb() {
     `ALTER TABLE users ADD COLUMN first_name TEXT NOT NULL DEFAULT ''`,
     `ALTER TABLE users ADD COLUMN last_name TEXT NOT NULL DEFAULT ''`,
     `UPDATE users SET first_name = TRIM(SUBSTR(name, 1, INSTR(name || ' ', ' ') - 1)), last_name = TRIM(SUBSTR(name, INSTR(name || ' ', ' '))) WHERE first_name = ''`,
+    `ALTER TABLE users ADD COLUMN department TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
