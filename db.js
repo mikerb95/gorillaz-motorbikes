@@ -353,10 +353,10 @@ async function createUser(data) {
   const fullName  = (firstName + ' ' + lastName).trim() || data.name || '';
   await db.execute({
     sql: `INSERT INTO users
-            (id, name, first_name, last_name, email, password, role, cedula, phone, city, birthdate,
+            (id, name, first_name, last_name, email, password, role, cedula, phone, city, department, birthdate,
              nickname, blood_type, club_notifications, membership, visits, vehicles,
              emergency_name, emergency_phone)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       id,
       fullName,
@@ -368,6 +368,7 @@ async function createUser(data) {
       data.cedula || null,
       data.phone || null,
       data.city || null,
+      data.department || null,
       data.birthdate || null,
       data.nickname || null,
       data.bloodType || null,
@@ -393,6 +394,7 @@ async function updateUser(id, fields) {
   if (fields.cedula !== undefined)           { set.push('cedula = ?');              args.push(fields.cedula); }
   if (fields.phone !== undefined)            { set.push('phone = ?');               args.push(fields.phone); }
   if (fields.city !== undefined)             { set.push('city = ?');                args.push(fields.city); }
+  if (fields.department !== undefined)       { set.push('department = ?');          args.push(fields.department); }
   if (fields.birthdate !== undefined)        { set.push('birthdate = ?');           args.push(fields.birthdate); }
   if (fields.nickname !== undefined)         { set.push('nickname = ?');            args.push(fields.nickname); }
   if (fields.bloodType !== undefined)        { set.push('blood_type = ?');          args.push(fields.bloodType); }
