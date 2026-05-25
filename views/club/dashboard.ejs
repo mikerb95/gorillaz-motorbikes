@@ -428,7 +428,9 @@
             <div style="font-size:.75em;font-weight:900;color:var(--brand, #F25C05);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Agregar vehículo</div>
             <form class="stack" method="post" action="/club/vehiculos">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required /></label>
+              <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required
+                style="text-transform:uppercase"
+                oninput="this.value=this.value.toUpperCase()" /></label>
               <fieldset style="border:none;padding:0;margin:0">
                 <legend class="sr-only">Fechas de vencimiento de documentos</legend>
                 <div class="grid two" style="align-items:end">
