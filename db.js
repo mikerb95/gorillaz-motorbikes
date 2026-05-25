@@ -419,6 +419,8 @@ async function updateUser(id, fields) {
   if (fields.scoreHistory !== undefined)     { set.push('score_history = ?');       args.push(JSON.stringify(fields.scoreHistory)); }
   if (fields.resetToken !== undefined)       { set.push('reset_token = ?');         args.push(fields.resetToken); }
   if (fields.resetTokenExpiry !== undefined) { set.push('reset_token_expiry = ?');  args.push(fields.resetTokenExpiry); }
+  if (fields.googleId !== undefined)         { set.push('google_id = ?');           args.push(fields.googleId); }
+  if (fields.avatarUrl !== undefined)        { set.push('avatar_url = ?');          args.push(fields.avatarUrl); }
   if (set.length === 0) return;
   args.push(id);
   await db.execute({ sql: `UPDATE users SET ${set.join(', ')} WHERE id = ?`, args });
