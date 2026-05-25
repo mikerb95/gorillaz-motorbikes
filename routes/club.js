@@ -8,9 +8,11 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { setFlash } = require('../helpers/flash');
 
-function validateRegistration({ name, email, password, phone, cedula }) {
-  if (!name || name.trim().length < 2 || name.trim().length > 100)
-    return 'El nombre debe tener entre 2 y 100 caracteres.';
+function validateRegistration({ firstName, lastName, email, password, phone, cedula }) {
+  if (!firstName || firstName.trim().length < 2 || firstName.trim().length > 50)
+    return 'El nombre debe tener entre 2 y 50 caracteres.';
+  if (!lastName || lastName.trim().length < 2 || lastName.trim().length > 50)
+    return 'El apellido debe tener entre 2 y 50 caracteres.';
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim()))
     return 'El correo electrónico no es válido.';
   if (!password || password.length < 8)
