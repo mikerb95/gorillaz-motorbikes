@@ -206,6 +206,8 @@
         <label for="placa">Placa de la moto</label>
         <input id="placa" name="placa" type="text" required
           maxlength="7" placeholder="ABC123"
+          style="text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()"
           value="<%= typeof placaVal !== 'undefined' ? placaVal : '' %>" />
         <div class="hint">Ingresa la placa tal como está registrada (ej. ABC123)</div>
       </div>
