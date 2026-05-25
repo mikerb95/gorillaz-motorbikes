@@ -3217,51 +3217,74 @@ main.schedule-full {
   background: #f3f4f6
 }
 
-/* Auth (GitHub-like) */
+/* Auth */
 .auth-wrap {
-  max-width: 360px;
-  margin: 120px auto 80px;
-  padding: 0 16px
-}
-
-.auth-header {
-  display: grid;
-  justify-items: center;
-  gap: 16px;
-  margin-bottom: 12px
-}
-
-.auth-logo img {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px
-}
-
-.auth-title {
-  margin: 0;
-  font-size: 22px
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  background: #f6f7f9
 }
 
 .auth-card {
-  display: grid;
-  gap: 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
   background: #fff;
-  padding: 16px
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.08);
+  padding: 36px 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px
+}
+
+.auth-card-header {
+  text-align: center;
+  margin-bottom: 4px
+}
+
+.auth-title {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #111
+}
+
+.auth-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px
+}
+
+.auth-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 4px
 }
 
 .auth-alt {
-  margin-top: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 12px;
   text-align: center;
-  background: #fff
+  font-size: 13px;
+  color: #6b7280;
+  padding-top: 4px;
+  border-top: 1px solid #f0f0f0;
+  margin: 0
 }
 
 .auth-alt .link {
-  font-weight: 800
+  font-weight: 700
 }
 
 .btn-google {
@@ -3270,9 +3293,9 @@ main.schedule-full {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 10px 16px;
-  border: 1px solid #dadce0;
-  border-radius: 8px;
+  padding: 11px 16px;
+  border: 1.5px solid #dadce0;
+  border-radius: 10px;
   background: #fff;
   color: #3c4043;
   font-size: 14px;
@@ -3283,7 +3306,7 @@ main.schedule-full {
 }
 .btn-google:hover {
   background: #f8f9fa;
-  box-shadow: 0 1px 3px rgba(0,0,0,.12)
+  box-shadow: 0 1px 4px rgba(0,0,0,.12)
 }
 
 .auth-divider {
@@ -3291,8 +3314,8 @@ main.schedule-full {
   align-items: center;
   gap: 10px;
   color: #9ca3af;
-  font-size: 13px;
-  margin: 4px 0
+  font-size: 12px;
+  margin: -4px 0
 }
 .auth-divider::before,
 .auth-divider::after {
@@ -3302,15 +3325,19 @@ main.schedule-full {
   background: #e5e7eb
 }
 
-.password-field {
-  display: grid;
-  gap: 6px
-}
-
 .password-label-row {
   display: flex;
   justify-content: space-between;
   align-items: center
+}
+
+.password-label-row label {
+  margin: 0
+}
+
+.password-label-row .link {
+  font-size: 12px;
+  font-weight: 500
 }
 
 .password-input {
