@@ -538,7 +538,6 @@
     const deck = document.getElementById('previewDeck');
     deck.innerHTML = '';
     _previewSlides.forEach(s => deck.appendChild(makePreviewSlide(s)));
-    deck.style.setProperty('--pi', '0');
     document.getElementById('previewTitle').textContent = title;
     updatePreviewCounter();
     document.getElementById('previewDialog').showModal();
