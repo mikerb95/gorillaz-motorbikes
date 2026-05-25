@@ -91,8 +91,8 @@ router.get('/registro', (req, res) => {
 });
 
 router.post('/registro', authLimiter, async (req, res) => {
-  const { name, cedula, phone, birthdate, bloodType, city, nickname, clubNotifications, emergencyName, emergencyPhone, vehicleBrand, vehicleModel, vehicleYear, vehiclePlate, vehicleCC, vehicleColor, soatExpires, tecnoExpires, email, password, confirmPassword } = req.body;
-  const validationError = validateRegistration({ name, email, password, phone, cedula });
+  const { firstName, lastName, cedula, phone, birthdate, bloodType, city, nickname, clubNotifications, emergencyName, emergencyPhone, vehicleBrand, vehicleModel, vehicleYear, vehiclePlate, vehicleCC, vehicleColor, soatExpires, tecnoExpires, email, password, confirmPassword } = req.body;
+  const validationError = validateRegistration({ firstName, lastName, email, password, phone, cedula });
   if (validationError) return res.status(400).render('club/register', { error: validationError });
   if (password !== confirmPassword) return res.status(400).render('club/register', { error: 'Las contraseñas no coinciden' });
   try {
@@ -101,7 +101,7 @@ router.post('/registro', authLimiter, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const vehicles = (vehicleBrand || vehiclePlate) ? [{ brand: vehicleBrand, model: vehicleModel, year: vehicleYear, plate: vehiclePlate, cc: vehicleCC, color: vehicleColor, soatExpires: soatExpires || null, tecnoExpires: tecnoExpires || null }] : [];
     const newUser = await createUser({
-      name, email, password: hashedPassword, cedula, phone, birthdate, bloodType: bloodType || null, city,
+      firstName, lastName, email, password: hashedPassword, cedula, phone, birthdate, bloodType: bloodType || null, city,
       nickname, clubNotifications: clubNotifications === 'true',
       emergencyName, emergencyPhone,
       vehicles,
