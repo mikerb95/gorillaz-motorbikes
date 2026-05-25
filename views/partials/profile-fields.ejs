@@ -3,8 +3,12 @@
      Pass: u (user object), admin (bool — show id-sensitive + management fields). %>
 <div class="crm-form-grid">
   <div class="crm-form-group">
-    <label>Nombre completo</label>
-    <input name="name" value="<%= u.name || '' %>" maxlength="100" required />
+    <label>Nombre</label>
+    <input name="firstName" value="<%= u.firstName || '' %>" maxlength="50" required />
+  </div>
+  <div class="crm-form-group">
+    <label>Apellido</label>
+    <input name="lastName" value="<%= u.lastName || '' %>" maxlength="50" required />
   </div>
   <div class="crm-form-group">
     <label>Nickname / Apodo</label>
