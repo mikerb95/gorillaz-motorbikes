@@ -2011,9 +2011,8 @@ main.schedule-full {
     display: none
   }
 
-  /* Show logo on mobile even in compact mode */
-  .nav-center,
-  .nav-compact .nav-center {
+  /* Show logo on mobile */
+  .nav-center {
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -2022,7 +2021,7 @@ main.schedule-full {
 
   .nav {
     position: fixed;
-    inset: 96px 12px auto 12px;
+    inset: var(--header-offset) 12px 12px 12px;
     background: #fff;
     display: none;
     flex-direction: column;
@@ -2031,11 +2030,7 @@ main.schedule-full {
     padding: 20px;
     border-bottom: 1px solid #e5e7eb;
     box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
-    border-radius: var(--radius-lg)
-  }
-
-  .nav {
-    inset: var(--header-offset) 12px 12px 12px;
+    border-radius: var(--radius-lg);
     overflow: auto
   }
 
