@@ -3424,16 +3424,6 @@ main.schedule-full {
   box-shadow: 0 1px 4px rgba(0,0,0,.10)
 }
 .btn-passkey:disabled { opacity: .55; cursor: wait }
-.auth-or-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #9ca3af;
-  font-size: 12px;
-  margin: 0
-}
-.auth-or-row::before,
-.auth-or-row::after { content: ''; flex: 1; height: 1px; background: #e5e7eb }
 .passkey-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px }
 .passkey-item {
   display: flex;
