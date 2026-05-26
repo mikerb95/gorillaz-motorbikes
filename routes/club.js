@@ -78,6 +78,7 @@ router.post('/login', authLimiter, async (req, res) => {
   const safeReturn = (returnTo || '').toString().trim();
   const redirectTo = safeReturn.startsWith('/') && !safeReturn.startsWith('//') ? safeReturn : '/club/panel';
   const gEnabled = !!GOOGLE_CLIENT_ID;
+  const aEnabled = !!APPLE_CLIENT_ID;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
     return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
   }
