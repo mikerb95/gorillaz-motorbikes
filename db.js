@@ -371,8 +371,8 @@ async function createUser(data) {
     sql: `INSERT INTO users
             (id, name, first_name, last_name, email, password, role, cedula, phone, city, department, birthdate,
              nickname, blood_type, club_notifications, membership, visits, vehicles,
-             emergency_name, emergency_phone, google_id, avatar_url)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+             emergency_name, emergency_phone, google_id, apple_id, avatar_url)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       id,
       fullName,
