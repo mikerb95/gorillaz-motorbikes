@@ -7634,6 +7634,13 @@ main:has(.club-panel) { padding-top: 0 !important; }
   grid-template-columns: repeat(3, 1fr) !important
 }
 
+/* igual que .services-grid li — el service-card es el contenedor visual */
+.coming-soon-grid li {
+  padding: 0;
+  border: 0;
+  background: transparent
+}
+
 .coming-soon-grid .service-card {
   filter: grayscale(20%)
 }
@@ -7645,16 +7652,8 @@ main:has(.club-panel) { padding-top: 0 !important; }
 }
 
 /* ─── Club section ─────────────────────────────────────────── */
-.club-section {
-  background: #FFF5EE;
-  border-radius: var(--radius-lg);
-  margin: 0 12px;
-  padding: 32px 24px
-}
-
 .club-section .card {
-  border-left: 4px solid var(--brand);
-  background: #fff
+  border-left: 4px solid var(--brand)
 }
 
 .club-member-count {
