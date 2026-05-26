@@ -7721,3 +7721,67 @@ main:has(.club-panel) { padding-top: 0 !important; }
   margin: 0 0 6px
 }
 */
+
+/* Waze blob — mobile only */
+.waze-blob {
+  display: none
+}
+
+@media (max-width: 900px) {
+  .waze-blob {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #06ccff;
+    box-shadow: 0 4px 18px rgba(6,204,255,.45), 0 2px 8px rgba(0,0,0,.18);
+    border: none;
+    cursor: pointer;
+    z-index: 140;
+    animation: waze-pulse 2.6s ease-in-out infinite
+  }
+
+  .waze-blob:hover,
+  .waze-blob:focus-visible {
+    background: #00b8e6;
+    outline: none;
+    box-shadow: 0 6px 24px rgba(6,204,255,.6), 0 2px 8px rgba(0,0,0,.2)
+  }
+
+  @keyframes waze-pulse {
+    0%, 100% { box-shadow: 0 4px 18px rgba(6,204,255,.45), 0 2px 8px rgba(0,0,0,.18) }
+    50%       { box-shadow: 0 4px 28px rgba(6,204,255,.75), 0 2px 8px rgba(0,0,0,.18) }
+  }
+}
+
+/* Waze modal content */
+.waze-modal-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px
+}
+
+.waze-modal-icon img {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px
+}
+
+.waze-modal-body-text {
+  text-align: center;
+  font-size: .95rem;
+  color: #374151;
+  margin: 0 0 4px
+}
+
+.waze-modal-addr {
+  text-align: center;
+  font-size: .82rem;
+  color: #6b7280;
+  margin: 0
+}
