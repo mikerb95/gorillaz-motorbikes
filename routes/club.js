@@ -478,7 +478,7 @@ router.post('/auth/passkey/:id/delete', requireAuth, async (req, res) => {
 router.get('/completar-perfil', requireAuth, async (req, res) => {
   const user = await getUserById(req.userId);
   if (!user) return res.redirect('/club/login');
-  res.render('club/completar-perfil', { user, error: null, csrfToken: req.csrfToken() });
+  res.render('club/completar-perfil', { user, error: null });
 });
 
 router.post('/completar-perfil', requireAuth, authLimiter, async (req, res) => {
@@ -491,7 +491,6 @@ router.post('/completar-perfil', requireAuth, authLimiter, async (req, res) => {
   const renderErr = (msg) => res.status(400).render('club/completar-perfil', {
     user: { ...user, ...req.body },
     error: msg,
-    csrfToken: req.csrfToken(),
   });
 
   if (!firstName || firstName.trim().length < 2 || firstName.trim().length > 50)
