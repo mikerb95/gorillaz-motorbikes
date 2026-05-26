@@ -219,26 +219,18 @@
       <%# <p class="club-member-count">Únete a los <strong><!-- N --> miembros</strong> del Club</p> %>
     </section>
 
-    <!-- REVIEWS: descomenta cuando conectes con Google Business API -->
-    <%#
+    <!-- REVIEWS: descomenta y adapta cuando conectes con Google Business API
     <section class="container reviews-section">
       <p class="section-label">Lo que dicen nuestros clientes</p>
       <h2>Reseñas verificadas de Google</h2>
       <div class="reviews-grid">
-        <% reviews.forEach(r => { %>
-          <article class="review-card">
-            <div class="review-stars">★★★★★</div>
-            <p class="review-text"><%= r.text %></p>
-            <span class="review-author"><%= r.author %></span>
-            <span class="review-date"> · <%= r.date %></span>
-          </article>
-        <% }) %>
+        [loop de reviews: r.text, r.author, r.date]
       </div>
       <div class="btn-row" style="margin-top:24px; justify-content:center">
         <a href="https://g.page/r/XXXXXXXX/review" target="_blank" rel="noopener" class="btn btn-outline">Ver todas las reseñas en Google</a>
       </div>
     </section>
-    %>
+    -->
 
     <!-- Tienda destacada -->
     <section class="container fp-section">
