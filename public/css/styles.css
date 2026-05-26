@@ -3246,7 +3246,7 @@ main.schedule-full {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 48px 56px
+  padding: calc(var(--header-offset) + 16px) 56px 48px
 }
 .auth-brand {
   display: flex;
