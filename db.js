@@ -347,6 +347,11 @@ async function getUserByGoogleId(googleId) {
   return rowToUser(r.rows[0] || null);
 }
 
+async function getUserByAppleId(appleId) {
+  const r = await db.execute({ sql: 'SELECT * FROM users WHERE apple_id = ? AND deleted_at IS NULL', args: [appleId] });
+  return rowToUser(r.rows[0] || null);
+}
+
 async function getAllUsers() {
   const r = await db.execute('SELECT * FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC');
   return r.rows.map(rowToUser);
