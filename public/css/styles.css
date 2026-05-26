@@ -3371,13 +3371,6 @@ main.schedule-full {
   background: #e5e7eb
 }
 
-@media (min-width: 900px) {
-  .auth-left { display: flex }
-}
-
-body.page-auth {
-  background: #111
-}
 .page-auth main {
   display: contents
 }
