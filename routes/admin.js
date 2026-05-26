@@ -885,4 +885,19 @@ router.get('/ayuda', requireAuth, requireAdmin, (req, res) => {
   res.render('admin/ayuda', { title: 'Ayuda' });
 });
 
+// ── DEV ────────────────────────────────────────────────────────────────────
+
+router.get('/dev', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/dev', { title: 'DEV' });
+});
+
+router.get('/dev/backup', requireAuth, requireAdmin, async (req, res) => {
+  const snapshot = await backupAllTables();
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `gorillaz-backup-${date}.json`;
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Content-Type', 'application/json');
+  res.send(JSON.stringify(snapshot, null, 2));
+});
+
 module.exports = router;
