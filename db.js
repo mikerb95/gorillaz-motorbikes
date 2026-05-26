@@ -1323,4 +1323,5 @@ module.exports = {
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
   getServiceOrdersByPlate,
+  backupAllTables,
 };
