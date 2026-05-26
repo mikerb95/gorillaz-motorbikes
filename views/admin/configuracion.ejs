@@ -1,0 +1,625 @@
+<%- include('../partials/admin-head', { title: 'Configuración' }) %>
+
+<div class="crm-page-header"></div>
+
+<% if (flash === 'saved') { %>
+  <div class="cfg-flash">✓ Configuración guardada correctamente.</div>
+<% } %>
+
+<!-- Tab bar -->
+<div class="cfg-tabs" role="tablist">
+  <button class="cfg-tab" data-tab="liquidador" role="tab" type="button">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Liquidador
+  </button>
+  <button class="cfg-tab" data-tab="pdf" role="tab" type="button">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    PDF Cotización
+  </button>
+  <button class="cfg-tab" data-tab="parqueadero" role="tab" type="button">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    Parqueadero
+  </button>
+  <button class="cfg-tab" data-tab="puntos" role="tab" type="button">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Sistema de Puntos
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 1 · LIQUIDADOR
+══════════════════════════════════════════════════════ -->
+<div class="cfg-panel" data-panel="liquidador">
+  <div style="display:grid;gap:20px;max-width:720px">
+    <div class="crm-card" style="padding:24px">
+      <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">Mensaje de WhatsApp</h2>
+      <p class="muted" style="font-size:13px;margin:0 0 20px">
+        Personaliza el texto que se envía al cliente cuando se usa la opción de WhatsApp en el liquidador.
+        El mensaje siempre incluirá la lista de ítems y el total de forma automática.
+      </p>
+      <form method="post" action="/admin/configuracion/cotizador">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div style="display:grid;gap:14px">
+          <div>
+            <label class="cfg-label">Encabezado del mensaje</label>
+            <input type="text" name="waHeader" value="<%= cotizadorConfig.waHeader %>"
+              placeholder="🏍️ *Cotización Gorillaz Motorbikes*"
+              class="cfg-input" />
+            <p class="muted" style="font-size:12px;margin:4px 0 0">Puedes usar *asteriscos* para negrita en WhatsApp.</p>
+          </div>
+          <div>
+            <label class="cfg-label">Prefijo de cada ítem</label>
+            <input type="text" name="waItemPrefix" value="<%= cotizadorConfig.waItemPrefix %>"
+              placeholder="•" maxlength="4"
+              style="width:80px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none" />
+            <p class="muted" style="font-size:12px;margin:4px 0 0">Símbolo que aparece antes de cada producto/servicio en la lista.</p>
+          </div>
+          <div>
+            <label class="cfg-label">Nota adicional (opcional)</label>
+            <textarea name="waNote" placeholder="Ej: Válida por 30 días." rows="2"
+              class="cfg-input" style="resize:vertical"><%= cotizadorConfig.waNote %></textarea>
+            <p class="muted" style="font-size:12px;margin:4px 0 0">Se incluye después del total, antes del pie de mensaje.</p>
+          </div>
+          <div>
+            <label class="cfg-label">Pie del mensaje</label>
+            <input type="text" name="waFooter" value="<%= cotizadorConfig.waFooter %>"
+              placeholder="gorillazmotorbikes.com" class="cfg-input" />
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding:14px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px">
+          <div style="font-size:11px;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Vista previa del mensaje</div>
+          <pre id="waPreview" style="font-size:12px;font-family:monospace;white-space:pre-wrap;color:#374151;margin:0;line-height:1.6"></pre>
+        </div>
+
+        <div style="margin-top:20px">
+          <button class="btn btn-primary" type="submit">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 2 · PDF
+══════════════════════════════════════════════════════ -->
+<div class="cfg-panel" data-panel="pdf">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1100px;align-items:start">
+    <form method="post" action="/admin/configuracion/pdf" style="display:grid;gap:20px">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <div class="crm-card" style="padding:24px">
+        <h2 style="font-size:15px;font-weight:800;margin:0 0 18px">Datos de la empresa</h2>
+        <div style="display:grid;gap:14px">
+          <div>
+            <label class="cfg-label">Nombre de la empresa *</label>
+            <input type="text" name="companyName" id="fCompanyName" value="<%= pdfConfig.companyName %>"
+              maxlength="60" required class="cfg-input" style="box-sizing:border-box" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label class="cfg-label">NIT / RUT</label>
+              <input type="text" name="nit" id="fNit" value="<%= pdfConfig.nit %>"
+                maxlength="30" placeholder="900.123.456-7" class="cfg-input" style="box-sizing:border-box" />
+            </div>
+            <div>
+              <label class="cfg-label">Teléfono</label>
+              <input type="text" name="phone" id="fPhone" value="<%= pdfConfig.phone %>"
+                maxlength="30" placeholder="+57 (601) 123 4567" class="cfg-input" style="box-sizing:border-box" />
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label class="cfg-label">Correo electrónico</label>
+              <input type="text" name="email" id="fEmail" value="<%= pdfConfig.email %>"
+                maxlength="80" placeholder="info@gorillazmotorbikes.com" class="cfg-input" style="box-sizing:border-box" />
+            </div>
+            <div>
+              <label class="cfg-label">Sitio web</label>
+              <input type="text" name="website" id="fWebsite" value="<%= pdfConfig.website %>"
+                maxlength="80" placeholder="gorillazmotorbikes.com" class="cfg-input" style="box-sizing:border-box" />
+            </div>
+          </div>
+          <div>
+            <label class="cfg-label">Dirección</label>
+            <input type="text" name="address" id="fAddress" value="<%= pdfConfig.address %>"
+              maxlength="120" placeholder="Cra 7 # 45-23, Bogotá" class="cfg-input" style="box-sizing:border-box" />
+          </div>
+          <div>
+            <label class="cfg-label">Ciudad / País</label>
+            <input type="text" name="city" id="fCity" value="<%= pdfConfig.city %>"
+              maxlength="60" placeholder="Bogotá, Colombia" class="cfg-input" style="box-sizing:border-box" />
+          </div>
+        </div>
+      </div>
+
+      <div class="crm-card" style="padding:24px">
+        <h2 style="font-size:15px;font-weight:800;margin:0 0 18px">Apariencia</h2>
+        <label class="cfg-label">Color de cabecera</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="color" name="headerColor" id="fHeaderColor" value="<%= pdfConfig.headerColor %>"
+            style="width:48px;height:38px;padding:2px;border:1.5px solid #e5e7eb;border-radius:8px;cursor:pointer" />
+          <input type="text" id="fHeaderColorText" value="<%= pdfConfig.headerColor %>"
+            maxlength="7" placeholder="#F25C05"
+            style="width:96px;padding:10px 10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-family:monospace;outline:none" />
+          <span class="muted" style="font-size:12px">Se aplica a la cabecera y barra de total</span>
+        </div>
+      </div>
+
+      <div class="crm-card" style="padding:24px">
+        <h2 style="font-size:15px;font-weight:800;margin:0 0 18px">Pie y validez</h2>
+        <div style="display:grid;gap:14px">
+          <div>
+            <label class="cfg-label">Nota al pie</label>
+            <input type="text" name="footerNote" id="fFooterNote" value="<%= pdfConfig.footerNote %>"
+              maxlength="140" placeholder="Válida por 30 días. Precios en COP." class="cfg-input" style="box-sizing:border-box" />
+            <p class="muted" style="font-size:12px;margin:4px 0 0">Aparece en la esquina inferior izquierda del PDF.</p>
+          </div>
+          <div>
+            <label class="cfg-label">Validez de la cotización (días)</label>
+            <input type="number" name="validityDays" id="fValidityDays" value="<%= pdfConfig.validityDays %>"
+              min="1" max="365"
+              style="width:100px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none" />
+          </div>
+        </div>
+      </div>
+
+      <div class="crm-card" style="padding:24px">
+        <h2 style="font-size:15px;font-weight:800;margin:0 0 16px">Datos opcionales en el PDF</h2>
+        <div style="display:grid;gap:12px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px">
+            <input type="checkbox" name="showPhone" id="fShowPhone" <%= pdfConfig.showPhone ? 'checked' : '' %>
+              style="width:16px;height:16px;accent-color:var(--brand);cursor:pointer" />
+            Mostrar teléfono del cliente
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px">
+            <input type="checkbox" name="showNotes" id="fShowNotes" <%= pdfConfig.showNotes ? 'checked' : '' %>
+              style="width:16px;height:16px;accent-color:var(--brand);cursor:pointer" />
+            Mostrar notas de la cotización
+          </label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Guardar cambios</button>
+    </form>
+
+    <!-- PDF Preview (sticky) -->
+    <div style="position:sticky;top:80px">
+      <div class="crm-card" style="padding:20px">
+        <div style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Vista previa del PDF</div>
+        <div id="pdfPreview" style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;font-family:Arial,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+          <div id="previewHeader" style="padding:10px 14px 10px;display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div id="previewCompany" style="font-size:13px;font-weight:900;color:#fff;line-height:1.2"></div>
+              <div id="previewNitLine" style="font-size:8px;color:rgba(255,255,255,.85);margin-top:1px"></div>
+              <div id="previewContactLine" style="font-size:8px;color:rgba(255,255,255,.8);margin-top:1px"></div>
+              <div id="previewAddressLine" style="font-size:8px;color:rgba(255,255,255,.75);margin-top:1px"></div>
+              <div id="previewWebCity" style="font-size:8px;color:rgba(255,255,255,.75);margin-top:1px"></div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;margin-left:10px">
+              <div style="font-size:8px;color:rgba(255,255,255,.85)">Fecha: <span id="previewDate"></span></div>
+              <div style="font-size:8px;color:rgba(255,255,255,.85);margin-top:2px">Cotización N° <strong>0024-MAY26</strong></div>
+            </div>
+          </div>
+          <div style="padding:12px 14px">
+            <div style="font-size:11px;font-weight:900;color:#111;margin-bottom:4px">COTIZACIÓN</div>
+            <div style="font-size:8px;color:#6b7280;margin-bottom:4px">Moto / Placa: <strong>ABC123 — Honda CB190R</strong></div>
+            <div id="previewPhoneLine" style="font-size:8px;color:#6b7280;margin-bottom:10px">Cliente: +57 3001234567</div>
+            <div style="background:#f5f5f5;padding:5px 6px;display:grid;grid-template-columns:1fr 36px 56px 56px;gap:4px;font-size:7.5px;font-weight:700;color:#6b7280;text-transform:uppercase">
+              <span>Ítem</span><span style="text-align:center">Cant.</span><span style="text-align:right">Precio</span><span style="text-align:right">Subtotal</span>
+            </div>
+            <div style="border-bottom:1px solid #e5e7eb"></div>
+            <div style="padding:5px 6px;display:grid;grid-template-columns:1fr 36px 56px 56px;gap:4px;font-size:8px">
+              <span>Mecánica general</span><span style="text-align:center">1</span><span style="text-align:right">80.000</span><span style="text-align:right;font-weight:700">80.000</span>
+            </div>
+            <div style="background:#fafafa;padding:5px 6px;display:grid;grid-template-columns:1fr 36px 56px 56px;gap:4px;font-size:8px">
+              <span>Cambio de aceite</span><span style="text-align:center">2</span><span style="text-align:right">40.000</span><span style="text-align:right;font-weight:700">80.000</span>
+            </div>
+            <div id="previewTotalBar" style="margin:8px 0;padding:5px 6px;display:flex;justify-content:space-between">
+              <span style="font-size:9px;font-weight:700;color:#fff">TOTAL:</span>
+              <span style="font-size:10px;font-weight:900;color:#fff">COP 160.000</span>
+            </div>
+            <div id="previewNotesBlock" style="margin-top:6px;font-size:8px;color:#374151">
+              <strong>Notas:</strong> Revisar también los frenos traseros.
+            </div>
+          </div>
+          <div style="padding:6px 14px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between">
+            <div id="previewFooterLeft" style="font-size:7px;color:#9ca3af"></div>
+            <div id="previewFooterRight" style="font-size:7px;color:#9ca3af;text-align:right"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 3 · PARQUEADERO
+══════════════════════════════════════════════════════ -->
+<div class="cfg-panel" data-panel="parqueadero">
+  <div style="display:grid;gap:20px;max-width:520px">
+    <div class="crm-card" style="padding:24px">
+      <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">Parqueadero en órdenes de servicio</h2>
+      <p class="muted" style="font-size:13px;margin:0 0 20px">
+        Cuando una orden cambia a <strong>Trabajo completo</strong>, comienza a correr un contador de días.
+        Los primeros días son gratuitos; después se cobra una tarifa diaria hasta que la moto sea entregada.
+      </p>
+      <form method="post" action="/admin/configuracion/parqueadero">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div style="display:grid;gap:16px">
+          <div>
+            <label class="cfg-label">Días gratuitos</label>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input type="number" name="diasGratis" id="pDiasGratis" value="<%= parqueaderoConfig.diasGratis %>"
+                min="0" max="30"
+                style="width:90px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none" />
+              <span style="font-size:13px;color:#6b7280">días sin cobro desde que el trabajo queda completo</span>
+            </div>
+          </div>
+          <div>
+            <label class="cfg-label">Tarifa por día (COP)</label>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:14px;color:#6b7280;font-weight:700">$</span>
+              <input type="number" name="tarifaPorDia" id="pTarifaDia" value="<%= parqueaderoConfig.tarifaPorDia %>"
+                min="0" step="500"
+                style="width:130px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none" />
+              <span style="font-size:13px;color:#6b7280">COP por día de parqueadero</span>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding:14px 16px;background:#fefce8;border:1px solid #fde68a;border-radius:12px">
+          <div style="font-size:11px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Ejemplo</div>
+          <p id="parqPreview" style="font-size:13px;color:#374151;margin:0;line-height:1.6"></p>
+        </div>
+        <div style="margin-top:20px">
+          <button class="btn btn-primary" type="submit">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 4 · SISTEMA DE PUNTOS
+══════════════════════════════════════════════════════ -->
+<div class="cfg-panel" data-panel="puntos">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1000px;align-items:start">
+
+    <form method="post" action="/admin/configuracion/puntos" style="display:grid;gap:20px">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <!-- Puntos por acción -->
+      <div class="crm-card" style="padding:24px">
+        <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">Puntos por acción</h2>
+        <p class="muted" style="font-size:13px;margin:0 0 20px">
+          Cuántos puntos gana un miembro del club al realizar cada tipo de actividad.
+        </p>
+        <div style="display:grid;gap:14px">
+          <% const puntosLabels = {
+            rodada:        'Rodada',
+            encuentro:     'Encuentro',
+            caminata:      'Caminata',
+            actividad:     'Actividad',
+            evento:        'Evento (legacy)',
+            mantenimiento: 'Mantenimiento en taller',
+            visita:        'Visita al taller',
+          }; %>
+          <% Object.entries(puntosLabels).forEach(([key, label]) => { %>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <label class="cfg-label" style="margin:0;flex:1"><%= label %></label>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input
+                type="number"
+                name="pts_<%= key %>"
+                id="pts_<%= key %>"
+                value="<%= puntosConfig.points[key] || 0 %>"
+                min="0" max="999" step="1"
+                style="width:80px;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;text-align:center"
+              />
+              <span style="font-size:12px;color:#6b7280;white-space:nowrap">pts</span>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+
+      <!-- Niveles -->
+      <div class="crm-card" style="padding:24px">
+        <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">Umbrales de nivel</h2>
+        <p class="muted" style="font-size:13px;margin:0 0 20px">
+          Puntos mínimos requeridos para alcanzar cada nivel del club.
+        </p>
+        <div style="display:grid;gap:14px">
+          <% const levelsOrdered = [...puntosConfig.levels].sort((a, b) => b.min - a.min); %>
+          <% levelsOrdered.forEach((lvl, i) => { %>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:18px;width:24px;text-align:center"><%= lvl.icon %></span>
+            <span style="font-size:13px;font-weight:700;flex:1"><%= lvl.name %></span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:12px;color:#6b7280">desde</span>
+              <input
+                type="number"
+                name="lvl_min_<%= i %>"
+                value="<%= lvl.min %>"
+                min="0" max="99999" step="50"
+                style="width:90px;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;text-align:center"
+              />
+              <span style="font-size:12px;color:#6b7280">pts</span>
+            </div>
+            <input type="hidden" name="lvl_name_<%= i %>" value="<%= lvl.name %>" />
+            <input type="hidden" name="lvl_icon_<%= i %>" value="<%= lvl.icon %>" />
+            <input type="hidden" name="lvl_color_<%= i %>" value="<%= lvl.color %>" />
+          </div>
+          <% }); %>
+          <input type="hidden" name="lvl_count" value="<%= levelsOrdered.length %>" />
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Guardar cambios</button>
+    </form>
+
+    <!-- Preview de niveles -->
+    <div style="position:sticky;top:80px">
+      <div class="crm-card" style="padding:24px">
+        <div style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Simulador de nivel</div>
+        <div style="margin-bottom:14px">
+          <label class="cfg-label">Puntos del miembro</label>
+          <input type="number" id="simScore" value="0" min="0"
+            style="width:120px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;font-family:inherit;outline:none" />
+        </div>
+        <div id="simResult" style="padding:16px;border-radius:12px;background:#f9fafb;border:1px solid #e5e7eb">
+          <div style="font-size:28px;margin-bottom:6px" id="simIcon">🌱</div>
+          <div style="font-size:16px;font-weight:800" id="simName">Prospecto</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:4px" id="simNext"></div>
+        </div>
+
+        <div style="margin-top:20px">
+          <div style="font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Todos los niveles</div>
+          <div style="display:grid;gap:8px" id="levelsPreviewList">
+            <% [...puntosConfig.levels].sort((a, b) => b.min - a.min).forEach(lvl => { %>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:#f9fafb;border:1px solid #e5e7eb">
+              <span style="font-size:16px"><%= lvl.icon %></span>
+              <span style="font-size:13px;font-weight:700;flex:1"><%= lvl.name %></span>
+              <span style="font-size:12px;color:#6b7280">≥ <%= lvl.min.toLocaleString('es-CO') %> pts</span>
+            </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Styles ══ -->
+<style>
+.cfg-flash {
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+.cfg-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.cfg-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.cfg-tab:hover { color: #111; }
+.cfg-tab.active {
+  color: var(--brand, #f25c05);
+  border-bottom-color: var(--brand, #f25c05);
+}
+.cfg-panel { display: none; }
+.cfg-panel.active { display: block; }
+.cfg-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 6px;
+}
+.cfg-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+</style>
+
+<!-- ══ Scripts ══ -->
+<script>
+(function () {
+  /* ── Tab switching ── */
+  const params  = new URLSearchParams(location.search);
+  const initTab = params.get('tab') || 'liquidador';
+
+  function activateTab(name) {
+    document.querySelectorAll('.cfg-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.cfg-panel').forEach(p =>
+      p.classList.toggle('active', p.dataset.panel === name));
+  }
+
+  document.querySelectorAll('.cfg-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.tab;
+      const url  = new URL(location.href);
+      url.searchParams.set('tab', name);
+      url.searchParams.delete('flash');
+      history.replaceState(null, '', url);
+      activateTab(name);
+    });
+  });
+
+  activateTab(initTab);
+
+  /* ── Liquidador preview ── */
+  const waFields = {
+    header:     document.querySelector('[name=waHeader]'),
+    itemPrefix: document.querySelector('[name=waItemPrefix]'),
+    note:       document.querySelector('[name=waNote]'),
+    footer:     document.querySelector('[name=waFooter]'),
+  };
+  const waPreview = document.getElementById('waPreview');
+  if (waPreview) {
+    const ITEMS = [
+      { name: 'Mecánica general', qty: 1, price: 80000 },
+      { name: 'Cambio de aceite',  qty: 2, price: 40000 },
+    ];
+    function fmtCop(n) { return 'COP ' + Number(n).toLocaleString('es-CO'); }
+    function updateWa() {
+      const header = waFields.header.value || '🏍️ *Cotización Gorillaz Motorbikes*';
+      const prefix = waFields.itemPrefix.value || '•';
+      const note   = waFields.note.value.trim();
+      const footer = waFields.footer.value || 'gorillazmotorbikes.com';
+      const total  = ITEMS.reduce((s, it) => s + it.price * it.qty, 0);
+      const lines  = [header, 'N° 0001', '',
+        ...ITEMS.map(it => `${prefix} ${it.name} ×${it.qty} — ${fmtCop(it.price * it.qty)}`),
+        '', `*Total: ${fmtCop(total)}*`];
+      if (note) { lines.push(''); lines.push(note); }
+      lines.push('', '📄 *Ver cotización completa y descargar PDF:*',
+        'https://gorillazmotorbikes.com/cotizacion/xxxx-xxxx', '', footer);
+      waPreview.textContent = lines.join('\n');
+    }
+    Object.values(waFields).forEach(el => el && el.addEventListener('input', updateWa));
+    updateWa();
+  }
+
+  /* ── PDF preview ── */
+  const pf = {
+    companyName:    document.getElementById('fCompanyName'),
+    nit:            document.getElementById('fNit'),
+    phone:          document.getElementById('fPhone'),
+    email:          document.getElementById('fEmail'),
+    address:        document.getElementById('fAddress'),
+    website:        document.getElementById('fWebsite'),
+    city:           document.getElementById('fCity'),
+    headerColor:    document.getElementById('fHeaderColor'),
+    headerColorTxt: document.getElementById('fHeaderColorText'),
+    validityDays:   document.getElementById('fValidityDays'),
+    footerNote:     document.getElementById('fFooterNote'),
+    showPhone:      document.getElementById('fShowPhone'),
+    showNotes:      document.getElementById('fShowNotes'),
+  };
+  const el = id => document.getElementById(id);
+  if (el('previewDate')) {
+    el('previewDate').textContent = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+    if (pf.headerColor) {
+      pf.headerColor.addEventListener('input', () => { pf.headerColorTxt.value = pf.headerColor.value; updatePdf(); });
+      pf.headerColorTxt.addEventListener('input', () => {
+        if (/^#[0-9a-fA-F]{6}$/.test(pf.headerColorTxt.value)) pf.headerColor.value = pf.headerColorTxt.value;
+        updatePdf();
+      });
+    }
+    function updatePdf() {
+      const color   = /^#[0-9a-fA-F]{6}$/.test(pf.headerColorTxt.value) ? pf.headerColorTxt.value : '#F25C05';
+      const company = pf.companyName.value.trim() || 'GORILLAZ MOTORBIKES';
+      const nit     = pf.nit.value.trim();
+      const phone   = pf.phone.value.trim();
+      const email   = pf.email.value.trim();
+      const address = pf.address.value.trim();
+      const website = pf.website.value.trim();
+      const city    = pf.city.value.trim();
+      const days    = parseInt(pf.validityDays.value, 10) || 30;
+      const note    = pf.footerNote.value.trim() || ('Válida por ' + days + ' días.');
+      el('previewHeader').style.background  = color;
+      el('previewTotalBar').style.background = color;
+      el('previewCompany').textContent = company;
+      el('previewNitLine').textContent = nit ? 'NIT: ' + nit : '';
+      el('previewNitLine').style.display = nit ? '' : 'none';
+      const contact = [phone, email].filter(Boolean).join('  ·  ');
+      el('previewContactLine').textContent = contact;
+      el('previewContactLine').style.display = contact ? '' : 'none';
+      el('previewAddressLine').textContent = address;
+      el('previewAddressLine').style.display = address ? '' : 'none';
+      const webCity = [website, city].filter(Boolean).join('  |  ');
+      el('previewWebCity').textContent = webCity;
+      el('previewWebCity').style.display = webCity ? '' : 'none';
+      el('previewPhoneLine').style.display  = pf.showPhone.checked ? '' : 'none';
+      el('previewNotesBlock').style.display = pf.showNotes.checked ? '' : 'none';
+      el('previewFooterLeft').textContent   = note;
+      el('previewFooterRight').textContent  = [company, city].filter(Boolean).join(' — ');
+    }
+    ['companyName','nit','phone','email','address','website','city','footerNote','validityDays']
+      .forEach(k => pf[k] && pf[k].addEventListener('input', updatePdf));
+    ['showPhone','showNotes'].forEach(k => pf[k] && pf[k].addEventListener('change', updatePdf));
+    updatePdf();
+  }
+
+  /* ── Parqueadero preview ── */
+  const pDias   = document.getElementById('pDiasGratis');
+  const pTarifa = document.getElementById('pTarifaDia');
+  const parqPrev = document.getElementById('parqPreview');
+  if (parqPrev) {
+    function updateParq() {
+      const dias   = parseInt(pDias.value, 10)   || 0;
+      const tarifa = parseInt(pTarifa.value, 10) || 0;
+      const ejemplo = dias + 2;
+      const cobro   = 2 * tarifa;
+      parqPrev.textContent =
+        `Si la moto lleva ${ejemplo} día${ejemplo !== 1 ? 's' : ''} en "Trabajo completo": ` +
+        `${dias} día${dias !== 1 ? 's' : ''} gratis + 2 días cobrados = $${cobro.toLocaleString('es-CO')} COP de parqueadero acumulado.`;
+    }
+    pDias.addEventListener('input', updateParq);
+    pTarifa.addEventListener('input', updateParq);
+    updateParq();
+  }
+
+  /* ── Puntos simulator ── */
+  const simScore = document.getElementById('simScore');
+  if (simScore) {
+    const puntosConfig = <%- JSON.stringify(puntosConfig) %>;
+    const levels = [...puntosConfig.levels].sort((a, b) => b.min - a.min);
+
+    function simulate() {
+      const score = parseInt(simScore.value, 10) || 0;
+      let current = levels[levels.length - 1];
+      for (const lvl of levels) {
+        if (score >= lvl.min) { current = lvl; break; }
+      }
+      document.getElementById('simIcon').textContent = current.icon;
+      document.getElementById('simName').textContent = current.name;
+      document.getElementById('simName').style.color = current.color;
+
+      const idx = levels.indexOf(current);
+      if (idx > 0) {
+        const next = levels[idx - 1];
+        const diff = next.min - score;
+        document.getElementById('simNext').textContent =
+          `Faltan ${diff.toLocaleString('es-CO')} pts para ${next.name} ${next.icon}`;
+      } else {
+        document.getElementById('simNext').textContent = '¡Nivel máximo alcanzado!';
+      }
+    }
+    simScore.addEventListener('input', simulate);
+    simulate();
+  }
+})();
+</script>
+
+<%- include('../partials/admin-foot') %>
