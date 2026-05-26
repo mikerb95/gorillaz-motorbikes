@@ -2773,7 +2773,7 @@ main.schedule-full {
 /* ── Cart page redesign ── */
 .cart-page {
   background: #f5f0ea;
-  min-height: 60vh;
+  min-height: 100%;
   /* El fondo beige sube por detrás de la navbar fija para evitar la franja
      blanca; el offset del header se compensa con el padding-top interno. */
   margin-top: calc(-1 * var(--header-offset));
