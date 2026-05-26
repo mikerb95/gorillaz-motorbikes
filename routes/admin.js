@@ -9,7 +9,7 @@ const catalog     = require('../data/catalog');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { saveJSON, writeCatalog, uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
 const { availability }  = require('../helpers/appointments');
-const { SCORE_POINTS }  = require('../helpers/score');
+const { SCORE_POINTS, loadPuntosConfig, DEFAULTS: PUNTOS_DEFAULTS }  = require('../helpers/score');
 const {
   countUsers, countEvents, countAppointments,
   getAllUsers, getUserById, getUserByCedula, updateUser, deleteUser,
