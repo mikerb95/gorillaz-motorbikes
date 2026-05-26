@@ -56,6 +56,9 @@ function loadPdfConfig() {
 function savePdfConfig(cfg) {
   try { fs.writeFileSync(PDF_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
 }
+function savePuntosConfig(cfg) {
+  try { fs.writeFileSync(PUNTOS_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
+}
 // Colombia es UTC-5 sin cambio de horario de verano
 function nowCOT() {
   const cot = new Date(Date.now() - 5 * 60 * 60 * 1000);
