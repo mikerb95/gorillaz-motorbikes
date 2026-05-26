@@ -686,7 +686,7 @@ body.has-hero main.page-root {
 }
 
 /* Add top padding when sub-bar is present via body attribute handled by JS */
-.has-subbar main {
+.has-subbar main.page-root {
   padding-top: var(--header-offset)
 }
 
