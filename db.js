@@ -1176,6 +1176,70 @@ async function deleteGasto(id) {
   await db.execute({ sql: 'DELETE FROM gastos WHERE id = ?', args: [id] });
 }
 
+// ── Passkeys ──────────────────────────────────────────────────────────────
+
+async function getPasskeysByUserId(userId) {
+  const r = await db.execute({ sql: 'SELECT * FROM passkeys WHERE user_id = ? ORDER BY created_at DESC', args: [userId] });
+  return r.rows.map(row => ({
+    id: row.id,
+    userId: row.user_id,
+    credentialId: row.credential_id,
+    publicKey: row.public_key,
+    counter: Number(row.counter),
+    deviceType: row.device_type,
+    backedUp: row.backed_up === 1,
+    transports: safeJson(row.transports, []),
+    name: row.name || null,
+    createdAt: row.created_at,
+  }));
+}
+
+async function getPasskeyByCredentialId(credentialId) {
+  const r = await db.execute({ sql: 'SELECT * FROM passkeys WHERE credential_id = ?', args: [credentialId] });
+  if (!r.rows[0]) return null;
+  const row = r.rows[0];
+  return {
+    id: row.id,
+    userId: row.user_id,
+    credentialId: row.credential_id,
+    publicKey: row.public_key,
+    counter: Number(row.counter),
+    deviceType: row.device_type,
+    backedUp: row.backed_up === 1,
+    transports: safeJson(row.transports, []),
+    name: row.name || null,
+    createdAt: row.created_at,
+  };
+}
+
+async function createPasskey(data) {
+  const id = uuidv4();
+  await db.execute({
+    sql: `INSERT INTO passkeys (id, user_id, credential_id, public_key, counter, device_type, backed_up, transports, name)
+          VALUES (?,?,?,?,?,?,?,?,?)`,
+    args: [
+      id,
+      data.userId,
+      data.credentialId,
+      data.publicKey,
+      data.counter || 0,
+      data.deviceType || null,
+      data.backedUp ? 1 : 0,
+      JSON.stringify(data.transports || []),
+      data.name || null,
+    ],
+  });
+  return id;
+}
+
+async function updatePasskeyCounter(id, counter) {
+  await db.execute({ sql: 'UPDATE passkeys SET counter = ? WHERE id = ?', args: [counter, id] });
+}
+
+async function deletePasskey(id, userId) {
+  await db.execute({ sql: 'DELETE FROM passkeys WHERE id = ? AND user_id = ?', args: [id, userId] });
+}
+
 // ── Admin Audit Log ───────────────────────────────────────────────────────
 
 async function logAdminAction(adminId, adminName, action, targetType, targetId, details) {
