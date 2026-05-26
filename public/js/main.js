@@ -714,12 +714,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const modal = el.closest('.modal');
       if (!modal) return;
       modal.setAttribute('aria-hidden', 'true');
+      if (!document.querySelector('.modal[aria-hidden="false"]')) {
+        document.body.style.overflow = '';
+      }
     });
   });
   // Close on Escape
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       document.querySelectorAll('.modal[aria-hidden="false"]').forEach(m => m.setAttribute('aria-hidden', 'true'));
+      document.body.style.overflow = '';
     }
   });
 });
