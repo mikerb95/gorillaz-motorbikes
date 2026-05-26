@@ -3221,7 +3221,7 @@ main.schedule-full {
 .auth-wrap {
   display: flex;
   min-height: 100vh;
-  padding-top: 72px
+  padding-top: var(--header-offset)
 }
 
 /* Left branding panel */
