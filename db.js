@@ -277,6 +277,7 @@ function rowToUser(row) {
     resetToken: row.reset_token,
     resetTokenExpiry: row.reset_token_expiry,
     googleId: row.google_id || null,
+    appleId: row.apple_id || null,
     avatarUrl: row.avatar_url || null,
     createdAt: row.created_at,
   };
