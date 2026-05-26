@@ -3423,6 +3423,11 @@ main.schedule-full {
   .auth-left { display: flex }
 }
 
+.page-auth main,
+.page-auth .site-footer {
+  display: none
+}
+
 .password-label-row {
   display: flex;
   justify-content: space-between;
