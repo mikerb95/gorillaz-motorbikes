@@ -244,6 +244,7 @@ router.get('/auth/google/callback', authLimiter, async (req, res) => {
     let user = await getUserByGoogleId(googleId);
     if (!user) user = await getUserByEmail(email);
 
+    let isNew = false;
     if (user) {
       if (!user.googleId) await updateUser(user.id, { googleId, avatarUrl: picture || null });
     } else {
@@ -255,11 +256,12 @@ router.get('/auth/google/callback', authLimiter, async (req, res) => {
         googleId,
         avatarUrl: picture || null,
       });
+      isNew = true;
     }
 
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
-    res.redirect('/club/panel');
+    res.redirect(isNew ? '/club/completar-perfil' : '/club/panel');
   } catch (e) {
     console.error('Google OAuth callback error:', e.message);
     res.redirect('/club/login?google=error');
