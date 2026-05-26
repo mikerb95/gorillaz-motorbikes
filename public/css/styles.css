@@ -568,7 +568,10 @@ body.has-subbar .nav-bar .header-inner {
 }
 
 main {
-  min-height: 60vh;
+  min-height: 60vh
+}
+
+main.page-root {
   padding-top: var(--header-offset)
 }
 
@@ -577,7 +580,7 @@ main {
   margin-top: 0
 }
 
-body.has-hero main {
+body.has-hero main.page-root {
   padding-top: 0
 }
 
@@ -585,10 +588,6 @@ body.has-hero main {
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px 12px
-}
-
-main.container {
-  padding-top: var(--header-offset)
 }
 
 /* Slim sub navigation bar for logged-in users */
