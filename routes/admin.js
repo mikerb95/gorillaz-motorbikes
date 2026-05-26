@@ -735,10 +735,86 @@ router.post('/cotizador-items/producto/eliminar', requireAuth, requireAdmin, (re
 
 // ── Configuración del liquidador ──────────────────────────────────────────
 
+// ── Configuración (módulo unificado) ──────────────────────────────────────
+
+router.get('/configuracion', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/configuracion', {
+    cotizadorConfig:   loadCotizadorConfig(),
+    pdfConfig:         loadPdfConfig(),
+    parqueaderoConfig: loadParqueaderoConfig(),
+    puntosConfig:      loadPuntosConfig(),
+    flash: req.query.flash || null,
+    tab:   req.query.tab   || 'liquidador',
+  });
+});
+
+router.post('/configuracion/cotizador', requireAuth, requireAdmin, (req, res) => {
+  const { waHeader, waItemPrefix, waFooter, waNote } = req.body;
+  saveCotizadorConfig({
+    waHeader:     (waHeader     || '').trim(),
+    waItemPrefix: (waItemPrefix || '•').trim() || '•',
+    waFooter:     (waFooter     || '').trim(),
+    waNote:       (waNote       || '').trim(),
+  });
+  res.redirect('/admin/configuracion?tab=liquidador&flash=saved');
+});
+
+router.post('/configuracion/pdf', requireAuth, requireAdmin, (req, res) => {
+  const validityDays = Math.max(1, parseInt(req.body.validityDays, 10) || 30);
+  savePdfConfig({
+    companyName:  (req.body.companyName  || '').trim() || 'GORILLAZ MOTORBIKES',
+    nit:          (req.body.nit          || '').trim(),
+    phone:        (req.body.phone        || '').trim(),
+    email:        (req.body.email        || '').trim(),
+    address:      (req.body.address      || '').trim(),
+    website:      (req.body.website      || '').trim(),
+    city:         (req.body.city         || '').trim(),
+    headerColor:  /^#[0-9a-fA-F]{6}$/.test(req.body.headerColor) ? req.body.headerColor : '#F25C05',
+    validityDays,
+    footerNote:   (req.body.footerNote   || '').trim(),
+    showPhone:    req.body.showPhone  === 'on',
+    showNotes:    req.body.showNotes  === 'on',
+  });
+  res.redirect('/admin/configuracion?tab=pdf&flash=saved');
+});
+
+router.post('/configuracion/parqueadero', requireAuth, requireAdmin, (req, res) => {
+  const diasGratis   = Math.max(0, parseInt(req.body.diasGratis, 10)   || 0);
+  const tarifaPorDia = Math.max(0, parseInt(req.body.tarifaPorDia, 10) || 0);
+  saveParqueaderoConfig({ diasGratis, tarifaPorDia });
+  res.redirect('/admin/configuracion?tab=parqueadero&flash=saved');
+});
+
+router.post('/configuracion/puntos', requireAuth, requireAdmin, (req, res) => {
+  const current = loadPuntosConfig();
+  const points  = {};
+  Object.keys(PUNTOS_DEFAULTS.points).forEach(key => {
+    const val = parseInt(req.body[`pts_${key}`], 10);
+    points[key] = isNaN(val) ? (current.points[key] || 0) : Math.max(0, val);
+  });
+  const count  = parseInt(req.body.lvl_count, 10) || 0;
+  const levels = [];
+  for (let i = 0; i < count; i++) {
+    const name  = (req.body[`lvl_name_${i}`]  || '').trim();
+    const icon  = (req.body[`lvl_icon_${i}`]  || '').trim();
+    const color = (req.body[`lvl_color_${i}`] || '').trim();
+    const min   = Math.max(0, parseInt(req.body[`lvl_min_${i}`], 10) || 0);
+    if (name) levels.push({ name, icon, color, min });
+  }
+  savePuntosConfig({ points, levels: levels.length ? levels : current.levels });
+  res.redirect('/admin/configuracion?tab=puntos&flash=saved');
+});
+
+// ── Redirects desde las rutas antiguas ────────────────────────────────────
+
 router.get('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
-  const config = loadCotizadorConfig();
-  const flash = req.query.flash || null;
-  res.render('admin/cotizador-config', { config, flash });
+  res.redirect('/admin/configuracion?tab=liquidador');
+});
+router.get('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
+  res.redirect('/admin/configuracion?tab=pdf');
+});
+router.get('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
+  res.redirect('/admin/configuracion?tab=parqueadero');
 });
 
 router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
@@ -749,15 +825,10 @@ router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
     waFooter:     (waFooter     || '').trim(),
     waNote:       (waNote       || '').trim(),
   });
-  res.redirect('/admin/cotizador-config?flash=saved');
+  res.redirect('/admin/configuracion?tab=liquidador&flash=saved');
 });
 
-// ── Configuración PDF de cotización ──────────────────────────────────────
-
-router.get('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
-  const flash = req.query.flash || null;
-  res.render('admin/config-pdf-cotizacion', { config: loadPdfConfig(), flash });
-});
+// ── Configuración PDF de cotización (legacy) ──────────────────────────────
 
 router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
   const validityDays = Math.max(1, parseInt(req.body.validityDays, 10) || 30);
@@ -775,22 +846,16 @@ router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
     showPhone:    req.body.showPhone  === 'on',
     showNotes:    req.body.showNotes  === 'on',
   });
-  res.redirect('/admin/config-pdf-cotizacion?flash=saved');
+  res.redirect('/admin/configuracion?tab=pdf&flash=saved');
 });
 
-// ── Configuración de parqueadero ──────────────────────────────────────────
-
-router.get('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
-  const config = loadParqueaderoConfig();
-  const flash = req.query.flash || null;
-  res.render('admin/config-parqueadero', { config, flash });
-});
+// ── Configuración de parqueadero (legacy) ─────────────────────────────────
 
 router.post('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
   const diasGratis   = Math.max(0, parseInt(req.body.diasGratis, 10)   || 0);
   const tarifaPorDia = Math.max(0, parseInt(req.body.tarifaPorDia, 10) || 0);
   saveParqueaderoConfig({ diasGratis, tarifaPorDia });
-  res.redirect('/admin/config-parqueadero?flash=saved');
+  res.redirect('/admin/configuracion?tab=parqueadero&flash=saved');
 });
 
 // ── Órdenes de servicio ───────────────────────────────────────────────────
