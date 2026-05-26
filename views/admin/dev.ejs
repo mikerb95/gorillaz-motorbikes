@@ -1,0 +1,35 @@
+<%- include('../partials/admin-head', { title: 'DEV' }) %>
+
+<div class="crm-page-header">
+  <h2 class="crm-page-title">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:6px"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    Módulo DEV
+  </h2>
+  <p style="color:var(--crm-text-secondary);font-size:.85rem;margin-top:4px">Herramientas de desarrollo y mantenimiento.</p>
+</div>
+
+<div style="display:grid;gap:20px;max-width:640px">
+
+  <!-- Backup -->
+  <div class="crm-card" style="padding:24px">
+    <div style="display:flex;align-items:flex-start;gap:16px">
+      <div style="flex-shrink:0;width:44px;height:44px;border-radius:10px;background:rgba(34,197,94,.12);display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#22c55e" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+      <div style="flex:1">
+        <h3 style="margin:0 0 4px;font-size:1rem;font-weight:600">Backup de base de datos</h3>
+        <p style="margin:0 0 16px;color:var(--crm-text-secondary);font-size:.85rem;line-height:1.5">
+          Descarga un snapshot JSON de todas las tablas de la base de datos con los datos actuales.
+          Incluye: usuarios, citas, eventos, órdenes, facturas, cotizaciones, newsletter, y más.
+        </p>
+        <a href="/admin/dev/backup" class="crm-btn crm-btn-success" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar backup ahora
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%- include('../partials/admin-foot') %>

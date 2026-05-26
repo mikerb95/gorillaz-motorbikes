@@ -41,6 +41,14 @@
         <div class="alert error"><%= error %></div>
       <% } %>
 
+      <button class="btn-passkey" type="button" id="passkeyLoginBtn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        Iniciar con passkey
+      </button>
+      <div id="passkeyError" style="display:none;font-size:.82em;color:#991b1b;text-align:center;margin-top:-4px"></div>
+
+      <div class="auth-or-row"><span>o continúa con</span></div>
+
       <div class="auth-social-btns">
         <a href="/club/auth/google" class="btn-google">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -93,20 +101,85 @@
 </section>
 
 <script>
-  (function(){
-    const btn = document.querySelector('[data-toggle-password]');
-    const input = document.getElementById('password');
-    if (btn && input) {
-      btn.addEventListener('click', () => {
-        const isPwd = input.type === 'password';
-        input.type = isPwd ? 'text' : 'password';
-        btn.classList.toggle('is-on', isPwd);
-        btn.innerHTML = isPwd
-          ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.82 21.82 0 0 1 5.06-6.94m3.9-2.11A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.82 21.82 0 0 1-3.16 4.19M1 1l22 22"/></svg>'
-          : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+(function () {
+  function b64uToBuffer(b) {
+    const s = atob(b.replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(s, c => c.charCodeAt(0)).buffer;
+  }
+  function bufToB64u(buf) {
+    const b = new Uint8Array(buf);
+    let s = ''; for (const x of b) s += String.fromCharCode(x);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+
+  const btn = document.getElementById('passkeyLoginBtn');
+  const errEl = document.getElementById('passkeyError');
+
+  if (!btn) return;
+  if (!window.PublicKeyCredential) {
+    btn.style.display = 'none';
+    document.getElementById('passkeyError') && (document.getElementById('passkeyError').style.display = 'none');
+    return;
+  }
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Esperando…';
+    errEl.style.display = 'none';
+    try {
+      const optsRes = await fetch('/club/auth/passkey/login-options');
+      if (!optsRes.ok) throw new Error('Error obteniendo opciones');
+      const opts = await optsRes.json();
+      opts.challenge = b64uToBuffer(opts.challenge);
+      if (opts.allowCredentials) {
+        opts.allowCredentials = opts.allowCredentials.map(c => ({ ...c, id: b64uToBuffer(c.id) }));
+      }
+
+      const cred = await navigator.credentials.get({ publicKey: opts });
+      const body = {
+        id: cred.id,
+        rawId: bufToB64u(cred.rawId),
+        type: cred.type,
+        response: {
+          authenticatorData: bufToB64u(cred.response.authenticatorData),
+          clientDataJSON: bufToB64u(cred.response.clientDataJSON),
+          signature: bufToB64u(cred.response.signature),
+          userHandle: cred.response.userHandle ? bufToB64u(cred.response.userHandle) : null,
+        },
+        clientExtensionResults: cred.getClientExtensionResults(),
+      };
+
+      const res = await fetch('/club/auth/passkey/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Verificación fallida');
+      window.location.href = data.redirect || '/club/panel';
+    } catch (e) {
+      const txt = e.name === 'NotAllowedError' ? 'Operación cancelada.' : (e.message || 'Error inesperado');
+      errEl.textContent = txt;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> Iniciar con passkey';
     }
-  })();
+  });
+
+  // Password toggle
+  const toggleBtn = document.querySelector('[data-toggle-password]');
+  const pwdInput  = document.getElementById('password');
+  if (toggleBtn && pwdInput) {
+    toggleBtn.addEventListener('click', () => {
+      const isPwd = pwdInput.type === 'password';
+      pwdInput.type = isPwd ? 'text' : 'password';
+      toggleBtn.classList.toggle('is-on', isPwd);
+      toggleBtn.innerHTML = isPwd
+        ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.82 21.82 0 0 1 5.06-6.94m3.9-2.11A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.82 21.82 0 0 1-3.16 4.19M1 1l22 22"/></svg>'
+        : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    });
+  }
+})();
 </script>
 
 <%- include('../partials/footer') %>
