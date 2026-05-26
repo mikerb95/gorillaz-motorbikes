@@ -1,10 +1,19 @@
 <%- include('partials/head', { title: 'Gorillaz Motorbikes' , user }) %>
 
     <h1 class="sr-only">Gorillaz Motorbikes — Taller de motos en Bogotá</h1>
+
+    <!-- Hero con CTA -->
     <section class="hero" data-slideshow='<%- JSON.stringify(slides||[]) %>'>
       <div class="hero-slides" aria-hidden="true"></div>
+      <div class="hero-content">
+        <h2>Tu moto en manos de expertos en Bogotá</h2>
+        <div class="btn-row">
+          <a class="btn" href="/servicios/agendar">Agendar servicio</a>
+          <a class="btn btn-outline" href="/servicios">Ver servicios</a>
+        </div>
+      </div>
       <button class="scroll-cue" aria-label="Desplázate para ver el contenido" title="Desplázate"
-        onclick="(function(){var next=document.querySelector('main .container'); if(next){next.scrollIntoView({behavior:'smooth'});} else {window.scrollTo({top: window.innerHeight, behavior:'smooth'});} })()">
+        onclick="(function(){var next=document.querySelector('.stats-strip'); if(next){next.scrollIntoView({behavior:'smooth'});} else {window.scrollTo({top: window.innerHeight, behavior:'smooth'});} })()">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path fill="currentColor"
             d="M12 16.5c-.3 0-.6-.1-.8-.3l-6-6a1.1 1.1 0 0 1 1.6-1.6L12 13.8l5.2-5.2a1.1 1.1 0 0 1 1.6 1.6l-6 6c-.2.2-.5.3-.8.3Z" />
@@ -12,6 +21,29 @@
       </button>
     </section>
 
+    <!-- Franja de estadísticas — rellena los números con tus datos reales -->
+    <section class="stats-strip" aria-label="Números de confianza">
+      <div class="stats-inner">
+        <div class="stat-item">
+          <span class="stat-num"><!-- CLIENTES -->+</span>
+          <span class="stat-label">Clientes atendidos</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num"><!-- AÑOS --></span>
+          <span class="stat-label">Años en Bogotá</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">8</span>
+          <span class="stat-label">Servicios especializados</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">⭐ <!-- RATING --></span>
+          <span class="stat-label">en Google</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Servicios disponibles -->
     <section class="container">
       <h2>Servicios destacados</h2>
       <ul class="grid halves services-grid">
@@ -103,6 +135,14 @@
             </div>
           </a>
         </li>
+      </ul>
+    </section>
+
+    <!-- Servicios próximamente -->
+    <section class="container coming-soon-section">
+      <h2 class="coming-soon-title">Lo que viene</h2>
+      <p class="muted">Nuevos servicios en preparación para ti.</p>
+      <ul class="grid coming-soon-grid">
         <li>
           <a href="/servicios/lavado-motos" style="text-decoration:none; color:inherit; display:block; height:100%;">
             <div class="service-card" style="--bg:url('/images/services/lavado-motos.png')"
@@ -111,8 +151,7 @@
                 <h3>Lavado de motos <span
                     style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span>
                 </h3>
-                <p>Limpieza profunda para tu motocicleta, cuidando cada detalle para que luzca impecable y protegida.
-                </p>
+                <p>Limpieza profunda para tu motocicleta, cuidando cada detalle para que luzca impecable y protegida.</p>
               </div>
             </div>
           </a>
@@ -125,8 +164,7 @@
                 <h3>Lavado de cascos <span
                     style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span>
                 </h3>
-                <p>Desinfección y limpieza interior y exterior de tu casco, eliminando olores e impurezas acumuladas.
-                </p>
+                <p>Desinfección y limpieza interior y exterior de tu casco, eliminando olores e impurezas acumuladas.</p>
               </div>
             </div>
           </a>
@@ -139,8 +177,7 @@
                 <h3>Detailing de motos <span
                     style="background:#eab54d; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px;">Próximamente</span>
                 </h3>
-                <p>Restauración y protección estética paso a paso con productos premium para dejar tu moto como nueva.
-                </p>
+                <p>Restauración y protección estética paso a paso con productos premium para dejar tu moto como nueva.</p>
               </div>
             </div>
           </a>
@@ -148,6 +185,62 @@
       </ul>
     </section>
 
+    <!-- Club Gorillaz -->
+    <section class="container club-section">
+      <h2>Club Gorillaz</h2>
+      <ul class="grid four" style="margin-top:8px">
+        <li class="card">
+          <h3 style="margin:0 0 6px">Descuento en mecánica rápida</h3>
+          <p class="muted" style="margin:0">Ahorra en servicios ágiles y mantenimiento esencial.</p>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Recordatorios de SOAT y Tecnomecánica</h3>
+          <p class="muted" style="margin:0">Evita vencimientos y mantén tus documentos al día.</p>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Descuentos en repuestos y consumibles</h3>
+          <p class="muted" style="margin:0">Mejores precios en lo que tu moto necesita.</p>
+        </li>
+        <li class="card">
+          <h3 style="margin:0 0 6px">Historial detallado de servicios</h3>
+          <p class="muted" style="margin:0">Consulta trabajos, fechas y recomendaciones.</p>
+        </li>
+      </ul>
+      <div class="btn-row" style="margin-top:12px">
+        <a class="btn btn-sm" href="/club">Conoce el Club</a>
+        <% if (!user) { %>
+          <a class="btn btn-sm btn-outline" href="/club/login">Iniciar sesión</a>
+        <% } else { %>
+          <a class="btn btn-sm btn-outline" href="/club/panel">Mi panel</a>
+        <% } %>
+      </div>
+      <p class="muted">Ser parte del Club Gorillaz te da prioridad en agenda y sorpresas durante el año.</p>
+      <!-- Rellena el número de miembros cuando tengas el dato -->
+      <%# <p class="club-member-count">Únete a los <strong><!-- N --> miembros</strong> del Club</p> %>
+    </section>
+
+    <!-- REVIEWS: descomenta cuando conectes con Google Business API -->
+    <%#
+    <section class="container reviews-section">
+      <p class="section-label">Lo que dicen nuestros clientes</p>
+      <h2>Reseñas verificadas de Google</h2>
+      <div class="reviews-grid">
+        <% reviews.forEach(r => { %>
+          <article class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text"><%= r.text %></p>
+            <span class="review-author"><%= r.author %></span>
+            <span class="review-date"> · <%= r.date %></span>
+          </article>
+        <% }) %>
+      </div>
+      <div class="btn-row" style="margin-top:24px; justify-content:center">
+        <a href="https://g.page/r/XXXXXXXX/review" target="_blank" rel="noopener" class="btn btn-outline">Ver todas las reseñas en Google</a>
+      </div>
+    </section>
+    %>
+
+    <!-- Tienda destacada -->
     <section class="container fp-section">
       <div class="fp-header">
         <div>
@@ -184,6 +277,7 @@
       </div>
     </section>
 
+    <!-- Ubicación -->
     <section class="container">
       <h2>¿Dónde estamos?</h2>
       <div class="map-wrap">
@@ -197,69 +291,36 @@
           target="_blank" rel="noopener">Abrir en Google Maps</a></p>
     </section>
 
-    <section class="container">
-      <h2>Club Gorillaz</h2>
-      <ul class="grid four" style="margin-top:8px">
-        <li class="card">
-          <h3 style="margin:0 0 6px">Descuento en mecánica rápida</h3>
-          <p class="muted" style="margin:0">Ahorra en servicios ágiles y mantenimiento esencial.</p>
-        </li>
-        <li class="card">
-          <h3 style="margin:0 0 6px">Recordatorios de SOAT y Tecnomecánica</h3>
-          <p class="muted" style="margin:0">Evita vencimientos y mantén tus documentos al día.</p>
-        </li>
-        <li class="card">
-          <h3 style="margin:0 0 6px">Descuentos en repuestos y consumibles</h3>
-          <p class="muted" style="margin:0">Mejores precios en lo que tu moto necesita.</p>
-        </li>
-        <li class="card">
-          <h3 style="margin:0 0 6px">Historial detallado de servicios</h3>
-          <p class="muted" style="margin:0">Consulta trabajos, fechas y recomendaciones.</p>
-        </li>
-      </ul>
-      <div class="btn-row" style="margin-top:12px">
-        <a class="btn btn-sm" href="/club">Conoce el Club</a>
-        <% if (!user) { %>
-          <a class="btn btn-sm btn-outline" href="/club/login">Iniciar sesión</a>
-          <% } else { %>
-            <a class="btn btn-sm btn-outline" href="/club/panel">Mi panel</a>
-            <% } %>
-      </div>
-      <p class="muted">Ser parte del Club Gorillaz te da prioridad en agenda y sorpresas durante el año.</p>
-    </section>
-
+    <!-- Newsletter -->
     <section class="newsletter">
       <div class="newsletter-inner">
-        <h2>Suscríbete al boletín</h2>
-        <p class="muted">Lee nuestra <a href="/privacidad">política de privacidad</a> para conocer cómo tratamos tus
-          datos.</p>
-        <p class="muted">Recibe novedades, cursos y actualizaciones de Gorillaz Motorbikes.</p>
+        <h2>Recibe tu checklist de mantenimiento gratis</h2>
+        <p class="muted">Suscríbete y te enviamos la guía de mantenimiento preventivo para tu moto — más novedades y descuentos exclusivos.</p>
+        <p class="muted">Lee nuestra <a href="/privacidad">política de privacidad</a> para conocer cómo tratamos tus datos.</p>
 
-        <% if (newsletterStatus==='ok' ) { %>
-          <p class="alert success" role="status">¡Gracias! Te hemos suscrito al boletín.</p>
-          <% } else if (newsletterStatus==='error' ) { %>
-            <p class="alert error" role="alert">Ingresa un correo válido.</p>
-            <% } else if (newsletterStatus==='captcha' ) { %>
-              <p class="alert error" role="alert">Por favor completa la verificación reCAPTCHA.</p>
-              <% } %>
+        <% if (newsletterStatus==='ok') { %>
+          <p class="alert success" role="status">¡Gracias! Te hemos suscrito. Revisa tu correo para el checklist.</p>
+        <% } else if (newsletterStatus==='error') { %>
+          <p class="alert error" role="alert">Ingresa un correo válido.</p>
+        <% } else if (newsletterStatus==='captcha') { %>
+          <p class="alert error" role="alert">Por favor completa la verificación reCAPTCHA.</p>
+        <% } %>
 
-                <form class="newsletter-form" action="/newsletter" method="post" novalidate>
-                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                  <label class="sr-only" for="nl-email">Correo electrónico</label>
-                  <input id="nl-email" type="email" name="email" placeholder="TU CORREO ELECTRÓNICO" required />
-                  <button type="submit" class="btn btn-square">Suscribirme</button>
-                </form>
-                <% if (recaptchaSiteKey) { %>
-                  <div class="recaptcha-wrap">
-                    <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
-                  </div>
-                  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-                  <% } %>
-                    <p class="muted tiny">Este sitio está protegido por reCAPTCHA y aplican la <a
-                        href="/privacidad">Política de Privacidad</a> y los <a href="/terminos">Términos del
-                        Servicio</a>.</p>
+        <form class="newsletter-form" action="/newsletter" method="post" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <label class="sr-only" for="nl-email">Correo electrónico</label>
+          <input id="nl-email" type="email" name="email" placeholder="tu@correo.com" required />
+          <button type="submit" class="btn btn-square">Quiero mi checklist</button>
+        </form>
+        <% if (recaptchaSiteKey) { %>
+          <div class="recaptcha-wrap">
+            <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
+          </div>
+          <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <% } %>
+        <p class="muted tiny">Este sitio está protegido por reCAPTCHA y aplican la <a
+            href="/privacidad">Política de Privacidad</a> y los <a href="/terminos">Términos del Servicio</a>.</p>
       </div>
-
     </section>
 
   <script type="application/ld+json">
@@ -278,6 +339,11 @@
         "addressLocality": "Bogotá",
         "addressRegion": "Cundinamarca",
         "addressCountry": "CO"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 4.6479,
+        "longitude": -74.0817
       },
       "telephone": "+573213204299",
       "sameAs": [
@@ -311,7 +377,14 @@
         "Alistamiento tecnomecánica",
         "Escaneo computarizado",
         "Accesorios para motos"
-      ]
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "RATING_AQUI",
+        "reviewCount": "N_RESENAS_AQUI",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
     },
     {
       "@context": "https://schema.org",
@@ -326,6 +399,52 @@
         },
         "query-input": "required name=search_term_string"
       }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Cómo agendo una cita para mi moto?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Puedes solicitar agendamiento desde la sección Servicios en gorillazmotorbikes.com/servicios. Completa el formulario con tus datos, servicio y fecha deseada. Te contactaremos para confirmar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Tienen servicios rápidos sin cita?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ofrecemos mecánica rápida para cambios de aceite y ajustes menores. Puedes venir directamente o agendar para asegurar tu espacio."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué métodos de pago aceptan?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Aceptamos Nequi, Daviplata y todas las tarjetas débito y crédito en la tienda y en el taller."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Pueden preparar mi moto para la tecnomecánica?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Ofrecemos alistamiento tecnomecánico, diagnóstico y corrección de fallas para que tu moto pase la revisión sin problemas."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo obtengo o renuevo mi membresía del club?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Regístrate o inicia sesión en gorillazmotorbikes.com/club. Desde tu panel puedes ver tu estado, renovar y acceder a beneficios exclusivos."
+          }
+        }
+      ]
     }
   ]
   </script>
