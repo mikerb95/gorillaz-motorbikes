@@ -3314,7 +3314,7 @@ main.schedule-full {
   align-items: center;
   justify-content: center;
   background: #fff;
-  padding: 48px 24px
+  padding: calc(var(--header-offset) + 32px) 24px 48px
 }
 .auth-form-wrap {
   width: 100%;
