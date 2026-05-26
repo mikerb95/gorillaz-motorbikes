@@ -1202,7 +1202,7 @@ async function getServiceOrdersByPlate(plate) {
 
 module.exports = {
   db, initDb,
-  getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId,
+  getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId, getUserByAppleId,
   getAllUsers, countUsers, createUser, updateUser, deleteUser,
   addUserScore, getLeaderboard, getUserRank,
   getAllAppointments, getAppointmentDates, countAppointments,
