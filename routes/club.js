@@ -79,22 +79,23 @@ router.post('/login', authLimiter, async (req, res) => {
   const redirectTo = safeReturn.startsWith('/') && !safeReturn.startsWith('//') ? safeReturn : '/club/panel';
   const gEnabled = !!GOOGLE_CLIENT_ID;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
-    return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn, googleEnabled: gEnabled });
+    return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
   }
   try {
     const user = await getUserByEmail(email);
-    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled });
-    if (!user.password || user.password === '$google$') {
-      return res.status(401).render('club/login', { error: 'Esta cuenta usa Google para iniciar sesión.', returnTo: safeReturn, googleEnabled: gEnabled });
+    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
+    if (!user.password || user.password === '$google$' || user.password === '$apple$') {
+      const provider = (!user.password || user.password === '$google$') ? 'Google' : 'Apple';
+      return res.status(401).render('club/login', { error: `Esta cuenta usa ${provider} para iniciar sesión.`, returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
     }
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled });
+    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
     res.redirect(redirectTo);
   } catch (e) {
     console.error('POST /club/login error:', e);
-    res.status(500).render('club/login', { error: 'Error del servidor', returnTo: safeReturn, googleEnabled: gEnabled });
+    res.status(500).render('club/login', { error: 'Error del servidor', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
   }
 });
 
