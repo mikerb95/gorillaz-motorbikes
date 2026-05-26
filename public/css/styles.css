@@ -3220,8 +3220,7 @@ main.schedule-full {
 /* Auth — split layout */
 .auth-wrap {
   display: flex;
-  min-height: 100vh;
-  padding-top: var(--header-offset)
+  min-height: 100vh
 }
 
 /* Left branding panel */
