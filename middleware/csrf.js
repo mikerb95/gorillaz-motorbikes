@@ -12,7 +12,7 @@ const csrfToken = (req, res, next) => {
   next();
 };
 
-const CSRF_EXEMPT_PATHS = ['/payment/webhook'];
+const CSRF_EXEMPT_PATHS = ['/payment/webhook', '/club/auth/apple/callback'];
 
 const validateCsrf = (req, res, next) => {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
