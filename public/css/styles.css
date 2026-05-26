@@ -3402,6 +3402,59 @@ main.schedule-full {
   background: #2a2a2a;
   box-shadow: 0 1px 4px rgba(0,0,0,.25)
 }
+.btn-passkey {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, box-shadow 0.15s;
+  letter-spacing: .01em
+}
+.btn-passkey:hover { opacity: .9; box-shadow: 0 2px 8px rgba(49,46,129,.4) }
+.btn-passkey:disabled { opacity: .6; cursor: wait }
+.auth-or-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #9ca3af;
+  font-size: 12px;
+  margin: 0
+}
+.auth-or-row::before,
+.auth-or-row::after { content: ''; flex: 1; height: 1px; background: #e5e7eb }
+.passkey-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px }
+.passkey-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fafafa
+}
+.passkey-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #ede9fe;
+  color: #6d28d9;
+  flex-shrink: 0
+}
+.passkey-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px }
+.passkey-name { font-size: .88em; font-weight: 600; color: #111827 }
+.passkey-date { font-size: .75em; color: #9ca3af }
 .auth-divider {
   display: flex;
   align-items: center;
