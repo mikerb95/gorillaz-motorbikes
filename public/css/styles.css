@@ -3478,10 +3478,14 @@ main.schedule-full {
   .auth-left { display: flex }
 }
 
+body.page-auth {
+  background: #111
+}
 .page-auth main {
   display: contents
 }
-.page-auth .site-footer {
+.page-auth .site-footer,
+.page-auth .whatsapp-fab {
   display: none
 }
 
