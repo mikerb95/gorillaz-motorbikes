@@ -219,6 +219,7 @@ async function initDb() {
     `ALTER TABLE users ADD COLUMN department TEXT`,
     `ALTER TABLE users ADD COLUMN google_id TEXT`,
     `ALTER TABLE users ADD COLUMN avatar_url TEXT`,
+    `ALTER TABLE users ADD COLUMN apple_id TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
