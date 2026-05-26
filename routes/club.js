@@ -259,6 +259,94 @@ router.get('/auth/google/callback', authLimiter, async (req, res) => {
   }
 });
 
+// ── Apple Sign In ─────────────────────────────────────────────────────────
+
+const APPLE_AUTH_URL  = 'https://appleid.apple.com/auth/authorize';
+const APPLE_TOKEN_URL = 'https://appleid.apple.com/auth/token';
+const APPLE_KEYS_URL  = 'https://appleid.apple.com/auth/keys';
+
+function getAppleClientSecret() {
+  const now = Math.floor(Date.now() / 1000);
+  return jwt.sign(
+    { iss: APPLE_TEAM_ID, iat: now, exp: now + 15777000, aud: 'https://appleid.apple.com', sub: APPLE_CLIENT_ID },
+    APPLE_PRIVATE_KEY,
+    { algorithm: 'ES256', header: { alg: 'ES256', kid: APPLE_KEY_ID } },
+  );
+}
+
+async function verifyAppleIdToken(idToken) {
+  const { keys } = await fetch(APPLE_KEYS_URL).then(r => r.json());
+  const header = JSON.parse(Buffer.from(idToken.split('.')[0], 'base64url').toString());
+  const jwk = keys.find(k => k.kid === header.kid);
+  if (!jwk) throw new Error('Apple JWK not found for kid: ' + header.kid);
+  const pem = require('crypto').createPublicKey({ key: jwk, format: 'jwk' }).export({ type: 'spki', format: 'pem' });
+  return jwt.verify(idToken, pem, { algorithms: ['RS256'], audience: APPLE_CLIENT_ID, issuer: 'https://appleid.apple.com' });
+}
+
+router.get('/auth/apple', (req, res) => {
+  if (!APPLE_CLIENT_ID) return res.redirect('/club/login');
+  const state = crypto.randomBytes(16).toString('hex');
+  res.cookie('a_state', state, { httpOnly: true, maxAge: 600_000, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+  const params = new URLSearchParams({
+    client_id: APPLE_CLIENT_ID,
+    redirect_uri: `${APP_URL}/club/auth/apple/callback`,
+    response_type: 'code id_token',
+    scope: 'name email',
+    state,
+    response_mode: 'form_post',
+  });
+  res.redirect(`${APPLE_AUTH_URL}?${params.toString()}`);
+});
+
+// Apple posts to the callback (form_post)
+router.post('/auth/apple/callback', authLimiter, async (req, res) => {
+  const { code, id_token, state, error, user: userJson } = req.body;
+  if (error || !code || !id_token) return res.redirect('/club/login?apple=denied');
+
+  const savedState = req.cookies.a_state;
+  res.clearCookie('a_state');
+  if (!state || state !== savedState) return res.redirect('/club/login?apple=error');
+
+  try {
+    const payload = await verifyAppleIdToken(id_token);
+    const appleId = payload.sub;
+    const email   = payload.email;
+    if (!appleId || !email) throw new Error('Incomplete Apple id_token payload');
+
+    // Apple only sends user name on first login
+    let firstName = '', lastName = '';
+    if (userJson) {
+      try {
+        const parsed = typeof userJson === 'string' ? JSON.parse(userJson) : userJson;
+        firstName = parsed?.name?.firstName || '';
+        lastName  = parsed?.name?.lastName  || '';
+      } catch { /* name not available */ }
+    }
+
+    let user = await getUserByAppleId(appleId);
+    if (!user) user = await getUserByEmail(email);
+
+    if (user) {
+      if (!user.appleId) await updateUser(user.id, { appleId });
+    } else {
+      user = await createUser({
+        firstName: firstName || email.split('@')[0],
+        lastName,
+        email,
+        password: '$apple$',
+        appleId,
+      });
+    }
+
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    res.redirect('/club/panel');
+  } catch (e) {
+    console.error('Apple Sign In callback error:', e.message);
+    res.redirect('/club/login?apple=error');
+  }
+});
+
 router.post('/logout', (req, res) => {
   res.clearCookie('jwt');
   res.redirect('/');
