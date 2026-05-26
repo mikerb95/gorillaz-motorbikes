@@ -354,6 +354,121 @@ router.post('/auth/apple/callback', authLimiter, async (req, res) => {
   }
 });
 
+// ── Passkeys (WebAuthn) ───────────────────────────────────────────────────
+
+const rpID   = (() => { try { return new URL(APP_URL).hostname; } catch { return 'localhost'; } })();
+const rpName = 'Gorillaz Motorbikes';
+
+router.get('/auth/passkey/login-options', async (req, res) => {
+  try {
+    const options = await generateAuthenticationOptions({ rpID, userVerification: 'preferred' });
+    res.cookie('pk_ch', options.challenge, { httpOnly: true, signed: true, maxAge: 120_000, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' });
+    res.json(options);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/auth/passkey/login', authLimiter, async (req, res) => {
+  const challenge = req.signedCookies.pk_ch;
+  res.clearCookie('pk_ch');
+  if (!challenge) return res.status(400).json({ error: 'Challenge expirado' });
+  try {
+    const passkey = await getPasskeyByCredentialId(req.body.id);
+    if (!passkey) return res.status(401).json({ error: 'Passkey no encontrada' });
+
+    const { verified, authenticationInfo } = await verifyAuthenticationResponse({
+      response: req.body,
+      expectedChallenge: challenge,
+      expectedOrigin: APP_URL,
+      expectedRPID: rpID,
+      credential: {
+        id: passkey.credentialId,
+        publicKey: new Uint8Array(Buffer.from(passkey.publicKey, 'base64')),
+        counter: passkey.counter,
+        transports: passkey.transports,
+      },
+    });
+    if (!verified) return res.status(401).json({ error: 'Verificación fallida' });
+
+    await updatePasskeyCounter(passkey.id, authenticationInfo.newCounter);
+    const token = jwt.sign({ id: passkey.userId }, JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    res.json({ ok: true, redirect: '/club/panel' });
+  } catch (e) {
+    console.error('Passkey login error:', e.message);
+    res.status(400).json({ error: e.message });
+  }
+});
+
+router.get('/auth/passkey/register-options', requireAuth, async (req, res) => {
+  try {
+    const user = await getUserById(req.userId);
+    if (!user) return res.status(401).json({ error: 'No autenticado' });
+    const existing = await getPasskeysByUserId(req.userId);
+    const options = await generateRegistrationOptions({
+      rpName,
+      rpID,
+      userName: user.email,
+      userDisplayName: user.name,
+      userID: new TextEncoder().encode(user.id),
+      attestationType: 'none',
+      excludeCredentials: existing.map(pk => ({ id: pk.credentialId, transports: pk.transports })),
+      authenticatorSelection: { residentKey: 'preferred', userVerification: 'preferred' },
+    });
+    res.cookie('pk_reg_ch', options.challenge, { httpOnly: true, signed: true, maxAge: 120_000, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' });
+    res.json(options);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/auth/passkey/register', requireAuth, async (req, res) => {
+  const challenge = req.signedCookies.pk_reg_ch;
+  res.clearCookie('pk_reg_ch');
+  if (!challenge) return res.status(400).json({ error: 'Challenge expirado' });
+  try {
+    const { verified, registrationInfo } = await verifyRegistrationResponse({
+      response: req.body,
+      expectedChallenge: challenge,
+      expectedOrigin: APP_URL,
+      expectedRPID: rpID,
+    });
+    if (!verified || !registrationInfo) return res.status(400).json({ error: 'Verificación fallida' });
+
+    const { credential } = registrationInfo;
+    const transports = req.body.response?.transports || credential.transports || [];
+    // Derive a human-readable name from transports / device type
+    const nameMap = { internal: 'Este dispositivo', hybrid: 'Dispositivo externo', usb: 'Llave USB', nfc: 'NFC', ble: 'Bluetooth' };
+    const mainTransport = transports[0] || '';
+    const passkeyName = nameMap[mainTransport] || 'Passkey';
+
+    await createPasskey({
+      userId: req.userId,
+      credentialId: credential.id,
+      publicKey: Buffer.from(credential.publicKey).toString('base64'),
+      counter: credential.counter,
+      deviceType: credential.deviceType,
+      backedUp: credential.backedUp,
+      transports,
+      name: passkeyName,
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Passkey register error:', e.message);
+    res.status(400).json({ error: e.message });
+  }
+});
+
+router.post('/auth/passkey/:id/delete', requireAuth, async (req, res) => {
+  try {
+    await deletePasskey(req.params.id, req.userId);
+  } catch (e) {
+    console.error('Passkey delete error:', e.message);
+  }
+  res.redirect('/club/panel');
+});
+
 router.post('/logout', (req, res) => {
   res.clearCookie('jwt');
   res.redirect('/');
