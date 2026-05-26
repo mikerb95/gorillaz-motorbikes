@@ -62,10 +62,15 @@ router.get('/login', (req, res) => {
   const returnTo = (req.query.return || '').toString().trim();
   const safeReturn = returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '';
   const googleErr = req.query.google;
+  const appleErr  = req.query.apple;
   const googleErrorMsg = googleErr === 'denied' ? null
     : googleErr === 'error' ? 'Hubo un problema al autenticarte con Google. Intenta de nuevo.'
     : null;
-  res.render('club/login', { error: googleErrorMsg, returnTo: safeReturn, googleEnabled: !!GOOGLE_CLIENT_ID });
+  const appleErrorMsg = appleErr === 'denied' ? null
+    : appleErr === 'error' ? 'Hubo un problema al autenticarte con Apple. Intenta de nuevo.'
+    : null;
+  const errorMsg = googleErrorMsg || appleErrorMsg || null;
+  res.render('club/login', { error: errorMsg, returnTo: safeReturn, googleEnabled: !!GOOGLE_CLIENT_ID, appleEnabled: !!APPLE_CLIENT_ID });
 });
 
 router.post('/login', authLimiter, async (req, res) => {
