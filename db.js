@@ -395,6 +395,7 @@ async function createUser(data) {
       data.emergencyName || null,
       data.emergencyPhone || null,
       data.googleId || null,
+      data.appleId || null,
       data.avatarUrl || null,
     ],
   });
