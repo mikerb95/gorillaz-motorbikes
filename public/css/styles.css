@@ -7526,3 +7526,200 @@ main:has(.club-panel) { padding-top: 0 !important; }
   flex-shrink: 0;
   color: #374151
 }
+
+/* ─── Hero CTA overlay ─────────────────────────────────────── */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 24px 80px;
+  color: #fff;
+  max-width: 720px
+}
+
+.hero-content h2 {
+  margin: 0 0 24px;
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-shadow: 0 2px 12px rgba(0,0,0,.35)
+}
+
+.hero-content .btn-outline {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255,255,255,.75)
+}
+
+.hero-content .btn-outline:hover {
+  background: rgba(255,255,255,.12);
+  border-color: #fff
+}
+
+/* ─── Stats strip ──────────────────────────────────────────── */
+.stats-strip {
+  background: var(--ink);
+  padding: 36px 24px
+}
+
+.stats-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 24px;
+  border-right: 1px solid rgba(255,255,255,.12)
+}
+
+.stat-item:last-child {
+  border-right: none
+}
+
+.stat-num {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  color: var(--brand);
+  line-height: 1;
+  letter-spacing: -.02em
+}
+
+.stat-label {
+  font-size: .75rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.65);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  text-align: center
+}
+
+@media (max-width: 640px) {
+  .stats-inner {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px
+  }
+
+  .stat-item {
+    padding: 20px 16px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,.12)
+  }
+
+  .stat-item:nth-child(odd) {
+    border-right: 1px solid rgba(255,255,255,.12)
+  }
+
+  .stat-item:nth-last-child(-n+2) {
+    border-bottom: none
+  }
+}
+
+/* ─── Sección "Lo que viene" ───────────────────────────────── */
+.coming-soon-section {
+  padding-top: 0
+}
+
+.coming-soon-title {
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  margin: 0 0 4px
+}
+
+.coming-soon-grid {
+  opacity: .82;
+  grid-template-columns: repeat(3, 1fr) !important
+}
+
+.coming-soon-grid .service-card {
+  filter: grayscale(20%)
+}
+
+@media (max-width: 720px) {
+  .coming-soon-grid {
+    grid-template-columns: 1fr !important
+  }
+}
+
+/* ─── Club section ─────────────────────────────────────────── */
+.club-section {
+  background: #FFF5EE;
+  border-radius: var(--radius-lg);
+  margin: 0 12px;
+  padding: 32px 24px
+}
+
+.club-section .card {
+  border-left: 4px solid var(--brand);
+  background: #fff
+}
+
+.club-member-count {
+  font-size: .9rem;
+  color: var(--muted);
+  margin: 12px 0 0
+}
+
+.club-member-count strong {
+  color: var(--ink)
+}
+
+/* ─── Reviews placeholder (descomenta cuando conectes Google) ── */
+/*
+.reviews-section {
+  padding-top: 40px;
+  padding-bottom: 40px
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 28px
+}
+
+.review-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-lg);
+  padding: 20px 22px
+}
+
+.review-stars {
+  color: #F59E0B;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  margin-bottom: 10px
+}
+
+.review-text {
+  font-size: .92rem;
+  color: #374151;
+  margin: 0 0 14px;
+  line-height: 1.55
+}
+
+.review-author {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--ink)
+}
+
+.review-date {
+  font-size: .75rem;
+  color: var(--muted)
+}
+
+.section-label {
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin: 0 0 6px
+}
+*/
