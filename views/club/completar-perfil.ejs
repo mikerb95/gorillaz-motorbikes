@@ -1,0 +1,201 @@
+<%- include('../partials/head', { title: 'Completa tu perfil — Club', bodyClass: 'page-auth' }) %>
+
+<section class="auth-wrap auth-wrap--wide">
+  <div class="auth-header">
+    <a href="/" class="auth-logo" aria-label="Gorillaz Motorbikes">
+      <img src="/favicons/android-chrome-192x192.png" alt="Gorillaz Motorbikes" />
+    </a>
+    <h1 class="auth-title">¡Bienvenido al Club!</h1>
+    <p class="auth-subtitle">Solo falta completar tu perfil para activar tu membresía</p>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="form-error-banner"><%= error %></div>
+  <% } %>
+
+  <div class="complete-progress">
+    <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+    <p class="progress-label">Perfil al 40% — completa los datos para llegar al 100%</p>
+  </div>
+
+  <form method="post" action="/club/completar-perfil" class="auth-card register-form" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+    <!-- ── 1. DATOS PERSONALES ─────────────────────────────── -->
+    <fieldset class="register-section">
+      <legend class="register-legend">Datos personales</legend>
+      <div class="register-grid">
+        <div class="field">
+          <label for="firstName">Nombre <span class="req">*</span></label>
+          <input id="firstName" name="firstName" value="<%= user.firstName || '' %>" placeholder="Ej. Carlos" required />
+        </div>
+        <div class="field">
+          <label for="lastName">Apellido <span class="req">*</span></label>
+          <input id="lastName" name="lastName" value="<%= user.lastName || '' %>" placeholder="Ej. Rodríguez" required />
+        </div>
+        <div class="field">
+          <label for="cedula">Cédula de ciudadanía <span class="req">*</span></label>
+          <input id="cedula" name="cedula" value="<%= user.cedula || '' %>" placeholder="Ej. 1020304050" required inputmode="numeric" />
+        </div>
+        <div class="field">
+          <label for="phone">Celular <span class="req">*</span></label>
+          <input id="phone" name="phone" type="tel" value="<%= user.phone || '' %>" placeholder="Ej. 3201234567" required />
+        </div>
+        <div class="field">
+          <label for="dept-cp">Departamento <span class="req">*</span></label>
+          <select id="dept-cp" class="dept-select" name="department" data-location-group="completar" data-current-dept="<%= user.department || '' %>">
+            <option value="">— Seleccione —</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="city-cp">Ciudad / Municipio <span class="req">*</span></label>
+          <select id="city-cp" class="city-select" name="city" data-location-group="completar" data-current="<%= user.city || '' %>" required>
+            <option value="">— Seleccione un departamento —</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="birthdate">Fecha de nacimiento</label>
+          <input id="birthdate" name="birthdate" type="date" value="<%= user.birthdate || '' %>" />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── 2. SECCIÓN CLUB ─────────────────────────────── -->
+    <fieldset class="register-section">
+      <legend class="register-legend">Club</legend>
+      <div class="register-grid">
+        <div class="field">
+          <label for="nickname">Nickname / Apodo</label>
+          <input id="nickname" name="nickname" value="<%= user.nickname || '' %>" placeholder="Ej. El Rayo" />
+        </div>
+        <div class="field">
+          <label for="bloodType">RH (Grupo sanguíneo)</label>
+          <select id="bloodType" name="bloodType">
+            <option value="">— Seleccionar —</option>
+            <% ['O+','O-','A+','A-','B+','B-','AB+','AB-'].forEach(function(bt) { %>
+              <option value="<%= bt %>" <%= user.bloodType === bt ? 'selected' : '' %>><%= bt %></option>
+            <% }); %>
+          </select>
+          <p class="field-hint">Necesario por seguridad durante las rodadas.</p>
+        </div>
+        <div class="field field--full checkbox-field">
+          <input type="checkbox" id="clubNotifications" name="clubNotifications" value="true" <%= user.clubNotifications !== false ? 'checked' : '' %> style="width:auto;margin:0">
+          <label for="clubNotifications" style="margin:0;cursor:pointer">Deseo recibir notificaciones del club vía correo electrónico</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── 3. CONTACTO DE EMERGENCIA ─────────────────────── -->
+    <fieldset class="register-section">
+      <legend class="register-legend">Contacto de emergencia</legend>
+      <div class="register-grid">
+        <div class="field">
+          <label for="emergencyName">Nombre</label>
+          <input id="emergencyName" name="emergencyName" value="<%= user.emergencyName || '' %>" placeholder="Ej. Ana Martínez" />
+        </div>
+        <div class="field">
+          <label for="emergencyPhone">Celular</label>
+          <input id="emergencyPhone" name="emergencyPhone" type="tel" value="<%= user.emergencyPhone || '' %>" placeholder="Ej. 3109876543" />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── 4. MOTOS ──────────────────────────────────────── -->
+    <fieldset class="register-section" id="vehiclesSection">
+      <legend class="register-legend">Mis motos <span class="legend-note">(opcional)</span></legend>
+      <p class="section-hint">Registra una o varias motos. La información de documentos nos ayuda a recordarte sus vencimientos.</p>
+      <div id="vehiclesList"></div>
+      <button type="button" id="addVehicleBtn" class="btn btn-ghost btn-sm" style="margin-top:4px">+ Agregar moto</button>
+    </fieldset>
+
+    <template id="vehicleTemplate">
+      <div class="vehicle-block">
+        <div class="vehicle-block-header">
+          <span class="vehicle-block-num"></span>
+          <button type="button" class="vehicle-remove-btn btn btn-ghost btn-sm">Eliminar</button>
+        </div>
+        <div class="register-grid">
+          <div class="field"><label>Marca</label><input name="vehicleBrand[]" placeholder="Ej. Yamaha, Honda…" /></div>
+          <div class="field"><label>Modelo</label><input name="vehicleModel[]" placeholder="Ej. MT-07, CB500F…" /></div>
+          <div class="field"><label>Año</label><input name="vehicleYear[]" type="number" min="1990" max="2030" placeholder="Ej. 2022" /></div>
+          <div class="field"><label>Placa</label><input name="vehiclePlate[]" placeholder="Ej. ABC12D" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" /></div>
+          <div class="field"><label>Cilindraje (cc)</label><input name="vehicleCC[]" type="number" min="50" max="2500" placeholder="Ej. 600" /></div>
+          <div class="field"><label>Color</label><input name="vehicleColor[]" placeholder="Ej. Negro mate" /></div>
+          <div class="field"><label>Vencimiento SOAT</label><input name="soatExpires[]" type="date" /></div>
+          <div class="field"><label>Vencimiento Tecnomecánica</label><input name="tecnoExpires[]" type="date" /></div>
+        </div>
+      </div>
+    </template>
+
+    <script>
+      (function () {
+        var list   = document.getElementById('vehiclesList');
+        var tmpl   = document.getElementById('vehicleTemplate');
+        var addBtn = document.getElementById('addVehicleBtn');
+        function renumber() {
+          list.querySelectorAll('.vehicle-block').forEach(function (block, i) {
+            block.querySelector('.vehicle-block-num').textContent = 'Moto ' + (i + 1);
+            block.querySelector('.vehicle-remove-btn').style.display = list.children.length > 1 ? '' : 'none';
+          });
+        }
+        function addBlock() {
+          var clone = tmpl.content.cloneNode(true);
+          clone.querySelector('.vehicle-remove-btn').addEventListener('click', function () {
+            this.closest('.vehicle-block').remove();
+            renumber();
+          });
+          list.appendChild(clone);
+          renumber();
+        }
+        addBtn.addEventListener('click', addBlock);
+      })();
+    </script>
+
+    <p class="form-legal">
+      Al continuar aceptas nuestros
+      <a class="link" href="/terminos" target="_blank">Términos y condiciones</a> y
+      <a class="link" href="/privacidad" target="_blank">Política de privacidad</a>.
+    </p>
+
+    <button class="btn btn-primary btn--full" type="submit">Guardar y entrar al club</button>
+  </form>
+
+  <div class="auth-alt">
+    <a class="link" href="/club/panel">Completar más tarde</a>
+  </div>
+</section>
+
+<style>
+  .auth-wrap--wide { max-width: 780px; }
+  .auth-subtitle { color: var(--muted, #888); font-size: .9rem; margin-top: -.4rem; margin-bottom: 1rem; }
+
+  .complete-progress { margin-bottom: 1.6rem; }
+  .progress-bar { height: 6px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--brand); border-radius: 99px; transition: width .4s; }
+  .progress-label { font-size: .78rem; color: var(--muted, #888); margin-top: .4rem; text-align: center; }
+
+  .register-form { display: flex; flex-direction: column; gap: 0; }
+  .register-section { border: 1px solid #e5e7eb; border-radius: var(--radius); padding: 1.4rem 1.6rem; margin-bottom: 1.4rem; }
+  .register-legend { font-weight: 800; font-size: 1rem; color: var(--brand); padding: 0 .4rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: .04em; }
+  .legend-note { font-weight: 400; font-size: .8rem; color: var(--muted, #888); text-transform: none; }
+  .register-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem 1.2rem; }
+  @media(max-width:560px) { .register-grid { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: .3rem; }
+  .field--full { grid-column: 1 / -1; }
+  .checkbox-field { flex-direction: row !important; align-items: center; gap: 8px; }
+  .field label { font-size: .82rem; font-weight: 700; color: #ccc; }
+  .field input, .field select { background: #f9fafb; border: 1px solid #d1d5db; border-radius: 8px; padding: .58rem .8rem; color: #111; font-size: .95rem; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--brand); }
+  .field select option { background: #fff; color: #111; }
+  .field-hint { font-size: .8rem; opacity: .8; margin-top: 4px; }
+  .req { color: var(--brand); }
+  .section-hint { font-size: .8rem; color: var(--muted, #888); margin: -.4rem 0 .8rem; }
+  .vehicle-block { border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem 1.2rem 1.2rem; margin-bottom: .8rem; }
+  .vehicle-block-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
+  .vehicle-block-num { font-weight: 700; font-size: .85rem; color: var(--brand); text-transform: uppercase; letter-spacing: .04em; }
+  .form-error-banner { background: rgba(220,50,50,.15); border: 1px solid rgba(220,50,50,.4); color: #ff7f7f; border-radius: 8px; padding: .7rem 1rem; margin-bottom: 1rem; font-size: .9rem; }
+  .form-legal { font-size: .78rem; color: var(--muted, #888); margin: .4rem 0 1rem; }
+  .btn--full { width: 100%; }
+</style>
+
+<%- include('../partials/footer') %>
