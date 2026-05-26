@@ -25,6 +25,7 @@ const {
   getAllQuotations, getQuotationById, countQuotations, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
+  backupAllTables,
 } = require('../db');
 
 const COTIZADOR_CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
