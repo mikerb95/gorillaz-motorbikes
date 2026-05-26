@@ -25,7 +25,7 @@ function validateRegistration({ firstName, lastName, email, password, phone, ced
 }
 const QRCode = require('qrcode');
 
-const { JWT_SECRET, resendClient, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL } = require('../config');
+const { JWT_SECRET, resendClient, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL, APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY } = require('../config');
 const { requireAuth }               = require('../middleware/auth');
 const { authLimiter }               = require('../middleware/auth');
 const { getScoreLevel, SCORE_POINTS } = require('../helpers/score');
