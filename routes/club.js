@@ -473,6 +473,86 @@ router.post('/auth/passkey/:id/delete', requireAuth, async (req, res) => {
   res.redirect('/club/panel');
 });
 
+// ── Completar perfil (OAuth / Passkey new users) ──────────────────────────
+
+router.get('/completar-perfil', requireAuth, async (req, res) => {
+  const user = await getUserById(req.userId);
+  if (!user) return res.redirect('/club/login');
+  res.render('club/completar-perfil', { user, error: null, csrfToken: req.csrfToken() });
+});
+
+router.post('/completar-perfil', requireAuth, authLimiter, async (req, res) => {
+  const user = await getUserById(req.userId);
+  if (!user) return res.redirect('/club/login');
+
+  const { firstName, lastName, cedula, phone, birthdate, bloodType, city, department,
+    nickname, clubNotifications, emergencyName, emergencyPhone } = req.body;
+
+  const renderErr = (msg) => res.status(400).render('club/completar-perfil', {
+    user: { ...user, ...req.body },
+    error: msg,
+    csrfToken: req.csrfToken(),
+  });
+
+  if (!firstName || firstName.trim().length < 2 || firstName.trim().length > 50)
+    return renderErr('El nombre debe tener entre 2 y 50 caracteres.');
+  if (!lastName || lastName.trim().length < 2 || lastName.trim().length > 50)
+    return renderErr('El apellido debe tener entre 2 y 50 caracteres.');
+  if (!cedula || !/^\d{5,12}$/.test(cedula.trim()))
+    return renderErr('La cédula debe contener entre 5 y 12 dígitos.');
+  if (!phone || !/^[+\d\s\-()ñ]{7,25}$/.test(phone.trim()))
+    return renderErr('El celular no es válido.');
+  if (!city || !city.trim())
+    return renderErr('Por favor selecciona tu ciudad.');
+
+  try {
+    if (await getUserByCedula(cedula.trim()) && user.cedula !== cedula.trim())
+      return renderErr('La cédula ya está en uso por otra cuenta.');
+
+    const brands  = [].concat(req.body.vehicleBrand  || []);
+    const models  = [].concat(req.body.vehicleModel  || []);
+    const years   = [].concat(req.body.vehicleYear   || []);
+    const plates  = [].concat(req.body.vehiclePlate  || []);
+    const ccs     = [].concat(req.body.vehicleCC     || []);
+    const colors  = [].concat(req.body.vehicleColor  || []);
+    const soats   = [].concat(req.body.soatExpires   || []);
+    const tecnos  = [].concat(req.body.tecnoExpires  || []);
+    const newVehicles = brands
+      .map((b, i) => ({ brand: b, model: models[i] || '', year: years[i] || '', plate: (plates[i] || '').toUpperCase(), cc: ccs[i] || '', color: colors[i] || '', soatExpires: soats[i] || null, tecnoExpires: tecnos[i] || null }))
+      .filter(v => v.brand || v.plate);
+
+    const existingVehicles = user.vehicles || [];
+    const mergedVehicles   = [...existingVehicles];
+    for (const nv of newVehicles) {
+      if (nv.plate && mergedVehicles.some(v => v.plate === nv.plate)) continue;
+      mergedVehicles.push(nv);
+    }
+
+    const name = (firstName.trim() + ' ' + lastName.trim()).trim();
+    await updateUser(user.id, {
+      name,
+      firstName: firstName.trim(),
+      lastName:  lastName.trim(),
+      cedula:    cedula.trim(),
+      phone:     phone.trim(),
+      birthdate: birthdate || null,
+      bloodType: bloodType || null,
+      city:      city.trim(),
+      department: (department || '').trim() || null,
+      nickname:  (nickname || '').trim() || null,
+      clubNotifications: clubNotifications === 'true',
+      emergencyName:  (emergencyName  || '').trim() || null,
+      emergencyPhone: (emergencyPhone || '').trim() || null,
+      vehicles: mergedVehicles,
+      membership: user.membership || { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Descuentos en taller', 'Acceso al club'] },
+    });
+    res.redirect('/club/panel');
+  } catch (e) {
+    console.error('POST /club/completar-perfil error:', e.message);
+    renderErr('Error del servidor. Intenta de nuevo.');
+  }
+});
+
 router.post('/logout', (req, res) => {
   res.clearCookie('jwt');
   res.redirect('/');
