@@ -7,6 +7,12 @@ const jwt    = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { setFlash } = require('../helpers/flash');
+const {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
+} = require('@simplewebauthn/server');
 
 function validateRegistration({ firstName, lastName, email, password, phone, cedula }) {
   if (!firstName || firstName.trim().length < 2 || firstName.trim().length > 50)
