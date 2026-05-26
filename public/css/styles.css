@@ -50,7 +50,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: #fff;
+  background: #FFF9F5;
   color: #111;
   font-family: "Montserrat", system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif
 }
@@ -1669,7 +1669,7 @@ main.schedule-full {
   padding: 72px 16px;
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
-  background: #fafafa
+  background: #F5F0EC
 }
 
 .newsletter-inner {
