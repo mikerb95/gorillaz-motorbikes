@@ -1274,6 +1274,27 @@ async function getServiceOrdersByPlate(plate) {
   return r.rows.map(rowToServiceOrder);
 }
 
+// ── Backup ────────────────────────────────────────────────────────────────
+
+async function backupAllTables() {
+  const tableNames = [
+    'users', 'appointments', 'events', 'event_attendances',
+    'admin_audit_log', 'newsletter', 'newsletter_campaigns',
+    'enrollments', 'job_applications', 'orders', 'quotations',
+    'service_orders', 'invoices', 'passkeys', 'gastos',
+  ];
+  const snapshot = {};
+  for (const table of tableNames) {
+    try {
+      const r = await db.execute(`SELECT * FROM ${table}`);
+      snapshot[table] = r.rows.map(row => Object.fromEntries(Object.entries(row)));
+    } catch {
+      snapshot[table] = [];
+    }
+  }
+  return { timestamp: new Date().toISOString(), tables: snapshot };
+}
+
 // ── Exports ───────────────────────────────────────────────────────────────
 
 module.exports = {
