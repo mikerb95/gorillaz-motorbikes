@@ -485,19 +485,20 @@ router.get('/panel', requireAuth, async (req, res) => {
     tecno: v.tecnoExpires ? daysBetween(new Date(v.tecnoExpires + 'T00:00:00'), today) : null,
   }));
   const plates = (user.vehicles || []).map(v => v.plate).filter(Boolean);
-  let upcomingEvents = [], registrations = {}, quotationHistory = [], myRank = null;
+  let upcomingEvents = [], registrations = {}, quotationHistory = [], myRank = null, passkeys = [];
   try {
-    [upcomingEvents, registrations, quotationHistory, myRank] = await Promise.all([
+    [upcomingEvents, registrations, quotationHistory, myRank, passkeys] = await Promise.all([
       getUpcomingEvents(8),
       getUserEventRegistrations(user.id),
       getQuotationsByMotorcyclePlates(plates),
       getUserRank(user.id, user.score || 0),
+      getPasskeysByUserId(user.id),
     ]);
   } catch (e) {
     console.error('GET /club/panel data error:', e.message);
   }
   const scoreLevel = getScoreLevel(user.score || 0);
-  res.render('club/dashboard', { user, reminders, upcomingEvents, registrations, scoreLevel, SCORE_POINTS, quotationHistory, myRank, noIndex: true });
+  res.render('club/dashboard', { user, reminders, upcomingEvents, registrations, scoreLevel, SCORE_POINTS, quotationHistory, myRank, passkeys, noIndex: true });
 });
 
 router.post('/visitas', requireAuth, async (req, res) => {
