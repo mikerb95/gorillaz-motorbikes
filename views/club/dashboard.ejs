@@ -488,6 +488,44 @@
     </div>
     <% } %>
 
+    <!-- ── Seguridad / Passkeys ── -->
+    <div class="cp-section" id="seguridad">
+      <h2 class="cp-section-title">Seguridad</h2>
+      <div class="cp-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+          <div>
+            <p class="cp-card-label" style="margin:0 0 2px">Llaves de acceso (Passkeys)</p>
+            <p style="margin:0;font-size:.82em;color:#6b7280">Inicia sesión con huella dactilar, Face ID o PIN del dispositivo — sin contraseña.</p>
+          </div>
+          <button class="btn btn-sm btn-outline" type="button" id="addPasskeyBtn">+ Agregar passkey</button>
+        </div>
+
+        <div id="passkeyMsg" style="display:none;margin-bottom:12px"></div>
+
+        <% if (passkeys && passkeys.length > 0) { %>
+          <ul class="passkey-list">
+            <% passkeys.forEach(pk => { %>
+              <li class="passkey-item">
+                <span class="passkey-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                </span>
+                <div class="passkey-info">
+                  <span class="passkey-name"><%= pk.name || 'Passkey' %></span>
+                  <span class="passkey-date">Registrada el <%= new Date(pk.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %></span>
+                </div>
+                <form method="post" action="/club/auth/passkey/<%= pk.id %>/delete" style="margin:0" onsubmit="return confirm('¿Eliminar esta passkey?')">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <button class="btn btn-sm" style="color:#ef4444;border-color:#fca5a5" type="submit">Eliminar</button>
+                </form>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p style="font-size:.85em;color:#9ca3af;margin:0">No tienes passkeys registradas aún.</p>
+        <% } %>
+      </div>
+    </div>
+
   </div><!-- /.container -->
 
   <!-- ── Editar perfil ── -->
