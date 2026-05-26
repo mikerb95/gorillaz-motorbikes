@@ -179,6 +179,18 @@ async function initDb() {
       notes TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    `CREATE TABLE IF NOT EXISTS passkeys (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      credential_id TEXT UNIQUE NOT NULL,
+      public_key TEXT NOT NULL,
+      counter INTEGER NOT NULL DEFAULT 0,
+      device_type TEXT,
+      backed_up INTEGER NOT NULL DEFAULT 0,
+      transports TEXT NOT NULL DEFAULT '[]',
+      name TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
     `CREATE TABLE IF NOT EXISTS gastos (
       id TEXT PRIMARY KEY,
       category TEXT NOT NULL DEFAULT 'otros',
