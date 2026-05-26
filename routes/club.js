@@ -30,7 +30,7 @@ const { requireAuth }               = require('../middleware/auth');
 const { authLimiter }               = require('../middleware/auth');
 const { getScoreLevel, SCORE_POINTS } = require('../helpers/score');
 const {
-  getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId,
+  getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId, getUserByAppleId,
   updateUser, createUser,
   getAllEvents, getUpcomingEvents,
   registerEventAttendance, getUserEventRegistrations,
