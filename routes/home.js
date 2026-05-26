@@ -36,7 +36,7 @@ router.get('/', (req, res) => {
     recaptchaSiteKey: RECAPTCHA_SITE_KEY,
     featuredProducts,
     title: 'Gorillaz Motorbikes | Taller de motos en Bogotá',
-    description: 'Taller de motos en Bogotá: mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo computarizado y tienda de accesorios. Agenda tu cita.',
+    description: 'Taller especializado de motos en Bogotá. Mecánica, pintura, escaneo computarizado y tecnomecánica. Agenda online en minutos.',
     canonicalPath: '/',
   });
 });
