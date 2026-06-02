@@ -1042,8 +1042,11 @@
   }
 
   async function syncNow() {
-    // Nada que persistir todavía (cotización vacía y sin id)
-    if (!currentQuoteId && items.length === 0) { setSyncStatus('idle'); return; }
+    // Nada que persistir todavía: borrador nuevo y completamente vacío
+    const hasContent = items.length > 0
+      || (motoField && motoField.value.trim())
+      || (plateField && plateField.value.trim());
+    if (!currentQuoteId && !hasContent) { setSyncStatus('idle'); return; }
     const seq = ++syncSeq;
     const payload = {
       id: currentQuoteId,

@@ -25,8 +25,10 @@ const {
   getAllQuotations, getQuotationById, countQuotations, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
+  createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, updateEmployee, deleteEmployee,
   backupAllTables,
 } = require('../db');
+const bcrypt = require('bcryptjs');
 
 const COTIZADOR_CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
 const SERVICES_CATALOG_PATH   = path.join(__dirname, '..', 'data', 'services-catalog.json');

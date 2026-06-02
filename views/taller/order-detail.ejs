@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= order.label %> — Taller Gorillaz</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Montserrat, system-ui, sans-serif; background: #f3f4f6; color: #111; }
+    .tl-top { background: #0f1115; color: #fff; padding: 14px 18px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+    .tl-back { color: #fff; text-decoration: none; font-weight: 800; font-size: 14px; }
+    .tl-top .label { font-weight: 900; font-size: 15px; }
+    .tl-wrap { max-width: 680px; margin: 0 auto; padding: 18px 16px 60px; }
+    .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #eef0f2; }
+    .card h2 { font-size: 12px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 12px; }
+    .row { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 14px; }
+    .k { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+    .v { font-weight: 800; font-size: 14px; }
+    .item { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+    .item:last-child { border-bottom: none; }
+    .item .q { color: #6b7280; font-weight: 700; }
+    .badge { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
+    .b-ingreso_taller { background: #fef3c7; color: #92400e; }
+    .b-trabajo_en_curso { background: #dbeafe; color: #1e40af; }
+    .b-en_pausa { background: #f3f4f6; color: #4b5563; }
+    .b-trabajo_completo { background: #dcfce7; color: #166534; }
+    select { width: 100%; padding: 13px 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-family: inherit; font-weight: 700; outline: none; }
+    select:focus { border-color: #F25C05; }
+    .save { width: 100%; margin-top: 14px; padding: 15px; font-size: 16px; font-weight: 800; background: #F25C05; color: #fff; border: none; border-radius: 12px; cursor: pointer; }
+    .note { font-size: 12px; color: #6b7280; margin: 10px 0 0; }
+    .done-banner { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <div class="tl-top">
+    <a class="tl-back" href="/taller">←</a>
+    <span class="label"><%= order.label %></span>
+    <% const st = EMP_STATUS.find(s => s.v === order.status) || { l: order.status }; %>
+    <span class="badge b-<%= order.status %>" style="margin-left:auto"><%= st.l %></span>
+  </div>
+
+  <div class="tl-wrap">
+
+    <% if (order.status === 'trabajo_completo') { %>
+      <div class="done-banner">✓ Marcaste esta orden como finalizada. El administrador ya fue notificado para continuar con el cliente.</div>
+    <% } %>
+
+    <div class="card">
+      <h2>Información</h2>
+      <div class="row">
+        <div><div class="k">Moto / Placa</div><div class="v"><%= order.motorcycle || '—' %></div></div>
+        <div><div class="k">Ingreso</div><div class="v"><%= new Date(order.createdAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) %></div></div>
+        <div><div class="k">Entrega estimada</div><div class="v"><%= order.estimatedDate || '—' %></div></div>
+      </div>
+      <% if (order.notes) { %>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6">
+          <div class="k">Notas</div>
+          <div style="font-size:14px;color:#374151"><%= order.notes %></div>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <h2>Ítems (<%= order.items.length %>)</h2>
+      <% order.items.forEach(it => { %>
+        <div class="item">
+          <span><%= it.name %></span>
+          <span class="q">×<%= it.qty %></span>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="card">
+      <h2>Actualizar estado</h2>
+      <form method="post" action="/taller/orden/<%= order.id %>/estado">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <select name="status">
+          <% EMP_STATUS.forEach(s => { %>
+            <option value="<%= s.v %>"<%= order.status === s.v ? ' selected' : '' %>><%= s.l %></option>
+          <% }) %>
+        </select>
+        <button type="submit" class="save">Guardar estado</button>
+        <p class="note">Al elegir <strong>Trabajo completo</strong> se avisa al administrador para que contacte al cliente y cierre la orden.</p>
+      </form>
+    </div>
+
+  </div>
+</body>
+</html>
