@@ -62,7 +62,12 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
           </td>
           <td><strong>$<%= o.total.toLocaleString('es-CO') %></strong></td>
           <td class="muted" style="font-size:.82rem"><%= o.estimatedDate || '—' %></td>
-          <td><span class="badge <%= st.cls %>"><%= st.label %></span></td>
+          <td>
+            <span class="badge <%= st.cls %>"><%= st.label %></span>
+            <% if (o.pendingReview) { %>
+              <span class="badge badge-success" style="display:block;margin-top:4px;font-size:.7rem">✅ Listo para revisar</span>
+            <% } %>
+          </td>
           <td><a class="btn btn-ghost btn-sm" href="/admin/ordenes-servicio/<%= o.id %>">Ver</a></td>
         </tr>
         <% }) %>
