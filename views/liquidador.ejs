@@ -1626,7 +1626,7 @@
     renderItems();
     goToStep(1);
     fetchDrafts();
-    focusSearch();
+    if (plateField) plateField.focus();
   }
 
   // ── Hidratar una cotización existente (borrador o confirmada) ─────

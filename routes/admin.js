@@ -932,8 +932,8 @@ router.get('/ordenes-servicio', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // Crear una orden de servicio directamente, sin partir de una cotización.
-router.get('/ordenes-servicio/nueva', requireAuth, requireAdmin, (req, res) => {
-  res.render('admin/service-order-new', { error: null });
+router.get('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, res) => {
+  res.render('admin/service-order-new', { error: null, empleados: await getActiveEmployees() });
 });
 
 router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, res) => {
@@ -956,7 +956,7 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, re
   }, []) : [];
 
   if (clean.length === 0) {
-    return res.status(400).render('admin/service-order-new', { error: 'Agrega al menos un ítem válido (nombre, cantidad y precio).' });
+    return res.status(400).render('admin/service-order-new', { error: 'Agrega al menos un ítem válido (nombre, cantidad y precio).', empleados: await getActiveEmployees() });
   }
 
   const total      = clean.reduce((s, it) => s + it.price * it.qty, 0);
