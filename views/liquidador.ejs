@@ -1659,17 +1659,24 @@
     try {
       const res = await fetch('/api/liquidador/drafts');
       const drafts = await res.json();
-      const list = Array.isArray(drafts) ? drafts.filter(d => d.id !== currentQuoteId && d.itemCount > 0) : [];
+      const list = Array.isArray(drafts)
+        ? drafts.filter(d => d.id !== currentQuoteId && (d.itemCount > 0 || d.motorcycle || d.plate))
+        : [];
       if (!list.length) { draftsBox.classList.remove('visible'); return; }
-      draftsList.innerHTML = list.map(d => `
+      draftsList.innerHTML = list.map(d => {
+        const meta = [`${d.itemCount} ítem${d.itemCount === 1 ? '' : 's'}`];
+        if (d.itemCount > 0) meta.push(fmt(d.total));
+        if (d.plate) meta.push(escHtml(d.plate));
+        else if (d.motorcycle) meta.push(escHtml(d.motorcycle));
+        return `
         <div class="liq-draft-card">
           <div class="liq-draft-info" data-draft-id="${escHtml(d.id)}" role="button" tabindex="0">
             <div class="liq-draft-label">Cotización #${escHtml(d.label)}</div>
-            <div class="liq-draft-meta">${d.itemCount} ítem${d.itemCount === 1 ? '' : 's'} · ${fmt(d.total)}${d.motorcycle ? ' · ' + escHtml(d.motorcycle) : ''}</div>
+            <div class="liq-draft-meta">${meta.join(' · ')}</div>
           </div>
           <button class="liq-draft-discard" data-discard-id="${escHtml(d.id)}" aria-label="Descartar borrador">×</button>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
       draftsList.querySelectorAll('[data-draft-id]').forEach(el => {
         const go = () => { window.location.href = '/liquidador?id=' + el.dataset.draftId; };
         el.addEventListener('click', go);
@@ -1716,7 +1723,7 @@
       if (savedId) { window.location.replace('/liquidador?id=' + savedId); return; }
     }
     fetchDrafts();
-    focusSearch();
+    if (plateField) plateField.focus();
   })();
 })();
 </script>

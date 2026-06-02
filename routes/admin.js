@@ -974,6 +974,7 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, re
     mechanic:           (req.body.mechanic || '').trim() || null,
     notes:              (req.body.notes || '').trim() || null,
     estimatedDate:      req.body.estimatedDate || null,
+    employeeId:         req.body.employeeId || null,
     status:             'ingreso_taller',
   });
   res.redirect('/admin/ordenes-servicio/' + id);
@@ -985,21 +986,26 @@ router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) 
   const quotation = order.quotationId ? await getQuotationById(order.quotationId) : null;
   const invoice   = order.invoiceId   ? await getInvoiceById(order.invoiceId)     : null;
   const parqueaderoConfig = loadParqueaderoConfig();
-  res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig });
+  const empleados = await getActiveEmployees();
+  const empleadoAsignado = order.employeeId ? await getEmployeeById(order.employeeId) : null;
+  res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig, empleados, empleadoAsignado });
 });
 
 router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
-  const { mechanic, status, notes, estimatedDate } = req.body;
+  const { mechanic, status, notes, estimatedDate, employeeId } = req.body;
   const order = await getServiceOrderById(req.params.id);
   const updates = {
     mechanic:      (mechanic || '').trim() || null,
     status:        status || 'ingreso_taller',
     notes:         (notes || '').trim() || null,
     estimatedDate: estimatedDate || null,
+    employeeId:    employeeId || null,
   };
   if (status === 'trabajo_completo' && order && !order.trabajoCompletoAt) {
     updates.trabajoCompletoAt = nowCOT();
   }
+  // El admin que toca la orden la da por revisada: limpia el aviso del taller.
+  if (order && order.pendingReview) updates.pendingReview = false;
   await updateServiceOrder(req.params.id, updates);
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });

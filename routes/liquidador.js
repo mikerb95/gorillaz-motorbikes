@@ -141,7 +141,7 @@ router.get('/api/liquidador/drafts', async (req, res) => {
     const drafts = await getDraftQuotations(15);
     res.json(drafts.map(d => ({
       id: d.id, label: d.label, total: d.total,
-      itemCount: d.items.length, motorcycle: d.motorcycle,
+      itemCount: d.items.length, motorcycle: d.motorcycle, plate: d.plate,
       createdAt: d.createdAt,
     })));
   } catch (err) {
