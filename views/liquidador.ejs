@@ -956,6 +956,69 @@
   const btnDownload    = document.getElementById('btnDownloadPdf');
   const btnSendOrFin   = document.getElementById('btnSendOrFinish');
   const btnNewQuote    = document.getElementById('btnNewQuote');
+  const syncBadge      = document.getElementById('liqSyncStatus');
+  const syncText       = document.getElementById('liqSyncText');
+  const editBanner     = document.getElementById('liqEditBanner');
+  const editBannerText = document.getElementById('liqEditBannerText');
+  const panel1Title    = document.getElementById('liqPanel1Title');
+  const draftsBox      = document.getElementById('liqDrafts');
+  const draftsList     = document.getElementById('liqDraftsList');
+
+  function csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+  }
+
+  // ── Autosave / sincronización ─────────────────────────────────────
+  let syncHideTimer = null;
+  function setSyncStatus(state) {
+    clearTimeout(syncHideTimer);
+    syncBadge.classList.remove('saving', 'error');
+    if (state === 'idle') { syncBadge.classList.remove('visible'); return; }
+    syncBadge.classList.add('visible');
+    if (state === 'saving') { syncBadge.classList.add('saving'); syncText.textContent = 'Guardando…'; }
+    else if (state === 'error') { syncBadge.classList.add('error'); syncText.textContent = 'Error al guardar'; }
+    else { syncText.textContent = 'Guardado'; syncHideTimer = setTimeout(() => syncBadge.classList.remove('visible'), 2000); }
+  }
+
+  function scheduleSync() {
+    clearTimeout(syncTimer);
+    setSyncStatus('saving');
+    syncTimer = setTimeout(syncNow, 700);
+  }
+
+  async function syncNow() {
+    // Nada que persistir todavía (cotización vacía y sin id)
+    if (!currentQuoteId && items.length === 0) { setSyncStatus('idle'); return; }
+    const seq = ++syncSeq;
+    const payload = {
+      id: currentQuoteId,
+      items: items.map(it => ({ id: it.id, name: it.name, price: it.price, type: it.type, qty: it.qty })),
+      total: calcTotal(),
+      motorcycle: motoField ? motoField.value.trim() || null : null,
+      plate: plateField ? plateField.value.trim().toUpperCase() || null : null,
+    };
+    const editingConfirmed = isConfirmed && currentQuoteId;
+    const url    = editingConfirmed ? '/api/liquidador/quotation/' + currentQuoteId : '/api/liquidador/draft';
+    const method = editingConfirmed ? 'PUT' : 'POST';
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'sync');
+      if (seq !== syncSeq) return; // respuesta obsoleta
+      if (!currentQuoteId && data.id) {
+        currentQuoteId = data.id;
+        if (!isConfirmed) localStorage.setItem(DRAFT_LS_KEY, currentQuoteId);
+        history.replaceState(null, '', '/liquidador?id=' + currentQuoteId);
+      }
+      setSyncStatus('saved');
+    } catch {
+      if (seq === syncSeq) setSyncStatus('error');
+    }
+  }
 
   // ── Utilidades ────────────────────────────────────────────────────
   function fmt(n) {
