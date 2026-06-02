@@ -1024,7 +1024,7 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
     paymentMethod:      req.body.paymentMethod || 'efectivo',
     notes:              (req.body.notes || '').trim() || null,
   });
-  await updateServiceOrder(order.id, { status: 'facturado', invoiceId });
+  await updateServiceOrder(order.id, { status: 'facturado', invoiceId, pendingReview: false });
   res.redirect('/admin/facturas/' + invoiceId);
 });
 
