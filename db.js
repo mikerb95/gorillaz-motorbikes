@@ -1082,6 +1082,8 @@ async function updateServiceOrder(id, fields) {
   if (fields.notes         !== undefined) { set.push('notes = ?');          args.push(fields.notes); }
   if (fields.estimatedDate !== undefined) { set.push('estimated_date = ?'); args.push(fields.estimatedDate); }
   if (fields.invoiceId          !== undefined) { set.push('invoice_id = ?');           args.push(fields.invoiceId); }
+  if (fields.employeeId         !== undefined) { set.push('employee_id = ?');          args.push(fields.employeeId); }
+  if (fields.pendingReview      !== undefined) { set.push('pending_review = ?');       args.push(fields.pendingReview ? 1 : 0); }
   if (fields.trabajoCompletoAt  !== undefined) { set.push('trabajo_completo_at = ?');  args.push(fields.trabajoCompletoAt); }
   if (set.length === 0) return;
   set.push('updated_at = ?'); args.push(new Date().toISOString());
