@@ -1,0 +1,178 @@
+<%- include('../partials/admin-head', { title: 'Nueva Orden de Servicio' }) %>
+
+<div class="crm-page-header">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a class="btn btn-ghost btn-sm" href="/admin/ordenes-servicio">← Órdenes de servicio</a>
+  </div>
+</div>
+
+<% if (error) { %>
+<div class="crm-card" style="padding:14px 18px;max-width:860px;margin-bottom:16px;border-left:4px solid #dc2626;background:#fef2f2">
+  <span style="color:#b91c1c;font-weight:700;font-size:14px"><%= error %></span>
+</div>
+<% } %>
+
+<form method="post" action="/admin/ordenes-servicio/nueva" id="soForm" style="display:grid;gap:16px;grid-template-columns:1fr;max-width:860px">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <input type="hidden" name="items" id="itemsField" />
+
+  <!-- Datos generales -->
+  <div class="crm-card" style="padding:20px 24px">
+    <h2 style="font-size:14px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px">Información general</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Placa</label>
+        <input type="text" name="plate" maxlength="20" placeholder="ABC123" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;text-transform:uppercase" />
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Moto (marca/modelo)</label>
+        <input type="text" name="motorcycle" maxlength="80" placeholder="Yamaha MT-03" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">WhatsApp cliente</label>
+        <div style="display:flex;gap:6px">
+          <input type="text" name="clientPhoneCountry" value="+57" style="width:62px;padding:9px 8px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;text-align:center" />
+          <input type="text" name="clientPhone" inputmode="numeric" placeholder="3001234567" style="flex:1;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Mecánico asignado</label>
+        <input type="text" name="mechanic" placeholder="Nombre del mecánico" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Fecha estimada de entrega</label>
+        <input type="date" name="estimatedDate" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Observaciones iniciales</label>
+      <textarea name="notes" rows="2" maxlength="500" placeholder="Diagnóstico inicial, observaciones del cliente..." style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"></textarea>
+    </div>
+  </div>
+
+  <!-- Ítems -->
+  <div class="crm-card" style="padding:20px 24px">
+    <h2 style="font-size:14px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px">Ítems</h2>
+    <div class="crm-table-wrap">
+      <table class="crm-table" id="itemsTable">
+        <thead>
+          <tr>
+            <th style="min-width:200px">Ítem</th>
+            <th style="width:130px">Tipo</th>
+            <th style="width:80px;text-align:center">Cant.</th>
+            <th style="width:130px;text-align:right">Precio unit.</th>
+            <th style="width:120px;text-align:right">Subtotal</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" style="text-align:right;font-weight:800;padding:12px 10px;font-size:13px;color:#374151">TOTAL</td>
+            <td style="text-align:right;font-weight:900;font-size:17px;color:var(--brand);padding:12px 10px" id="grandTotal">$0</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <datalist id="catalogList"></datalist>
+    <button type="button" class="btn btn-ghost btn-sm" id="addRow" style="margin-top:12px">+ Agregar ítem</button>
+  </div>
+
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-primary" type="submit">Crear Orden de Servicio →</button>
+    <a class="btn btn-ghost" href="/admin/ordenes-servicio">Cancelar</a>
+  </div>
+</form>
+
+<script>
+(function () {
+  const body       = document.getElementById('itemsBody');
+  const addBtn     = document.getElementById('addRow');
+  const grandTotal = document.getElementById('grandTotal');
+  const catalog    = document.getElementById('catalogList');
+  const form       = document.getElementById('soForm');
+  const itemsField = document.getElementById('itemsField');
+
+  const fmt = n => '$' + (Number(n) || 0).toLocaleString('es-CO');
+
+  function recalc() {
+    let total = 0;
+    body.querySelectorAll('tr').forEach(tr => {
+      const price = Number(tr.querySelector('.it-price').value) || 0;
+      const qty   = Number(tr.querySelector('.it-qty').value)   || 0;
+      const sub   = price * qty;
+      tr.querySelector('.it-sub').textContent = fmt(sub);
+      total += sub;
+    });
+    grandTotal.textContent = fmt(total);
+  }
+
+  function addRow(data = {}) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="it-name" list="catalogList" autocomplete="off" placeholder="Nombre del ítem" style="width:100%;padding:7px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" value="${data.name || ''}"></td>
+      <td><select class="it-type" style="width:100%;padding:7px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box">
+        <option value="service">Servicio</option>
+        <option value="product">Producto</option>
+        <option value="custom">Personalizado</option>
+      </select></td>
+      <td><input class="it-qty" type="number" min="1" value="${data.qty || 1}" style="width:100%;padding:7px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;text-align:center"></td>
+      <td><input class="it-price" type="number" min="0" step="1" value="${data.price || ''}" placeholder="0" style="width:100%;padding:7px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;text-align:right"></td>
+      <td class="it-sub" style="text-align:right;font-weight:800;color:var(--brand)">$0</td>
+      <td><button type="button" class="it-del btn btn-ghost btn-sm" style="color:#dc2626;padding:4px 8px">✕</button></td>`;
+    if (data.type) tr.querySelector('.it-type').value = data.type;
+    body.appendChild(tr);
+
+    tr.querySelector('.it-del').addEventListener('click', () => { tr.remove(); recalc(); });
+    tr.querySelectorAll('.it-price, .it-qty').forEach(el => el.addEventListener('input', recalc));
+
+    const nameInput = tr.querySelector('.it-name');
+    let t;
+    nameInput.addEventListener('input', () => {
+      clearTimeout(t);
+      const q = nameInput.value.trim();
+      if (q.length < 3) return;
+      t = setTimeout(async () => {
+        try {
+          const r = await fetch('/api/liquidador/search?q=' + encodeURIComponent(q));
+          const list = await r.json();
+          catalog.innerHTML = '';
+          list.forEach(item => {
+            const o = document.createElement('option');
+            o.value = item.name;
+            catalog.appendChild(o);
+          });
+          // Auto-asigna el tipo si el nombre coincide con un resultado del catálogo.
+          const match = list.find(i => i.name === nameInput.value);
+          if (match) tr.querySelector('.it-type').value = match.type;
+        } catch {}
+      }, 250);
+    });
+    recalc();
+  }
+
+  addBtn.addEventListener('click', () => addRow());
+  addRow(); // primera fila
+
+  form.addEventListener('submit', e => {
+    const items = [];
+    body.querySelectorAll('tr').forEach(tr => {
+      const name  = tr.querySelector('.it-name').value.trim();
+      const price = Math.round(Number(tr.querySelector('.it-price').value));
+      const qty   = Math.round(Number(tr.querySelector('.it-qty').value));
+      if (name && price >= 1 && qty >= 1) {
+        items.push({ name, type: tr.querySelector('.it-type').value, price, qty });
+      }
+    });
+    if (items.length === 0) {
+      e.preventDefault();
+      alert('Agrega al menos un ítem válido (nombre, cantidad y precio).');
+      return;
+    }
+    itemsField.value = JSON.stringify(items);
+  });
+})();
+</script>
+
+<%- include('../partials/admin-foot') %>
