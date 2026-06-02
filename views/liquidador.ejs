@@ -1084,12 +1084,14 @@
       sel.addEventListener('change', e => {
         items[Number(e.target.dataset.qtyIdx)].qty = Number(e.target.value);
         renderItems();
+        scheduleSync();
       });
     });
     itemsList.querySelectorAll('[data-rm-idx]').forEach(btn => {
       btn.addEventListener('click', e => {
         items.splice(Number(e.currentTarget.dataset.rmIdx), 1);
         renderItems();
+        scheduleSync();
         if (items.length === 0) focusSearch();
       });
     });
