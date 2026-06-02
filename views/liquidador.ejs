@@ -1528,8 +1528,18 @@
     savedConsecutive = null;
     savedLabel = null;
     savedQuoteId = null;
+    currentQuoteId = null;
+    isConfirmed = false;
+    clearTimeout(syncTimer);
+    syncSeq++;
+    localStorage.removeItem(DRAFT_LS_KEY);
+    history.replaceState(null, '', '/liquidador');
+    setSyncStatus('idle');
+    editBanner.classList.remove('visible');
+    panel1Title.textContent = 'Nueva cotización';
     staging.classList.remove('visible');
     if (motoField) motoField.value = '';
+    if (plateField) plateField.value = '';
     waToggle.checked = false;
     waFields.classList.remove('open');
     waPhone.value = '';
