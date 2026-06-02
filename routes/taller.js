@@ -1,0 +1,145 @@
+'use strict';
+const express = require('express');
+const path    = require('path');
+const fs      = require('fs');
+const jwt     = require('jsonwebtoken');
+const bcrypt  = require('bcryptjs');
+
+const { JWT_SECRET, resendClient } = require('../config');
+const { requireEmployee, authLimiter } = require('../middleware/auth');
+const {
+  getActiveEmployees, getEmployeeById,
+  getServiceOrdersByEmployee, getServiceOrderById, updateServiceOrder,
+} = require('../db');
+
+const router = express.Router();
+
+// Estados que un empleado puede fijar desde el portal del taller.
+// No incluye "entregado" ni "facturado": eso queda reservado al admin.
+const EMP_STATUS = [
+  { v: 'ingreso_taller',   l: 'Ingreso a taller' },
+  { v: 'trabajo_en_curso', l: 'Trabajo en curso' },
+  { v: 'en_pausa',         l: 'En pausa'          },
+  { v: 'trabajo_completo', l: 'Trabajo completo'  },
+];
+const ALLOWED_STATUS = EMP_STATUS.map(s => s.v);
+
+const PDF_CONFIG_PATH = path.join(__dirname, '..', 'data', 'quotation-pdf-config.json');
+function adminEmail() {
+  if (process.env.ADMIN_EMAIL) return process.env.ADMIN_EMAIL;
+  try {
+    const cfg = JSON.parse(fs.readFileSync(PDF_CONFIG_PATH, 'utf8'));
+    if (cfg && cfg.email) return cfg.email;
+  } catch { /* sin config */ }
+  return 'info@gorillazmotorbikes.com';
+}
+
+// Fecha en hora Colombia (-05:00), igual que en routes/admin.js.
+function nowCOT() {
+  const cot = new Date(Date.now() - 5 * 60 * 60 * 1000);
+  return cot.toISOString().replace('Z', '-05:00');
+}
+
+// ── Sesión de empleado (cookie propia emp_jwt) ─────────────────────────────
+async function loadEmployee(req, res, next) {
+  const token = req.cookies.emp_jwt;
+  req.employee = null;
+  if (token) {
+    try {
+      const { eid } = jwt.verify(token, JWT_SECRET);
+      const emp = await getEmployeeById(eid);
+      if (emp && emp.active) req.employee = emp;
+    } catch { /* token inválido */ }
+  }
+  res.locals.employee = req.employee;
+  next();
+}
+router.use(loadEmployee);
+
+// ── Login ──────────────────────────────────────────────────────────────────
+router.get('/login', (req, res) => {
+  if (req.employee) return res.redirect('/taller');
+  res.render('taller/login', { error: null });
+});
+
+router.post('/login', authLimiter, async (req, res) => {
+  const pin = String(req.body.pin || '').trim();
+  if (!/^\d{4,6}$/.test(pin)) {
+    return res.status(400).render('taller/login', { error: 'PIN inválido.' });
+  }
+  const employees = await getActiveEmployees();
+  let matched = null;
+  for (const emp of employees) {
+    if (await bcrypt.compare(pin, emp.pinHash)) { matched = emp; break; }
+  }
+  if (!matched) {
+    return res.status(401).render('taller/login', { error: 'PIN incorrecto.' });
+  }
+  const token = jwt.sign({ eid: matched.id }, JWT_SECRET, { expiresIn: '1d' });
+  res.cookie('emp_jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24,
+  });
+  res.redirect('/taller');
+});
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('emp_jwt');
+  res.redirect('/taller/login');
+});
+
+// ── Lista de órdenes asignadas ─────────────────────────────────────────────
+router.get('/', requireEmployee, async (req, res) => {
+  const orders = await getServiceOrdersByEmployee(req.employee.id);
+  res.render('taller/orders', { orders, EMP_STATUS });
+});
+
+// ── Detalle de una orden propia ────────────────────────────────────────────
+router.get('/orden/:id', requireEmployee, async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order || order.employeeId !== req.employee.id) return res.redirect('/taller');
+  res.render('taller/order-detail', { order, EMP_STATUS });
+});
+
+// ── Actualizar estado (limitado) ───────────────────────────────────────────
+router.post('/orden/:id/estado', requireEmployee, async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order || order.employeeId !== req.employee.id) return res.redirect('/taller');
+
+  const status = req.body.status;
+  if (!ALLOWED_STATUS.includes(status)) return res.redirect('/taller/orden/' + order.id);
+
+  const updates = { status };
+  // Al finalizar: marcar momento, avisar al admin y dejar pendiente de revisión.
+  const finaliza = status === 'trabajo_completo' && order.status !== 'trabajo_completo';
+  if (finaliza) {
+    if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
+    updates.pendingReview = true;
+  }
+  await updateServiceOrder(order.id, updates);
+
+  if (finaliza) notifyAdmin(order, req.employee).catch(() => {});
+
+  res.redirect('/taller/orden/' + order.id);
+});
+
+// Aviso por correo al admin cuando una orden queda finalizada por un empleado.
+async function notifyAdmin(order, employee) {
+  const to = adminEmail();
+  await resendClient.emails.send({
+    from: 'boletin@gorillazmotorbikes.com',
+    to,
+    subject: `Orden ${order.label} lista para revisar`,
+    html: `
+      <p>El empleado <strong>${employee.name}</strong> marcó la orden
+      <strong>${order.label}</strong> como <strong>Trabajo completo</strong>.</p>
+      <p>Moto / Placa: <strong>${order.motorcycle || '—'}</strong></p>
+      <p>Ya puedes contactar al cliente, generar el PDF/factura y marcarla como pagada desde el panel.</p>
+      <p><a href="https://gorillazmotorbikes.com/admin/ordenes-servicio/${order.id}">Abrir la orden →</a></p>
+    `,
+  });
+}
+
+module.exports = router;
