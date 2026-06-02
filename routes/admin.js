@@ -882,6 +882,54 @@ router.get('/ordenes-servicio', requireAuth, requireAdmin, async (req, res) => {
   res.render('admin/service-orders', { orders });
 });
 
+// Crear una orden de servicio directamente, sin partir de una cotización.
+router.get('/ordenes-servicio/nueva', requireAuth, requireAdmin, (req, res) => {
+  res.render('admin/service-order-new', { error: null });
+});
+
+router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, res) => {
+  let items;
+  try {
+    items = JSON.parse(req.body.items || '[]');
+  } catch {
+    items = null;
+  }
+
+  // Normaliza y valida los ítems recibidos del formulario.
+  const clean = Array.isArray(items) ? items.reduce((acc, it) => {
+    const name  = String(it.name || '').trim();
+    const price = Math.round(Number(it.price));
+    const qty   = Math.round(Number(it.qty));
+    if (name && Number.isInteger(price) && price >= 1 && Number.isInteger(qty) && qty >= 1) {
+      acc.push({ name: name.slice(0, 200), type: it.type || 'custom', price, qty });
+    }
+    return acc;
+  }, []) : [];
+
+  if (clean.length === 0) {
+    return res.status(400).render('admin/service-order-new', { error: 'Agrega al menos un ítem válido (nombre, cantidad y precio).' });
+  }
+
+  const total      = clean.reduce((s, it) => s + it.price * it.qty, 0);
+  const plate      = (req.body.plate || '').toUpperCase().trim();
+  const moto       = (req.body.motorcycle || '').trim();
+  const motorcycle = [plate, moto].filter(Boolean).join(' — ') || null;
+  const phone      = (req.body.clientPhone || '').replace(/\D/g, '') || null;
+
+  const { id } = await createServiceOrder({
+    items:              clean,
+    total,
+    motorcycle,
+    clientPhone:        phone,
+    clientPhoneCountry: req.body.clientPhoneCountry || '+57',
+    mechanic:           (req.body.mechanic || '').trim() || null,
+    notes:              (req.body.notes || '').trim() || null,
+    estimatedDate:      req.body.estimatedDate || null,
+    status:             'ingreso_taller',
+  });
+  res.redirect('/admin/ordenes-servicio/' + id);
+});
+
 router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/admin/ordenes-servicio');
