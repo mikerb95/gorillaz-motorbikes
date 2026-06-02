@@ -1318,14 +1318,16 @@
   btnEditItems.addEventListener('click', () => goToStep(1));
 
   btnConfirm.addEventListener('click', async () => {
+    // Forzar el guardado pendiente antes de confirmar
+    clearTimeout(syncTimer);
     btnConfirm.disabled = true;
     btnConfirm.textContent = 'Guardando…';
     try {
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
       const res = await fetch('/api/liquidador/quotation', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
         body: JSON.stringify({
+          id: currentQuoteId,
           items: items.map(it => ({ id: it.id, name: it.name, price: it.price, type: it.type, qty: it.qty })),
           total: calcTotal(),
           clientPhone: null,
@@ -1339,6 +1341,10 @@
       savedConsecutive = data.consecutive;
       savedLabel = data.label;
       savedQuoteId = data.id;
+      currentQuoteId = data.id;
+      isConfirmed = true;
+      localStorage.removeItem(DRAFT_LS_KEY); // ya no es un borrador
+      history.replaceState(null, '', '/liquidador?id=' + currentQuoteId);
       consecNum.textContent = savedLabel;
       goToStep(3);
     } catch (err) {
