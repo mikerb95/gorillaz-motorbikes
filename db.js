@@ -191,6 +191,13 @@ async function initDb() {
       name TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    `CREATE TABLE IF NOT EXISTS employees (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      pin_hash TEXT NOT NULL,
+      active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
     `CREATE TABLE IF NOT EXISTS gastos (
       id TEXT PRIMARY KEY,
       category TEXT NOT NULL DEFAULT 'otros',
