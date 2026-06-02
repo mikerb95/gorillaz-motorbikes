@@ -231,6 +231,8 @@ async function initDb() {
     `ALTER TABLE quotations ADD COLUMN notes TEXT`,
     `ALTER TABLE quotations ADD COLUMN plate TEXT`,
     `ALTER TABLE service_orders ADD COLUMN trabajo_completo_at TEXT`,
+    `ALTER TABLE service_orders ADD COLUMN employee_id TEXT`,
+    `ALTER TABLE service_orders ADD COLUMN pending_review INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE orders ADD COLUMN stock_decremented INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE users ADD COLUMN first_name TEXT NOT NULL DEFAULT ''`,
     `ALTER TABLE users ADD COLUMN last_name TEXT NOT NULL DEFAULT ''`,
@@ -1017,6 +1019,8 @@ function rowToServiceOrder(row) {
     notes: row.notes || null,
     estimatedDate: row.estimated_date || null,
     invoiceId: row.invoice_id || null,
+    employeeId: row.employee_id || null,
+    pendingReview: Number(row.pending_review) === 1,
     trabajoCompletoAt: row.trabajo_completo_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -1034,8 +1038,8 @@ async function createServiceOrder(data) {
     label = fmtLabel('OS-', consecutive, now);
     await tx.execute({
       sql: `INSERT INTO service_orders
-            (id, consecutive, label, quotation_id, items, total, motorcycle, client_phone, client_phone_country, mechanic, status, notes, estimated_date)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            (id, consecutive, label, quotation_id, items, total, motorcycle, client_phone, client_phone_country, mechanic, status, notes, estimated_date, employee_id)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         id, consecutive, label,
         data.quotationId || null,
@@ -1048,6 +1052,7 @@ async function createServiceOrder(data) {
         data.status || 'pendiente',
         data.notes || null,
         data.estimatedDate || null,
+        data.employeeId || null,
       ],
     });
     await tx.commit();
