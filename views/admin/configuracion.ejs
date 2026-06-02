@@ -4,6 +4,8 @@
 
 <% if (flash === 'saved') { %>
   <div class="cfg-flash">✓ Configuración guardada correctamente.</div>
+<% } else if (flash === 'error') { %>
+  <div class="cfg-flash" style="background:#fef2f2;border-color:#fecaca;color:#b91c1c">✗ Revisa los datos: el PIN debe tener 4-6 dígitos y no puede repetirse.</div>
 <% } %>
 
 <!-- Tab bar -->
@@ -23,6 +25,10 @@
   <button class="cfg-tab" data-tab="puntos" role="tab" type="button">
     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
     Sistema de Puntos
+  </button>
+  <button class="cfg-tab" data-tab="empleados" role="tab" type="button">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    Empleados
   </button>
 </div>
 
@@ -385,6 +391,65 @@
             <% }); %>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 5 · EMPLEADOS
+══════════════════════════════════════════════════════ -->
+<div class="cfg-panel" data-panel="empleados">
+  <div style="display:grid;gap:20px;max-width:760px">
+
+    <div class="crm-card" style="padding:24px">
+      <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">Acceso al portal del taller</h2>
+      <p class="muted" style="font-size:13px;margin:0 0 20px">
+        Crea empleados con un <strong>PIN de 4 a 6 dígitos</strong>. Con ese PIN ingresan en
+        <code>/taller</code> para ver únicamente las órdenes que les asignes y actualizar su estado
+        hasta <strong>Trabajo completo</strong>. No pueden contactar al cliente, generar PDF ni marcar como pagada:
+        cuando finalizan una orden recibes un aviso para cerrarla tú.
+      </p>
+
+      <form method="post" action="/admin/configuracion/empleados" style="display:grid;grid-template-columns:1fr 140px auto;gap:12px;align-items:end">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div>
+          <label class="cfg-label">Nombre del empleado</label>
+          <input type="text" name="name" maxlength="80" required placeholder="Ej: Juan Pérez" class="cfg-input" style="box-sizing:border-box" />
+        </div>
+        <div>
+          <label class="cfg-label">PIN (4-6 díg.)</label>
+          <input type="text" name="pin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" required placeholder="1234"
+            class="cfg-input" style="box-sizing:border-box;letter-spacing:3px;text-align:center" />
+        </div>
+        <button class="btn btn-primary" type="submit" style="white-space:nowrap">Agregar</button>
+      </form>
+    </div>
+
+    <div class="crm-card" style="padding:24px">
+      <h2 style="font-size:15px;font-weight:800;margin:0 0 16px">Empleados (<%= empleados.length %>)</h2>
+      <% if (!empleados.length) { %>
+        <p class="muted" style="font-size:13px;margin:0">Aún no hay empleados. Crea el primero arriba.</p>
+      <% } %>
+      <div style="display:grid;gap:12px">
+        <% empleados.forEach(emp => { %>
+          <form method="post" action="/admin/configuracion/empleados/<%= emp.id %>"
+            style="display:grid;grid-template-columns:1fr 130px auto auto auto;gap:10px;align-items:center;padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:<%= emp.active ? '#fff' : '#f9fafb' %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <input type="text" name="name" value="<%= emp.name %>" maxlength="80"
+              style="padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none" />
+            <input type="text" name="pin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" placeholder="Nuevo PIN"
+              style="padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;letter-spacing:2px;text-align:center" />
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;white-space:nowrap">
+              <input type="checkbox" name="active" <%= emp.active ? 'checked' : '' %>
+                style="width:16px;height:16px;accent-color:var(--brand);cursor:pointer" />
+              Activo
+            </label>
+            <button class="btn btn-ghost btn-sm" type="submit">Guardar</button>
+            <button class="btn btn-ghost btn-sm" type="submit" formaction="/admin/configuracion/empleados/<%= emp.id %>/eliminar"
+              style="color:#dc2626" onclick="return confirm('¿Eliminar a <%= emp.name %>?')">Eliminar</button>
+          </form>
+        <% }) %>
       </div>
     </div>
   </div>
