@@ -1762,6 +1762,7 @@
     history.replaceState(null, '', '/liquidador');
     setSyncStatus('idle');
     editBanner.classList.remove('visible');
+    btnNewFromResume.style.display = 'none';
     panel1Title.textContent = 'Nueva cotización';
     staging.classList.remove('visible');
     if (motoField) motoField.value = '';
