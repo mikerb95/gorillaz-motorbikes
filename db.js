@@ -977,7 +977,7 @@ async function getQuotationsByMotorcyclePlates(plates) {
   const conditions = plates.map(() => 'UPPER(motorcycle) LIKE ?').join(' OR ');
   const args = plates.map(p => '%' + p.toUpperCase().trim() + '%');
   const r = await db.execute({
-    sql: `SELECT * FROM quotations WHERE motorcycle IS NOT NULL AND (${conditions}) ORDER BY created_at DESC`,
+    sql: `SELECT * FROM quotations WHERE status != 'draft' AND motorcycle IS NOT NULL AND (${conditions}) ORDER BY created_at DESC`,
     args,
   });
   return r.rows.map(rowToQuotation);
