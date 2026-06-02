@@ -150,6 +150,18 @@ router.get('/api/liquidador/drafts', async (req, res) => {
   }
 });
 
+// Descartar un borrador sin terminar.
+router.delete('/api/liquidador/draft/:id', async (req, res) => {
+  try {
+    const existing = await getQuotationById(req.params.id);
+    if (existing && existing.status === 'draft') await deleteQuotation(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('DELETE /api/liquidador/draft/:id error:', err.message);
+    res.status(500).json({ error: 'Error al descartar el borrador.' });
+  }
+});
+
 // Confirma una cotización: convierte un borrador en confirmada, o crea una nueva.
 router.post('/api/liquidador/quotation', async (req, res) => {
   try {
