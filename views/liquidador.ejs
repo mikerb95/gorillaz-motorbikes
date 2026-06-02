@@ -1554,8 +1554,94 @@
     focusSearch();
   }
 
-  // Init
-  focusSearch();
+  // ── Hidratar una cotización existente (borrador o confirmada) ─────
+  function hydrate(q) {
+    items = (q.items || []).map(it => ({
+      id: it.id,
+      name: it.name,
+      type: it.type || 'custom',
+      price: Number(it.price),
+      qty: Number(it.qty) || 1,
+    }));
+    currentQuoteId = q.id;
+    isConfirmed = q.status !== 'draft';
+    if (isConfirmed) localStorage.removeItem(DRAFT_LS_KEY);
+    else localStorage.setItem(DRAFT_LS_KEY, q.id);
+    if (motoField)  motoField.value  = q.motorcycle || '';
+    if (plateField) plateField.value = q.plate || '';
+    if (isConfirmed) {
+      panel1Title.textContent = 'Editar cotización';
+      editBannerText.textContent = 'Editando cotización #' + q.label + ' — los cambios se guardan automáticamente';
+    } else {
+      editBannerText.textContent = 'Borrador retomado — continúa donde lo dejaste';
+    }
+    editBanner.classList.add('visible');
+    renderItems();
+  }
+
+  // ── Lista de borradores sin terminar ──────────────────────────────
+  async function fetchDrafts() {
+    try {
+      const res = await fetch('/api/liquidador/drafts');
+      const drafts = await res.json();
+      const list = Array.isArray(drafts) ? drafts.filter(d => d.id !== currentQuoteId && d.itemCount > 0) : [];
+      if (!list.length) { draftsBox.classList.remove('visible'); return; }
+      draftsList.innerHTML = list.map(d => `
+        <div class="liq-draft-card">
+          <div class="liq-draft-info" data-draft-id="${escHtml(d.id)}" role="button" tabindex="0">
+            <div class="liq-draft-label">Cotización #${escHtml(d.label)}</div>
+            <div class="liq-draft-meta">${d.itemCount} ítem${d.itemCount === 1 ? '' : 's'} · ${fmt(d.total)}${d.motorcycle ? ' · ' + escHtml(d.motorcycle) : ''}</div>
+          </div>
+          <button class="liq-draft-discard" data-discard-id="${escHtml(d.id)}" aria-label="Descartar borrador">×</button>
+        </div>
+      `).join('');
+      draftsList.querySelectorAll('[data-draft-id]').forEach(el => {
+        const go = () => { window.location.href = '/liquidador?id=' + el.dataset.draftId; };
+        el.addEventListener('click', go);
+        el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      });
+      draftsList.querySelectorAll('[data-discard-id]').forEach(btn => {
+        btn.addEventListener('click', async e => {
+          e.stopPropagation();
+          const id = btn.dataset.discardId;
+          try {
+            await fetch('/api/liquidador/draft/' + id, {
+              method: 'DELETE',
+              headers: { 'X-CSRF-Token': csrfToken() },
+            });
+          } catch {}
+          fetchDrafts();
+        });
+      });
+      draftsBox.classList.add('visible');
+    } catch {
+      draftsBox.classList.remove('visible');
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────
+  (function init() {
+    const params = new URLSearchParams(window.location.search);
+    const urlId  = params.get('id');
+    const EDIT   = window.__EDIT_QUOTATION__;
+
+    if (EDIT) {
+      hydrate(EDIT);
+      fetchDrafts();
+      return;
+    }
+    if (urlId) {
+      // Se pidió un id que ya no existe como cotización (borrador descartado/expirado)
+      if (localStorage.getItem(DRAFT_LS_KEY) === urlId) localStorage.removeItem(DRAFT_LS_KEY);
+      history.replaceState(null, '', '/liquidador');
+    } else {
+      // Reanudar automáticamente el borrador de este dispositivo
+      const savedId = localStorage.getItem(DRAFT_LS_KEY);
+      if (savedId) { window.location.replace('/liquidador?id=' + savedId); return; }
+    }
+    fetchDrafts();
+    focusSearch();
+  })();
 })();
 </script>
 
