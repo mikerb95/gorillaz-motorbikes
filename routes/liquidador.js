@@ -209,7 +209,7 @@ router.post('/api/liquidador/quotation/:id/phone', async (req, res) => {
 router.get('/cotizacion/:id', async (req, res) => {
   try {
     const quotation = await getQuotationById(req.params.id);
-    if (!quotation) return res.status(404).render('404');
+    if (!quotation || quotation.status === 'draft') return res.status(404).render('404');
     res.render('cotizacion', {
       title: `Cotización #${quotation.label} — Gorillaz Motorbikes`,
       description: 'Detalle de cotización Gorillaz Motorbikes.',
