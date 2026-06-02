@@ -14,7 +14,8 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
 %>
 
 <div class="crm-page-header">
-
+  <div></div>
+  <a class="btn btn-primary btn-sm" href="/admin/ordenes-servicio/nueva">+ Nueva orden</a>
 </div>
 
 <div class="crm-kpi-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px">
@@ -27,7 +28,7 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
 
 <div class="crm-card">
   <% if (orders.length === 0) { %>
-    <p class="muted" style="padding:32px;text-align:center">No hay órdenes de servicio aún. Crea una desde el detalle de una cotización.</p>
+    <p class="muted" style="padding:32px;text-align:center">No hay órdenes de servicio aún. Crea una con <a href="/admin/ordenes-servicio/nueva" style="color:var(--brand);font-weight:700">+ Nueva orden</a> o desde el detalle de una cotización.</p>
   <% } else { %>
   <div class="crm-table-wrap">
     <table class="crm-table">
