@@ -904,7 +904,7 @@ async function createQuotation(data) {
         data.motorcycle || null,
         data.plate || null,
         data.notes || null,
-        'confirmed',
+        data.status || 'confirmed',
       ],
     });
     await tx.commit();
@@ -913,6 +913,37 @@ async function createQuotation(data) {
     throw e;
   }
   return { id, consecutive, label };
+}
+
+// Update an existing quotation (draft autosave or editing a confirmed one).
+// Only the provided fields are touched. Accepts camelCase keys.
+async function updateQuotation(id, fields) {
+  const map = {
+    items: ['items', v => JSON.stringify(v || [])],
+    total: ['total', v => Number(v) || 0],
+    clientPhone: ['client_phone', v => v || null],
+    clientPhoneCountry: ['client_phone_country', v => v || '+57'],
+    motorcycle: ['motorcycle', v => v || null],
+    plate: ['plate', v => v || null],
+    notes: ['notes', v => v || null],
+    status: ['status', v => v],
+  };
+  const sets = [];
+  const args = [];
+  for (const [key, [col, transform]] of Object.entries(map)) {
+    if (key in fields) { sets.push(`${col} = ?`); args.push(transform(fields[key])); }
+  }
+  if (!sets.length) return;
+  args.push(id);
+  await db.execute({ sql: `UPDATE quotations SET ${sets.join(', ')} WHERE id = ?`, args });
+}
+
+async function getDraftQuotations(limit = 15) {
+  const r = await db.execute({
+    sql: `SELECT * FROM quotations WHERE status = 'draft' ORDER BY created_at DESC LIMIT ?`,
+    args: [limit],
+  });
+  return r.rows.map(rowToQuotation);
 }
 
 async function getQuotationById(id) {
@@ -928,7 +959,7 @@ async function updateQuotationPhone(id, clientPhone, clientPhoneCountry) {
 }
 
 async function getAllQuotations() {
-  const r = await db.execute('SELECT * FROM quotations ORDER BY created_at DESC');
+  const r = await db.execute("SELECT * FROM quotations WHERE status != 'draft' ORDER BY created_at DESC");
   return r.rows.map(rowToQuotation);
 }
 
@@ -944,7 +975,7 @@ async function getQuotationsByMotorcyclePlates(plates) {
 }
 
 async function countQuotations() {
-  const r = await db.execute('SELECT COUNT(*) as n FROM quotations');
+  const r = await db.execute("SELECT COUNT(*) as n FROM quotations WHERE status != 'draft'");
   return Number(r.rows[0].n);
 }
 
@@ -1317,7 +1348,7 @@ module.exports = {
   createEnrollment,
   createJobApplication,
   createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersByUser, countOrders,
-  createQuotation, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
+  createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
