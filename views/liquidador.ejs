@@ -528,6 +528,88 @@
   margin: 0 auto 16px;
 }
 
+/* Autosave badge */
+.liq-sync {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  pointer-events: none;
+}
+.liq-sync.visible { display: flex; }
+.liq-sync.error   { background: #ef4444; }
+.liq-sync .liq-sync-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e;
+}
+.liq-sync.saving .liq-sync-dot { background: #f59e0b; animation: syncPulse .9s infinite; }
+.liq-sync.error  .liq-sync-dot { background: #fff; }
+@keyframes syncPulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* Editing banner */
+.liq-edit-banner {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: #fff7ed;
+  border: 1.5px solid #fdba74;
+  color: #9a3412;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.liq-edit-banner.visible { display: flex; }
+
+/* Drafts resume list */
+.liq-drafts {
+  display: none;
+  margin-bottom: 18px;
+}
+.liq-drafts.visible { display: block; }
+.liq-drafts-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin: 0 0 10px;
+}
+.liq-draft-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #fafafa;
+}
+.liq-draft-info { flex: 1; min-width: 0; cursor: pointer; }
+.liq-draft-label {
+  font-size: 13px; font-weight: 800; color: #111;
+}
+.liq-draft-meta {
+  font-size: 12px; color: #6b7280; margin-top: 1px;
+}
+.liq-draft-discard {
+  background: none; border: none; cursor: pointer;
+  color: #d1d5db; font-size: 18px; line-height: 1;
+  padding: 2px 4px; border-radius: 6px; transition: color .15s;
+}
+.liq-draft-discard:hover { color: #ef4444; }
+
 /* Desktop */
 @media (min-width: 640px) {
   .liq-panel { padding: 32px 32px; }
