@@ -22,7 +22,7 @@ const {
   getAllNewsletterSubscribers, getConfirmedNewsletterSubscribers,
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
-  getAllQuotations, getQuotationById, countQuotations, deleteQuotation,
+  getAllQuotations, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, updateEmployee, deleteEmployee,
@@ -646,9 +646,9 @@ router.post('/newsletter/enviar', requireAuth, requireAdmin, async (req, res) =>
 // ── Cotizaciones ──────────────────────────────────────────────────────────
 
 router.get('/cotizaciones', requireAuth, requireAdmin, async (req, res) => {
-  const quotations = await getAllQuotations();
+  const [quotations, drafts] = await Promise.all([getAllQuotations(), getDraftQuotations(50)]);
   const totalRevenue = quotations.reduce((s, q) => s + q.total, 0);
-  res.render('admin/quotations', { quotations, totalRevenue });
+  res.render('admin/quotations', { quotations, drafts, totalRevenue });
 });
 
 router.get('/cotizaciones/:id', requireAuth, requireAdmin, async (req, res) => {
