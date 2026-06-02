@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis órdenes — Taller Gorillaz</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Montserrat, system-ui, sans-serif; background: #f3f4f6; color: #111; }
+    .tl-top {
+      background: #0f1115; color: #fff; padding: 14px 18px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 10;
+    }
+    .tl-top .name { font-weight: 800; font-size: 15px; }
+    .tl-top .name small { display: block; font-weight: 600; font-size: 11px; color: #9ca3af; }
+    .tl-logout { background: rgba(255,255,255,.12); color: #fff; border: none; border-radius: 9px; padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; }
+    .tl-wrap { max-width: 680px; margin: 0 auto; padding: 18px 16px 40px; }
+    .tl-h { font-size: 14px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin: 8px 4px 14px; }
+    .tl-order {
+      display: block; text-decoration: none; color: inherit; background: #fff; border-radius: 14px;
+      padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #eef0f2;
+    }
+    .tl-order:active { transform: scale(.995); }
+    .tl-order-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .tl-label { font-weight: 900; font-size: 15px; }
+    .tl-moto { font-size: 14px; color: #374151; font-weight: 700; }
+    .tl-meta { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    .badge { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .b-ingreso_taller   { background: #fef3c7; color: #92400e; }
+    .b-trabajo_en_curso { background: #dbeafe; color: #1e40af; }
+    .b-en_pausa         { background: #f3f4f6; color: #4b5563; }
+    .b-trabajo_completo { background: #dcfce7; color: #166534; }
+    .tl-empty { text-align: center; color: #9ca3af; font-size: 14px; padding: 50px 20px; }
+  </style>
+</head>
+<body>
+  <div class="tl-top">
+    <div class="name"><%= employee.name %><small>Portal del taller</small></div>
+    <form method="post" action="/taller/logout" style="margin:0">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <button type="submit" class="tl-logout">Salir</button>
+    </form>
+  </div>
+
+  <div class="tl-wrap">
+    <div class="tl-h">Órdenes asignadas (<%= orders.length %>)</div>
+
+    <% if (!orders.length) { %>
+      <div class="tl-empty">No tienes órdenes asignadas por ahora.</div>
+    <% } %>
+
+    <% orders.forEach(o => {
+      const st = EMP_STATUS.find(s => s.v === o.status) || { l: o.status };
+    %>
+      <a class="tl-order" href="/taller/orden/<%= o.id %>">
+        <div class="tl-order-top">
+          <span class="tl-label"><%= o.label %></span>
+          <span class="badge b-<%= o.status %>"><%= st.l %></span>
+        </div>
+        <div class="tl-moto"><%= o.motorcycle || 'Sin moto registrada' %></div>
+        <div class="tl-meta">
+          <%= o.items.length %> ítem<%= o.items.length !== 1 ? 's' : '' %>
+          · Ingreso <%= new Date(o.createdAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short'}) %>
+          <% if (o.estimatedDate) { %> · Entrega <%= o.estimatedDate %><% } %>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+</body>
+</html>

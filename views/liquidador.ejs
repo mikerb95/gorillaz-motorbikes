@@ -1092,8 +1092,8 @@
 
   function goToStep(n) {
     currentStep = n;
-    [1, 2, 3].forEach(s => {
-      document.getElementById('panel' + s).classList.toggle('active', s === n);
+    document.querySelectorAll('[data-panel]').forEach(el => {
+      el.classList.toggle('active', Number(el.dataset.panel) === n);
     });
     document.querySelectorAll('[data-step]').forEach(el => {
       const s = Number(el.dataset.step);
@@ -1101,8 +1101,9 @@
       if (s === n) el.classList.add('active');
       else if (s < n) el.classList.add('done');
     });
-    document.getElementById('line12').classList.toggle('done', n > 1);
-    document.getElementById('line23').classList.toggle('done', n > 2);
+    document.querySelectorAll('[data-line]').forEach(el => {
+      el.classList.toggle('done', n > Number(el.dataset.line));
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
