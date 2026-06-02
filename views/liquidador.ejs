@@ -528,6 +528,21 @@
   margin: 0 auto 16px;
 }
 
+/* Validación moto/placa (paso 1) */
+.liq-moto-error {
+  display: none;
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ef4444;
+}
+.liq-moto-error.visible { display: block; }
+#plateField.input-error, #motoField.input-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+  background: #fff !important;
+}
+
 /* Review moto/placa (paso resumen) */
 .liq-review-moto {
   display: flex;
@@ -751,7 +766,7 @@
     <!-- ── PASO 1: Moto / Placa ───────────────────────────────── -->
     <div class="liq-panel active" id="panel1" data-panel="1">
       <h1 class="liq-panel-title" id="liqPanel1Title">Nueva cotización</h1>
-      <p class="liq-panel-sub">Empieza por la placa o la moto. La cotización se guarda sola desde aquí: aunque cierres sin confirmar, no se pierde.</p>
+
 
       <!-- Banner: editando cotización existente -->
       <div class="liq-edit-banner" id="liqEditBanner" aria-live="polite">
@@ -768,38 +783,43 @@
         <div id="liqDraftsList"></div>
       </div>
 
-      <!-- Moto / Placa (datos del cliente, se piden primero) -->
-      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:end">
+      <!-- Moto / Placa (datos del cliente, obligatorios) -->
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start">
         <div>
           <label for="plateField" style="display:block;font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
-            Placa
+            Placa <span style="color:var(--brand)">*</span>
           </label>
           <input
             id="plateField"
             type="text"
             placeholder="ABC123"
+            required
             style="width:120px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:15px;font-family:inherit;outline:none;background:#fafafa;box-sizing:border-box;text-transform:uppercase;letter-spacing:1px;font-weight:700"
             maxlength="20"
             aria-label="Placa del cliente"
+            aria-required="true"
           />
         </div>
         <div>
           <label for="motoField" style="display:block;font-size:11px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
-            Moto <span style="font-weight:400;color:#9ca3af">(opcional)</span>
+            Moto <span style="color:var(--brand)">*</span>
           </label>
           <input
             id="motoField"
             type="text"
             placeholder="Ej: Honda CB190R"
+            required
             style="width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:15px;font-family:inherit;outline:none;background:#fafafa;box-sizing:border-box"
             maxlength="80"
             aria-label="Modelo de la moto"
+            aria-required="true"
           />
         </div>
       </div>
+      <p class="liq-moto-error" id="liqMotoError" aria-live="polite">Placa y moto son obligatorias para continuar.</p>
 
       <!-- Acciones paso 1 -->
-      <div class="liq-footer-actions" style="margin-top:20px">
+      <div class="liq-footer-actions" style="margin-top:18px">
         <button class="liq-btn liq-btn-primary" id="btnMotoContinue">Continuar a ítems →</button>
       </div>
     </div>
@@ -1077,6 +1097,7 @@
   const totalBar       = document.getElementById('liqTotalBar');
   const totalVal       = document.getElementById('liqTotalVal');
   const btnMotoCont    = document.getElementById('btnMotoContinue');
+  const motoError      = document.getElementById('liqMotoError');
   const btnItemsBack   = document.getElementById('btnItemsBack');
   const btnFinish      = document.getElementById('btnFinish');
   const summaryBody    = document.getElementById('liqSummaryBody');
@@ -1463,7 +1484,28 @@
   });
 
   // ── Paso 1: Moto / Placa ──────────────────────────────────────────
+  function validateMotoStep() {
+    const plateOk = plateField && plateField.value.trim().length > 0;
+    const motoOk  = motoField  && motoField.value.trim().length > 0;
+    plateField.classList.toggle('input-error', !plateOk);
+    motoField.classList.toggle('input-error', !motoOk);
+    motoError.classList.toggle('visible', !plateOk || !motoOk);
+    return plateOk && motoOk;
+  }
+
+  // Limpia el error en cuanto el campo se completa
+  [plateField, motoField].forEach(f => {
+    if (f) f.addEventListener('input', () => {
+      if (f.value.trim()) f.classList.remove('input-error');
+      if (plateField.value.trim() && motoField.value.trim()) motoError.classList.remove('visible');
+    });
+  });
+
   btnMotoCont.addEventListener('click', () => {
+    if (!validateMotoStep()) {
+      (!plateField.value.trim() ? plateField : motoField).focus();
+      return;
+    }
     goToStep(2);
     focusSearch();
   });
