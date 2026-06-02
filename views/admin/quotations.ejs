@@ -27,6 +27,66 @@ const thisMonthRev = thisMonthQ.reduce((s,q) => s + q.total, 0);
   </div>
 </div>
 
+<% if (typeof drafts !== 'undefined' && drafts.length > 0) { %>
+<div class="crm-card" style="margin-bottom:18px;border-left:3px solid #f59e0b">
+  <div style="display:flex;align-items:center;gap:8px;padding:14px 16px 0">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+    </svg>
+    <strong style="color:#b45309">Borradores sin terminar (<%= drafts.length %>)</strong>
+    <span class="muted" style="font-size:.8rem">No cuentan en los totales hasta confirmarse.</span>
+  </div>
+  <div class="crm-table-wrap" style="margin-top:10px">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Iniciada</th>
+          <th>Moto / Placa</th>
+          <th>Ítems</th>
+          <th>Total</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% drafts.forEach(d => { %>
+        <tr>
+          <td>
+            <span class="badge badge-warning" style="font-size:.8rem;font-weight:900">#<%= d.label %></span>
+          </td>
+          <td class="muted" style="font-size:.82rem;white-space:nowrap">
+            <%= new Date(d.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %><br>
+            <span style="font-size:.76rem"><%= new Date(d.createdAt).toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' }) %></span>
+          </td>
+          <td>
+            <% if (d.plate) { %>
+              <span class="badge badge-info" style="font-size:.78rem;font-weight:900;letter-spacing:.5px"><%= d.plate %></span>
+            <% } %>
+            <% if (d.motorcycle) { %>
+              <div style="font-size:.82rem;margin-top:<%= d.plate ? '3px' : '0' %>"><%= d.motorcycle %></div>
+            <% } %>
+            <% if (!d.plate && !d.motorcycle) { %>
+              <span class="muted" style="font-size:.82rem">—</span>
+            <% } %>
+          </td>
+          <td style="font-size:.85rem"><%= d.items.length %></td>
+          <td><strong>$<%= d.total.toLocaleString('es-CO') %></strong></td>
+          <td style="white-space:nowrap;display:flex;gap:6px;align-items:center">
+            <a class="btn btn-primary btn-sm" href="/liquidador?id=<%= d.id %>" target="_blank" rel="noopener">Continuar</a>
+            <form method="post" action="/admin/cotizaciones/<%= d.id %>/eliminar" style="display:inline" data-confirm="¿Descartar el borrador #<%= d.label %>?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button class="btn btn-danger btn-sm" type="submit">Descartar</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
 <div class="crm-card">
   <% if (quotations.length === 0) { %>
     <p class="muted" style="padding:32px;text-align:center">No hay cotizaciones aún. <a href="/liquidador">Crear la primera</a></p>

@@ -548,6 +548,88 @@
 .liq-review-value { font-size: 14px; font-weight: 800; color: #111; }
 .liq-review-moto button { margin-left: auto; }
 
+/* Botón flotante "Borradores" */
+.liq-drafts-fab {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  color: #111;
+  border: 1.5px solid #e5e7eb;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: inherit;
+  padding: 9px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+}
+.liq-drafts-fab.visible { display: flex; }
+.liq-drafts-fab:hover { border-color: var(--brand); }
+.liq-drafts-fab-count {
+  background: var(--brand);
+  color: #fff;
+  border-radius: 999px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal de borradores */
+.liq-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0,0,0,.45);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+.liq-modal-overlay.open { display: flex; }
+.liq-modal {
+  background: #fff;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  border-radius: 18px 18px 0 0;
+  padding: 20px 16px calc(16px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  animation: modalUp .2s ease;
+}
+@keyframes modalUp { from { transform: translateY(24px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
+.liq-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.liq-modal-title { font-size: 16px; font-weight: 900; color: #111; }
+.liq-modal-close {
+  background: #f3f4f6;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+}
+.liq-modal-empty { text-align: center; color: #9ca3af; font-size: 14px; padding: 28px 0; }
+@media (min-width: 640px) {
+  .liq-modal-overlay { align-items: center; }
+  .liq-modal { border-radius: 18px; }
+}
+
 /* Autosave badge */
 .liq-sync {
   position: fixed;
@@ -933,6 +1015,27 @@
 <!-- Indicador de autosave -->
 <div class="liq-sync" id="liqSyncStatus" aria-live="polite">
   <span class="liq-sync-dot"></span><span id="liqSyncText">Guardado</span>
+</div>
+
+<!-- Botón flotante: ver borradores (disponible en cualquier paso) -->
+<button class="liq-drafts-fab" id="liqDraftsFab" type="button" aria-label="Ver borradores sin terminar">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+  </svg>
+  Borradores
+  <span class="liq-drafts-fab-count" id="liqDraftsFabCount">0</span>
+</button>
+
+<!-- Modal de borradores -->
+<div class="liq-modal-overlay" id="liqDraftsModal" role="dialog" aria-modal="true" aria-label="Borradores sin terminar">
+  <div class="liq-modal">
+    <div class="liq-modal-head">
+      <span class="liq-modal-title">Continuar cotización sin terminar</span>
+      <button class="liq-modal-close" id="liqDraftsModalClose" type="button" aria-label="Cerrar">×</button>
+    </div>
+    <div id="liqModalDraftsList"></div>
+  </div>
 </div>
 
 <!-- jsPDF via CDN -->
