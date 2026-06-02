@@ -12,6 +12,11 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+const requireEmployee = (req, res, next) => {
+  if (!req.employee) return res.redirect('/taller/login');
+  next();
+};
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
