@@ -904,6 +904,13 @@
   let ddResults = [];
   let ddFocusIdx = -1;
 
+  // Persistencia / autosave
+  let currentQuoteId = null;   // id de la cotización en DB (borrador o confirmada)
+  let isConfirmed = false;     // true si se está editando una ya confirmada
+  let syncTimer = null;        // debounce del autosave
+  let syncSeq = 0;             // descarta respuestas de sync obsoletas
+  const DRAFT_LS_KEY = 'liq_draft_id';
+
   // ── DOM ───────────────────────────────────────────────────────────
   const searchInput    = document.getElementById('liqSearch');
   const clearBtn       = document.getElementById('liqClear');
