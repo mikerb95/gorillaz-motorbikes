@@ -739,15 +739,62 @@ router.post('/cotizador-items/producto/eliminar', requireAuth, requireAdmin, (re
 
 // ── Configuración (módulo unificado) ──────────────────────────────────────
 
-router.get('/configuracion', requireAuth, requireAdmin, (req, res) => {
+router.get('/configuracion', requireAuth, requireAdmin, async (req, res) => {
   res.render('admin/configuracion', {
     cotizadorConfig:   loadCotizadorConfig(),
     pdfConfig:         loadPdfConfig(),
     parqueaderoConfig: loadParqueaderoConfig(),
     puntosConfig:      loadPuntosConfig(),
+    empleados:         await getAllEmployees(),
     flash: req.query.flash || null,
     tab:   req.query.tab   || 'liquidador',
   });
+});
+
+// ── Empleados (acceso al portal del taller con PIN) ───────────────────────
+
+// Comprueba que el PIN (4-6 dígitos) no choque con el de otro empleado activo.
+async function pinIsTaken(pin, exceptId) {
+  const all = await getAllEmployees();
+  for (const e of all) {
+    if (e.id === exceptId) continue;
+    if (await bcrypt.compare(pin, e.pinHash)) return true;
+  }
+  return false;
+}
+
+router.post('/configuracion/empleados', requireAuth, requireAdmin, async (req, res) => {
+  const name = (req.body.name || '').trim().slice(0, 80);
+  const pin  = String(req.body.pin || '').trim();
+  if (!name || !/^\d{4,6}$/.test(pin) || await pinIsTaken(pin)) {
+    return res.redirect('/admin/configuracion?tab=empleados&flash=error');
+  }
+  const pinHash = await bcrypt.hash(pin, 10);
+  await createEmployee({ name, pinHash });
+  res.redirect('/admin/configuracion?tab=empleados&flash=saved');
+});
+
+router.post('/configuracion/empleados/:id', requireAuth, requireAdmin, async (req, res) => {
+  const emp = await getEmployeeById(req.params.id);
+  if (!emp) return res.redirect('/admin/configuracion?tab=empleados');
+  const updates = {};
+  const name = (req.body.name || '').trim().slice(0, 80);
+  if (name) updates.name = name;
+  updates.active = req.body.active === 'on';
+  const pin = String(req.body.pin || '').trim();
+  if (pin) {
+    if (!/^\d{4,6}$/.test(pin) || await pinIsTaken(pin, emp.id)) {
+      return res.redirect('/admin/configuracion?tab=empleados&flash=error');
+    }
+    updates.pinHash = await bcrypt.hash(pin, 10);
+  }
+  await updateEmployee(emp.id, updates);
+  res.redirect('/admin/configuracion?tab=empleados&flash=saved');
+});
+
+router.post('/configuracion/empleados/:id/eliminar', requireAuth, requireAdmin, async (req, res) => {
+  await deleteEmployee(req.params.id);
+  res.redirect('/admin/configuracion?tab=empleados&flash=saved');
 });
 
 router.post('/configuracion/cotizador', requireAuth, requireAdmin, (req, res) => {

@@ -1354,8 +1354,14 @@
     focusSearch();
   });
 
-  // ── Acciones paso 1 ───────────────────────────────────────────────
-  btnAddAnother.addEventListener('click', focusSearch);
+  // ── Paso 1: Moto / Placa ──────────────────────────────────────────
+  btnMotoCont.addEventListener('click', () => {
+    goToStep(2);
+    focusSearch();
+  });
+
+  // ── Paso 2: Ítems ─────────────────────────────────────────────────
+  btnItemsBack.addEventListener('click', () => goToStep(1));
 
   btnFinish.addEventListener('click', () => {
     if (items.length === 0) return;
@@ -1368,11 +1374,22 @@
       </tr>
     `).join('');
     summaryTotal.textContent = fmt(calcTotal());
-    goToStep(2);
+    // Revisión de moto/placa (capturadas en el paso 1)
+    const plateVal = plateField ? plateField.value.trim() : '';
+    const motoVal  = motoField ? motoField.value.trim() : '';
+    if (plateVal || motoVal) {
+      reviewPlate.textContent = plateVal || '—';
+      reviewMotoVal.textContent = motoVal || '—';
+      reviewMoto.style.display = 'flex';
+    } else {
+      reviewMoto.style.display = 'none';
+    }
+    goToStep(3);
   });
 
-  // ── Paso 2 ────────────────────────────────────────────────────────
-  btnEditItems.addEventListener('click', () => goToStep(1));
+  // ── Paso 3: Resumen ───────────────────────────────────────────────
+  btnEditItems.addEventListener('click', () => goToStep(2));
+  btnEditMoto.addEventListener('click', () => goToStep(1));
 
   btnConfirm.addEventListener('click', async () => {
     // Forzar el guardado pendiente antes de confirmar
@@ -1403,7 +1420,7 @@
       localStorage.removeItem(DRAFT_LS_KEY); // ya no es un borrador
       history.replaceState(null, '', '/liquidador?id=' + currentQuoteId);
       consecNum.textContent = savedLabel;
-      goToStep(3);
+      goToStep(4);
     } catch (err) {
       alert('No se pudo guardar: ' + err.message);
       btnConfirm.disabled = false;
