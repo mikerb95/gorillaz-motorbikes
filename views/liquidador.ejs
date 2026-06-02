@@ -1608,7 +1608,8 @@
           try {
             await fetch('/api/liquidador/draft/' + id, {
               method: 'DELETE',
-              headers: { 'X-CSRF-Token': csrfToken() },
+              headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+              body: '{}',
             });
           } catch {}
           fetchDrafts();
