@@ -939,6 +939,7 @@
       const pos = motoField.selectionStart;
       motoField.value = motoField.value.toUpperCase();
       motoField.setSelectionRange(pos, pos);
+      scheduleSync();
     });
   }
   if (plateField) {
@@ -946,6 +947,7 @@
       const pos = plateField.selectionStart;
       plateField.value = plateField.value.toUpperCase();
       plateField.setSelectionRange(pos, pos);
+      scheduleSync();
     });
   }
   const waToggle       = document.getElementById('waToggle');
