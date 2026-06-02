@@ -974,8 +974,8 @@ async function getAllQuotations() {
 
 async function getQuotationsByMotorcyclePlates(plates) {
   if (!plates || plates.length === 0) return [];
-  const conditions = plates.map(() => 'UPPER(motorcycle) LIKE ?').join(' OR ');
-  const args = plates.map(p => '%' + p.toUpperCase().trim() + '%');
+  const conditions = plates.map(() => 'UPPER(REPLACE(motorcycle, \' \', \'\')) LIKE ?').join(' OR ');
+  const args = plates.map(p => '%' + p.toUpperCase().replace(/\s/g, '') + '%');
   const r = await db.execute({
     sql: `SELECT * FROM quotations WHERE status != 'draft' AND motorcycle IS NOT NULL AND (${conditions}) ORDER BY created_at DESC`,
     args,
