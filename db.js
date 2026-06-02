@@ -1096,6 +1096,74 @@ async function countServiceOrders() {
   return Number(r.rows[0].n);
 }
 
+// Órdenes asignadas a un empleado (excluye las ya facturadas/entregadas para el portal del taller).
+async function getServiceOrdersByEmployee(employeeId) {
+  const r = await db.execute({
+    sql: `SELECT * FROM service_orders
+          WHERE employee_id = ? AND status NOT IN ('facturado','entregado')
+          ORDER BY created_at DESC`,
+    args: [employeeId],
+  });
+  return r.rows.map(rowToServiceOrder);
+}
+
+// Órdenes finalizadas por un empleado, pendientes de revisión del admin (alimenta el badge).
+async function countPendingReviewOrders() {
+  const r = await db.execute("SELECT COUNT(*) as n FROM service_orders WHERE pending_review = 1");
+  return Number(r.rows[0].n);
+}
+
+// ── Empleados ───────────────────────────────────────────────────────────────
+
+function rowToEmployee(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    pinHash: row.pin_hash,
+    active: Number(row.active) === 1,
+    createdAt: row.created_at,
+  };
+}
+
+async function createEmployee(data) {
+  const id = data.id || uuidv4();
+  await db.execute({
+    sql: 'INSERT INTO employees (id, name, pin_hash, active) VALUES (?,?,?,?)',
+    args: [id, data.name, data.pinHash, data.active === false ? 0 : 1],
+  });
+  return { id };
+}
+
+async function getAllEmployees() {
+  const r = await db.execute('SELECT * FROM employees ORDER BY created_at DESC');
+  return r.rows.map(rowToEmployee);
+}
+
+async function getActiveEmployees() {
+  const r = await db.execute('SELECT * FROM employees WHERE active = 1 ORDER BY name COLLATE NOCASE ASC');
+  return r.rows.map(rowToEmployee);
+}
+
+async function getEmployeeById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM employees WHERE id = ?', args: [id] });
+  return rowToEmployee(r.rows[0] || null);
+}
+
+async function updateEmployee(id, fields) {
+  const set = [], args = [];
+  if (fields.name    !== undefined) { set.push('name = ?');     args.push(fields.name); }
+  if (fields.pinHash !== undefined) { set.push('pin_hash = ?'); args.push(fields.pinHash); }
+  if (fields.active  !== undefined) { set.push('active = ?');   args.push(fields.active ? 1 : 0); }
+  if (set.length === 0) return;
+  args.push(id);
+  await db.execute({ sql: `UPDATE employees SET ${set.join(', ')} WHERE id = ?`, args });
+}
+
+async function deleteEmployee(id) {
+  await db.execute({ sql: 'DELETE FROM employees WHERE id = ?', args: [id] });
+}
+
 // ── Invoices ──────────────────────────────────────────────────────────────
 
 function rowToInvoice(row) {
