@@ -643,8 +643,23 @@
 
     <!-- ── PASO 1: Agregar ítems ─────────────────────────────── -->
     <div class="liq-panel active" id="panel1">
-      <h1 class="liq-panel-title">Nueva cotización</h1>
+      <h1 class="liq-panel-title" id="liqPanel1Title">Nueva cotización</h1>
       <p class="liq-panel-sub">Busca el ítem (3 letras mínimo) y luego fija el valor.</p>
+
+      <!-- Banner: editando cotización existente -->
+      <div class="liq-edit-banner" id="liqEditBanner" aria-live="polite">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+        </svg>
+        <span id="liqEditBannerText">Editando cotización</span>
+      </div>
+
+      <!-- Borradores sin terminar (retomar desde cualquier dispositivo) -->
+      <div class="liq-drafts" id="liqDrafts">
+        <p class="liq-drafts-title">Continuar cotización sin terminar</p>
+        <div id="liqDraftsList"></div>
+      </div>
 
       <!-- Buscador -->
       <div class="liq-search-wrap">
@@ -864,6 +879,11 @@
     </div>
 
   </div>
+</div>
+
+<!-- Indicador de autosave -->
+<div class="liq-sync" id="liqSyncStatus" aria-live="polite">
+  <span class="liq-sync-dot"></span><span id="liqSyncText">Guardado</span>
 </div>
 
 <!-- jsPDF via CDN -->
