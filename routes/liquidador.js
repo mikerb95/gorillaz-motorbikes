@@ -110,43 +110,86 @@ router.get('/api/liquidador/search', (req, res) => {
   res.json(results);
 });
 
+// Autosave de borrador: crea (status='draft') o actualiza la cotización en curso.
+// Permite retomar el trabajo desde cualquier dispositivo vía /liquidador?id=:id.
+router.post('/api/liquidador/draft', async (req, res) => {
+  try {
+    const { id } = req.body;
+    const check = validateQuotationFields(req.body, { allowEmptyItems: true });
+    if (check.error) return res.status(400).json({ error: check.error });
+    const fields = normalizeFields(req.body);
+
+    if (id) {
+      const existing = await getQuotationById(id);
+      // Solo se puede autosalvar como borrador algo que siga en borrador.
+      if (existing && existing.status === 'draft') {
+        await updateQuotation(id, fields);
+        return res.json({ ok: true, id, label: existing.label });
+      }
+    }
+    const created = await createQuotation({ ...fields, status: 'draft' });
+    res.json({ ok: true, id: created.id, label: created.label });
+  } catch (err) {
+    console.error('POST /api/liquidador/draft error:', err.message);
+    res.status(500).json({ error: 'Error al guardar el borrador.' });
+  }
+});
+
+// Lista de borradores sin terminar (para retomar desde otro dispositivo).
+router.get('/api/liquidador/drafts', async (req, res) => {
+  try {
+    const drafts = await getDraftQuotations(15);
+    res.json(drafts.map(d => ({
+      id: d.id, label: d.label, total: d.total,
+      itemCount: d.items.length, motorcycle: d.motorcycle,
+      createdAt: d.createdAt,
+    })));
+  } catch (err) {
+    console.error('GET /api/liquidador/drafts error:', err.message);
+    res.status(500).json({ error: 'Error al cargar borradores.' });
+  }
+});
+
+// Confirma una cotización: convierte un borrador en confirmada, o crea una nueva.
 router.post('/api/liquidador/quotation', async (req, res) => {
   try {
-    const { items, total, clientPhone, clientPhoneCountry, motorcycle, plate, notes } = req.body;
-    if (!Array.isArray(items) || items.length === 0)
-      return res.status(400).json({ error: 'Se requiere al menos un ítem.' });
-    if (items.length > 100)
-      return res.status(400).json({ error: 'Máximo 100 ítems por cotización.' });
-    for (const it of items) {
-      if (typeof it.name !== 'string' || it.name.trim().length === 0 || it.name.length > 200)
-        return res.status(400).json({ error: 'Nombre de ítem inválido (máx 200 caracteres).' });
-      const price = Number(it.price);
-      if (!Number.isInteger(price) || price < 1 || price > 9_999_999_999)
-        return res.status(400).json({ error: 'Precio de ítem fuera de rango (1 – 9.999.999.999).' });
-      const qty = Number(it.qty);
-      if (!Number.isInteger(qty) || qty < 1 || qty > 100)
-        return res.status(400).json({ error: 'Cantidad de ítem fuera de rango (1 – 100).' });
-    }
-    if (motorcycle && String(motorcycle).length > 80)
-      return res.status(400).json({ error: 'Moto/placa demasiado larga (máx 80 caracteres).' });
-    if (plate && String(plate).length > 20)
-      return res.status(400).json({ error: 'Placa demasiado larga (máx 20 caracteres).' });
-    if (notes && String(notes).length > 500)
-      return res.status(400).json({ error: 'Notas demasiado largas (máx 500 caracteres).' });
+    const { id, clientPhone, clientPhoneCountry } = req.body;
+    const check = validateQuotationFields(req.body);
+    if (check.error) return res.status(400).json({ error: check.error });
+    const fields = normalizeFields(req.body);
 
-    const { id, consecutive, label } = await createQuotation({
-      items,
-      total: Number(total) || 0,
+    if (id) {
+      const existing = await getQuotationById(id);
+      if (existing) {
+        await updateQuotation(id, { ...fields, status: 'confirmed' });
+        return res.json({ ok: true, id: existing.id, consecutive: existing.consecutive, label: existing.label });
+      }
+    }
+    const created = await createQuotation({
+      ...fields,
       clientPhone: clientPhone || null,
       clientPhoneCountry: clientPhoneCountry || '+57',
-      motorcycle: motorcycle || null,
-      plate: plate ? String(plate).toUpperCase().trim() : null,
-      notes: notes || null,
+      status: 'confirmed',
     });
-    res.json({ ok: true, id, consecutive, label });
+    res.json({ ok: true, id: created.id, consecutive: created.consecutive, label: created.label });
   } catch (err) {
     console.error('POST /api/liquidador/quotation error:', err.message);
     res.status(500).json({ error: 'Error al guardar la cotización.' });
+  }
+});
+
+// Editar una cotización ya confirmada (ítems, moto, placa).
+router.put('/api/liquidador/quotation/:id', async (req, res) => {
+  try {
+    const existing = await getQuotationById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Cotización no encontrada.' });
+    const check = validateQuotationFields(req.body);
+    if (check.error) return res.status(400).json({ error: check.error });
+    await updateQuotation(req.params.id, normalizeFields(req.body));
+    res.json({ ok: true, id: existing.id, label: existing.label });
+  } catch (err) {
+    console.error('PUT /api/liquidador/quotation/:id error:', err.message);
+    res.status(500).json({ error: 'Error al actualizar la cotización.' });
   }
 });
 
