@@ -37,6 +37,7 @@ app.use('/',       require('./routes/newsletter'));
 app.use('/',       require('./routes/jobs'));
 app.use('/',       require('./routes/static'));
 app.use('/',       require('./routes/classes'));
+app.use('/historial',      require('./routes/historial'));
 app.use('/runt',           require('./routes/runt'));
 app.use('/club',           require('./routes/club'));
 app.use('/taller',         require('./routes/taller'));

@@ -1,0 +1,371 @@
+<%- include('partials/head', { title: 'Historial de Motocicleta | Gorillaz Motorbikes', description: 'Consulta el historial completo de servicios y cotizaciones de tu motocicleta en Gorillaz Motorbikes.', canonicalPath: '/historial' }) %>
+
+<style>
+.hist-page {
+  padding-top: calc(var(--header-offset, 70px) + 40px);
+  padding-bottom: 72px;
+  min-height: 100vh;
+  background: #f7f7f8;
+}
+.hist-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+.hist-hero {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.hist-hero h1 { font-size: 1.75rem; font-weight: 900; margin: 0 0 6px; color: #111; }
+.hist-hero p  { color: #666; font-size: .97rem; margin: 0; }
+
+/* Search */
+.hist-search-form {
+  display: flex; gap: 10px; margin-bottom: 32px;
+}
+.hist-search-form input {
+  flex: 1; padding: 13px 16px;
+  border: 2px solid #e0e0e0; border-radius: 10px;
+  font-size: 1.05rem; font-family: inherit;
+  text-transform: uppercase; letter-spacing: .06em;
+  transition: border-color .2s;
+  outline: none;
+}
+.hist-search-form input:focus { border-color: #F25C05; }
+.hist-search-form button {
+  padding: 13px 22px; background: #F25C05; color: #fff;
+  border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: background .2s; white-space: nowrap;
+}
+.hist-search-form button:hover  { background: #d44e03; }
+.hist-search-form button:disabled { background: #bbb; cursor: not-allowed; }
+
+/* Error / empty */
+.hist-notice {
+  background: #fff3f3; border: 1.5px solid #fdd; border-radius: 12px;
+  padding: 16px 20px; color: #c0392b; font-size: .93rem; font-weight: 600;
+  display: none;
+}
+.hist-notice.visible { display: block; }
+.hist-empty {
+  text-align: center; padding: 48px 0; color: #aaa;
+  font-size: .95rem; display: none;
+}
+.hist-empty.visible { display: block; }
+.hist-empty .icon { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+
+/* Placa badge */
+.hist-placa-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #111; color: #fff; padding: 7px 18px;
+  border-radius: 999px; font-weight: 800; font-size: .95rem;
+  letter-spacing: .08em; margin-bottom: 28px;
+}
+.hist-placa-badge .dot { color: #F25C05; }
+
+/* Stats row */
+.hist-stats {
+  display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
+}
+.stat-chip {
+  background: #fff; border: 1.5px solid #eee; border-radius: 10px;
+  padding: 10px 18px; font-size: .82rem;
+}
+.stat-chip .n { font-weight: 900; font-size: 1.2rem; display: block; color: #111; }
+.stat-chip .lbl { color: #888; font-weight: 600; }
+
+/* Timeline */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 10px; top: 0; bottom: 0;
+  width: 2px; background: #e5e7eb; border-radius: 2px;
+}
+.tl-group { margin-bottom: 32px; }
+.tl-group-label {
+  font-size: .75rem; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: #9ca3af; margin-bottom: 12px;
+}
+.tl-item {
+  position: relative; background: #fff;
+  border: 1.5px solid #eef0f3; border-radius: 14px;
+  padding: 16px 18px; margin-bottom: 10px;
+  transition: box-shadow .15s;
+}
+.tl-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.tl-dot {
+  position: absolute; left: -24px; top: 18px;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2.5px solid #fff; box-shadow: 0 0 0 2px #d1d5db;
+}
+.tl-dot.os  { background: #F25C05; box-shadow: 0 0 0 2px #F25C05; }
+.tl-dot.cot { background: #3b82f6; box-shadow: 0 0 0 2px #3b82f6; }
+
+.tl-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tl-type-badge {
+  font-size: 11px; font-weight: 800; letter-spacing: .04em;
+  padding: 3px 9px; border-radius: 999px;
+}
+.tl-type-badge.os  { background: #fff0e8; color: #c44700; }
+.tl-type-badge.cot { background: #eff6ff; color: #1d4ed8; }
+.tl-label { font-weight: 800; font-size: .9rem; color: #111; }
+.tl-date  { font-size: .78rem; color: #9ca3af; margin-left: auto; }
+
+.tl-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.tl-field .k { font-size: 10px; font-weight: 700; color: #b0b8c8; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+.tl-field .v { font-weight: 700; font-size: .85rem; color: #222; }
+
+.tl-items-list { margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6; }
+.tl-items-list .item-row {
+  display: flex; justify-content: space-between;
+  font-size: .82rem; padding: 4px 0; color: #555;
+}
+.tl-items-list .item-row .qty { color: #9ca3af; font-weight: 700; }
+.tl-total { text-align: right; margin-top: 10px; font-weight: 900; font-size: .9rem; color: #111; }
+
+/* Status badge */
+.st-badge {
+  font-size: 11px; font-weight: 800; padding: 3px 9px;
+  border-radius: 999px; display: inline-block;
+}
+.st-ingreso_taller       { background: #fef3c7; color: #92400e; }
+.st-trabajo_en_curso     { background: #dbeafe; color: #1e40af; }
+.st-en_pausa             { background: #f3f4f6; color: #4b5563; }
+.st-trabajo_completo     { background: #dcfce7; color: #166534; }
+.st-facturado            { background: #fde8ff; color: #6b21a8; }
+.st-pendiente            { background: #fef9c3; color: #854d0e; }
+.st-confirmed            { background: #d1fae5; color: #065f46; }
+.st-cancelled            { background: #fee2e2; color: #991b1b; }
+.st-draft                { background: #f9fafb; color: #6b7280; }
+
+/* Loading spinner */
+.hist-loading {
+  text-align: center; padding: 48px 0; display: none;
+}
+.hist-loading.visible { display: block; }
+.spinner {
+  display: inline-block; width: 32px; height: 32px;
+  border: 3px solid #f3f3f3; border-top-color: #F25C05;
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Results section */
+#histResults { display: none; }
+#histResults.visible { display: block; }
+</style>
+
+<div class="hist-page">
+  <div class="hist-container">
+    <div class="hist-hero">
+      <h1>Historial de Motocicleta</h1>
+      <p>Ingresa la placa para ver todas las órdenes de servicio y cotizaciones registradas.</p>
+    </div>
+
+    <form class="hist-search-form" id="histForm" autocomplete="off">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input
+        id="placaInput"
+        type="text"
+        placeholder="Ej: ABC123"
+        maxlength="8"
+        required
+        oninput="this.value=this.value.toUpperCase()"
+        aria-label="Placa del vehículo"
+      >
+      <button type="submit" id="btnBuscar">Buscar</button>
+    </form>
+
+    <div class="hist-notice" id="histNotice"></div>
+
+    <div class="hist-loading" id="histLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="histResults">
+      <div class="hist-placa-badge">
+        <span class="dot">●</span>
+        <span id="placaShown"></span>
+      </div>
+
+      <div class="hist-stats" id="statsRow"></div>
+
+      <div class="hist-empty" id="histEmpty">
+        <span class="icon">🏍️</span>
+        No encontramos registros para esta placa.
+      </div>
+
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const csrf = document.querySelector('input[name="_csrf"]').value;
+
+const STATUS_LABELS = {
+  ingreso_taller:    'Ingreso al taller',
+  trabajo_en_curso:  'En proceso',
+  en_pausa:          'En pausa',
+  trabajo_completo:  'Trabajo completo',
+  facturado:         'Facturado',
+  pendiente:         'Pendiente',
+  confirmed:         'Confirmada',
+  cancelled:         'Cancelada',
+  draft:             'Borrador',
+};
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function fmtCOP(n) {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
+}
+
+function statusBadge(st) {
+  const label = STATUS_LABELS[st] || st;
+  return `<span class="st-badge st-${st}">${label}</span>`;
+}
+
+function renderItem(entry) {
+  const isOS = entry.type === 'os';
+  const dotClass = isOS ? 'os' : 'cot';
+  const typeLabel = isOS ? 'Orden de Servicio' : 'Cotización';
+  const typeClass = isOS ? 'os' : 'cot';
+
+  const fields = [];
+  if (entry.mechanic) fields.push({ k: 'Mecánico', v: entry.mechanic });
+  if (entry.estimatedDate) fields.push({ k: 'Entrega estimada', v: entry.estimatedDate });
+  if (entry.clientPhone) fields.push({ k: 'Teléfono', v: entry.clientPhoneCountry + entry.clientPhone });
+  if (entry.notes) fields.push({ k: 'Notas', v: entry.notes });
+
+  const itemsHtml = entry.items && entry.items.length
+    ? `<div class="tl-items-list">
+        ${entry.items.map(it => `
+          <div class="item-row">
+            <span>${it.name || it.label || '—'}</span>
+            <span class="qty">×${it.qty || it.quantity || 1}</span>
+          </div>`).join('')}
+        <div class="tl-total">${fmtCOP(entry.total)}</div>
+       </div>`
+    : `<div class="tl-total">${fmtCOP(entry.total)}</div>`;
+
+  return `
+    <div class="tl-item">
+      <span class="tl-dot ${dotClass}"></span>
+      <div class="tl-header">
+        <span class="tl-type-badge ${typeClass}">${typeLabel}</span>
+        <span class="tl-label">${entry.label || '—'}</span>
+        ${statusBadge(entry.status)}
+        <span class="tl-date">${fmtDate(entry.createdAt)}</span>
+      </div>
+      ${fields.length ? `<div class="tl-body">${fields.map(f => `
+        <div class="tl-field">
+          <div class="k">${f.k}</div>
+          <div class="v">${f.v}</div>
+        </div>`).join('')}
+      </div>` : ''}
+      ${itemsHtml}
+    </div>`;
+}
+
+function groupByYear(entries) {
+  const map = new Map();
+  entries.forEach(e => {
+    const y = e.createdAt ? new Date(e.createdAt).getFullYear() : 'Sin fecha';
+    if (!map.has(y)) map.set(y, []);
+    map.get(y).push(e);
+  });
+  return map;
+}
+
+function renderTimeline(entries) {
+  const timeline = document.getElementById('timeline');
+  const empty    = document.getElementById('histEmpty');
+  timeline.innerHTML = '';
+  if (!entries.length) {
+    empty.classList.add('visible');
+    return;
+  }
+  empty.classList.remove('visible');
+  const grouped = groupByYear(entries);
+  // Ordenar años DESC
+  const years = [...grouped.keys()].sort((a, b) => (b === 'Sin fecha' ? -1 : a === 'Sin fecha' ? 1 : b - a));
+  years.forEach(year => {
+    const group = document.createElement('div');
+    group.className = 'tl-group';
+    group.innerHTML = `<div class="tl-group-label">${year}</div>`;
+    grouped.get(year).forEach(e => {
+      group.insertAdjacentHTML('beforeend', renderItem(e));
+    });
+    timeline.appendChild(group);
+  });
+}
+
+function renderStats(os, cot) {
+  const row = document.getElementById('statsRow');
+  const total = fmtCOP(
+    [...os, ...cot].reduce((s, e) => s + (e.total || 0), 0)
+  );
+  row.innerHTML = `
+    <div class="stat-chip"><span class="n">${os.length}</span><span class="lbl">Órdenes de servicio</span></div>
+    <div class="stat-chip"><span class="n">${cot.length}</span><span class="lbl">Cotizaciones</span></div>
+    <div class="stat-chip"><span class="n">${total}</span><span class="lbl">Facturado total</span></div>`;
+}
+
+document.getElementById('histForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const placa  = document.getElementById('placaInput').value.trim().toUpperCase();
+  const btn    = document.getElementById('btnBuscar');
+  const notice = document.getElementById('histNotice');
+  const loading = document.getElementById('histLoading');
+  const results = document.getElementById('histResults');
+
+  notice.textContent = '';
+  notice.classList.remove('visible');
+  results.classList.remove('visible');
+  loading.classList.add('visible');
+  btn.disabled = true;
+  btn.textContent = 'Buscando…';
+
+  try {
+    const res  = await fetch('/historial/buscar', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+      body: JSON.stringify({ placa }),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Error al buscar.');
+
+    document.getElementById('placaShown').textContent = placa;
+    renderStats(json.serviceOrders, json.quotations);
+
+    // Merge and sort by date DESC
+    const all = [
+      ...json.serviceOrders.map(o => ({ ...o, type: 'os' })),
+      ...json.quotations.map(q => ({ ...q, type: 'cot' })),
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    renderTimeline(all);
+    results.classList.add('visible');
+  } catch (err) {
+    notice.textContent = err.message;
+    notice.classList.add('visible');
+  } finally {
+    loading.classList.remove('visible');
+    btn.disabled = false;
+    btn.textContent = 'Buscar';
+  }
+});
+
+// Auto-search if ?placa= is in the URL
+const urlPlaca = new URLSearchParams(location.search).get('placa');
+if (urlPlaca) {
+  document.getElementById('placaInput').value = urlPlaca.toUpperCase();
+  document.getElementById('histForm').requestSubmit();
+}
+</script>
+
+<%- include('partials/footer') %>
