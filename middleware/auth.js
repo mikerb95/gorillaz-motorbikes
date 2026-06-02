@@ -26,4 +26,4 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
-module.exports = { requireAuth, requireAdmin, authLimiter };
+module.exports = { requireAuth, requireAdmin, requireEmployee, authLimiter };
