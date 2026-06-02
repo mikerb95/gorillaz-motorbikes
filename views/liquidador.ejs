@@ -1,6 +1,7 @@
 <%- include('partials/head', { title, description, canonicalPath }) %>
 <script>
   window.__WA_CONFIG__ = <%- JSON.stringify(waConfig) %>;
+  window.__EDIT_QUOTATION__ = <%- JSON.stringify(typeof editQuotation !== 'undefined' ? editQuotation : null) %>;
 </script>
 
 <style>
