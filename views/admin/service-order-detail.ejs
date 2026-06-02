@@ -21,6 +21,16 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   <% } %>
 </div>
 
+<% if (order.pendingReview) { %>
+  <div style="max-width:920px;margin-bottom:16px;padding:14px 18px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:20px">✅</span>
+    <div style="font-size:13px;color:#065f46;font-weight:700">
+      Un empleado marcó esta orden como <strong>Trabajo completo</strong>. Ya puedes contactar al cliente,
+      generar la factura/PDF y marcarla como pagada. El aviso se quita al guardar cambios o al facturar.
+    </div>
+  </div>
+<% } %>
+
 <div style="display:grid;gap:16px;max-width:920px">
 
   <!-- Info general -->
@@ -114,6 +124,18 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Fecha entrega</label>
           <input type="date" name="estimatedDate" value="<%= order.estimatedDate || '' %>" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Empleado (portal taller)</label>
+          <select name="employeeId" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none">
+            <option value="">— Sin asignar —</option>
+            <% empleados.forEach(e => { %>
+              <option value="<%= e.id %>"<%= order.employeeId === e.id ? ' selected' : '' %>><%= e.name %></option>
+            <% }) %>
+            <% if (empleadoAsignado && !empleados.some(e => e.id === empleadoAsignado.id)) { %>
+              <option value="<%= empleadoAsignado.id %>" selected><%= empleadoAsignado.name %> (inactivo)</option>
+            <% } %>
+          </select>
         </div>
       </div>
       <div style="margin-bottom:12px">
