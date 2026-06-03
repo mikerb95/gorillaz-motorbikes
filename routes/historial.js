@@ -12,16 +12,6 @@ router.get('/', (req, res) => {
   });
 });
 
-router.get('/debug', async (req, res) => {
-  const { getAllServiceOrders, getAllQuotations } = require('../db');
-  const os = await getAllServiceOrders();
-  const qs = await getAllQuotations();
-  res.json({
-    serviceOrders: os.map(o => ({ id: o.id, label: o.label, motorcycle: o.motorcycle, status: o.status })),
-    quotations: qs.map(q => ({ id: q.id, label: q.label, motorcycle: q.motorcycle, status: q.status })),
-  });
-});
-
 router.post('/buscar', async (req, res) => {
   const { placa } = req.body || {};
   if (!placa || typeof placa !== 'string' || placa.trim().length < 3) {
