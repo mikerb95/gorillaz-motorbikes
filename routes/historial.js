@@ -4,22 +4,6 @@ const express = require('express');
 const router  = express.Router();
 const { getServiceOrdersByPlate, getQuotationsByMotorcyclePlates } = require('../db');
 
-router.get('/debug/:placa', async (req, res) => {
-  const { getAllServiceOrders, getAllQuotations } = require('../db');
-  const placa = req.params.placa.toUpperCase();
-  const os = await getAllServiceOrders();
-  const qs = await getAllQuotations();
-  const osMatch = os.filter(o => o.motorcycle && o.motorcycle.toUpperCase().includes(placa));
-  const qMatch = qs.filter(q => q.motorcycle && q.motorcycle.toUpperCase().includes(placa));
-  res.json({
-    buscando: placa,
-    totalOS: os.length,
-    totalQS: qs.length,
-    osEncontradas: osMatch.map(o => ({ label: o.label, motorcycle: o.motorcycle })),
-    qsEncontradas: qMatch.map(q => ({ label: q.label, motorcycle: q.motorcycle })),
-  });
-});
-
 router.get('/', (req, res) => {
   res.render('historial', {
     title: 'Historial de Motocicleta | Gorillaz Motorbikes',
