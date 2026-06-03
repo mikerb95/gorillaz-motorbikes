@@ -7819,11 +7819,11 @@ main:has(.club-panel) { padding-top: 0 !important; }
 }
 
 .order-qr-img img {
-  width: 144px;
-  height: 144px;
-  border-radius: 12px;
+  width: 88px;
+  height: 88px;
+  border-radius: 10px;
   background: #fff;
-  padding: 8px
+  padding: 6px
 }
 
 .order-qr-img .qr-hint {
