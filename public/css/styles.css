@@ -7784,4 +7784,61 @@ main:has(.club-panel) { padding-top: 0 !important; }
   font-size: .82rem;
   color: #6b7280;
   margin: 0
+
+/* ── Consulta tu orden — CTA con QR ───────────────────────────────── */
+.order-qr-section {
+  background: #0f1115;
+  color: #fff;
+  border-radius: 18px;
+  padding: 36px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  margin-top: 40px;
+  margin-bottom: 40px
+}
+
+.order-qr-text { flex: 1; min-width: 0 }
+
+.order-qr-text .section-label {
+  color: #F25C05;
+  margin-bottom: 8px
+}
+
+.order-qr-text h2 { margin: 0 0 10px; font-size: 26px }
+
+.order-qr-text p { color: #9ca3af; margin: 0 0 20px; max-width: 480px }
+
+.order-qr-img {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0
+}
+
+.order-qr-img img {
+  width: 144px;
+  height: 144px;
+  border-radius: 12px;
+  background: #fff;
+  padding: 8px
+}
+
+.order-qr-img .qr-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  text-align: center
+}
+
+@media (max-width: 640px) {
+  .order-qr-section {
+    flex-direction: column;
+    padding: 28px 20px;
+    text-align: center
+  }
+  .order-qr-text p { max-width: 100% }
+}
 }

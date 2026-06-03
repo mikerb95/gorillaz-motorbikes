@@ -35,7 +35,10 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
 
   <!-- Info general -->
   <div class="crm-card" style="padding:20px 24px">
-    <h2 style="font-size:13px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px">Información</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:13px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0">Información</h2>
+      <button class="btn btn-ghost btn-sm" type="button" data-modal-open="#editOrderModal">✏️ Editar</button>
+    </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px">
       <div>
         <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Creada</div>
@@ -239,5 +242,55 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   <% } %>
 
 </div>
+
+<!-- Modal editar orden -->
+<div class="modal" id="editOrderModal" aria-hidden="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;max-width:500px;width:90%;padding:0;max-height:90vh;overflow-y:auto">
+    <div style="padding:20px 24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0;font-size:16px;font-weight:800">Editar orden</h3>
+      <button type="button" data-modal-close style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/editar-datos" style="padding:20px 24px">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div style="display:grid;gap:14px;margin-bottom:20px">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Placa</label>
+          <input type="text" name="plate" value="<%= (order.motorcycle || '').split(' — ')[0] || '' %>" maxlength="20" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Moto (marca/modelo)</label>
+          <input type="text" name="motorcycle" value="<%= (order.motorcycle || '').split(' — ').pop() || '' %>" maxlength="80" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Mecánico</label>
+          <input type="text" name="mechanic" value="<%= order.mechanic || '' %>" maxlength="80" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Entrega estimada</label>
+          <input type="date" name="estimatedDate" value="<%= order.estimatedDate || '' %>" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" type="submit">Guardar cambios</button>
+        <button class="btn btn-ghost" type="button" data-modal-close>Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('[data-modal-open]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.getAttribute('data-modal-open');
+    const modal = document.querySelector(target);
+    if (modal) modal.style.display = 'flex';
+  });
+});
+document.querySelectorAll('[data-modal-close]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.closest('[id]').style.display = 'none';
+  });
+});
+</script>
 
 <%- include('../partials/admin-foot') %>
