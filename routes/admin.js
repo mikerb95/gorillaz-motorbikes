@@ -1010,6 +1010,21 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
+router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order) return res.redirect('/admin/ordenes-servicio');
+  const plate = (req.body.plate || '').toUpperCase().trim();
+  const moto = (req.body.motorcycle || '').trim();
+  const motorcycle = [plate, moto].filter(Boolean).join(' — ') || null;
+  const updates = {
+    motorcycle,
+    mechanic: (req.body.mechanic || '').trim() || null,
+    estimatedDate: req.body.estimatedDate || null,
+  };
+  await updateServiceOrder(req.params.id, updates);
+  res.redirect('/admin/ordenes-servicio/' + req.params.id);
+});
+
 router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
