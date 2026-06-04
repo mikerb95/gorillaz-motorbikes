@@ -2,6 +2,7 @@
 // Requires: gsap.min.js + ScrollTrigger.min.js loaded before this file
 
 window.__gsapHero = true;
+document.documentElement.classList.add('gsap-hero');
 
 document.addEventListener('DOMContentLoaded', () => {
   const hero = document.querySelector('.hero[data-slideshow]');
