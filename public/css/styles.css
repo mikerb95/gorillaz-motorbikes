@@ -911,7 +911,12 @@ body.has-hero main.page-root {
 }
 
 .hero-content {
-  display: none
+  display: block
+}
+
+.gsap-hero .hero-content {
+  opacity: 0;
+  transform: translateY(28px)
 }
 
 .kicker,
