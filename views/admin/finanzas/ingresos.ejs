@@ -24,12 +24,12 @@
 <!-- KPIs -->
 <div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
   <div class="crm-kpi-card" style="cursor:default;border-left:4px solid #22c55e">
-    <div class="crm-kpi-value" style="font-size:.95rem;color:#16a34a"><%= fmt(totalIng) %></div>
-    <div class="crm-kpi-label">Total ingresos — <%= periodLabel %></div>
+    <div class="crm-kpi-value" style="font-size:.95rem;color:#16a34a"><%= fmt(totalSubtot) %></div>
+    <div class="crm-kpi-label">Ingresos (sin IVA) — <%= periodLabel %></div>
   </div>
   <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value" style="font-size:.95rem"><%= fmt(totalSubtot) %></div>
-    <div class="crm-kpi-label">Subtotal (sin IVA)</div>
+    <div class="crm-kpi-value" style="font-size:.95rem"><%= fmt(totalIng) %></div>
+    <div class="crm-kpi-label">Total facturado (con IVA)</div>
   </div>
   <div class="crm-kpi-card" style="cursor:default">
     <div class="crm-kpi-value" style="font-size:.95rem"><%= fmt(totalTax) %></div>
