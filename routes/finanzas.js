@@ -282,7 +282,7 @@ router.get('/flujo-caja', requireAuth, requireAdmin, async (req, res) => {
   const months = Array.from({ length: 12 }, (_, i) => {
     const m    = i + 1;
     const key  = `${year}-${String(m).padStart(2, '0')}`;
-    const inv  = paidInvoices.filter(x => inPeriod(x.createdAt, year, m)).reduce((s, x) => s + x.total, 0);
+    const inv  = paidInvoices.filter(x => inPeriod(x.createdAt, year, m)).reduce((s, x) => s + x.subtotal, 0);
     const ord  = paidOrders.filter(x => inPeriod(x.createdAt, year, m)).reduce((s, x) => s + x.total, 0);
     const gas  = gastos.filter(x => inPeriod(x.date, year, m)).reduce((s, x) => s + x.amount, 0);
     const ing  = inv + ord;
