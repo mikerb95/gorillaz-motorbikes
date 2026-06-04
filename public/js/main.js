@@ -593,8 +593,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// Background slideshow for home hero
+// Background slideshow for home hero (skipped when GSAP hero-gsap.js takes over)
 document.addEventListener('DOMContentLoaded', () => {
+  if (window.__gsapHero) return;
   const hero = document.querySelector('.hero[data-slideshow]');
   if (!hero) return;
   let slides;
