@@ -122,7 +122,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   });
 
   const recentMovements = [
-    ...paidInvoices.map(i => ({ type: 'ingreso', icon: 'factura', ref: i.label, date: i.createdAt, amount: i.total, link: `/admin/facturas/${i.id}` })),
+    ...paidInvoices.map(i => ({ type: 'ingreso', icon: 'factura', ref: i.label, date: i.createdAt, amount: i.subtotal, link: `/admin/facturas/${i.id}` })),
     ...paidOrders.map(o => ({ type: 'ingreso', icon: 'pedido', ref: `Pedido ${o.id.slice(0, 8)}`, date: o.createdAt, amount: o.total, link: null })),
     ...gastos.map(g => ({ type: 'egreso', icon: 'gasto', ref: g.description, date: g.date, amount: g.amount, cat: GASTO_CATS[g.category] || g.category, link: null })),
   ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
@@ -173,10 +173,10 @@ router.get('/ingresos', requireAuth, requireAdmin, async (req, res) => {
   const totalTax     = movements.reduce((s, m) => s + m.tax, 0);
 
   const byMethod = {};
-  periodoInv.forEach(i => { const m = i.paymentMethod || 'efectivo'; byMethod[m] = (byMethod[m] || 0) + i.total; });
+  periodoInv.forEach(i => { const m = i.paymentMethod || 'efectivo'; byMethod[m] = (byMethod[m] || 0) + i.subtotal; });
   const methodMax = Math.max(...Object.values(byMethod), 1);
 
-  const allTimeInv   = paidInvoices.reduce((s, i) => s + i.total, 0);
+  const allTimeInv   = paidInvoices.reduce((s, i) => s + i.subtotal, 0);
   const allTimeOrd   = paidOrders.reduce((s, o) => s + o.total, 0);
 
   res.render('admin/finanzas/ingresos', {
