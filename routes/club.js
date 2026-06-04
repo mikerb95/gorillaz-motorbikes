@@ -589,10 +589,12 @@ router.post('/visitas', requireAuth, async (req, res) => {
     const user = await getUserById(req.userId);
     const { date, service, type } = req.body;
     if (date && service && user) {
-      const visitType = type || 'visita';
-      const pts       = SCORE_POINTS[visitType] || SCORE_POINTS.visita;
-      await updateUser(user.id, { visits: [{ date, service, type: visitType }, ...(user.visits || [])] });
-      await addUserScore(user.id, pts, visitType, service);
+      // Solo se permiten tipos auto-reportables (no eventos/rodadas de mayor puntaje).
+      const visitType = ['visita', 'mantenimiento'].includes(type) ? type : 'visita';
+      // La visita queda PENDIENTE: no suma puntos hasta que un admin la confirme.
+      const visit = { id: uuidv4(), date, service: String(service).slice(0, 200), type: visitType, status: 'pending' };
+      await updateUser(user.id, { visits: [visit, ...(user.visits || [])] });
+      setFlash(res, 'success', 'Actividad registrada. Sumará puntos cuando el taller la confirme.');
     }
   } catch (e) { console.error('POST /club/visitas error:', e.message); }
   res.redirect('/club/panel');
