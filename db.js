@@ -974,10 +974,19 @@ async function getAllQuotations() {
 
 async function getQuotationsByMotorcyclePlates(plates) {
   if (!plates || plates.length === 0) return [];
-  const conditions = plates.map(() => 'UPPER(REPLACE(motorcycle, \' \', \'\')) LIKE ?').join(' OR ');
-  const args = plates.map(p => '%' + p.toUpperCase().replace(/\s/g, '') + '%');
+  // La placa vive en la columna `plate`. En cotizaciones antiguas (anteriores a
+  // separar la columna) podía venir embebida en `motorcycle`, así que buscamos
+  // en ambas para no perder ese historial.
+  const conditions = plates.map(() =>
+    "(UPPER(REPLACE(plate, ' ', '')) LIKE ? OR UPPER(REPLACE(motorcycle, ' ', '')) LIKE ?)"
+  ).join(' OR ');
+  const args = [];
+  for (const p of plates) {
+    const needle = '%' + p.toUpperCase().replace(/\s/g, '') + '%';
+    args.push(needle, needle);
+  }
   const r = await db.execute({
-    sql: `SELECT * FROM quotations WHERE status != 'draft' AND motorcycle IS NOT NULL AND (${conditions}) ORDER BY created_at DESC`,
+    sql: `SELECT * FROM quotations WHERE status != 'draft' AND (plate IS NOT NULL OR motorcycle IS NOT NULL) AND (${conditions}) ORDER BY created_at DESC`,
     args,
   });
   return r.rows.map(rowToQuotation);
