@@ -226,12 +226,33 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
             <option value="transferencia">Transferencia</option>
           </select>
         </div>
-        <div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#374151;cursor:pointer">
+          <input type="checkbox" id="ivaToggle" onchange="toggleIva(this)" style="width:16px;height:16px;cursor:pointer" />
+          Cobrar IVA (19%)
+        </label>
+        <div id="ivaField" style="display:none;margin-top:8px;max-width:240px">
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">IVA (COP)</label>
-          <input type="number" name="tax" value="0" min="0" placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+          <input type="number" name="tax" id="ivaInput" value="0" min="0" disabled placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
           <span style="font-size:11px;color:#9ca3af;margin-top:3px;display:block">Subtotal: $<%= order.total.toLocaleString('es-CO') %></span>
         </div>
       </div>
+      <script>
+        function toggleIva(cb) {
+          var field = document.getElementById('ivaField');
+          var input = document.getElementById('ivaInput');
+          if (cb.checked) {
+            field.style.display = 'block';
+            input.disabled = false;
+            if (!Number(input.value)) input.value = Math.round(<%= order.total %> * 0.19);
+          } else {
+            field.style.display = 'none';
+            input.disabled = true;
+            input.value = 0;
+          }
+        }
+      </script>
       <div style="margin-bottom:12px">
         <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Notas de factura</label>
         <textarea name="notes" rows="2" placeholder="Observaciones finales, garantía, etc." style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"></textarea>
