@@ -2,11 +2,13 @@
 // Requires: gsap.min.js + ScrollTrigger.min.js loaded before this file
 
 window.__gsapHero = true;
-document.documentElement.classList.add('gsap-hero');
 
 document.addEventListener('DOMContentLoaded', () => {
   const hero = document.querySelector('.hero[data-slideshow]');
   if (!hero || typeof gsap === 'undefined') return;
+
+  // Only hide content for animation once we know GSAP is available
+  document.documentElement.classList.add('gsap-hero');
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
