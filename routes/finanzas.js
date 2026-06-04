@@ -97,7 +97,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   const paidOrders     = orders.filter(o => o.status === 'paid');
   const pendingInvoices = invoices.filter(i => i.status === 'pendiente');
 
-  const totalIngresosAllTime = paidInvoices.reduce((s, i) => s + i.total, 0) + paidOrders.reduce((s, o) => s + o.total, 0);
+  const totalIngresosAllTime = paidInvoices.reduce((s, i) => s + i.subtotal, 0) + paidOrders.reduce((s, o) => s + o.total, 0);
   const totalEgresosAllTime  = gastos.reduce((s, g) => s + g.amount, 0);
 
   const periodoInv  = paidInvoices.filter(i => inPeriod(i.createdAt, year, month)).reduce((s, i) => s + i.total, 0);
