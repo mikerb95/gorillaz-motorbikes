@@ -916,7 +916,7 @@ router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, asyn
     quotationId:        quotation.id,
     items:              quotation.items,
     total:              quotation.total,
-    motorcycle:         quotation.motorcycle,
+    motorcycle:         [quotation.plate, quotation.motorcycle].filter(Boolean).join(' — ') || null,
     clientPhone:        quotation.clientPhone,
     clientPhoneCountry: quotation.clientPhoneCountry,
     mechanic:           (req.body.mechanic || '').trim() || null,
