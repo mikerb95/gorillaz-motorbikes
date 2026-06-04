@@ -42,7 +42,7 @@ const {
   getAllEvents, getUpcomingEvents,
   registerEventAttendance, getUserEventRegistrations,
   getLeaderboard,
-  addUserScore, getUserRank,
+  getUserRank,
   getQuotationsByMotorcyclePlates,
 } = require('../db');
 

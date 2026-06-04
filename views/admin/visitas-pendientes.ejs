@@ -1,0 +1,80 @@
+<%- include('../partials/admin-head', { title: 'Visitas por confirmar' }) %>
+
+<div class="crm-page-header">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:1.15rem;font-weight:900">Visitas por confirmar</h1>
+    <span class="badge badge-warning"><%= pending.length %> pendiente<%= pending.length === 1 ? '' : 's' %></span>
+  </div>
+  <p class="muted" style="margin:6px 0 0;font-size:.85rem">Actividades auto-reportadas por los socios. Los puntos se otorgan solo al confirmarlas.</p>
+</div>
+
+<% if (!pending || pending.length === 0) { %>
+  <div class="crm-card" style="text-align:center;padding:40px;color:#71717a">
+    <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;opacity:.4"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <p style="margin:0;font-weight:700">No hay visitas pendientes de confirmar.</p>
+  </div>
+<% } else { %>
+  <div class="crm-card" style="padding:0;overflow:hidden">
+    <div class="crm-table-wrap">
+      <table class="crm-table">
+        <thead>
+          <tr>
+            <th>Socio</th>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th style="width:230px">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% pending.forEach(v => { %>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="crm-user-circle"><%= (v.userName || '?').charAt(0).toUpperCase() %></div>
+                  <div>
+                    <strong><%= v.userName %></strong>
+                    <% if (v.userName !== v.userFullName) { %><br><span style="font-size:.75rem;color:#71717a"><%= v.userFullName %></span><% } %>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:.82rem;color:#71717a"><%= v.date %></td>
+              <td>
+                <% if (v.type === 'mantenimiento') { %>
+                  <span class="badge badge-info">🔩 Mtto (+<%= SCORE_POINTS.mantenimiento %>)</span>
+                <% } else { %>
+                  <span class="badge badge-muted">🏪 Visita (+<%= SCORE_POINTS.visita %>)</span>
+                <% } %>
+              </td>
+              <td style="font-size:.85rem"><%= v.service %></td>
+              <td>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <form method="post" action="/admin/visitas/confirmar" style="margin:0">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <input type="hidden" name="userId" value="<%= v.userId %>" />
+                    <input type="hidden" name="visitId" value="<%= v.id %>" />
+                    <button class="btn btn-sm btn-primary" type="submit"
+                      data-confirm="¿Confirmar y otorgar puntos a <%= v.userName %>?">
+                      Confirmar + puntos
+                    </button>
+                  </form>
+                  <form method="post" action="/admin/visitas/rechazar" style="margin:0">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <input type="hidden" name="userId" value="<%= v.userId %>" />
+                    <input type="hidden" name="visitId" value="<%= v.id %>" />
+                    <button class="btn btn-sm btn-ghost" type="submit"
+                      data-confirm="¿Rechazar y eliminar esta visita de <%= v.userName %>?">
+                      Rechazar
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% } %>
+
+<%- include('../partials/admin-foot') %>

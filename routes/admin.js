@@ -167,6 +167,51 @@ router.post('/eventos/eliminar', requireAuth, requireAdmin, async (req, res) => 
   res.redirect('/admin/eventos');
 });
 
+// ── Visitas auto-reportadas (requieren confirmación del admin para dar puntos) ─
+router.get('/visitas', requireAuth, requireAdmin, async (req, res) => {
+  const users = await getAllUsers();
+  const pending = [];
+  for (const u of users) {
+    (u.visits || []).forEach(v => {
+      if (v && v.status === 'pending' && v.id) {
+        pending.push({ ...v, userId: u.id, userName: u.nickname || u.name, userFullName: u.name });
+      }
+    });
+  }
+  pending.sort((a, b) => new Date(b.date) - new Date(a.date));
+  res.render('admin/visitas-pendientes', { pending, SCORE_POINTS });
+});
+
+router.post('/visitas/confirmar', requireAuth, requireAdmin, async (req, res) => {
+  const { userId, visitId } = req.body;
+  const user = await getUserById(userId);
+  if (user) {
+    const visits = (user.visits || []).map(v => ({ ...v }));
+    const visit  = visits.find(v => v.id === visitId);
+    // Guarda contra doble conteo: solo se otorgan puntos si sigue pendiente.
+    if (visit && visit.status === 'pending') {
+      visit.status = 'confirmed';
+      const pts = SCORE_POINTS[visit.type] || SCORE_POINTS.visita;
+      await updateUser(userId, { visits });
+      await addUserScore(userId, pts, visit.type, visit.service);
+      await logAdminAction(res.locals.user.id, res.locals.user.name, 'confirmar_visita', 'user', userId, { visitId, pts, type: visit.type, service: visit.service });
+    }
+  }
+  res.redirect('/admin/visitas');
+});
+
+router.post('/visitas/rechazar', requireAuth, requireAdmin, async (req, res) => {
+  const { userId, visitId } = req.body;
+  const user = await getUserById(userId);
+  if (user) {
+    // Elimina la visita pendiente sin otorgar puntos.
+    const visits = (user.visits || []).filter(v => !(v.id === visitId && v.status === 'pending'));
+    await updateUser(userId, { visits });
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'rechazar_visita', 'user', userId, { visitId });
+  }
+  res.redirect('/admin/visitas');
+});
+
 router.get('/usuarios', requireAuth, requireAdmin, async (req, res) => {
   const users = await getAllUsers();
   res.render('admin/users', { users, error: null });

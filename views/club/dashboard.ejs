@@ -237,6 +237,9 @@
                       <% } else { %>
                         <span class="cp-activity-chip visita"><span aria-hidden="true">🏪</span> Visita</span>
                       <% } %>
+                      <% if (v.status === 'pending') { %>
+                        <span class="cp-activity-chip" style="background:#fef3c7;color:#92400e"><span aria-hidden="true">⏳</span> Pendiente de confirmar</span>
+                      <% } %>
                     </div>
                     <div class="cp-timeline-desc"><%= v.service %></div>
                   </div>
@@ -265,6 +268,7 @@
                 <input type="text" name="service" placeholder="Ej: Cambio de aceite y filtros" required />
               </label>
               <button class="btn" type="submit">Registrar</button>
+              <p style="font-size:.72em;color:#92400e;margin:8px 0 0">⏳ Los puntos se acreditan cuando el taller confirma tu actividad.</p>
             </form>
           </div>
         </div>
