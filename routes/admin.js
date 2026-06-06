@@ -23,7 +23,7 @@ const {
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
   getAllQuotations, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
-  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
+  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, updateEmployee, deleteEmployee,
   backupAllTables,
