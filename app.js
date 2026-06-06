@@ -28,6 +28,33 @@ function ensureDb() {
 }
 ensureDb();
 
+// Cabeceras de seguridad. La CSP permite los orígenes externos que realmente usa
+// el sitio (Google Fonts, reCAPTCHA, Leaflet/mapas, Vercel Blob). Mantiene
+// 'unsafe-inline' en script/style porque las plantillas EJS aún dependen de
+// scripts, estilos y handlers (onclick) inline; migrar a nonces es el siguiente
+// paso para endurecer XSS. frame-ancestors + X-Frame-Options bloquean clickjacking.
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      'default-src': ["'self'"],
+      'script-src': ["'self'", "'unsafe-inline'", 'https://www.google.com', 'https://www.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
+      'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+      'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+      'connect-src': ["'self'", 'https://nominatim.openstreetmap.org', 'https://www.google.com', 'https://www.gstatic.com'],
+      'frame-src': ["'self'", 'https://www.google.com', 'https://maps.google.com'],
+      'frame-ancestors': ["'self'"],
+      'object-src': ["'none'"],
+      'base-uri': ["'self'"],
+      'upgrade-insecure-requests': [],
+    },
+  },
+  // Recursos estáticos (imágenes/fuentes) servidos a otros orígenes (p. ej. Blob).
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginEmbedderPolicy: false,
+}));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET || JWT_SECRET));
