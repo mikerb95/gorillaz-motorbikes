@@ -1048,14 +1048,14 @@ router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) 
 });
 
 router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
-  const { mechanic, status, notes, estimatedDate, employeeId } = req.body;
+  const { status, notes, estimatedDate, employeeId } = req.body;
   const order = await getServiceOrderById(req.params.id);
   const updates = {
-    mechanic:      (mechanic || '').trim() || null,
     status:        status || 'ingreso_taller',
     notes:         (notes || '').trim() || null,
     estimatedDate: estimatedDate || null,
     employeeId:    employeeId || null,
+    mechanic:      await resolveMechanicName(employeeId || null),
   };
   if (status === 'trabajo_completo' && order && !order.trabajoCompletoAt) {
     updates.trabajoCompletoAt = nowCOT();
@@ -1072,9 +1072,11 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, asy
   const plate = (req.body.plate || '').toUpperCase().trim();
   const moto = (req.body.motorcycle || '').trim();
   const motorcycle = [plate, moto].filter(Boolean).join(' — ') || null;
+  const employeeId = req.body.employeeId || null;
   const updates = {
     motorcycle,
-    mechanic: (req.body.mechanic || '').trim() || null,
+    employeeId,
+    mechanic: await resolveMechanicName(employeeId),
     estimatedDate: req.body.estimatedDate || null,
   };
   await updateServiceOrder(req.params.id, updates);
