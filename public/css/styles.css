@@ -7624,6 +7624,24 @@ main:has(.club-panel) { padding-top: 0 !important; }
   }
 }
 
+/* ─── Alineación landing: títulos y grids al ancho del container ─── */
+/* El container y la navbar usan max-width:1400; las reglas globales
+   `section h2/h1` y `.grid` cap­ean a 1200 + margin auto, lo que indenta
+   títulos y cards hacia el centro. En el home los alineamos al borde
+   del container (mismo eje que la navbar). */
+.page-home .container > h1,
+.page-home .container > h2 {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0
+}
+
+.page-home .grid {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0
+}
+
 /* ─── Sección "Lo que viene" ───────────────────────────────── */
 .coming-soon-section {
   padding-top: 0
