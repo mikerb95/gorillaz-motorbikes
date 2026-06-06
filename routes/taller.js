@@ -62,20 +62,9 @@ router.get('/login', (req, res) => {
   res.render('taller/login', { error: null });
 });
 
-router.post('/login', authLimiter, async (req, res) => {
-  const pin = String(req.body.pin || '').trim();
-  if (!/^\d{4,6}$/.test(pin)) {
-    return res.status(400).render('taller/login', { error: 'PIN inválido.' });
-  }
-  const employees = await getActiveEmployees();
-  let matched = null;
-  for (const emp of employees) {
-    if (await bcrypt.compare(pin, emp.pinHash)) { matched = emp; break; }
-  }
-  if (!matched) {
-    return res.status(401).render('taller/login', { error: 'PIN incorrecto.' });
-  }
-  const token = jwt.sign({ eid: matched.id }, JWT_SECRET, { expiresIn: '1d' });
+// Emite la cookie de sesión del empleado y entra al portal.
+function startEmployeeSession(res, emp) {
+  const token = jwt.sign({ eid: emp.id }, JWT_SECRET, { expiresIn: '1d' });
   res.cookie('emp_jwt', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -83,6 +72,39 @@ router.post('/login', authLimiter, async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24,
   });
   res.redirect('/taller');
+}
+
+router.post('/login', authLimiter, async (req, res) => {
+  const email    = String(req.body.email || '').trim().toLowerCase();
+  const password = String(req.body.password || '');
+
+  // Vía 1: empleado ligado a un usuario de la web → correo + contraseña.
+  if (email || password) {
+    const user = email ? await getUserByEmail(email) : null;
+    if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).render('taller/login', { error: 'Correo o contraseña incorrectos.' });
+    }
+    const emp = await getEmployeeByUserId(user.id);
+    if (!emp || !emp.active) {
+      return res.status(403).render('taller/login', { error: 'Esta cuenta no está habilitada como empleado.' });
+    }
+    return startEmployeeSession(res, emp);
+  }
+
+  // Vía 2: empleado con PIN.
+  const pin = String(req.body.pin || '').trim();
+  if (!/^\d{4,6}$/.test(pin)) {
+    return res.status(400).render('taller/login', { error: 'PIN inválido.' });
+  }
+  const employees = await getActiveEmployees();
+  let matched = null;
+  for (const emp of employees) {
+    if (emp.pinHash && await bcrypt.compare(pin, emp.pinHash)) { matched = emp; break; }
+  }
+  if (!matched) {
+    return res.status(401).render('taller/login', { error: 'PIN incorrecto.' });
+  }
+  return startEmployeeSession(res, matched);
 });
 
 router.post('/logout', (req, res) => {
