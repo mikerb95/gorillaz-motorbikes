@@ -461,6 +461,35 @@ async function deleteUser(id) {
   await db.execute({ sql: `UPDATE users SET deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?`, args: [id] });
 }
 
+// Baja de cuenta solicitada por el propio usuario. Es un soft-delete que además
+// anonimiza la fila: borra toda la información personal y libera los
+// identificadores únicos (email, cédula, Google/Apple) para que pueda volver a
+// registrarse. Se conserva la fila —con su id— para no romper el historial de
+// pedidos/órdenes que referencian user_id. También elimina sus passkeys.
+async function deleteUserAccount(id) {
+  const tx = await db.transaction('write');
+  try {
+    await tx.execute({
+      sql: `UPDATE users SET
+              deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ','now'),
+              email = 'deleted-' || id || '@deleted.local',
+              password = NULL, name = 'Cuenta eliminada', first_name = '', last_name = '',
+              cedula = NULL, phone = NULL, city = NULL, department = NULL,
+              birthdate = NULL, nickname = NULL, blood_type = NULL,
+              emergency_name = NULL, emergency_phone = NULL, avatar_url = NULL,
+              google_id = NULL, apple_id = NULL, reset_token = NULL, reset_token_expiry = NULL,
+              vehicles = '[]', visits = '[]', club_notifications = 0
+            WHERE id = ?`,
+      args: [id],
+    });
+    await tx.execute({ sql: 'DELETE FROM passkeys WHERE user_id = ?', args: [id] });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
+}
+
 // ── Appointments ──────────────────────────────────────────────────────────
 
 async function getAllAppointments() {
