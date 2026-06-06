@@ -1100,6 +1100,13 @@ async function updateServiceOrder(id, fields) {
   await db.execute({ sql: `UPDATE service_orders SET ${set.join(', ')} WHERE id = ?`, args });
 }
 
+async function updateServiceOrderPhone(id, clientPhone, clientPhoneCountry) {
+  await db.execute({
+    sql: 'UPDATE service_orders SET client_phone = ?, client_phone_country = ?, updated_at = ? WHERE id = ?',
+    args: [clientPhone || null, clientPhoneCountry || '+57', new Date().toISOString(), id],
+  });
+}
+
 async function countServiceOrders() {
   const r = await db.execute("SELECT COUNT(*) as n FROM service_orders WHERE status != 'facturado'");
   return Number(r.rows[0].n);

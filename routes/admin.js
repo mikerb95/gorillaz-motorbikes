@@ -954,6 +954,14 @@ router.post('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
 
 // ── Órdenes de servicio ───────────────────────────────────────────────────
 
+// El mecánico asignado y el empleado del portal son una sola cosa: el nombre
+// visible (mechanic) se deriva del empleado seleccionado en el configurador.
+async function resolveMechanicName(employeeId) {
+  if (!employeeId) return null;
+  const emp = await getEmployeeById(employeeId);
+  return emp ? emp.name : null;
+}
+
 router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, async (req, res) => {
   const quotation = await getQuotationById(req.params.id);
   if (!quotation) return res.redirect('/admin/cotizaciones');
