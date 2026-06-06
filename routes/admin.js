@@ -1112,7 +1112,30 @@ router.get('/facturas/:id', requireAuth, requireAdmin, async (req, res) => {
   const invoice = await getInvoiceById(req.params.id);
   if (!invoice) return res.redirect('/admin/facturas');
   const order = await getServiceOrderById(invoice.serviceOrderId);
+  // Si la orden no tiene teléfono pero la cotización origen sí, lo mostramos como respaldo.
+  if (order && !order.clientPhone && invoice.quotationId) {
+    const quotation = await getQuotationById(invoice.quotationId);
+    if (quotation && quotation.clientPhone) {
+      order.clientPhone        = quotation.clientPhone;
+      order.clientPhoneCountry = quotation.clientPhoneCountry || '+57';
+    }
+  }
   res.render('admin/invoice-detail', { invoice, order });
+});
+
+// Guarda el número de WhatsApp del cliente en la orden de la factura (igual que el liquidador con la cotización).
+router.post('/facturas/:id/telefono', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const invoice = await getInvoiceById(req.params.id);
+    if (!invoice || !invoice.serviceOrderId) return res.status(404).json({ error: 'Factura no encontrada.' });
+    const digits = (req.body.clientPhone || '').replace(/\D/g, '');
+    if (!digits) return res.status(400).json({ error: 'Número inválido.' });
+    await updateServiceOrderPhone(invoice.serviceOrderId, digits, req.body.clientPhoneCountry || '+57');
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('POST /admin/facturas/:id/telefono error:', err.message);
+    res.status(500).json({ error: 'Error al guardar el teléfono.' });
+  }
 });
 
 router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) => {
