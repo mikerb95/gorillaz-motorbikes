@@ -275,7 +275,12 @@ async function initDb() {
   }
 
   await ensureNewsletterTokens();
-  console.log('✅ Turso schema inicializado');
+
+  // Marca el esquema como migrado para que los próximos cold starts salgan
+  // temprano. user_version no acepta parámetros (?), pero SCHEMA_VERSION es un
+  // entero que controlamos nosotros, así que interpolarlo es seguro.
+  await db.execute(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+  console.log(`✅ Turso schema inicializado (v${SCHEMA_VERSION})`);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
