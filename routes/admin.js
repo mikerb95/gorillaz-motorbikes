@@ -804,7 +804,7 @@ async function pinIsTaken(pin, exceptId) {
   const all = await getAllEmployees();
   for (const e of all) {
     if (e.id === exceptId) continue;
-    if (await bcrypt.compare(pin, e.pinHash)) return true;
+    if (e.pinHash && await bcrypt.compare(pin, e.pinHash)) return true;
   }
   return false;
 }
