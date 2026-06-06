@@ -460,13 +460,21 @@
       <% } %>
       <div style="display:grid;gap:12px">
         <% empleados.forEach(emp => { %>
+          <% const cuenta = emp.userId ? (usuarios || []).find(u => u.id === emp.userId) : null; %>
           <form method="post" action="/admin/configuracion/empleados/<%= emp.id %>"
             style="display:grid;grid-template-columns:1fr 130px auto auto auto;gap:10px;align-items:center;padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:<%= emp.active ? '#fff' : '#f9fafb' %>">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
             <input type="text" name="name" value="<%= emp.name %>" maxlength="80"
               style="padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none" />
-            <input type="text" name="pin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" placeholder="Nuevo PIN"
-              style="padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;letter-spacing:2px;text-align:center" />
+            <% if (emp.userId) { %>
+              <span style="font-size:12px;font-weight:700;color:#2563eb;display:flex;flex-direction:column;line-height:1.25">
+                <span>🔑 Contraseña</span>
+                <span class="muted" style="font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis"><%= cuenta ? cuenta.email : 'usuario eliminado' %></span>
+              </span>
+            <% } else { %>
+              <input type="text" name="pin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" placeholder="Nuevo PIN"
+                style="padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;letter-spacing:2px;text-align:center" />
+            <% } %>
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;white-space:nowrap">
               <input type="checkbox" name="active" <%= emp.active ? 'checked' : '' %>
                 style="width:16px;height:16px;accent-color:var(--brand);cursor:pointer" />
