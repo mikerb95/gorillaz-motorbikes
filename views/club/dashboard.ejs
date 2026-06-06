@@ -567,6 +567,40 @@
       </form>
     </div>
   </div>
+
+  <!-- ── Eliminar cuenta ── -->
+  <% const hasPassword = user.password && user.password !== '$google$' && user.password !== '$apple$'; %>
+  <div class="modal" id="deleteAccount" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-deleteAccount">
+      <div class="modal-header">
+        <h3 class="modal-title" id="title-deleteAccount" style="color:#b91c1c">Eliminar mi cuenta</h3>
+        <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
+      </div>
+      <form method="post" action="/club/eliminar-cuenta" id="deleteAccountForm">
+        <div class="modal-body">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <p style="margin:0 0 14px;font-size:.9em;color:#374151">
+            Esta acción <strong>no se puede deshacer</strong>. Tus datos personales se eliminarán de forma permanente.
+          </p>
+          <% if (hasPassword) { %>
+          <label style="display:block;margin-bottom:14px">
+            <span style="display:block;font-size:.82em;color:#6b7280;margin-bottom:4px">Confirma tu contraseña</span>
+            <input type="password" name="password" autocomplete="current-password" required style="width:100%" />
+          </label>
+          <% } %>
+          <label style="display:block">
+            <span style="display:block;font-size:.82em;color:#6b7280;margin-bottom:4px">Escribe <strong>ELIMINAR</strong> para confirmar</span>
+            <input type="text" name="confirm" id="deleteConfirmInput" autocomplete="off" autocapitalize="characters" required style="width:100%" />
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
+          <button class="btn" id="deleteAccountBtn" type="submit" disabled style="color:#fff;background:#ef4444;border-color:#ef4444">Eliminar definitivamente</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div><!-- /.club-panel -->
 
 <script>
