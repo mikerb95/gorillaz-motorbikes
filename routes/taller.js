@@ -104,12 +104,18 @@ router.post('/login', authLimiter, async (req, res) => {
   if (!/^\d{4,6}$/.test(pin)) {
     return res.status(400).render('taller/login', { error: 'PIN inválido.' });
   }
+  if (await isThrottleLocked(PIN_THROTTLE_KEY, PIN_MAX_FAILURES, PIN_WINDOW_MS)) {
+    return res.status(429).render('taller/login', {
+      error: 'Demasiados intentos con PIN. Espera unos minutos o entra con tu correo y contraseña.',
+    });
+  }
   const employees = await getActiveEmployees();
   let matched = null;
   for (const emp of employees) {
     if (emp.pinHash && await bcrypt.compare(pin, emp.pinHash)) { matched = emp; break; }
   }
   if (!matched) {
+    await recordThrottleFailure(PIN_THROTTLE_KEY, PIN_WINDOW_MS);
     return res.status(401).render('taller/login', { error: 'PIN incorrecto.' });
   }
   return startEmployeeSession(res, matched);
