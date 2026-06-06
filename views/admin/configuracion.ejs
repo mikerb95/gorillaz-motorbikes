@@ -5,7 +5,7 @@
 <% if (flash === 'saved') { %>
   <div class="cfg-flash">✓ Configuración guardada correctamente.</div>
 <% } else if (flash === 'error') { %>
-  <div class="cfg-flash" style="background:#fef2f2;border-color:#fecaca;color:#b91c1c">✗ Revisa los datos: el PIN debe tener 4-6 dígitos y no puede repetirse.</div>
+  <div class="cfg-flash" style="background:#fef2f2;border-color:#fecaca;color:#b91c1c">✗ Revisa los datos: el PIN debe tener 6 dígitos y no puede repetirse.</div>
 <% } %>
 
 <!-- Tab bar -->
@@ -416,7 +416,7 @@
       </p>
 
       <h3 style="font-size:13px;font-weight:800;margin:0 0 8px">Empleado con PIN</h3>
-      <p class="muted" style="font-size:12px;margin:0 0 12px">Crea un empleado nuevo con un <strong>PIN de 4 a 6 dígitos</strong>.</p>
+      <p class="muted" style="font-size:12px;margin:0 0 12px">Crea un empleado nuevo con un <strong>PIN de 6 dígitos</strong>.</p>
       <form method="post" action="/admin/configuracion/empleados" style="display:grid;grid-template-columns:1fr 140px auto;gap:12px;align-items:end">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <div>
