@@ -2,7 +2,7 @@
 const express  = require('express');
 const path     = require('path');
 const fs       = require('fs');
-const { createQuotation, updateQuotation, getDraftQuotations, getQuotationById, updateQuotationPhone, deleteQuotation } = require('../db');
+const { createQuotation, updateQuotation, getDraftQuotations, getQuotationById, updateQuotationPhone, deleteQuotation, getInvoiceById, getServiceOrderById } = require('../db');
 const { products } = require('../data/catalog');
 
 const router = express.Router();
@@ -230,6 +230,24 @@ router.get('/cotizacion/:id', async (req, res) => {
     });
   } catch (err) {
     console.error('GET /cotizacion/:id error:', err.message);
+    res.status(500).render('500');
+  }
+});
+
+router.get('/factura/:id', async (req, res) => {
+  try {
+    const invoice = await getInvoiceById(req.params.id);
+    if (!invoice || invoice.status === 'anulada') return res.status(404).render('404');
+    const order = invoice.serviceOrderId ? await getServiceOrderById(invoice.serviceOrderId) : null;
+    res.render('factura', {
+      title: `Factura ${invoice.label} — Gorillaz Motorbikes`,
+      description: 'Detalle de factura Gorillaz Motorbikes.',
+      canonicalPath: `/factura/${invoice.id}`,
+      invoice,
+      order,
+    });
+  } catch (err) {
+    console.error('GET /factura/:id error:', err.message);
     res.status(500).render('500');
   }
 });

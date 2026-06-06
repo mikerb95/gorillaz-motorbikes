@@ -195,7 +195,15 @@ router.post('/cart/add', cartLimiter, (req, res) => {
   cart.items[id] = Math.min((cart.items[id] || 0) + q, maxStock);
   recalc(cart);
   saveCart(res, cart);
-  if (wantsJSON) return res.json({ ok: true, cartCount: cart.count, message: `${product.name} añadido al carrito` });
+  if (wantsJSON) {
+    const cartItems = Object.entries(cart.items).map(([itemId, itemQty]) => {
+      const p = catalog.products.find(x => x.id === itemId);
+      if (!p) return null;
+      const finalPrice = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
+      return { id: itemId, name: p.name, qty: itemQty, total: finalPrice * itemQty };
+    }).filter(Boolean);
+    return res.json({ ok: true, cartCount: cart.count, subtotal: cart.subtotal, cartItems, message: `${product.name} añadido al carrito` });
+  }
   res.redirect('/carrito');
 });
 
