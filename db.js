@@ -14,20 +14,22 @@ const db = createClient({
 // ── Schema ────────────────────────────────────────────────────────────────
 
 // Versión del esquema. Súbela en +1 cada vez que agregues una tabla, columna
-// o índice nuevo abajo. initDb() compara este número contra PRAGMA user_version
-// (un contador que Turso guarda dentro de la propia base) y solo corre las
-// migraciones cuando la base está desactualizada. Así un cold start con la base
-// ya migrada cuesta 1 viaje a la red en vez de ~46.
+// o índice nuevo abajo. initDb() compara este número contra el valor guardado
+// en la tabla schema_meta y solo corre las migraciones cuando la base está
+// desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
+// baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
+// (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
 const SCHEMA_VERSION = 1;
 
 async function initDb() {
-  let currentVersion = 0;
-  try {
-    const r = await db.execute('PRAGMA user_version');
-    currentVersion = Number(r.rows[0]?.user_version ?? 0);
-  } catch (err) {
-    console.warn('[WARN] No se pudo leer PRAGMA user_version, corriendo migraciones:', err.message);
-  }
+  // Control de versión del esquema (sentencias idempotentes y baratas).
+  await db.execute(`CREATE TABLE IF NOT EXISTS schema_meta (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    version INTEGER NOT NULL DEFAULT 0
+  )`);
+  await db.execute(`INSERT OR IGNORE INTO schema_meta (id, version) VALUES (1, 0)`);
+  const meta = await db.execute('SELECT version FROM schema_meta WHERE id = 1');
+  const currentVersion = Number(meta.rows[0]?.version ?? 0);
   if (currentVersion >= SCHEMA_VERSION) return; // esquema al día → nada que hacer
 
   const tables = [
