@@ -10,9 +10,17 @@ const { requireEmployee, authLimiter } = require('../middleware/auth');
 const {
   getActiveEmployees, getEmployeeById, getEmployeeByUserId, getUserByEmail,
   getServiceOrdersByEmployee, getServiceOrderById, updateServiceOrder,
+  isThrottleLocked, recordThrottleFailure,
 } = require('../db');
 
 const router = express.Router();
+
+// Anti fuerza bruta para el login por PIN. Tope global de fallos en una ventana:
+// frena ataques distribuidos (IPs rotativas) que el límite por-IP no detiene.
+// El acceso por correo+contraseña sigue disponible si el PIN queda bloqueado.
+const PIN_THROTTLE_KEY  = 'taller_pin';
+const PIN_WINDOW_MS     = 15 * 60 * 1000;
+const PIN_MAX_FAILURES  = 20;
 
 // Estados que un empleado puede fijar desde el portal del taller.
 // No incluye "entregado" ni "facturado": eso queda reservado al admin.
