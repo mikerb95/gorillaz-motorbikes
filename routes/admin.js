@@ -820,6 +820,19 @@ router.post('/configuracion/empleados', requireAuth, requireAdmin, async (req, r
   res.redirect('/admin/configuracion?tab=empleados&flash=saved');
 });
 
+// Liga un usuario existente de la web como empleado: entra al portal del taller
+// con su correo y contraseña en vez de un PIN.
+router.post('/configuracion/empleados/ligar', requireAuth, requireAdmin, async (req, res) => {
+  const userId = (req.body.userId || '').trim();
+  const user = userId ? await getUserById(userId) : null;
+  // Validar: usuario existente y no ligado ya a otro empleado.
+  if (!user || await getEmployeeByUserId(userId)) {
+    return res.redirect('/admin/configuracion?tab=empleados&flash=error');
+  }
+  await createEmployee({ name: user.name || user.email, userId });
+  res.redirect('/admin/configuracion?tab=empleados&flash=saved');
+});
+
 router.post('/configuracion/empleados/:id', requireAuth, requireAdmin, async (req, res) => {
   const emp = await getEmployeeById(req.params.id);
   if (!emp) return res.redirect('/admin/configuracion?tab=empleados');
