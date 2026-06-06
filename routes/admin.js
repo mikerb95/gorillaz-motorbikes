@@ -799,7 +799,7 @@ router.get('/configuracion', requireAuth, requireAdmin, async (req, res) => {
 
 // ── Empleados (acceso al portal del taller con PIN) ───────────────────────
 
-// Comprueba que el PIN (4-6 dígitos) no choque con el de otro empleado activo.
+// Comprueba que el PIN (6 dígitos) no choque con el de otro empleado activo.
 async function pinIsTaken(pin, exceptId) {
   const all = await getAllEmployees();
   for (const e of all) {
