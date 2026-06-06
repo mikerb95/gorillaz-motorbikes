@@ -11,7 +11,12 @@ const STATUS_CLS   = { pendiente:'badge-warning', pagada:'badge-success', anulad
     <a class="btn btn-ghost btn-sm" href="/admin/facturas">← Facturas</a>
     <span class="badge <%= STATUS_CLS[invoice.status] %>"><%= invoice.status %></span>
   </div>
-  <button class="btn btn-ghost btn-sm" id="btnPdf">Descargar PDF</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-ghost btn-sm" id="btnPdf">Descargar PDF</button>
+    <% if (invoice.status !== 'anulada') { %>
+      <button class="btn btn-sm" id="btnWa" style="background:#25D366;color:#fff;border-color:#25D366">Enviar por WhatsApp</button>
+    <% } %>
+  </div>
 </div>
 
 <div style="display:grid;gap:16px;max-width:860px">
