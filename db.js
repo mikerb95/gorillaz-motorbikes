@@ -13,7 +13,23 @@ const db = createClient({
 
 // ── Schema ────────────────────────────────────────────────────────────────
 
+// Versión del esquema. Súbela en +1 cada vez que agregues una tabla, columna
+// o índice nuevo abajo. initDb() compara este número contra PRAGMA user_version
+// (un contador que Turso guarda dentro de la propia base) y solo corre las
+// migraciones cuando la base está desactualizada. Así un cold start con la base
+// ya migrada cuesta 1 viaje a la red en vez de ~46.
+const SCHEMA_VERSION = 1;
+
 async function initDb() {
+  let currentVersion = 0;
+  try {
+    const r = await db.execute('PRAGMA user_version');
+    currentVersion = Number(r.rows[0]?.user_version ?? 0);
+  } catch (err) {
+    console.warn('[WARN] No se pudo leer PRAGMA user_version, corriendo migraciones:', err.message);
+  }
+  if (currentVersion >= SCHEMA_VERSION) return; // esquema al día → nada que hacer
+
   const tables = [
     `CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
