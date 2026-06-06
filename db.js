@@ -1447,7 +1447,7 @@ module.exports = {
   createJobApplication,
   createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersByUser, countOrders,
   createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
-  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, countServiceOrders,
+  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
   getServiceOrdersByEmployee, countPendingReviewOrders,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, updateEmployee, deleteEmployee,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
