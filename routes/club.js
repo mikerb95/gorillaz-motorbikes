@@ -38,7 +38,7 @@ const { getScoreLevel, SCORE_POINTS } = require('../helpers/score');
 const {
   getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId, getUserByAppleId,
   getPasskeysByUserId, getPasskeyByCredentialId, createPasskey, updatePasskeyCounter, deletePasskey,
-  updateUser, createUser,
+  updateUser, createUser, deleteUserAccount, deleteNewsletterByEmail,
   getAllEvents, getUpcomingEvents,
   registerEventAttendance, getUserEventRegistrations,
   getLeaderboard,
