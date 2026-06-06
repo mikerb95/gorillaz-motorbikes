@@ -791,6 +791,7 @@ router.get('/configuracion', requireAuth, requireAdmin, async (req, res) => {
     parqueaderoConfig: loadParqueaderoConfig(),
     puntosConfig:      loadPuntosConfig(),
     empleados:         await getAllEmployees(),
+    usuarios:          await getAllUsers(),
     flash: req.query.flash || null,
     tab:   req.query.tab   || 'liquidador',
   });
