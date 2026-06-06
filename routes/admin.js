@@ -965,6 +965,7 @@ async function resolveMechanicName(employeeId) {
 router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, async (req, res) => {
   const quotation = await getQuotationById(req.params.id);
   if (!quotation) return res.redirect('/admin/cotizaciones');
+  const employeeId = req.body.employeeId || null;
   const { id } = await createServiceOrder({
     quotationId:        quotation.id,
     items:              quotation.items,
@@ -972,7 +973,8 @@ router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, asyn
     motorcycle:         [quotation.plate, quotation.motorcycle].filter(Boolean).join(' — ') || null,
     clientPhone:        quotation.clientPhone,
     clientPhoneCountry: quotation.clientPhoneCountry,
-    mechanic:           (req.body.mechanic || '').trim() || null,
+    employeeId,
+    mechanic:           await resolveMechanicName(employeeId),
     notes:              (req.body.notes || '').trim() || null,
     estimatedDate:      req.body.estimatedDate || null,
   });
