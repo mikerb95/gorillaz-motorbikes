@@ -7789,6 +7789,7 @@ main:has(.club-panel) { padding-top: 0 !important; }
   font-size: .82rem;
   color: #6b7280;
   margin: 0
+}
 
 /* ── Consulta tu orden — CTA con QR ───────────────────────────────── */
 .order-qr-section {
