@@ -276,7 +276,15 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
         </div>
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Mecánico</label>
-          <input type="text" name="mechanic" value="<%= order.mechanic || '' %>" maxlength="80" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+          <select name="employeeId" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+            <option value="">— Sin asignar —</option>
+            <% empleados.forEach(e => { %>
+              <option value="<%= e.id %>"<%= order.employeeId === e.id ? ' selected' : '' %>><%= e.name %></option>
+            <% }) %>
+            <% if (empleadoAsignado && !empleados.some(e => e.id === empleadoAsignado.id)) { %>
+              <option value="<%= empleadoAsignado.id %>" selected><%= empleadoAsignado.name %> (inactivo)</option>
+            <% } %>
+          </select>
         </div>
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Entrega estimada</label>
