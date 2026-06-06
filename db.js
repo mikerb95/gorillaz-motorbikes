@@ -226,6 +226,13 @@ async function initDb() {
       notes TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    // Contadores globales anti fuerza bruta (p. ej. login por PIN del taller).
+    // Persistido en BD para que el límite sea global entre instancias serverless.
+    `CREATE TABLE IF NOT EXISTS security_throttle (
+      key TEXT PRIMARY KEY,
+      count INTEGER NOT NULL DEFAULT 0,
+      window_start INTEGER NOT NULL DEFAULT 0
+    )`,
   ];
 
   for (const sql of tables) {
