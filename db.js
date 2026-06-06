@@ -1469,7 +1469,7 @@ module.exports = {
   db, initDb,
   getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId, getUserByAppleId,
   getPasskeysByUserId, getPasskeyByCredentialId, createPasskey, updatePasskeyCounter, deletePasskey,
-  getAllUsers, countUsers, createUser, updateUser, deleteUser,
+  getAllUsers, countUsers, createUser, updateUser, deleteUser, deleteUserAccount,
   addUserScore, getLeaderboard, getUserRank,
   getAllAppointments, getAppointmentDates, countAppointments,
   createAppointment, updateAppointment, deleteAppointment,
