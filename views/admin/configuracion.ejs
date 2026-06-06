@@ -424,8 +424,8 @@
           <input type="text" name="name" maxlength="80" required placeholder="Ej: Juan Pérez" class="cfg-input" style="box-sizing:border-box" />
         </div>
         <div>
-          <label class="cfg-label">PIN (4-6 díg.)</label>
-          <input type="text" name="pin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" required placeholder="1234"
+          <label class="cfg-label">PIN (6 díg.)</label>
+          <input type="text" name="pin" inputmode="numeric" pattern="\d{6}" minlength="6" maxlength="6" required placeholder="123456"
             class="cfg-input" style="box-sizing:border-box;letter-spacing:3px;text-align:center" />
         </div>
         <button class="btn btn-primary" type="submit" style="white-space:nowrap">Agregar</button>
