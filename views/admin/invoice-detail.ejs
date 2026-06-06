@@ -180,6 +180,48 @@ const STATUS_CLS   = { pendiente:'badge-warning', pagada:'badge-success', anulad
     doc.setFontSize(8); doc.text('Gorillaz Motorbikes — Bogotá, Colombia',14,285); doc.text('gorillazmotorbikes.com',196,285,{align:'right'});
     doc.save('factura-'+INV.label+'.pdf');
   });
+
+  // ── Enviar por WhatsApp ──────────────────────────────────────────────
+  const btnWa = document.getElementById('btnWa');
+  if (btnWa) {
+    btnWa.addEventListener('click', () => {
+      let digits = (ORDER && ORDER.clientPhone ? String(ORDER.clientPhone) : '').replace(/\D/g, '');
+      let country = (ORDER && ORDER.clientPhoneCountry) || '+57';
+      if (!digits) {
+        const input = prompt('Número de WhatsApp del cliente (con indicativo, ej: +57 300 1234567):', '+57 ');
+        if (input === null) return;
+        const raw = input.trim();
+        const m = raw.match(/^\+(\d{1,3})/);
+        if (m) { country = '+' + m[1]; digits = raw.replace(/\D/g, '').slice(m[1].length); }
+        else  { digits = raw.replace(/\D/g, ''); }
+      }
+      if (digits.length < 7) { alert('Número de WhatsApp inválido.'); return; }
+
+      const link = window.location.origin + '/factura/' + INV.id;
+      const lines = [
+        '🧾 *Factura Gorillaz Motorbikes*',
+        'N° ' + INV.label,
+      ];
+      if (ORDER && ORDER.motorcycle) lines.push('🏍️ ' + ORDER.motorcycle);
+      lines.push('');
+      INV.items.forEach(it => lines.push('• ' + it.name + ' ×' + it.qty + ' — $' + (it.price * it.qty).toLocaleString('es-CO')));
+      lines.push('');
+      if (INV.tax > 0) {
+        lines.push('Subtotal: $' + INV.subtotal.toLocaleString('es-CO'));
+        lines.push('IVA: $' + INV.tax.toLocaleString('es-CO'));
+      }
+      lines.push('*Total: $' + INV.total.toLocaleString('es-CO') + '*');
+      lines.push('Pago: ' + INV.paymentMethod.charAt(0).toUpperCase() + INV.paymentMethod.slice(1));
+      lines.push('');
+      lines.push('📄 *Ver factura y descargar PDF:*');
+      lines.push(link);
+      lines.push('');
+      lines.push('gorillazmotorbikes.com');
+
+      const url = 'https://wa.me/' + country.replace('+', '') + digits + '?text=' + encodeURIComponent(lines.join('\n'));
+      window.open(url, '_blank', 'noopener,noreferrer');
+    });
+  }
 })();
 </script>
 
