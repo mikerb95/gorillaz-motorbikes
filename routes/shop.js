@@ -394,8 +394,11 @@ router.post('/payment/webhook', async (req, res) => {
   const normalizedStatus = (status || '').toUpperCase();
   const totalAmount = amount?.total_amount ?? amount ?? 0;
 
-  if (signature && !verifyBoldSignature(order_id, normalizedStatus, totalAmount, signature)) {
-    console.warn('[Bold Webhook] Firma inválida para orden', order_id);
+  // Siempre se exige firma válida: sin secreto configurado o sin firma en el
+  // payload se rechaza, para que nadie pueda marcar una orden como pagada
+  // enviando un POST sin firma a este endpoint (exento de CSRF).
+  if (!BOLD_SECRET_KEY || !signature || !verifyBoldSignature(order_id, normalizedStatus, totalAmount, signature)) {
+    console.warn('[Bold Webhook] Firma inválida o ausente para orden', order_id);
     return res.status(401).json({ ok: false, message: 'Firma inválida' });
   }
 
