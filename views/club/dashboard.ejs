@@ -677,6 +677,16 @@
     }
   });
 })();
+
+// Habilita el botón de baja solo cuando se escribe exactamente "ELIMINAR".
+(function () {
+  const input = document.getElementById('deleteConfirmInput');
+  const delBtn = document.getElementById('deleteAccountBtn');
+  if (!input || !delBtn) return;
+  input.addEventListener('input', () => {
+    delBtn.disabled = input.value.trim().toUpperCase() !== 'ELIMINAR';
+  });
+})();
 </script>
 
 <%- include('../partials/footer') %>
