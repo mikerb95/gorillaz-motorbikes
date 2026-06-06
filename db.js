@@ -279,9 +279,8 @@ async function initDb() {
   await ensureNewsletterTokens();
 
   // Marca el esquema como migrado para que los próximos cold starts salgan
-  // temprano. user_version no acepta parámetros (?), pero SCHEMA_VERSION es un
-  // entero que controlamos nosotros, así que interpolarlo es seguro.
-  await db.execute(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+  // temprano en la comprobación de versión de arriba.
+  await db.execute({ sql: 'UPDATE schema_meta SET version = ? WHERE id = 1', args: [SCHEMA_VERSION] });
   console.log(`✅ Turso schema inicializado (v${SCHEMA_VERSION})`);
 }
 
