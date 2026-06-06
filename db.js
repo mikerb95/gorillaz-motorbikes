@@ -1170,10 +1170,16 @@ async function getEmployeeById(id) {
   return rowToEmployee(r.rows[0] || null);
 }
 
+async function getEmployeeByUserId(userId) {
+  const r = await db.execute({ sql: 'SELECT * FROM employees WHERE user_id = ?', args: [userId] });
+  return rowToEmployee(r.rows[0] || null);
+}
+
 async function updateEmployee(id, fields) {
   const set = [], args = [];
   if (fields.name    !== undefined) { set.push('name = ?');     args.push(fields.name); }
   if (fields.pinHash !== undefined) { set.push('pin_hash = ?'); args.push(fields.pinHash); }
+  if (fields.userId  !== undefined) { set.push('user_id = ?');  args.push(fields.userId); }
   if (fields.active  !== undefined) { set.push('active = ?');   args.push(fields.active ? 1 : 0); }
   if (set.length === 0) return;
   args.push(id);
