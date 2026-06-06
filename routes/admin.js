@@ -1019,6 +1019,7 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, re
   const moto       = (req.body.motorcycle || '').trim();
   const motorcycle = [plate, moto].filter(Boolean).join(' — ') || null;
   const phone      = (req.body.clientPhone || '').replace(/\D/g, '') || null;
+  const employeeId = req.body.employeeId || null;
 
   const { id } = await createServiceOrder({
     items:              clean,
@@ -1026,10 +1027,10 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, re
     motorcycle,
     clientPhone:        phone,
     clientPhoneCountry: req.body.clientPhoneCountry || '+57',
-    mechanic:           (req.body.mechanic || '').trim() || null,
+    mechanic:           await resolveMechanicName(employeeId),
     notes:              (req.body.notes || '').trim() || null,
     estimatedDate:      req.body.estimatedDate || null,
-    employeeId:         req.body.employeeId || null,
+    employeeId,
     status:             'ingreso_taller',
   });
   res.redirect('/admin/ordenes-servicio/' + id);
