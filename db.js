@@ -233,6 +233,7 @@ async function initDb() {
     `ALTER TABLE service_orders ADD COLUMN trabajo_completo_at TEXT`,
     `ALTER TABLE service_orders ADD COLUMN employee_id TEXT`,
     `ALTER TABLE service_orders ADD COLUMN pending_review INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE employees ADD COLUMN user_id TEXT`,
     `ALTER TABLE orders ADD COLUMN stock_decremented INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE users ADD COLUMN first_name TEXT NOT NULL DEFAULT ''`,
     `ALTER TABLE users ADD COLUMN last_name TEXT NOT NULL DEFAULT ''`,
@@ -1137,6 +1138,7 @@ function rowToEmployee(row) {
     id: row.id,
     name: row.name,
     pinHash: row.pin_hash,
+    userId: row.user_id || null,
     active: Number(row.active) === 1,
     createdAt: row.created_at,
   };
@@ -1144,9 +1146,11 @@ function rowToEmployee(row) {
 
 async function createEmployee(data) {
   const id = data.id || uuidv4();
+  // Empleados ligados a un usuario de la web entran con su contraseña, no con PIN:
+  // guardamos pin_hash vacío (la columna es NOT NULL) y el user_id correspondiente.
   await db.execute({
-    sql: 'INSERT INTO employees (id, name, pin_hash, active) VALUES (?,?,?,?)',
-    args: [id, data.name, data.pinHash, data.active === false ? 0 : 1],
+    sql: 'INSERT INTO employees (id, name, pin_hash, active, user_id) VALUES (?,?,?,?,?)',
+    args: [id, data.name, data.pinHash || '', data.active === false ? 0 : 1, data.userId || null],
   });
   return { id };
 }
