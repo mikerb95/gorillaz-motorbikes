@@ -1255,6 +1255,35 @@ async function deleteEmployee(id) {
   await db.execute({ sql: 'DELETE FROM employees WHERE id = ?', args: [id] });
 }
 
+// ── Throttle anti fuerza bruta (global, persistido) ──────────────────────────
+// El login por PIN del taller tiene poca entropía (4–6 dígitos) y no identifica
+// al empleado, así que un límite por-IP no frena un ataque distribuido. Llevamos
+// un contador global en BD que sí funciona entre instancias serverless.
+
+async function isThrottleLocked(key, limit, windowMs) {
+  const r = await db.execute({ sql: 'SELECT count, window_start FROM security_throttle WHERE key = ?', args: [key] });
+  const row = r.rows[0];
+  if (!row) return false;
+  const withinWindow = Date.now() - Number(row.window_start) <= windowMs;
+  return withinWindow && Number(row.count) >= limit;
+}
+
+async function recordThrottleFailure(key, windowMs) {
+  const now = Date.now();
+  const r = await db.execute({ sql: 'SELECT window_start FROM security_throttle WHERE key = ?', args: [key] });
+  const row = r.rows[0];
+  if (!row || now - Number(row.window_start) > windowMs) {
+    // Ventana nueva (o primera vez): reinicia el contador en 1.
+    await db.execute({
+      sql: `INSERT INTO security_throttle (key, count, window_start) VALUES (?, 1, ?)
+            ON CONFLICT(key) DO UPDATE SET count = 1, window_start = excluded.window_start`,
+      args: [key, now],
+    });
+  } else {
+    await db.execute({ sql: 'UPDATE security_throttle SET count = count + 1 WHERE key = ?', args: [key] });
+  }
+}
+
 // ── Invoices ──────────────────────────────────────────────────────────────
 
 function rowToInvoice(row) {
