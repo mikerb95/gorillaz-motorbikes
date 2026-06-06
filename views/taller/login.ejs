@@ -34,22 +34,51 @@
       background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
       border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 700; margin-bottom: 16px; text-align: center;
     }
+    .tl-field {
+      width: 100%; padding: 13px 14px; font-size: 15px; border: 2px solid #e5e7eb; border-radius: 12px;
+      outline: none; font-family: inherit; margin-bottom: 12px;
+    }
+    .tl-field:focus { border-color: #F25C05; }
+    .tl-switch {
+      display: block; width: 100%; margin-top: 18px; background: none; border: none; cursor: pointer;
+      color: #6b7280; font-size: 13px; font-weight: 700; font-family: inherit; text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <div class="tl-card">
     <div class="tl-logo"><img src="/images/nobg_logo/logo_transp.png" alt="Gorillaz" /></div>
     <h1 class="tl-title">Portal del Taller</h1>
-    <p class="tl-sub">Ingresa tu PIN de acceso</p>
 
     <% if (error) { %><div class="tl-error"><%= error %></div><% } %>
 
-    <form method="post" action="/taller/login">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <input type="password" name="pin" class="tl-pin" inputmode="numeric" pattern="[0-9]*"
-             autocomplete="off" maxlength="6" placeholder="••••" autofocus />
-      <button type="submit" class="tl-btn">Entrar</button>
-    </form>
+    <!-- Acceso con PIN -->
+    <div id="pinView">
+      <p class="tl-sub">Ingresa tu PIN de acceso</p>
+      <form method="post" action="/taller/login">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <input type="password" name="pin" class="tl-pin" inputmode="numeric" pattern="[0-9]*"
+               autocomplete="off" maxlength="6" placeholder="••••" autofocus />
+        <button type="submit" class="tl-btn">Entrar</button>
+      </form>
+      <button type="button" class="tl-switch" onclick="document.getElementById('pinView').style.display='none';document.getElementById('pwdView').style.display='block'">
+        Ingresar con correo y contraseña
+      </button>
+    </div>
+
+    <!-- Acceso con correo + contraseña (empleados ligados a una cuenta) -->
+    <div id="pwdView" style="display:none">
+      <p class="tl-sub">Ingresa con tu cuenta</p>
+      <form method="post" action="/taller/login">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <input type="email" name="email" class="tl-field" autocomplete="username" placeholder="Correo electrónico" />
+        <input type="password" name="password" class="tl-field" autocomplete="current-password" placeholder="Contraseña" />
+        <button type="submit" class="tl-btn">Entrar</button>
+      </form>
+      <button type="button" class="tl-switch" onclick="document.getElementById('pwdView').style.display='none';document.getElementById('pinView').style.display='block'">
+        Ingresar con PIN
+      </button>
+    </div>
   </div>
 </body>
 </html>
