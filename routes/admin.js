@@ -812,7 +812,7 @@ async function pinIsTaken(pin, exceptId) {
 router.post('/configuracion/empleados', requireAuth, requireAdmin, async (req, res) => {
   const name = (req.body.name || '').trim().slice(0, 80);
   const pin  = String(req.body.pin || '').trim();
-  if (!name || !/^\d{4,6}$/.test(pin) || await pinIsTaken(pin)) {
+  if (!name || !/^\d{6}$/.test(pin) || await pinIsTaken(pin)) {
     return res.redirect('/admin/configuracion?tab=empleados&flash=error');
   }
   const pinHash = await bcrypt.hash(pin, 10);
