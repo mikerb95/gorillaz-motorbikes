@@ -842,7 +842,7 @@ router.post('/configuracion/empleados/:id', requireAuth, requireAdmin, async (re
   updates.active = req.body.active === 'on';
   const pin = String(req.body.pin || '').trim();
   if (pin) {
-    if (!/^\d{4,6}$/.test(pin) || await pinIsTaken(pin, emp.id)) {
+    if (!/^\d{6}$/.test(pin) || await pinIsTaken(pin, emp.id)) {
       return res.redirect('/admin/configuracion?tab=empleados&flash=error');
     }
     updates.pinHash = await bcrypt.hash(pin, 10);
