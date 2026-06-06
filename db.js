@@ -462,10 +462,16 @@ async function deleteUser(id) {
 }
 
 // Baja de cuenta solicitada por el propio usuario. Es un soft-delete que además
-// anonimiza la fila: borra toda la información personal y libera los
-// identificadores únicos (email, cédula, Google/Apple) para que pueda volver a
-// registrarse. Se conserva la fila —con su id— para no romper el historial de
-// pedidos/órdenes que referencian user_id. También elimina sus passkeys.
+// anonimiza la fila: borra los datos personales y del club (nombre, cédula,
+// teléfono, vehículos, puntos, membresía…) y libera los identificadores únicos
+// (email, cédula, Google/Apple) para que pueda volver a registrarse. Elimina sus
+// passkeys. Se conserva la fila —con su id— para no romper la referencia user_id
+// de orders.
+//
+// La trazabilidad de servicios NO se ve afectada: service_orders, quotations e
+// invoices no tienen user_id y guardan su propia copia de la placa (motorcycle/
+// plate) y el teléfono (client_phone) al crearse, así que /consultar, /historial
+// y /servicios siguen encontrándolos por placa tras la baja.
 async function deleteUserAccount(id) {
   const tx = await db.transaction('write');
   try {
@@ -478,7 +484,8 @@ async function deleteUserAccount(id) {
               birthdate = NULL, nickname = NULL, blood_type = NULL,
               emergency_name = NULL, emergency_phone = NULL, avatar_url = NULL,
               google_id = NULL, apple_id = NULL, reset_token = NULL, reset_token_expiry = NULL,
-              vehicles = '[]', visits = '[]', club_notifications = 0
+              vehicles = '[]', visits = '[]', club_notifications = 0,
+              score = 0, score_history = '[]', membership = '{}'
             WHERE id = ?`,
       args: [id],
     });
