@@ -11,7 +11,21 @@ const { jwtCart, templateLocals }   = require('./middleware/locals');
 
 const app = express();
 
-initDb().catch(err => console.error('❌ DB init error:', err));
+// En serverless (Vercel) la instancia puede congelarse antes de que un
+// initDb() "fire-and-forget" termine, dejando migraciones sin aplicar. Por eso
+// memoizamos la promesa y hacemos que cada petición la espere antes de tocar la BD.
+let dbReady = null;
+function ensureDb() {
+  if (!dbReady) {
+    dbReady = initDb().catch(err => {
+      console.error('❌ DB init error:', err);
+      dbReady = null; // permite reintentar en la próxima petición
+      throw err;
+    });
+  }
+  return dbReady;
+}
+ensureDb();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
