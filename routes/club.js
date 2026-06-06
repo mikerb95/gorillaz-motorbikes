@@ -557,6 +557,40 @@ router.post('/logout', (req, res) => {
   res.redirect('/');
 });
 
+// Baja de cuenta a petición del propio usuario.
+router.post('/eliminar-cuenta', requireAuth, authLimiter, async (req, res) => {
+  const user = await getUserById(req.userId);
+  if (!user) return res.redirect('/club/login');
+
+  const { confirm, password } = req.body;
+  if ((confirm || '').trim().toUpperCase() !== 'ELIMINAR') {
+    setFlash(res, 'error', 'Para eliminar tu cuenta debes escribir ELIMINAR.');
+    return res.redirect('/club/panel#peligro');
+  }
+
+  // Las cuentas con contraseña local deben reautenticarse; las de Google/Apple/passkey no la tienen.
+  const hasPassword = user.password && user.password !== '$google$' && user.password !== '$apple$';
+  if (hasPassword) {
+    const ok = password && await bcrypt.compare(password, user.password);
+    if (!ok) {
+      setFlash(res, 'error', 'La contraseña no es correcta.');
+      return res.redirect('/club/panel#peligro');
+    }
+  }
+
+  try {
+    await deleteNewsletterByEmail(user.email);
+    await deleteUserAccount(user.id);
+    res.clearCookie('jwt');
+    setFlash(res, 'success', 'Tu cuenta fue eliminada. Lamentamos verte partir.');
+    return res.redirect('/');
+  } catch (e) {
+    console.error('POST /club/eliminar-cuenta error:', e.message);
+    setFlash(res, 'error', 'No se pudo eliminar la cuenta. Intenta de nuevo.');
+    return res.redirect('/club/panel#peligro');
+  }
+});
+
 router.get('/panel', requireAuth, async (req, res) => {
   const user = await getUserById(req.userId);
   if (!user) return res.redirect('/club/login');
