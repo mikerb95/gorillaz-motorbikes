@@ -19,7 +19,9 @@ const app = express();
 let dbReady = null;
 function ensureDb() {
   if (!dbReady) {
-    dbReady = initDb().catch(err => {
+    // Tras migrar el esquema, cargamos la config editable (app_settings) a la
+    // caché en memoria para que las lecturas síncronas funcionen desde ya.
+    dbReady = initDb().then(() => settings.loadAll()).catch(err => {
       console.error('❌ DB init error:', err);
       dbReady = null; // permite reintentar en la próxima petición
       throw err;
