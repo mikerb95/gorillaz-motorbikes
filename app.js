@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const path         = require('path');
 
 const { initDb }                    = require('./db');
+const settings                      = require('./helpers/settings');
 const { JWT_SECRET }                = require('./config');
 const { csrfToken, validateCsrf }   = require('./middleware/csrf');
 const { jwtCart, templateLocals }   = require('./middleware/locals');
