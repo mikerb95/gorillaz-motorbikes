@@ -19,7 +19,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -232,6 +232,15 @@ async function initDb() {
       key TEXT PRIMARY KEY,
       count INTEGER NOT NULL DEFAULT 0,
       window_start INTEGER NOT NULL DEFAULT 0
+    )`,
+    // Configuración editable desde el panel admin (cotizador, parqueadero, PDF,
+    // puntos, catálogo de servicios). Antes vivía en archivos JSON, que en
+    // serverless (Vercel) no persisten: cada cold start los revertía. value es
+    // un blob JSON. Ver helpers/settings.js.
+    `CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
   ];
 
