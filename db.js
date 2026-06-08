@@ -1293,6 +1293,23 @@ async function recordThrottleFailure(key, windowMs) {
   }
 }
 
+// ── App settings (configuración editable del admin) ─────────────────────────
+// Reemplazan los archivos JSON en /data que no persistían en serverless.
+
+async function getAllSettings() {
+  const r = await db.execute('SELECT key, value FROM app_settings');
+  return r.rows.map(row => ({ key: row.key, value: row.value }));
+}
+
+async function setSetting(key, value) {
+  await db.execute({
+    sql: `INSERT INTO app_settings (key, value) VALUES (?, ?)
+          ON CONFLICT(key) DO UPDATE SET value = excluded.value,
+            updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')`,
+    args: [key, value],
+  });
+}
+
 // ── Invoices ──────────────────────────────────────────────────────────────
 
 function rowToInvoice(row) {
