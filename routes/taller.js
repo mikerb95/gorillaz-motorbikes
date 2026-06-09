@@ -36,10 +36,12 @@ const ALLOWED_STATUS = EMP_STATUS.map(s => s.v);
 const PDF_CONFIG_PATH = path.join(__dirname, '..', 'data', 'quotation-pdf-config.json');
 function adminEmail() {
   if (process.env.ADMIN_EMAIL) return process.env.ADMIN_EMAIL;
-  try {
-    const cfg = JSON.parse(fs.readFileSync(PDF_CONFIG_PATH, 'utf8'));
-    if (cfg && cfg.email) return cfg.email;
-  } catch { /* sin config */ }
+  let cfg = settings.get('pdf');
+  if (cfg === undefined) {
+    try { cfg = JSON.parse(fs.readFileSync(PDF_CONFIG_PATH, 'utf8')); }
+    catch { cfg = null; }
+  }
+  if (cfg && cfg.email) return cfg.email;
   return 'info@gorillazmotorbikes.com';
 }
 

@@ -35,8 +35,19 @@ const jwtCart = (req, res, next) => {
 
 const templateLocals = async (req, res, next) => {
   if (req.userId) {
-    try { res.locals.user = await getUserById(req.userId); }
-    catch { res.locals.user = null; }
+    try {
+      const u = await getUserById(req.userId);
+      // Revocación de sesión: el token debe coincidir con el token_version actual
+      // del usuario. Si no (contraseña cambiada, cuenta eliminada) o el usuario ya
+      // no existe, se invalida la sesión y se limpia la cookie.
+      if (u && (u.tokenVersion || 0) === (req.tokenVersion || 0)) {
+        res.locals.user = u;
+      } else {
+        req.userId = null;
+        res.locals.user = null;
+        res.clearCookie('jwt');
+      }
+    } catch { res.locals.user = null; }
   } else {
     res.locals.user = null;
   }
