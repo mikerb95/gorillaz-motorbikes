@@ -267,8 +267,7 @@ router.get('/auth/google/callback', authLimiter, async (req, res) => {
       isNew = true;
     }
 
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    issueUserSession(res, user);
     res.redirect(isNew ? '/club/completar-perfil' : '/club/panel');
   } catch (e) {
     console.error('Google OAuth callback error:', e.message);
