@@ -7,6 +7,7 @@ const jwt    = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { setFlash } = require('../helpers/flash');
+const { verifyRecaptcha } = require('../helpers/recaptcha');
 const {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -94,6 +95,9 @@ router.post('/login', authLimiter, async (req, res) => {
   const redirectTo = safeReturn.startsWith('/') && !safeReturn.startsWith('//') ? safeReturn : '/club/panel';
   const gEnabled = !!GOOGLE_CLIENT_ID;
   const aEnabled = !!APPLE_CLIENT_ID;
+  if (!await verifyRecaptcha(req.body['g-recaptcha-response'], req.ip)) {
+    return res.status(400).render('club/login', { error: 'Verifica que no eres un robot.', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
+  }
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
     return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
   }
