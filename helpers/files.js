@@ -1,12 +1,7 @@
 'use strict';
 const path   = require('path');
-const fs     = require('fs');
 const multer = require('multer');
 const { put, del } = require('@vercel/blob');
-
-const saveJSON = (file, data) => {
-  try { fs.writeFileSync(path.join(__dirname, '..', 'data', file), JSON.stringify(data, null, 2), 'utf8'); } catch { }
-};
 
 // Files stay in memory — no disk writes needed
 const _multerMemory = multer({
@@ -75,4 +70,4 @@ const uploadSlideImage = (req, res, next) => {
   });
 };
 
-module.exports = { saveJSON, uploadProduct, uploadSlideImage, uploadToBlob, deleteFromBlob };
+module.exports = { uploadProduct, uploadSlideImage, uploadToBlob, deleteFromBlob };

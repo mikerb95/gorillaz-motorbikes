@@ -3,7 +3,6 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { courses } = require('../helpers/content');
 const { createEnrollment } = require('../db');
-const { saveJSON } = require('../helpers/files');
 
 const router = express.Router();
 
