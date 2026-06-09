@@ -864,7 +864,7 @@ router.post('/configuracion/cotizador', requireAuth, requireAdmin, (req, res) =>
 
 router.post('/configuracion/pdf', requireAuth, requireAdmin, (req, res) => {
   const validityDays = Math.max(1, parseInt(req.body.validityDays, 10) || 30);
-  savePdfConfig({
+  await savePdfConfig({
     companyName:  (req.body.companyName  || '').trim() || 'GORILLAZ MOTORBIKES',
     nit:          (req.body.nit          || '').trim(),
     phone:        (req.body.phone        || '').trim(),
@@ -935,7 +935,7 @@ router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
 
 router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
   const validityDays = Math.max(1, parseInt(req.body.validityDays, 10) || 30);
-  savePdfConfig({
+  await savePdfConfig({
     companyName:  (req.body.companyName  || '').trim() || 'GORILLAZ MOTORBIKES',
     nit:          (req.body.nit          || '').trim(),
     phone:        (req.body.phone        || '').trim(),
