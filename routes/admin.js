@@ -954,7 +954,7 @@ router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, async (req, res
 
 // ── Configuración de parqueadero (legacy) ─────────────────────────────────
 
-router.post('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
+router.post('/config-parqueadero', requireAuth, requireAdmin, async (req, res) => {
   const diasGratis   = Math.max(0, parseInt(req.body.diasGratis, 10)   || 0);
   const tarifaPorDia = Math.max(0, parseInt(req.body.tarifaPorDia, 10) || 0);
   await saveParqueaderoConfig({ diasGratis, tarifaPorDia });
