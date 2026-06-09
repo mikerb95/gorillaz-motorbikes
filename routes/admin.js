@@ -5,10 +5,10 @@ const fs       = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const courses     = require('../data/courses.json');
 const classesData = require('../data/classes.json');
-const catalog     = require('../data/catalog');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { saveJSON, writeCatalog, uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
+const { saveJSON, uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
 const settings = require('../helpers/settings');
+const { catalog, saveCatalog } = require('../helpers/catalog');
 const { availability }  = require('../helpers/appointments');
 const { SCORE_POINTS, loadPuntosConfig, DEFAULTS: PUNTOS_DEFAULTS }  = require('../helpers/score');
 const {
