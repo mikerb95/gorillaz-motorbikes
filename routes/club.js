@@ -38,7 +38,7 @@ const { getScoreLevel, SCORE_POINTS } = require('../helpers/score');
 const {
   getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId, getUserByAppleId,
   getPasskeysByUserId, getPasskeyByCredentialId, createPasskey, updatePasskeyCounter, deletePasskey,
-  updateUser, createUser, deleteUserAccount, deleteNewsletterByEmail,
+  updateUser, createUser, deleteUserAccount, deleteNewsletterByEmail, incrementTokenVersion,
   getAllEvents, getUpcomingEvents,
   registerEventAttendance, getUserEventRegistrations,
   getLeaderboard,
@@ -47,6 +47,14 @@ const {
 } = require('../db');
 
 const router = express.Router();
+
+// Cookie de sesión del usuario del club. El JWT incluye token_version para que
+// pueda revocarse (ver middleware/locals.js): al cambiar la contraseña o eliminar
+// la cuenta se incrementa y los tokens viejos dejan de validar.
+function issueUserSession(res, user) {
+  const token = jwt.sign({ id: user.id, tv: user.tokenVersion || 0 }, JWT_SECRET, { expiresIn: '7d' });
+  res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
+}
 
 router.get('/', async (req, res) => {
   if (req.userId) return res.redirect('/club/panel');
