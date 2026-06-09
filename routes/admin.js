@@ -5,7 +5,7 @@ const fs       = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { courses, classes: classesData, availability, saveCourses, saveClasses, saveAvailability } = require('../helpers/content');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { saveJSON, uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
+const { uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
 const settings = require('../helpers/settings');
 const { catalog, saveCatalog } = require('../helpers/catalog');
 const { SCORE_POINTS, loadPuntosConfig, DEFAULTS: PUNTOS_DEFAULTS }  = require('../helpers/score');
@@ -97,14 +97,14 @@ router.get('/calendario', requireAuth, requireAdmin, (req, res) => res.render('a
 
 router.post('/calendario/bloquear', requireAuth, requireAdmin, async (req, res) => {
   const { date } = req.body;
-  if (date && !availability.blockedDates.includes(date)) { availability.blockedDates.push(date); saveJSON('availability.json', availability); }
+  if (date && !availability.blockedDates.includes(date)) { availability.blockedDates.push(date); await saveAvailability(); }
   res.redirect('/admin/calendario');
 });
 
 router.post('/calendario/desbloquear', requireAuth, requireAdmin, async (req, res) => {
   const { date } = req.body;
   availability.blockedDates = availability.blockedDates.filter(d => d !== date);
-  saveJSON('availability.json', availability);
+  await saveAvailability();
   res.redirect('/admin/calendario');
 });
 
@@ -330,7 +330,7 @@ router.post('/cursos/crear', requireAuth, requireAdmin, async (req, res) => {
   const { slug, title, priceCOP } = req.body;
   if (slug && title) {
     courses.push({ slug, title, short: '', category: 'Técnico', level: 'Inicial', durationHours: 0, readingMinutes: 0, modality: 'Presencial', location: 'Bogotá D.C.', priceCOP: parseInt(priceCOP || '0', 10) || 0, tags: [], syllabus: [], outcomes: [], requirements: [], schedule: '', nextIntake: '' });
-    saveJSON('courses.json', courses);
+    await saveCourses();
   }
   res.redirect('/admin/cursos');
 });
@@ -338,13 +338,13 @@ router.post('/cursos/crear', requireAuth, requireAdmin, async (req, res) => {
 router.post('/cursos/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { slug, title, priceCOP } = req.body;
   const c = courses.find(x => x.slug === slug);
-  if (c) { if (title) c.title = title; if (priceCOP !== undefined) c.priceCOP = parseInt(priceCOP || '0', 10) || 0; saveJSON('courses.json', courses); }
+  if (c) { if (title) c.title = title; if (priceCOP !== undefined) c.priceCOP = parseInt(priceCOP || '0', 10) || 0; await saveCourses(); }
   res.redirect('/admin/cursos');
 });
 
 router.post('/cursos/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const idx = courses.findIndex(c => c.slug === req.body.slug);
-  if (idx !== -1) { courses.splice(idx, 1); saveJSON('courses.json', courses); }
+  if (idx !== -1) { courses.splice(idx, 1); await saveCourses(); }
   res.redirect('/admin/cursos');
 });
 
@@ -439,7 +439,7 @@ router.post('/clases/curso/crear', requireAuth, requireAdmin, async (req, res) =
   let key = slugFromTitle(title) || 'curso';
   if (classesData[key]) key = key + '_' + Date.now().toString(36);
   classesData[key] = { title, topics: {} };
-  saveJSON('classes.json', classesData);
+  await saveClasses();
   res.redirect('/admin/clases');
 });
 
@@ -447,14 +447,14 @@ router.post('/clases/curso/actualizar', requireAuth, requireAdmin, async (req, r
   const { key, title } = req.body;
   if (key && classesData[key] && (title || '').trim()) {
     classesData[key].title = title.trim();
-    saveJSON('classes.json', classesData);
+    await saveClasses();
   }
   res.redirect('/admin/clases');
 });
 
 router.post('/clases/curso/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { key } = req.body;
-  if (key && classesData[key]) { delete classesData[key]; saveJSON('classes.json', classesData); }
+  if (key && classesData[key]) { delete classesData[key]; await saveClasses(); }
   res.redirect('/admin/clases');
 });
 
@@ -468,7 +468,7 @@ router.post('/clases/tema/crear', requireAuth, requireAdmin, async (req, res) =>
   const idx = Object.keys(classesData[courseKey].topics).length + 1;
   const key = 'Clase_' + idx;
   classesData[courseKey].topics[key] = { title: trimmed, slides: [] };
-  saveJSON('classes.json', classesData);
+  await saveClasses();
   res.redirect('/admin/clases');
 });
 
@@ -477,7 +477,7 @@ router.post('/clases/tema/actualizar', requireAuth, requireAdmin, async (req, re
   const course = classesData[courseKey];
   if (course && course.topics && course.topics[topicKey] && (title || '').trim()) {
     course.topics[topicKey].title = title.trim();
-    saveJSON('classes.json', classesData);
+    await saveClasses();
   }
   res.redirect('/admin/clases');
 });
@@ -487,7 +487,7 @@ router.post('/clases/tema/eliminar', requireAuth, requireAdmin, async (req, res)
   const course = classesData[courseKey];
   if (course && course.topics && course.topics[topicKey]) {
     delete course.topics[topicKey];
-    saveJSON('classes.json', classesData);
+    await saveClasses();
   }
   res.redirect('/admin/clases');
 });
@@ -518,7 +518,7 @@ router.post('/clases/diapositiva/crear', requireAuth, requireAdmin, async (req, 
   if (!course || !course.topics || !course.topics[topicKey]) return res.redirect('/admin/clases?flash=error');
   if (!course.topics[topicKey].slides) course.topics[topicKey].slides = [];
   course.topics[topicKey].slides.push(buildSlide(type, heading, content, items, img));
-  saveJSON('classes.json', classesData);
+  await saveClasses();
   res.redirect('/admin/clases');
 });
 
@@ -528,7 +528,7 @@ router.post('/clases/diapositiva/eliminar', requireAuth, requireAdmin, async (re
   const course = classesData[courseKey];
   if (course && course.topics && course.topics[topicKey] && !isNaN(idx)) {
     course.topics[topicKey].slides.splice(idx, 1);
-    saveJSON('classes.json', classesData);
+    await saveClasses();
   }
   res.redirect('/admin/clases');
 });
@@ -541,7 +541,7 @@ router.post('/clases/diapositiva/actualizar', requireAuth, requireAdmin, async (
   const slides = course.topics[topicKey].slides || [];
   if (idx < 0 || idx >= slides.length) return res.redirect('/admin/clases?flash=error');
   slides[idx] = buildSlide(type, heading, content, items, img);
-  saveJSON('classes.json', classesData);
+  await saveClasses();
   res.redirect('/admin/clases');
 });
 
@@ -554,7 +554,7 @@ router.post('/clases/diapositiva/mover', requireAuth, requireAdmin, async (req, 
   const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
   if (swapIdx < 0 || swapIdx >= slides.length) return res.redirect('/admin/clases');
   [slides[idx], slides[swapIdx]] = [slides[swapIdx], slides[idx]];
-  saveJSON('classes.json', classesData);
+  await saveClasses();
   res.redirect('/admin/clases');
 });
 
@@ -567,7 +567,7 @@ router.post('/clases/diapositiva/duplicar', requireAuth, requireAdmin, async (re
   if (idx < 0 || idx >= slides.length) return res.redirect('/admin/clases');
   const copy = JSON.parse(JSON.stringify(slides[idx]));
   slides.splice(idx + 1, 0, copy);
-  saveJSON('classes.json', classesData);
+  await saveClasses();
   res.redirect('/admin/clases');
 });
 
@@ -582,7 +582,7 @@ router.post('/clases/tema/mover', requireAuth, requireAdmin, async (req, res) =>
   if (swapIdx < 0 || swapIdx >= entries.length) return res.redirect('/admin/clases');
   [entries[idx], entries[swapIdx]] = [entries[swapIdx], entries[idx]];
   course.topics = Object.fromEntries(entries);
-  saveJSON('classes.json', classesData);
+  await saveClasses();
   res.redirect('/admin/clases');
 });
 
@@ -634,7 +634,7 @@ router.post('/clases/curso/importar', requireAuth, requireAdmin, async (req, res
   let key = slugFromTitle(finalTitle) || 'curso';
   if (classesData[key]) key = key + '_' + Date.now().toString(36);
   classesData[key] = sanitized;
-  saveJSON('classes.json', classesData);
+  await saveClasses();
   res.redirect('/admin/clases');
 });
 
