@@ -192,6 +192,8 @@ router.post('/reset-password', async (req, res) => {
   const user = await getUserByResetToken(token);
   if (!user) return res.render('club/reset', { error: 'El enlace es inválido o ha expirado.', token: '' });
   await updateUser(user.id, { password: await bcrypt.hash(password, 10), resetToken: null, resetTokenExpiry: null });
+  // Revoca cualquier sesión vigente (p. ej. robada) tras el cambio de contraseña.
+  await incrementTokenVersion(user.id);
   res.redirect('/club/login');
 });
 
