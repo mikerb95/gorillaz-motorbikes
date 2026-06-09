@@ -191,6 +191,11 @@
         <a class="link" href="/privacidad" target="_blank">Política de privacidad</a>.
       </p>
 
+      <% if (recaptchaSiteKey) { %>
+        <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>" style="margin:0 0 14px"></div>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+      <% } %>
+
       <button class="btn btn-primary btn--full" type="submit">Crear cuenta</button>
     </form>
 
