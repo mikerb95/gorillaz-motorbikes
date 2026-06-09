@@ -401,7 +401,7 @@ router.post('/tienda/actualizar', requireAuth, requireAdmin, async (req, res) =>
 
 router.post('/tienda/eliminar', requireAuth, requireAdmin, async (req, res) => {
   catalog.products = (catalog.products || []).filter(p => p.id !== req.body.id);
-  writeCatalog(catalog);
+  await saveCatalog();
   res.redirect('/admin/tienda');
 });
 
