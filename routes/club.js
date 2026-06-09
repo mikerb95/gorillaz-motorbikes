@@ -168,6 +168,9 @@ router.get('/olvide', (req, res) => {
 
 router.post('/olvide', authLimiter, async (req, res) => {
   const { email } = req.body;
+  if (!await verifyRecaptcha(req.body['g-recaptcha-response'], req.ip)) {
+    return res.status(400).render('club/forgot', { error: 'Verifica que no eres un robot.', message: null });
+  }
   if (!email) return res.render('club/forgot', { error: 'Por favor, ingresa tu correo.', message: null });
   try {
     const user = await getUserByEmail(email);
