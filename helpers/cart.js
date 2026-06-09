@@ -1,5 +1,5 @@
 'use strict';
-const catalog = require('../data/catalog');
+const { catalog } = require('./catalog');
 
 const getCart = (req) => {
   if (!req.cart) req.cart = { items: {}, count: 0, subtotal: 0 };

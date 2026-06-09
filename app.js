@@ -7,6 +7,7 @@ const path         = require('path');
 
 const { initDb }                    = require('./db');
 const settings                      = require('./helpers/settings');
+const catalogStore                  = require('./helpers/catalog');
 const { JWT_SECRET }                = require('./config');
 const { csrfToken, validateCsrf }   = require('./middleware/csrf');
 const { jwtCart, templateLocals }   = require('./middleware/locals');
@@ -20,8 +21,12 @@ let dbReady = null;
 function ensureDb() {
   if (!dbReady) {
     // Tras migrar el esquema, cargamos la config editable (app_settings) a la
-    // caché en memoria para que las lecturas síncronas funcionen desde ya.
-    dbReady = initDb().then(() => settings.loadAll()).catch(err => {
+    // caché en memoria y luego el catálogo (que también vive en app_settings),
+    // para que las lecturas síncronas funcionen desde el primer request.
+    dbReady = initDb()
+      .then(() => settings.loadAll())
+      .then(() => catalogStore.loadCatalog())
+      .catch(err => {
       console.error('❌ DB init error:', err);
       dbReady = null; // permite reintentar en la próxima petición
       throw err;

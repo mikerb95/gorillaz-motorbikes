@@ -3,7 +3,7 @@ const express = require('express');
 const path    = require('path');
 const fs      = require('fs');
 const { RECAPTCHA_SITE_KEY } = require('../config');
-const catalog = require('../data/catalog');
+const { catalog } = require('../helpers/catalog');
 
 const router = express.Router();
 
