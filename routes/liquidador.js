@@ -4,18 +4,25 @@ const path     = require('path');
 const fs       = require('fs');
 const { createQuotation, updateQuotation, getDraftQuotations, getQuotationById, updateQuotationPhone, deleteQuotation, getInvoiceById, getServiceOrderById } = require('../db');
 const { products } = require('../data/catalog');
+const settings = require('../helpers/settings');
 
 const router = express.Router();
 
 const CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
 const SERVICES_PATH = path.join(__dirname, '..', 'data', 'services-catalog.json');
 
+// Config canónica en app_settings; los archivos JSON quedan como fallback de
+// lectura para los valores previos a la migración a BD.
 function loadConfig() {
+  const cfg = settings.get('cotizador');
+  if (cfg !== undefined) return cfg;
   try { return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); }
   catch { return { waHeader: '🏍️ *Cotización Gorillaz Motorbikes*', waItemPrefix: '•', waFooter: 'gorillazmotorbikes.com', waNote: '' }; }
 }
 
 function loadServices() {
+  const list = settings.get('services_catalog');
+  if (list !== undefined) return list;
   try { return JSON.parse(fs.readFileSync(SERVICES_PATH, 'utf8')); }
   catch { return []; }
 }
