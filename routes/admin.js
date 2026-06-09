@@ -920,7 +920,7 @@ router.get('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/configuracion?tab=parqueadero');
 });
 
-router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
+router.post('/cotizador-config', requireAuth, requireAdmin, async (req, res) => {
   const { waHeader, waItemPrefix, waFooter, waNote } = req.body;
   await saveCotizadorConfig({
     waHeader:     (waHeader     || '').trim(),
