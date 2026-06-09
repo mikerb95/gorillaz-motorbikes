@@ -433,7 +433,7 @@ function slugFromTitle(t) {
     .replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
 }
 
-router.post('/clases/curso/crear', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/curso/crear', requireAuth, requireAdmin, async (req, res) => {
   const title = (req.body.title || '').trim();
   if (!title) return res.redirect('/admin/clases?flash=error');
   let key = slugFromTitle(title) || 'curso';
@@ -443,7 +443,7 @@ router.post('/clases/curso/crear', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/curso/actualizar', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/curso/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { key, title } = req.body;
   if (key && classesData[key] && (title || '').trim()) {
     classesData[key].title = title.trim();
@@ -452,7 +452,7 @@ router.post('/clases/curso/actualizar', requireAuth, requireAdmin, (req, res) =>
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/curso/eliminar', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/curso/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { key } = req.body;
   if (key && classesData[key]) { delete classesData[key]; saveJSON('classes.json', classesData); }
   res.redirect('/admin/clases');
@@ -460,7 +460,7 @@ router.post('/clases/curso/eliminar', requireAuth, requireAdmin, (req, res) => {
 
 // ── Clases: Temas ─────────────────────────────────────────────────────────
 
-router.post('/clases/tema/crear', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/tema/crear', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, title } = req.body;
   const trimmed = (title || '').trim();
   if (!courseKey || !trimmed || !classesData[courseKey]) return res.redirect('/admin/clases?flash=error');
@@ -472,7 +472,7 @@ router.post('/clases/tema/crear', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/tema/actualizar', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/tema/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, topicKey, title } = req.body;
   const course = classesData[courseKey];
   if (course && course.topics && course.topics[topicKey] && (title || '').trim()) {
@@ -482,7 +482,7 @@ router.post('/clases/tema/actualizar', requireAuth, requireAdmin, (req, res) => 
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/tema/eliminar', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/tema/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, topicKey } = req.body;
   const course = classesData[courseKey];
   if (course && course.topics && course.topics[topicKey]) {
@@ -512,7 +512,7 @@ function buildSlide(type, heading, content, items, img) {
   return slide;
 }
 
-router.post('/clases/diapositiva/crear', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/diapositiva/crear', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, topicKey, type, heading, content, items, img } = req.body;
   const course = classesData[courseKey];
   if (!course || !course.topics || !course.topics[topicKey]) return res.redirect('/admin/clases?flash=error');
@@ -522,7 +522,7 @@ router.post('/clases/diapositiva/crear', requireAuth, requireAdmin, (req, res) =
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/diapositiva/eliminar', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/diapositiva/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, topicKey, index } = req.body;
   const idx = parseInt(index, 10);
   const course = classesData[courseKey];
@@ -533,7 +533,7 @@ router.post('/clases/diapositiva/eliminar', requireAuth, requireAdmin, (req, res
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/diapositiva/actualizar', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/diapositiva/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, topicKey, index, type, heading, content, items, img } = req.body;
   const idx = parseInt(index, 10);
   const course = classesData[courseKey];
@@ -545,7 +545,7 @@ router.post('/clases/diapositiva/actualizar', requireAuth, requireAdmin, (req, r
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/diapositiva/mover', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/diapositiva/mover', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, topicKey, index, direction } = req.body;
   const idx = parseInt(index, 10);
   const course = classesData[courseKey];
@@ -558,7 +558,7 @@ router.post('/clases/diapositiva/mover', requireAuth, requireAdmin, (req, res) =
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/diapositiva/duplicar', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/diapositiva/duplicar', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, topicKey, index } = req.body;
   const idx = parseInt(index, 10);
   const course = classesData[courseKey];
@@ -571,7 +571,7 @@ router.post('/clases/diapositiva/duplicar', requireAuth, requireAdmin, (req, res
   res.redirect('/admin/clases');
 });
 
-router.post('/clases/tema/mover', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/tema/mover', requireAuth, requireAdmin, async (req, res) => {
   const { courseKey, topicKey, direction } = req.body;
   const course = classesData[courseKey];
   if (!course || !course.topics) return res.redirect('/admin/clases');
@@ -601,7 +601,7 @@ router.get('/clases/curso/:key/exportar', requireAuth, requireAdmin, (req, res) 
   res.send(JSON.stringify(course, null, 2));
 });
 
-router.post('/clases/curso/importar', requireAuth, requireAdmin, (req, res) => {
+router.post('/clases/curso/importar', requireAuth, requireAdmin, async (req, res) => {
   const rawJson     = (req.body.json  || '').trim();
   const titleOverride = (req.body.title || '').trim();
   if (!rawJson) return res.redirect('/admin/clases?flash=error');
