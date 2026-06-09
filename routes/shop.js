@@ -359,7 +359,7 @@ router.get('/payment/return', (req, res) => {
       updateOrderStatus(pending.orderId, 'paid', boldId)
         .then(() => claimStockDecrement(pending.orderId))
         .then(claimed => { if (claimed) return getOrderById(pending.orderId); })
-        .then(order => order && (decrementStock(order.items), sendOrderConfirmationEmails(order)))
+        .then(async order => { if (order) { await decrementStock(order.items); sendOrderConfirmationEmails(order); } })
         .catch(e => console.error('[Orders] post-payment error:', e.message));
     }
     const empty = { items: {}, count: 0, subtotal: 0 };
@@ -414,7 +414,7 @@ router.post('/payment/webhook', async (req, res) => {
       const claimed = await claimStockDecrement(order_id);
       const order = await getOrderById(order_id);
       if (order) {
-        if (claimed) decrementStock(order.items);
+        if (claimed) await decrementStock(order.items);
         sendOrderConfirmationEmails(order).catch(e => console.error('[Bold Webhook] email error:', e.message));
       }
     }
