@@ -719,7 +719,7 @@ router.post('/cotizador-items/servicio/crear', requireAuth, requireAdmin, (req, 
   const services = loadServicesCatalog();
   const id = 'svc-' + name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
   services.push({ id, name, type: 'service' });
-  saveServicesCatalog(services);
+  await saveServicesCatalog(services);
   invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=created');
 });
@@ -731,7 +731,7 @@ router.post('/cotizador-items/servicio/actualizar', requireAuth, requireAdmin, (
   const services = loadServicesCatalog();
   const svc = services.find(s => s.id === id);
   if (svc) svc.name = trimmed;
-  saveServicesCatalog(services);
+  await saveServicesCatalog(services);
   invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=updated');
 });
@@ -739,7 +739,7 @@ router.post('/cotizador-items/servicio/actualizar', requireAuth, requireAdmin, (
 router.post('/cotizador-items/servicio/eliminar', requireAuth, requireAdmin, (req, res) => {
   const { id } = req.body;
   const services = loadServicesCatalog().filter(s => s.id !== id);
-  saveServicesCatalog(services);
+  await saveServicesCatalog(services);
   invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=deleted');
 });
@@ -750,7 +750,7 @@ router.post('/cotizador-items/producto/crear', requireAuth, requireAdmin, (req, 
   const services = loadServicesCatalog();
   const id = 'prd-' + name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
   services.push({ id, name, type: 'product' });
-  saveServicesCatalog(services);
+  await saveServicesCatalog(services);
   invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=created');
 });
@@ -762,7 +762,7 @@ router.post('/cotizador-items/producto/actualizar', requireAuth, requireAdmin, (
   const services = loadServicesCatalog();
   const item = services.find(s => s.id === id);
   if (item) item.name = trimmed;
-  saveServicesCatalog(services);
+  await saveServicesCatalog(services);
   invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=updated');
 });
@@ -770,7 +770,7 @@ router.post('/cotizador-items/producto/actualizar', requireAuth, requireAdmin, (
 router.post('/cotizador-items/producto/eliminar', requireAuth, requireAdmin, (req, res) => {
   const { id } = req.body;
   const services = loadServicesCatalog().filter(s => s.id !== id);
-  saveServicesCatalog(services);
+  await saveServicesCatalog(services);
   invalidateCatalogCache();
   res.redirect('/admin/cotizador-items?flash=deleted');
 });
@@ -853,7 +853,7 @@ router.post('/configuracion/empleados/:id/eliminar', requireAuth, requireAdmin, 
 
 router.post('/configuracion/cotizador', requireAuth, requireAdmin, (req, res) => {
   const { waHeader, waItemPrefix, waFooter, waNote } = req.body;
-  saveCotizadorConfig({
+  await saveCotizadorConfig({
     waHeader:     (waHeader     || '').trim(),
     waItemPrefix: (waItemPrefix || '•').trim() || '•',
     waFooter:     (waFooter     || '').trim(),
@@ -922,7 +922,7 @@ router.get('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
 
 router.post('/cotizador-config', requireAuth, requireAdmin, (req, res) => {
   const { waHeader, waItemPrefix, waFooter, waNote } = req.body;
-  saveCotizadorConfig({
+  await saveCotizadorConfig({
     waHeader:     (waHeader     || '').trim(),
     waItemPrefix: (waItemPrefix || '•').trim() || '•',
     waFooter:     (waFooter     || '').trim(),
