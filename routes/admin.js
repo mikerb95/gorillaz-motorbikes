@@ -744,7 +744,7 @@ router.post('/cotizador-items/servicio/eliminar', requireAuth, requireAdmin, asy
   res.redirect('/admin/cotizador-items?flash=deleted');
 });
 
-router.post('/cotizador-items/producto/crear', requireAuth, requireAdmin, (req, res) => {
+router.post('/cotizador-items/producto/crear', requireAuth, requireAdmin, async (req, res) => {
   const name = (req.body.name || '').trim();
   if (!name) return res.redirect('/admin/cotizador-items?flash=error-name');
   const services = loadServicesCatalog();
