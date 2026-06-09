@@ -16,16 +16,18 @@ const DEFAULTS = {
   ],
 };
 
+// Lee de la caché de app_settings (clave 'puntos'); si aún no está en BD, cae
+// al archivo JSON committeado y, en último caso, a los DEFAULTS.
 function loadPuntosConfig() {
-  try {
-    const raw = JSON.parse(fs.readFileSync(PUNTOS_CONFIG_PATH, 'utf8'));
-    return {
-      points: { ...DEFAULTS.points, ...(raw.points || {}) },
-      levels: (Array.isArray(raw.levels) && raw.levels.length) ? raw.levels : DEFAULTS.levels,
-    };
-  } catch {
-    return DEFAULTS;
+  let raw = settings.get('puntos');
+  if (raw === undefined) {
+    try { raw = JSON.parse(fs.readFileSync(PUNTOS_CONFIG_PATH, 'utf8')); }
+    catch { raw = {}; }
   }
+  return {
+    points: { ...DEFAULTS.points, ...(raw.points || {}) },
+    levels: (Array.isArray(raw.levels) && raw.levels.length) ? raw.levels : DEFAULTS.levels,
+  };
 }
 
 // Proxy so any code that destructures SCORE_POINTS gets live values per-read
