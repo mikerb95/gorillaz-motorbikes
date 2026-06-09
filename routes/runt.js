@@ -26,7 +26,7 @@ router.get('/', (req, res) => {
 });
 
 // GET /runt/captcha → genera y retorna imagen del captcha
-router.get('/captcha', async (req, res) => {
+router.get('/captcha', runtLimiter, async (req, res) => {
   try {
     const captcha = await generarCaptcha();
     res.json({ ok: true, idLibreCaptcha: captcha.idLibreCaptcha, imagen: captcha.imagenBase64, raw: captcha.raw });
