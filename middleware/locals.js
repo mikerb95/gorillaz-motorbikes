@@ -1,6 +1,6 @@
 'use strict';
 const jwt     = require('jsonwebtoken');
-const { JWT_SECRET } = require('../config');
+const { JWT_SECRET, RECAPTCHA_SITE_KEY } = require('../config');
 const { getUserById, getAllEvents } = require('../db');
 const catalog = require('../data/catalog');
 const { readFlash } = require('../helpers/flash');
@@ -51,6 +51,9 @@ const templateLocals = async (req, res, next) => {
   } else {
     res.locals.user = null;
   }
+
+  // Disponible para todas las plantillas; el widget solo se pinta si hay clave.
+  res.locals.recaptchaSiteKey = RECAPTCHA_SITE_KEY;
 
   const c = req.cart || { items: {}, count: 0, subtotal: 0 };
   let count = 0, subtotal = 0;
