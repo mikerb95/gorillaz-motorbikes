@@ -35,7 +35,7 @@ router.get('/', (req, res) => {
     .slice(0, 3);
 
   res.render('home', {
-    slides,
+    slides: SLIDES,
     newsletterStatus,
     recaptchaSiteKey: RECAPTCHA_SITE_KEY,
     featuredProducts,
