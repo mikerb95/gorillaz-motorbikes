@@ -342,6 +342,7 @@ function rowToUser(row) {
     googleId: row.google_id || null,
     appleId: row.apple_id || null,
     avatarUrl: row.avatar_url || null,
+    tokenVersion: Number(row.token_version) || 0,
     createdAt: row.created_at,
   };
 }
