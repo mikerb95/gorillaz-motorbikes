@@ -95,13 +95,13 @@ router.post('/pedidos/estado', requireAuth, requireAdmin, async (req, res) => {
 
 router.get('/calendario', requireAuth, requireAdmin, (req, res) => res.render('admin/calendar', { availability }));
 
-router.post('/calendario/bloquear', requireAuth, requireAdmin, (req, res) => {
+router.post('/calendario/bloquear', requireAuth, requireAdmin, async (req, res) => {
   const { date } = req.body;
   if (date && !availability.blockedDates.includes(date)) { availability.blockedDates.push(date); saveJSON('availability.json', availability); }
   res.redirect('/admin/calendario');
 });
 
-router.post('/calendario/desbloquear', requireAuth, requireAdmin, (req, res) => {
+router.post('/calendario/desbloquear', requireAuth, requireAdmin, async (req, res) => {
   const { date } = req.body;
   availability.blockedDates = availability.blockedDates.filter(d => d !== date);
   saveJSON('availability.json', availability);
@@ -326,7 +326,7 @@ router.get('/agenda-servicios', requireAuth, requireAdmin, async (req, res) => {
 
 router.get('/cursos', requireAuth, requireAdmin, (req, res) => res.render('admin/courses', { list: courses }));
 
-router.post('/cursos/crear', requireAuth, requireAdmin, (req, res) => {
+router.post('/cursos/crear', requireAuth, requireAdmin, async (req, res) => {
   const { slug, title, priceCOP } = req.body;
   if (slug && title) {
     courses.push({ slug, title, short: '', category: 'Técnico', level: 'Inicial', durationHours: 0, readingMinutes: 0, modality: 'Presencial', location: 'Bogotá D.C.', priceCOP: parseInt(priceCOP || '0', 10) || 0, tags: [], syllabus: [], outcomes: [], requirements: [], schedule: '', nextIntake: '' });
@@ -335,14 +335,14 @@ router.post('/cursos/crear', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/cursos');
 });
 
-router.post('/cursos/actualizar', requireAuth, requireAdmin, (req, res) => {
+router.post('/cursos/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { slug, title, priceCOP } = req.body;
   const c = courses.find(x => x.slug === slug);
   if (c) { if (title) c.title = title; if (priceCOP !== undefined) c.priceCOP = parseInt(priceCOP || '0', 10) || 0; saveJSON('courses.json', courses); }
   res.redirect('/admin/cursos');
 });
 
-router.post('/cursos/eliminar', requireAuth, requireAdmin, (req, res) => {
+router.post('/cursos/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const idx = courses.findIndex(c => c.slug === req.body.slug);
   if (idx !== -1) { courses.splice(idx, 1); saveJSON('courses.json', courses); }
   res.redirect('/admin/cursos');
