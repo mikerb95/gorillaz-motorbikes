@@ -736,7 +736,7 @@ router.post('/cotizador-items/servicio/actualizar', requireAuth, requireAdmin, a
   res.redirect('/admin/cotizador-items?flash=updated');
 });
 
-router.post('/cotizador-items/servicio/eliminar', requireAuth, requireAdmin, (req, res) => {
+router.post('/cotizador-items/servicio/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.body;
   const services = loadServicesCatalog().filter(s => s.id !== id);
   await saveServicesCatalog(services);
