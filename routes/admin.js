@@ -884,7 +884,7 @@ router.post('/configuracion/pdf', requireAuth, requireAdmin, (req, res) => {
 router.post('/configuracion/parqueadero', requireAuth, requireAdmin, (req, res) => {
   const diasGratis   = Math.max(0, parseInt(req.body.diasGratis, 10)   || 0);
   const tarifaPorDia = Math.max(0, parseInt(req.body.tarifaPorDia, 10) || 0);
-  saveParqueaderoConfig({ diasGratis, tarifaPorDia });
+  await saveParqueaderoConfig({ diasGratis, tarifaPorDia });
   res.redirect('/admin/configuracion?tab=parqueadero&flash=saved');
 });
 
@@ -957,7 +957,7 @@ router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
 router.post('/config-parqueadero', requireAuth, requireAdmin, (req, res) => {
   const diasGratis   = Math.max(0, parseInt(req.body.diasGratis, 10)   || 0);
   const tarifaPorDia = Math.max(0, parseInt(req.body.tarifaPorDia, 10) || 0);
-  saveParqueaderoConfig({ diasGratis, tarifaPorDia });
+  await saveParqueaderoConfig({ diasGratis, tarifaPorDia });
   res.redirect('/admin/configuracion?tab=parqueadero&flash=saved');
 });
 
