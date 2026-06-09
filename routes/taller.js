@@ -7,6 +7,7 @@ const bcrypt  = require('bcryptjs');
 
 const { JWT_SECRET, resendClient } = require('../config');
 const { requireEmployee, authLimiter } = require('../middleware/auth');
+const settings = require('../helpers/settings');
 const {
   getActiveEmployees, getEmployeeById, getEmployeeByUserId, getUserByEmail,
   getServiceOrdersByEmployee, getServiceOrderById, updateServiceOrder,
