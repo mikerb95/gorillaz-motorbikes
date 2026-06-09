@@ -36,7 +36,7 @@ router.get('/captcha', runtLimiter, async (req, res) => {
 });
 
 // POST /runt/consulta → llama la API del RUNT y retorna fechas
-router.post('/consulta', async (req, res) => {
+router.post('/consulta', runtLimiter, async (req, res) => {
   const { placa, documento, idLibreCaptcha, captcha } = req.body;
 
   if (!placa || !documento || !idLibreCaptcha || !captcha) {
