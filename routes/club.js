@@ -106,8 +106,7 @@ router.post('/login', authLimiter, async (req, res) => {
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    issueUserSession(res, user);
     res.redirect(redirectTo);
   } catch (e) {
     console.error('POST /club/login error:', e);
