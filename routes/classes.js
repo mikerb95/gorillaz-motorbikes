@@ -1,6 +1,6 @@
 'use strict';
 const express     = require('express');
-const classesData = require('../data/classes.json');
+const { classes: classesData } = require('../helpers/content');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
