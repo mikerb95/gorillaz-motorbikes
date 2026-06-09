@@ -3,7 +3,7 @@ const express  = require('express');
 const path     = require('path');
 const fs       = require('fs');
 const { createQuotation, updateQuotation, getDraftQuotations, getQuotationById, updateQuotationPhone, deleteQuotation, getInvoiceById, getServiceOrderById } = require('../db');
-const { products } = require('../data/catalog');
+const { catalog } = require('../helpers/catalog');
 const settings = require('../helpers/settings');
 
 const router = express.Router();
@@ -33,7 +33,7 @@ function buildCatalog() {
   if (catalogCache) return catalogCache;
   catalogCache = [
     ...loadServices(),
-    ...products.map(p => ({ id: p.id, name: p.name, type: 'product', brand: p.brand || '' })),
+    ...catalog.products.map(p => ({ id: p.id, name: p.name, type: 'product', brand: p.brand || '' })),
   ];
   return catalogCache;
 }
