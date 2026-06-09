@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const fs   = require('fs');
+const settings = require('./settings');
 
 const PUNTOS_CONFIG_PATH = path.join(__dirname, '..', 'data', 'puntos-config.json');
 

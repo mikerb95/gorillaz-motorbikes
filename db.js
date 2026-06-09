@@ -527,7 +527,8 @@ async function deleteUserAccount(id) {
               emergency_name = NULL, emergency_phone = NULL, avatar_url = NULL,
               google_id = NULL, apple_id = NULL, reset_token = NULL, reset_token_expiry = NULL,
               vehicles = '[]', visits = '[]', club_notifications = 0,
-              score = 0, score_history = '[]', membership = '{}'
+              score = 0, score_history = '[]', membership = '{}',
+              token_version = token_version + 1
             WHERE id = ?`,
       args: [id],
     });
