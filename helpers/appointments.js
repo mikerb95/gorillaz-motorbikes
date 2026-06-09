@@ -1,10 +1,8 @@
 'use strict';
-const path = require('path');
-const fs   = require('fs');
 const { getAppointmentDates } = require('../db');
-
-let availability = { blockedDates: [] };
-try { availability = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'availability.json'), 'utf8')); } catch { }
+// La disponibilidad ahora vive en app_settings (vía helpers/content); aquí solo
+// usamos el objeto estable compartido para calcular el mapa de demanda.
+const { availability } = require('./content');
 
 async function computeDemandMap() {
   const demand = {};
