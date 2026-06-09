@@ -30,49 +30,43 @@ const {
 } = require('../db');
 const bcrypt = require('bcryptjs');
 
-const COTIZADOR_CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
-const SERVICES_CATALOG_PATH   = path.join(__dirname, '..', 'data', 'services-catalog.json');
-const PARQUEADERO_CONFIG_PATH = path.join(__dirname, '..', 'data', 'parqueadero-config.json');
-const PDF_CONFIG_PATH         = path.join(__dirname, '..', 'data', 'quotation-pdf-config.json');
-const PUNTOS_CONFIG_PATH      = path.join(__dirname, '..', 'data', 'puntos-config.json');
+// La config editable del admin vive en la tabla app_settings (vía
+// helpers/settings). Los archivos JSON en /data se mantienen solo como fallback
+// de lectura para los valores que existían antes de esta migración: en cuanto
+// el admin guarda una vez, el valor pasa a la BD y persiste entre cold starts.
+function readDataJson(file, fallback) {
+  try { return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', file), 'utf8')); }
+  catch { return fallback; }
+}
 
 function loadCotizadorConfig() {
-  try { return JSON.parse(fs.readFileSync(COTIZADOR_CONFIG_PATH, 'utf8')); }
-  catch { return { waHeader: '🏍️ *Cotización Gorillaz Motorbikes*', waItemPrefix: '•', waFooter: 'gorillazmotorbikes.com', waNote: '' }; }
+  return settings.get('cotizador') ?? readDataJson('cotizador-config.json',
+    { waHeader: '🏍️ *Cotización Gorillaz Motorbikes*', waItemPrefix: '•', waFooter: 'gorillazmotorbikes.com', waNote: '' });
 }
-function saveCotizadorConfig(cfg) {
-  try { fs.writeFileSync(COTIZADOR_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
-}
+const saveCotizadorConfig = (cfg) => settings.set('cotizador', cfg);
+
 function loadParqueaderoConfig() {
-  try { return JSON.parse(fs.readFileSync(PARQUEADERO_CONFIG_PATH, 'utf8')); }
-  catch { return { diasGratis: 3, tarifaPorDia: 7000 }; }
+  return settings.get('parqueadero') ?? readDataJson('parqueadero-config.json', { diasGratis: 3, tarifaPorDia: 7000 });
 }
-function saveParqueaderoConfig(cfg) {
-  try { fs.writeFileSync(PARQUEADERO_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
-}
+const saveParqueaderoConfig = (cfg) => settings.set('parqueadero', cfg);
+
 const PDF_CONFIG_DEFAULTS = { companyName: 'GORILLAZ MOTORBIKES', nit: '', phone: '', email: '', address: '', website: 'gorillazmotorbikes.com', city: 'Bogotá, Colombia', headerColor: '#F25C05', validityDays: 30, footerNote: 'Precios en COP. Cotización no incluye IVA.', showPhone: true, showNotes: true };
 function loadPdfConfig() {
-  try { return { ...PDF_CONFIG_DEFAULTS, ...JSON.parse(fs.readFileSync(PDF_CONFIG_PATH, 'utf8')) }; }
-  catch { return { ...PDF_CONFIG_DEFAULTS }; }
+  return { ...PDF_CONFIG_DEFAULTS, ...(settings.get('pdf') ?? readDataJson('quotation-pdf-config.json', {})) };
 }
-function savePdfConfig(cfg) {
-  try { fs.writeFileSync(PDF_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
-}
-function savePuntosConfig(cfg) {
-  try { fs.writeFileSync(PUNTOS_CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8'); } catch { }
-}
+const savePdfConfig = (cfg) => settings.set('pdf', cfg);
+
+const savePuntosConfig = (cfg) => settings.set('puntos', cfg);
+
 // Colombia es UTC-5 sin cambio de horario de verano
 function nowCOT() {
   const cot = new Date(Date.now() - 5 * 60 * 60 * 1000);
   return cot.toISOString().replace('Z', '-05:00');
 }
 function loadServicesCatalog() {
-  try { return JSON.parse(fs.readFileSync(SERVICES_CATALOG_PATH, 'utf8')); }
-  catch { return []; }
+  return settings.get('services_catalog') ?? readDataJson('services-catalog.json', []);
 }
-function saveServicesCatalog(list) {
-  try { fs.writeFileSync(SERVICES_CATALOG_PATH, JSON.stringify(list, null, 2), 'utf8'); } catch { }
-}
+const saveServicesCatalog = (list) => settings.set('services_catalog', list);
 const { resendClient } = require('../config');
 const { invalidateCatalogCache } = require('./liquidador');
 
