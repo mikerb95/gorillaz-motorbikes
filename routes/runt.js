@@ -1,8 +1,20 @@
 'use strict';
 
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const { generarCaptcha, consultarHistorialRunt } = require('../helpers/runt');
+
+// Estos endpoints son un proxy hacia la API oficial del RUNT. Sin límite, un
+// abusador podría saturar el servidor (o quemar la cuota/IP del RUNT) a nuestro
+// nombre. Límite por IP, generoso para uso normal.
+const runtLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: 'Demasiadas consultas. Espera unos minutos e inténtalo de nuevo.' },
+});
 
 // GET /runt → formulario de consulta
 router.get('/', (req, res) => {
