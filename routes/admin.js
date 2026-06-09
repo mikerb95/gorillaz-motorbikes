@@ -851,7 +851,7 @@ router.post('/configuracion/empleados/:id/eliminar', requireAuth, requireAdmin, 
   res.redirect('/admin/configuracion?tab=empleados&flash=saved');
 });
 
-router.post('/configuracion/cotizador', requireAuth, requireAdmin, (req, res) => {
+router.post('/configuracion/cotizador', requireAuth, requireAdmin, async (req, res) => {
   const { waHeader, waItemPrefix, waFooter, waNote } = req.body;
   await saveCotizadorConfig({
     waHeader:     (waHeader     || '').trim(),
@@ -862,7 +862,7 @@ router.post('/configuracion/cotizador', requireAuth, requireAdmin, (req, res) =>
   res.redirect('/admin/configuracion?tab=liquidador&flash=saved');
 });
 
-router.post('/configuracion/pdf', requireAuth, requireAdmin, (req, res) => {
+router.post('/configuracion/pdf', requireAuth, requireAdmin, async (req, res) => {
   const validityDays = Math.max(1, parseInt(req.body.validityDays, 10) || 30);
   await savePdfConfig({
     companyName:  (req.body.companyName  || '').trim() || 'GORILLAZ MOTORBIKES',
@@ -881,14 +881,14 @@ router.post('/configuracion/pdf', requireAuth, requireAdmin, (req, res) => {
   res.redirect('/admin/configuracion?tab=pdf&flash=saved');
 });
 
-router.post('/configuracion/parqueadero', requireAuth, requireAdmin, (req, res) => {
+router.post('/configuracion/parqueadero', requireAuth, requireAdmin, async (req, res) => {
   const diasGratis   = Math.max(0, parseInt(req.body.diasGratis, 10)   || 0);
   const tarifaPorDia = Math.max(0, parseInt(req.body.tarifaPorDia, 10) || 0);
   await saveParqueaderoConfig({ diasGratis, tarifaPorDia });
   res.redirect('/admin/configuracion?tab=parqueadero&flash=saved');
 });
 
-router.post('/configuracion/puntos', requireAuth, requireAdmin, (req, res) => {
+router.post('/configuracion/puntos', requireAuth, requireAdmin, async (req, res) => {
   const current = loadPuntosConfig();
   const points  = {};
   Object.keys(PUNTOS_DEFAULTS.points).forEach(key => {
