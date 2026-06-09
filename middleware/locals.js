@@ -11,6 +11,7 @@ const jwtCart = (req, res, next) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       req.userId = decoded.id;
+      req.tokenVersion = decoded.tv ?? 0;
     } catch {
       req.userId = null;
     }
