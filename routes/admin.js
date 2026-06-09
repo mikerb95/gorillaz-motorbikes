@@ -933,7 +933,7 @@ router.post('/cotizador-config', requireAuth, requireAdmin, async (req, res) => 
 
 // ── Configuración PDF de cotización (legacy) ──────────────────────────────
 
-router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, (req, res) => {
+router.post('/config-pdf-cotizacion', requireAuth, requireAdmin, async (req, res) => {
   const validityDays = Math.max(1, parseInt(req.body.validityDays, 10) || 30);
   await savePdfConfig({
     companyName:  (req.body.companyName  || '').trim() || 'GORILLAZ MOTORBIKES',
