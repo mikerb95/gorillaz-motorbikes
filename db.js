@@ -499,6 +499,13 @@ async function updateUser(id, fields) {
   await db.execute({ sql: `UPDATE users SET ${set.join(', ')} WHERE id = ?`, args });
 }
 
+// Invalida todas las sesiones (JWT) vigentes del usuario. Los tokens llevan el
+// token_version con el que se emitieron; al incrementarlo, dejan de coincidir y
+// se rechazan en jwtCart/templateLocals. Se usa al cambiar la contraseña.
+async function incrementTokenVersion(id) {
+  await db.execute({ sql: 'UPDATE users SET token_version = token_version + 1 WHERE id = ?', args: [id] });
+}
+
 async function deleteUser(id) {
   await db.execute({ sql: `UPDATE users SET deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?`, args: [id] });
 }

@@ -7,8 +7,13 @@ const { createAppointment, getServiceOrdersByPlate } = require('../db');
 const { computeDemandMap } = require('../helpers/appointments');
 const { resendClient } = require('../config');
 
+const settings = require('../helpers/settings');
 const PARQUEADERO_CONFIG_PATH = path.join(__dirname, '..', 'data', 'parqueadero-config.json');
+// La config canónica vive en app_settings (clave 'parqueadero'); el archivo
+// JSON queda solo como fallback de lectura previo a la primera edición.
 function loadParqueaderoConfig() {
+  const cfg = settings.get('parqueadero');
+  if (cfg !== undefined) return cfg;
   try { return JSON.parse(fs.readFileSync(PARQUEADERO_CONFIG_PATH, 'utf8')); }
   catch { return { diasGratis: 3, tarifaPorDia: 7000 }; }
 }
