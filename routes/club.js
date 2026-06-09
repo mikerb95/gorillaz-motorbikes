@@ -402,8 +402,9 @@ router.post('/auth/passkey/login', authLimiter, async (req, res) => {
     if (!verified) return res.status(401).json({ error: 'Verificación fallida' });
 
     await updatePasskeyCounter(passkey.id, authenticationInfo.newCounter);
-    const token = jwt.sign({ id: passkey.userId }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    const user = await getUserById(passkey.userId);
+    if (!user) return res.status(401).json({ error: 'Usuario no encontrado' });
+    issueUserSession(res, user);
     res.json({ ok: true, redirect: '/club/panel' });
   } catch (e) {
     console.error('Passkey login error:', e.message);
