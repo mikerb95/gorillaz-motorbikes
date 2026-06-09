@@ -713,7 +713,7 @@ router.get('/cotizador-items', requireAuth, requireAdmin, (req, res) => {
   res.render('admin/cotizador-items', { services, products, flash });
 });
 
-router.post('/cotizador-items/servicio/crear', requireAuth, requireAdmin, (req, res) => {
+router.post('/cotizador-items/servicio/crear', requireAuth, requireAdmin, async (req, res) => {
   const name = (req.body.name || '').trim();
   if (!name) return res.redirect('/admin/cotizador-items?flash=error-name');
   const services = loadServicesCatalog();
