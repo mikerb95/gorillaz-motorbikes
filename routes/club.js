@@ -146,8 +146,7 @@ router.post('/registro', authLimiter, async (req, res) => {
       vehicles,
       membership: { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Descuentos en taller', 'Acceso al club'] },
     });
-    const token = jwt.sign({ id: newUser.id }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 });
+    issueUserSession(res, newUser);
     res.redirect('/club/panel');
   } catch (e) {
     console.error(e);
