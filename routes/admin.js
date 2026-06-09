@@ -904,7 +904,7 @@ router.post('/configuracion/puntos', requireAuth, requireAdmin, (req, res) => {
     const min   = Math.max(0, parseInt(req.body[`lvl_min_${i}`], 10) || 0);
     if (name) levels.push({ name, icon, color, min });
   }
-  savePuntosConfig({ points, levels: levels.length ? levels : current.levels });
+  await savePuntosConfig({ points, levels: levels.length ? levels : current.levels });
   res.redirect('/admin/configuracion?tab=puntos&flash=saved');
 });
 
