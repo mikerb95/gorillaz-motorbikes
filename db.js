@@ -276,6 +276,9 @@ async function initDb() {
     `ALTER TABLE users ADD COLUMN google_id TEXT`,
     `ALTER TABLE users ADD COLUMN avatar_url TEXT`,
     `ALTER TABLE users ADD COLUMN apple_id TEXT`,
+    // Permite revocar JWTs: cada token lleva el token_version del usuario y se
+    // invalida si no coincide (al cambiar contraseña o eliminar la cuenta).
+    `ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
