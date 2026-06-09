@@ -8,13 +8,6 @@ const saveJSON = (file, data) => {
   try { fs.writeFileSync(path.join(__dirname, '..', 'data', file), JSON.stringify(data, null, 2), 'utf8'); } catch { }
 };
 
-const writeCatalog = (obj) => {
-  try {
-    const file = path.join(__dirname, '..', 'data', 'catalog.js');
-    fs.writeFileSync(file, 'module.exports = ' + JSON.stringify(obj, null, 2) + ' ;\n', 'utf8');
-  } catch { }
-};
-
 // Files stay in memory — no disk writes needed
 const _multerMemory = multer({
   storage: multer.memoryStorage(),
@@ -82,4 +75,4 @@ const uploadSlideImage = (req, res, next) => {
   });
 };
 
-module.exports = { saveJSON, writeCatalog, uploadProduct, uploadSlideImage, uploadToBlob, deleteFromBlob };
+module.exports = { saveJSON, uploadProduct, uploadSlideImage, uploadToBlob, deleteFromBlob };
