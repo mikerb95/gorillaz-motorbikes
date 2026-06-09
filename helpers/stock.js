@@ -1,8 +1,7 @@
 'use strict';
-const catalog = require('../data/catalog');
-const { writeCatalog } = require('./files');
+const { catalog, saveCatalog } = require('./catalog');
 
-function decrementStock(orderItems) {
+async function decrementStock(orderItems) {
   if (!Array.isArray(orderItems) || orderItems.length === 0) return;
   let changed = false;
   for (const { id, qty } of orderItems) {
@@ -12,7 +11,7 @@ function decrementStock(orderItems) {
       changed = true;
     }
   }
-  if (changed) writeCatalog(catalog);
+  if (changed) await saveCatalog();
 }
 
 module.exports = { decrementStock };
