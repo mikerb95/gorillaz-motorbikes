@@ -365,7 +365,7 @@ router.get('/tienda/:id/editar', requireAuth, requireAdmin, (req, res) => {
   res.render('admin/shop-edit', { product, categories: catalog.categories || [] });
 });
 
-router.post('/tienda/crear', requireAuth, requireAdmin, (req, res) => {
+router.post('/tienda/crear', requireAuth, requireAdmin, async (req, res) => {
   const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
   if (!catalog.products) catalog.products = [];
   const prodId    = id && id.trim() ? id.trim() : uuidv4();
@@ -373,12 +373,12 @@ router.post('/tienda/crear', requireAuth, requireAdmin, (req, res) => {
   const mainImage = gallery.length > 0 ? gallery[0] : '/images/download.png';
   if (name && category) {
     catalog.products.push({ id: prodId, name, price: parseInt(price || '0', 10) || 0, category, image: mainImage, gallery: gallery.length > 0 ? gallery : ['/images/download.png'], brand: (brand || '').trim(), sku: (sku || '').trim(), stock: parseInt(stock || '0', 10), discount: Math.min(100, Math.max(0, parseInt(discount || '0', 10))), tags: (tags || '').split(',').map(t => t.trim()).filter(Boolean), description: description || '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-    writeCatalog(catalog);
+    await saveCatalog();
   }
   res.redirect('/admin/tienda');
 });
 
-router.post('/tienda/actualizar', requireAuth, requireAdmin, (req, res) => {
+router.post('/tienda/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
   const p = (catalog.products || []).find(x => x.id === id);
   if (p) {
@@ -394,12 +394,12 @@ router.post('/tienda/actualizar', requireAuth, requireAdmin, (req, res) => {
     const gallery = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
     if (gallery.length > 0) { p.gallery = gallery; p.image = gallery[0]; }
     p.updatedAt = new Date().toISOString();
-    writeCatalog(catalog);
+    await saveCatalog();
   }
   res.redirect('/admin/tienda');
 });
 
-router.post('/tienda/eliminar', requireAuth, requireAdmin, (req, res) => {
+router.post('/tienda/eliminar', requireAuth, requireAdmin, async (req, res) => {
   catalog.products = (catalog.products || []).filter(p => p.id !== req.body.id);
   writeCatalog(catalog);
   res.redirect('/admin/tienda');
@@ -417,7 +417,7 @@ router.post('/tienda/delete-image', requireAuth, requireAdmin, async (req, res) 
     p.image     = p.gallery.length > 0 ? p.gallery[0] : '/images/download.png';
     if (!p.gallery.length) p.gallery = ['/images/download.png'];
     p.updatedAt = new Date().toISOString();
-    writeCatalog(catalog);
+    await saveCatalog();
     await deleteFromBlob(imageUrl);
   }
   if ((req.headers.accept || '').includes('application/json')) return res.json({ ok: true });
