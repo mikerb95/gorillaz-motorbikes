@@ -755,7 +755,7 @@ router.post('/cotizador-items/producto/crear', requireAuth, requireAdmin, async 
   res.redirect('/admin/cotizador-items?flash=created');
 });
 
-router.post('/cotizador-items/producto/actualizar', requireAuth, requireAdmin, (req, res) => {
+router.post('/cotizador-items/producto/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { id, name } = req.body;
   const trimmed = (name || '').trim();
   if (!id || !trimmed) return res.redirect('/admin/cotizador-items?flash=error-name');
