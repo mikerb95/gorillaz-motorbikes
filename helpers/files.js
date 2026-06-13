@@ -44,6 +44,35 @@ const uploadProduct = (req, res, next) => {
   });
 };
 
+// Subida para clasificados del club: hasta 6 imágenes, mismo límite/tipos.
+const _multerClassified = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /\.(jpg|jpeg|png|webp|avif)$/i;
+    cb(null, allowed.test(path.extname(file.originalname)));
+  },
+}).array('images', 6);
+
+const uploadClassified = (req, res, next) => {
+  _multerClassified(req, res, async (err) => {
+    if (err) return next(err);
+    try {
+      req.blobUrls = await Promise.all(
+        (req.files || []).map(async (f) => {
+          const ext      = path.extname(f.originalname).toLowerCase();
+          const filename = `classifieds/${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+          const blob     = await put(filename, f.buffer, { access: 'public', contentType: f.mimetype, token: BLOB_TOKEN });
+          return blob.url;
+        })
+      );
+      next();
+    } catch (e) {
+      next(e);
+    }
+  });
+};
+
 const _multerSingle = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
