@@ -39,6 +39,7 @@ function parseForm(body) {
   const condition   = (body.condition   || '').toString().trim();
   const brand       = (body.brand       || '').toString().trim();
   const city        = (body.city        || '').toString().trim();
+  const department  = (body.department  || '').toString().trim();
   const contactPhone = (body.contactPhone || '').toString().trim();
   const negotiable  = body.negotiable === 'on' || body.negotiable === '1' || body.negotiable === 'true';
   const price       = parseInt((body.price || '0').toString().replace(/[^\d]/g, ''), 10) || 0;
