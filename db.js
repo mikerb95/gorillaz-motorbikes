@@ -303,6 +303,7 @@ async function initDb() {
     // Permite revocar JWTs: cada token lleva el token_version del usuario y se
     // invalida si no coincide (al cambiar contraseña o eliminar la cuenta).
     `ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE classifieds ADD COLUMN department TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
