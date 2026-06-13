@@ -49,6 +49,37 @@ function requireLiquidadorAccess(req, res, next) {
   return res.redirect('/liquidador/acceso?returnTo=' + encodeURIComponent(req.originalUrl));
 }
 
+// Empleados activos ligados a un usuario admin y con PIN definido. Su PIN
+// (el mismo del portal del taller) también desbloquea el liquidador.
+async function adminEmployeesWithPin() {
+  const emps = await getActiveEmployees();
+  const out = [];
+  for (const e of emps) {
+    if (!e.pinHash || !e.userId) continue;
+    const u = await getUserById(e.userId);
+    if (u && u.role === 'admin') out.push(e);
+  }
+  return out;
+}
+
+// ¿Existe alguna vía de entrada por PIN? (PIN compartido del liquidador o el PIN
+// de algún admin). Determina si el gate muestra el campo de PIN.
+async function liquidadorPinAvailable() {
+  if (settings.get('liquidador_pin_hash') != null) return true;
+  return (await adminEmployeesWithPin()).length > 0;
+}
+
+// El PIN ingresado desbloquea el liquidador si coincide con el PIN compartido
+// o con el PIN de cualquier admin (empleado activo ligado a usuario admin).
+async function pinUnlocksLiquidador(pin) {
+  const shared = settings.get('liquidador_pin_hash');
+  if (shared && await bcrypt.compare(pin, shared)) return true;
+  for (const e of await adminEmployeesWithPin()) {
+    if (await bcrypt.compare(pin, e.pinHash)) return true;
+  }
+  return false;
+}
+
 // Config canónica en app_settings; los archivos JSON quedan como fallback de
 // lectura para los valores previos a la migración a BD.
 function loadConfig() {
