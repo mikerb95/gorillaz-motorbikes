@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const { courses, classes: classesData, availability, saveCourses, saveClasses, saveAvailability } = require('../helpers/content');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
+const { setFlash } = require('../helpers/flash');
 const settings = require('../helpers/settings');
 const { catalog, saveCatalog } = require('../helpers/catalog');
 const { SCORE_POINTS, loadPuntosConfig, DEFAULTS: PUNTOS_DEFAULTS }  = require('../helpers/score');
@@ -422,6 +423,60 @@ router.post('/tienda/delete-image', requireAuth, requireAdmin, async (req, res) 
   }
   if ((req.headers.accept || '').includes('application/json')) return res.json({ ok: true });
   res.redirect('/admin/tienda/' + productId + '/editar');
+});
+
+// ── Clasificados del club: moderación ───────────────────────────────────────
+
+router.get('/clasificados', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const filter = ['pending', 'active', 'rejected', 'sold'].includes(req.query.status) ? req.query.status : '';
+    const listings = await getAllClassifieds(filter || undefined);
+    const counts = {
+      pending:  await countClassifiedsByStatus('pending'),
+      active:   await countClassifiedsByStatus('active'),
+      rejected: await countClassifiedsByStatus('rejected'),
+      sold:     await countClassifiedsByStatus('sold'),
+    };
+    res.render('admin/clasificados', { listings, filter, counts });
+  } catch (e) { next(e); }
+});
+
+router.post('/clasificados/aprobar', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const id = (req.body.id || '').toString();
+    const listing = await getClassifiedById(id);
+    if (!listing) return res.redirect('/admin/clasificados');
+    await setClassifiedStatus(id, 'active', null);
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'aprobar_clasificado', 'classified', id, { title: listing.title });
+    setFlash(res, 'success', 'Anuncio aprobado y publicado.');
+    res.redirect('/admin/clasificados');
+  } catch (e) { next(e); }
+});
+
+router.post('/clasificados/rechazar', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const id = (req.body.id || '').toString();
+    const reason = (req.body.reason || '').toString().trim().slice(0, 300);
+    const listing = await getClassifiedById(id);
+    if (!listing) return res.redirect('/admin/clasificados');
+    await setClassifiedStatus(id, 'rejected', reason || 'No cumple las normas del club.');
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'rechazar_clasificado', 'classified', id, { title: listing.title, reason });
+    setFlash(res, 'success', 'Anuncio rechazado.');
+    res.redirect('/admin/clasificados');
+  } catch (e) { next(e); }
+});
+
+router.post('/clasificados/eliminar', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const id = (req.body.id || '').toString();
+    const listing = await getClassifiedById(id);
+    if (!listing) return res.redirect('/admin/clasificados');
+    await deleteClassified(id);
+    await Promise.all((listing.images || []).map(deleteFromBlob));
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'eliminar_clasificado', 'classified', id, { title: listing.title });
+    setFlash(res, 'success', 'Anuncio eliminado.');
+    res.redirect('/admin/clasificados');
+  } catch (e) { next(e); }
 });
 
 router.get('/clases', requireAuth, requireAdmin, (req, res) =>
