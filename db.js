@@ -258,6 +258,7 @@ async function initDb() {
       condition TEXT NOT NULL DEFAULT 'usado',
       brand TEXT,
       city TEXT,
+      department TEXT,
       contact_phone TEXT,
       images TEXT NOT NULL DEFAULT '[]',
       status TEXT NOT NULL DEFAULT 'pending',
