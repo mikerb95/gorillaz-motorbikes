@@ -74,14 +74,18 @@
 
           <div class="co-row">
             <div class="co-field">
-              <label for="customer_city">Ciudad <span class="co-required">*</span></label>
-              <input id="customer_city" name="customer_city" type="text" required
-                value="<%= user && user.city ? user.city : '' %>" placeholder="Bogotá, Medellín…" />
+              <label for="customer_dept">Departamento <span class="co-required">*</span></label>
+              <select id="customer_dept" name="customer_dept" class="dept-select" data-location-group="checkout"
+                data-current-dept="<%= user && user.department ? user.department : '' %>" required>
+                <option value="">— Seleccione —</option>
+              </select>
             </div>
             <div class="co-field">
-              <label for="customer_dept">Departamento</label>
-              <input id="customer_dept" name="customer_dept" type="text"
-                value="" placeholder="Cundinamarca, Antioquia…" />
+              <label for="customer_city">Ciudad / Municipio <span class="co-required">*</span></label>
+              <select id="customer_city" name="customer_city" class="city-select" data-location-group="checkout"
+                data-current="<%= user && user.city ? user.city : '' %>" required>
+                <option value="">— Seleccione un departamento —</option>
+              </select>
             </div>
           </div>
         </div>
