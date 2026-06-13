@@ -19,7 +19,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -242,6 +242,29 @@ async function initDb() {
       value TEXT NOT NULL,
       updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    // Clasificados del club: los miembros publican ventas de motos, partes o
+    // accesorios. Entran como 'pending' y un admin los aprueba ('active'),
+    // rechaza ('rejected') o el dueño los marca 'sold'. El contacto es directo
+    // (WhatsApp/teléfono): no hay pago ni carrito, es un beneficio entre socios.
+    `CREATE TABLE IF NOT EXISTS classifieds (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      seller_name TEXT NOT NULL DEFAULT '',
+      category TEXT NOT NULL DEFAULT 'moto',
+      title TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      price INTEGER NOT NULL DEFAULT 0,
+      negotiable INTEGER NOT NULL DEFAULT 0,
+      condition TEXT NOT NULL DEFAULT 'usado',
+      brand TEXT,
+      city TEXT,
+      contact_phone TEXT,
+      images TEXT NOT NULL DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'pending',
+      reject_reason TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
@@ -290,6 +313,8 @@ async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_ea_event_id  ON event_attendances(event_id)`,
     `CREATE INDEX IF NOT EXISTS idx_ea_user_id   ON event_attendances(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_events_date  ON events(date)`,
+    `CREATE INDEX IF NOT EXISTS idx_classifieds_status ON classifieds(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_classifieds_user   ON classifieds(user_id)`,
   ];
   for (const sql of indexes) {
     try { await db.execute(sql); } catch { /* index already exists */ }
