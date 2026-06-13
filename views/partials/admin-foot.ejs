@@ -26,6 +26,241 @@
   </a>
 </nav>
 
+<!-- Sidebar search (filter nav + configs + actions) -->
+<style>
+  .crm-nav-search {
+    position: relative;
+    margin: 4px 12px 8px;
+  }
+  .crm-nav-search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,.7);
+    pointer-events: none;
+  }
+  .crm-nav-search-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 32px 9px 34px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 8px;
+    background: rgba(0,0,0,.16);
+    color: #fff;
+    font-family: inherit;
+    font-size: .83rem;
+    font-weight: 600;
+    outline: none;
+    transition: background .15s, border-color .15s;
+  }
+  .crm-nav-search-input::placeholder { color: rgba(255,255,255,.6); }
+  .crm-nav-search-input:focus {
+    background: rgba(0,0,0,.28);
+    border-color: rgba(255,255,255,.5);
+  }
+  .crm-nav-search-clear {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255,255,255,.75);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .crm-nav-search-clear:hover { background: rgba(0,0,0,.2); color: #fff; }
+
+  /* Filtered-out items / dividers */
+  .crm-nav-link.is-hidden,
+  .crm-nav-divider.is-hidden { display: none; }
+
+  /* Keyboard highlight (shared by nav links + extra items) */
+  .crm-nav-link.is-active-result,
+  .crm-nav-extra-item.is-active-result {
+    background: rgba(0,0,0,.28);
+    color: #fff;
+  }
+
+  /* Extra results (configs + actions injected while searching) */
+  .crm-nav-extra { display: flex; flex-direction: column; }
+  .crm-nav-extra-group {
+    margin: 10px 12px 2px;
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+  }
+  .crm-nav-extra-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    color: rgba(255,255,255,.75);
+    font-size: .83rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .15s, color .15s;
+  }
+  .crm-nav-extra-item:hover { background: rgba(0,0,0,.15); color: #fff; }
+  .crm-nav-extra-item svg { flex: 0 0 auto; }
+
+  .crm-nav-empty {
+    margin: 14px 12px;
+    font-size: .8rem;
+    font-weight: 600;
+    color: rgba(255,255,255,.6);
+    text-align: center;
+  }
+</style>
+<script>
+  (function () {
+    const input    = document.getElementById('crmNavSearch');
+    const clearBtn = document.getElementById('crmNavSearchClear');
+    const extraBox = document.getElementById('crmNavExtra');
+    const emptyEl  = document.getElementById('crmNavEmpty');
+    const nav      = document.querySelector('.crm-nav');
+    if (!input || !nav) return;
+
+    const links    = Array.from(nav.querySelectorAll('.crm-nav-link'));
+    const dividers = Array.from(nav.querySelectorAll('.crm-nav-divider'));
+
+    // Strip accents + lowercase for forgiving matching
+    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+    // SVG icons reused for extra items
+    const ICON = {
+      cfg:    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
+      plus:   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+      backup: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+    };
+
+    // Static index of things NOT in the sidebar: config tabs + quick actions
+    const EXTRA = [
+      { label: 'Liquidador',          path: '/admin/configuracion?tab=liquidador',   group: 'Configuración', icon: ICON.cfg,    keywords: 'cotizador whatsapp mensaje pin acceso' },
+      { label: 'PDF Cotización',      path: '/admin/configuracion?tab=pdf',          group: 'Configuración', icon: ICON.cfg,    keywords: 'documento empresa nit logo color factura' },
+      { label: 'Parqueadero',         path: '/admin/configuracion?tab=parqueadero',  group: 'Configuración', icon: ICON.cfg,    keywords: 'tarifa dias gratis taller cobro' },
+      { label: 'Sistema de Puntos',   path: '/admin/configuracion?tab=puntos',       group: 'Configuración', icon: ICON.cfg,    keywords: 'niveles gamificacion rodada visita evento mantenimiento membresia' },
+      { label: 'Empleados',           path: '/admin/configuracion?tab=empleados',    group: 'Configuración', icon: ICON.cfg,    keywords: 'pin taller mecanicos personal acceso' },
+      { label: 'Nueva orden de servicio', path: '/admin/ordenes-servicio/nueva',     group: 'Acciones',      icon: ICON.plus,   keywords: 'crear taller ingreso moto trabajo ot' },
+      { label: 'Descargar backup',    path: '/admin/dev/backup',                     group: 'Acciones',      icon: ICON.backup, keywords: 'respaldo base datos exportar json copia' }
+    ];
+
+    let results = [];   // currently visible matches (for keyboard nav)
+    let activeIdx = -1;
+
+    function renderExtra(q) {
+      extraBox.innerHTML = '';
+      const matches = EXTRA.filter(e => norm(e.label + ' ' + e.keywords).includes(q));
+      if (!matches.length) { extraBox.hidden = true; return []; }
+
+      const created = [];
+      let lastGroup = null;
+      matches.forEach(e => {
+        if (e.group !== lastGroup) {
+          const h = document.createElement('div');
+          h.className = 'crm-nav-extra-group';
+          h.textContent = e.group;
+          extraBox.appendChild(h);
+          lastGroup = e.group;
+        }
+        const a = document.createElement('a');
+        a.className = 'crm-nav-extra-item';
+        a.href = e.path;
+        a.innerHTML = e.icon + '<span>' + e.label + '</span>';
+        extraBox.appendChild(a);
+        created.push(a);
+      });
+      extraBox.hidden = false;
+      return created;
+    }
+
+    function clearHighlight() {
+      results.forEach(el => el.classList.remove('is-active-result'));
+    }
+
+    function setActive(idx) {
+      clearHighlight();
+      if (!results.length) { activeIdx = -1; return; }
+      activeIdx = (idx + results.length) % results.length;
+      const el = results[activeIdx];
+      el.classList.add('is-active-result');
+      el.scrollIntoView({ block: 'nearest' });
+    }
+
+    function apply() {
+      const raw = input.value.trim();
+      const q = norm(raw);
+      clearBtn.hidden = !raw;
+
+      if (!q) {
+        // Restore original sidebar
+        links.forEach(l => l.classList.remove('is-hidden', 'is-active-result'));
+        dividers.forEach(d => d.classList.remove('is-hidden'));
+        extraBox.hidden = true;
+        extraBox.innerHTML = '';
+        emptyEl.hidden = true;
+        results = [];
+        activeIdx = -1;
+        return;
+      }
+
+      // Filter existing nav links
+      const visibleLinks = [];
+      links.forEach(l => {
+        const hay = norm(l.textContent + ' ' + (l.dataset.keywords || ''));
+        const show = hay.includes(q);
+        l.classList.toggle('is-hidden', !show);
+        l.classList.remove('is-active-result');
+        if (show) visibleLinks.push(l);
+      });
+      // Hide structural dividers while searching
+      dividers.forEach(d => d.classList.add('is-hidden'));
+
+      const extraEls = renderExtra(q);
+      results = visibleLinks.concat(extraEls);
+      activeIdx = -1;
+      emptyEl.hidden = results.length > 0;
+    }
+
+    input.addEventListener('input', apply);
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown')      { e.preventDefault(); setActive(activeIdx + 1); }
+      else if (e.key === 'ArrowUp')   { e.preventDefault(); setActive(activeIdx - 1); }
+      else if (e.key === 'Enter') {
+        e.preventDefault();
+        const target = activeIdx >= 0 ? results[activeIdx] : results[0];
+        if (target) window.location.href = target.getAttribute('href');
+      } else if (e.key === 'Escape') {
+        if (input.value) { input.value = ''; apply(); }
+        else input.blur();
+      }
+    });
+
+    clearBtn.addEventListener('click', () => { input.value = ''; apply(); input.focus(); });
+
+    // Ctrl/Cmd+K focuses the search
+    document.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        input.focus();
+        input.select();
+      }
+    });
+  })();
+</script>
+
 <!-- Delete confirmation modal -->
 <style>
   .crm-modal-wrap {
