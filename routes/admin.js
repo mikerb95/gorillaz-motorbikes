@@ -76,11 +76,12 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   const results = await Promise.allSettled([
     countUsers(), countEvents(), countAppointments(), countOrders(),
     getAllNewsletterSubscribers(), countQuotations(), countServiceOrders(), countInvoices(),
+    countClassifiedsByStatus('pending'),
   ]);
-  const [users, events, citas, pedidos, allSubsR, cotizaciones, ordenes, facturas] = results.map(r => r.status === 'fulfilled' ? r.value : 0);
+  const [users, events, citas, pedidos, allSubsR, cotizaciones, ordenes, facturas, clasificados] = results.map(r => r.status === 'fulfilled' ? r.value : 0);
   const allSubs      = Array.isArray(allSubsR) ? allSubsR : [];
   const suscriptores = allSubs.filter(s => s.confirmed).length;
-  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores, cotizaciones, ordenes, facturas } });
+  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores, cotizaciones, ordenes, facturas, clasificados } });
 });
 
 router.get('/pedidos', requireAuth, requireAdmin, async (req, res) => {
