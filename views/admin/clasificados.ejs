@@ -1,0 +1,88 @@
+<%- include('../partials/admin-head', { title: 'Clasificados' }) %>
+
+<%
+  const STATUS = {
+    pending:  { label: 'En revisión', color: '#f59e0b' },
+    active:   { label: 'Publicado',   color: '#22c55e' },
+    rejected: { label: 'Rechazado',   color: '#dc2626' },
+    sold:     { label: 'Vendido',     color: '#6b7280' },
+  };
+  const CATS = { moto: 'Motocicletas', parte: 'Partes', accesorio: 'Accesorios' };
+  const tab = (key, label) => {
+    const active = filter === key || (!filter && key === '');
+    const href = key ? ('/admin/clasificados?status=' + key) : '/admin/clasificados';
+    const n = key ? counts[key] : (counts.pending + counts.active + counts.rejected + counts.sold);
+    return `<a class="clf-adm-tab${active ? ' is-active' : ''}" href="${href}">${label} <span>${n}</span></a>`;
+  };
+%>
+
+<div class="crm-page-header">
+  <h2 style="margin:0;font-size:18px">Moderación de clasificados</h2>
+</div>
+
+<div class="clf-adm-tabs">
+  <%- tab('', 'Todos') %>
+  <%- tab('pending', 'En revisión') %>
+  <%- tab('active', 'Publicados') %>
+  <%- tab('rejected', 'Rechazados') %>
+  <%- tab('sold', 'Vendidos') %>
+</div>
+
+<% if (!listings.length) { %>
+  <div class="crm-card"><p style="margin:0;color:#6b7280">No hay anuncios<%= filter ? ' en este estado' : '' %>.</p></div>
+<% } else { %>
+  <div class="clf-adm-list">
+    <% listings.forEach(l => { const st = STATUS[l.status] || STATUS.pending; %>
+      <div class="crm-card clf-adm-card">
+        <div class="clf-adm-media">
+          <img src="<%= (l.images && l.images[0]) || '/images/download.png' %>" alt="<%= l.title %>" />
+        </div>
+        <div class="clf-adm-body">
+          <div class="clf-adm-head">
+            <a href="/clasificados/<%= l.id %>" target="_blank" rel="noopener" class="clf-adm-title"><%= l.title %></a>
+            <span class="clf-adm-badge" style="background:<%= st.color %>"><%= st.label %></span>
+          </div>
+          <div class="clf-adm-meta">
+            <span><%= CATS[l.category] || l.category %></span>
+            <span>$<%= l.price.toLocaleString('es-CO') %><%= l.negotiable ? ' (neg.)' : '' %></span>
+            <span><%= l.condition === 'nuevo' ? 'Nuevo' : 'Usado' %></span>
+            <% if (l.brand) { %><span><%= l.brand %></span><% } %>
+            <% if (l.city) { %><span>📍 <%= l.city %></span><% } %>
+            <span>👤 <%= l.sellerName || '—' %></span>
+          </div>
+          <% if (l.description) { %><p class="clf-adm-desc"><%= l.description.slice(0, 240) %><%= l.description.length > 240 ? '…' : '' %></p><% } %>
+          <% if (l.status === 'rejected' && l.rejectReason) { %><p class="clf-adm-reason">Motivo: <%= l.rejectReason %></p><% } %>
+
+          <div class="clf-adm-actions">
+            <% if (l.status !== 'active') { %>
+              <form method="post" action="/admin/clasificados/aprobar">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="id" value="<%= l.id %>" />
+                <button class="btn btn-primary btn-sm" type="submit">Aprobar</button>
+              </form>
+            <% } %>
+            <% if (l.status !== 'rejected') { %>
+              <details class="clf-adm-reject">
+                <summary class="btn btn-ghost btn-sm">Rechazar</summary>
+                <form method="post" action="/admin/clasificados/rechazar" class="clf-adm-reject-form">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="id" value="<%= l.id %>" />
+                  <input name="reason" maxlength="300" placeholder="Motivo (opcional, visible para el vendedor)" />
+                  <button class="btn btn-danger btn-sm" type="submit">Confirmar rechazo</button>
+                </form>
+              </details>
+            <% } %>
+            <form method="post" action="/admin/clasificados/eliminar"
+              data-confirm="¿Eliminar este anuncio y sus imágenes definitivamente?" data-confirm-label="Eliminar">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <input type="hidden" name="id" value="<%= l.id %>" />
+              <button class="btn btn-ghost btn-sm" type="submit">Eliminar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../partials/admin-foot') %>
