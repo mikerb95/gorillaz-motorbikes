@@ -1588,6 +1588,7 @@ function rowToClassified(row) {
     condition: row.condition || 'usado',
     brand: row.brand || '',
     city: row.city || '',
+    department: row.department || '',
     contactPhone: row.contact_phone || '',
     images: safeJson(row.images, []),
     status: row.status || 'pending',
@@ -1602,8 +1603,8 @@ async function createClassified(data) {
   await db.execute({
     sql: `INSERT INTO classifieds
             (id, user_id, seller_name, category, title, description, price,
-             negotiable, condition, brand, city, contact_phone, images, status)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+             negotiable, condition, brand, city, department, contact_phone, images, status)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       id,
       data.userId,
@@ -1616,6 +1617,7 @@ async function createClassified(data) {
       data.condition || 'usado',
       data.brand || null,
       data.city || null,
+      data.department || null,
       data.contactPhone || null,
       JSON.stringify(data.images || []),
       data.status || 'pending',
