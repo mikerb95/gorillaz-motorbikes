@@ -75,12 +75,18 @@ router.get('/', async (req, res, next) => {
     const cat  = CATEGORY_SLUGS.includes((req.query.cat || '').toString()) ? req.query.cat.toString() : '';
     const q    = (req.query.q || '').toString().trim();
     const city = (req.query.city || '').toString().trim();
-    const listings = await getActiveClassifieds({ category: cat || undefined, q: q || undefined, city: city || undefined });
-    const categories = CATEGORIES.map(c => ({ ...c }));
-    const cities = [...new Set(listings.map(l => l.city).filter(Boolean))].sort();
+    // Una sola consulta (respetando texto/ciudad): contamos por categoría para los
+    // chips y luego filtramos en memoria por la categoría seleccionada.
+    const pool = await getActiveClassifieds({ q: q || undefined, city: city || undefined });
+    const counts = CATEGORY_SLUGS.reduce((acc, slug) => {
+      acc[slug] = pool.filter(l => l.category === slug).length; return acc;
+    }, {});
+    const listings = cat ? pool.filter(l => l.category === cat) : pool;
+    const categories = CATEGORIES.map(c => ({ ...c, count: counts[c.slug] || 0 }));
+    const cities = [...new Set(pool.map(l => l.city).filter(Boolean))].sort();
     res.render('clasificados/index', {
       title: 'Clasificados del Club',
-      listings, categories, selectedCat: cat, q, city, cities, catName,
+      listings, categories, selectedCat: cat, q, city, cities, total: pool.length, catName,
     });
   } catch (e) { next(e); }
 });

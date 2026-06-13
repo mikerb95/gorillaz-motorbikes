@@ -56,7 +56,7 @@
       <ul class="clf-specs">
         <li><span>Estado</span><strong><%= listing.condition === 'nuevo' ? 'Nuevo' : 'Usado' %></strong></li>
         <% if (listing.brand) { %><li><span>Marca</span><strong><%= listing.brand %></strong></li><% } %>
-        <% if (listing.city) { %><li><span>Ubicación</span><strong><%= listing.city %></strong></li><% } %>
+        <% if (listing.city || listing.department) { %><li><span>Ubicación</span><strong><%= [listing.city, listing.department].filter(Boolean).join(', ') %></strong></li><% } %>
         <% if (listing.sellerName) { %><li><span>Vendedor</span><strong><%= listing.sellerName %></strong></li><% } %>
       </ul>
 
