@@ -187,7 +187,7 @@ function normalizeFields({ items, total, motorcycle, plate, notes }) {
   };
 }
 
-router.get('/api/liquidador/search', (req, res) => {
+router.get('/api/liquidador/search', requireLiquidadorAccess, (req, res) => {
   const q = (req.query.q || '').toLowerCase().trim();
   if (q.length < 3) return res.json([]);
 
@@ -201,7 +201,7 @@ router.get('/api/liquidador/search', (req, res) => {
 
 // Autosave de borrador: crea (status='draft') o actualiza la cotización en curso.
 // Permite retomar el trabajo desde cualquier dispositivo vía /liquidador?id=:id.
-router.post('/api/liquidador/draft', async (req, res) => {
+router.post('/api/liquidador/draft', requireLiquidadorAccess, async (req, res) => {
   try {
     const { id } = req.body;
     const check = validateQuotationFields(req.body, { allowEmptyItems: true });
