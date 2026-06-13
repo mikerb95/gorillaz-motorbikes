@@ -85,6 +85,7 @@ app.use('/',       require('./routes/home'));
 app.use('/',       require('./routes/liquidador'));
 app.use('/',       require('./routes/services'));
 app.use('/',       require('./routes/shop'));
+app.use('/clasificados', require('./routes/clasificados'));
 app.use('/',       require('./routes/courses'));
 app.use('/',       require('./routes/events'));
 app.use('/',       require('./routes/newsletter'));
