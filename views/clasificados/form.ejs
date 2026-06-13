@@ -1,0 +1,107 @@
+<%- include('../partials/head', { title: title }) %>
+
+<%
+  const v = (k) => (listing && listing[k] != null) ? listing[k] : '';
+  const isNeg = listing && (listing.negotiable === true || listing.negotiable === 'on' || listing.negotiable === '1');
+  const action = mode === 'edit' ? ('/clasificados/' + listing.id + '/editar') : '/clasificados/nuevo';
+  const existing = (mode === 'edit' && listing && Array.isArray(listing.images)) ? listing.images : [];
+%>
+
+<main class="container clf-page clf-form-page">
+  <nav class="breadcrumb">
+    <a href="/clasificados">Clasificados</a>
+    <span class="breadcrumb-sep">›</span>
+    <a href="/clasificados/mios">Mis anuncios</a>
+    <span class="breadcrumb-sep">›</span>
+    <span><%= mode === 'edit' ? 'Editar' : 'Nuevo' %></span>
+  </nav>
+
+  <h1 class="section-title"><%= mode === 'edit' ? 'Editar anuncio' : 'Publicar anuncio' %></h1>
+
+  <% if (error) { %><div class="clf-form-error"><%= error %></div><% } %>
+
+  <form class="clf-form" method="post" action="<%= action %>" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+    <div class="clf-field">
+      <label for="title">Título *</label>
+      <input id="title" name="title" maxlength="80" required value="<%= v('title') %>" placeholder="Ej: Casco AGV talla M como nuevo" />
+    </div>
+
+    <div class="clf-field-row">
+      <div class="clf-field">
+        <label for="category">Categoría *</label>
+        <select id="category" name="category" required>
+          <option value="">Selecciona…</option>
+          <% categories.forEach(c => { %>
+            <option value="<%= c.slug %>" <%= v('category') === c.slug ? 'selected' : '' %>><%= c.icon %> <%= c.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="clf-field">
+        <label for="condition">Estado *</label>
+        <select id="condition" name="condition" required>
+          <% conditions.forEach(cond => { %>
+            <option value="<%= cond %>" <%= v('condition') === cond ? 'selected' : '' %>><%= cond === 'nuevo' ? 'Nuevo' : 'Usado' %></option>
+          <% }) %>
+        </select>
+      </div>
+    </div>
+
+    <div class="clf-field-row">
+      <div class="clf-field">
+        <label for="price">Precio (COP) *</label>
+        <input id="price" name="price" inputmode="numeric" required value="<%= v('price') %>" placeholder="0" />
+        <label class="clf-checkbox"><input type="checkbox" name="negotiable" <%= isNeg ? 'checked' : '' %> /> Precio negociable</label>
+      </div>
+      <div class="clf-field">
+        <label for="brand">Marca (opcional)</label>
+        <input id="brand" name="brand" maxlength="60" value="<%= v('brand') %>" placeholder="Ej: Yamaha, Shoei…" />
+      </div>
+    </div>
+
+    <div class="clf-field-row">
+      <div class="clf-field">
+        <label for="city">Ciudad (opcional)</label>
+        <input id="city" name="city" maxlength="60" value="<%= v('city') %>" placeholder="Ej: Bogotá" />
+      </div>
+      <div class="clf-field">
+        <label for="contactPhone">Teléfono / WhatsApp de contacto</label>
+        <input id="contactPhone" name="contactPhone" value="<%= v('contactPhone') %>" placeholder="Ej: 300 123 4567" />
+        <small class="muted">Si lo dejas vacío usaremos el teléfono de tu perfil.</small>
+      </div>
+    </div>
+
+    <div class="clf-field">
+      <label for="description">Descripción</label>
+      <textarea id="description" name="description" rows="5" maxlength="2000" placeholder="Detalles, kilometraje, papeles al día, motivo de venta…"><%= v('description') %></textarea>
+    </div>
+
+    <% if (existing.length) { %>
+      <div class="clf-field">
+        <label>Imágenes actuales (desmarca para quitar)</label>
+        <div class="clf-existing-imgs">
+          <% existing.forEach((img, i) => { %>
+            <label class="clf-existing-img">
+              <input type="checkbox" name="keepImages" value="<%= img %>" checked />
+              <img src="<%= img %>" alt="Imagen <%= i + 1 %>" />
+            </label>
+          <% }) %>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="clf-field">
+      <label for="images"><%= existing.length ? 'Agregar más imágenes' : 'Imágenes' %> (hasta 6, máx. 5MB c/u)</label>
+      <input id="images" name="images" type="file" accept=".jpg,.jpeg,.png,.webp,.avif" multiple />
+    </div>
+
+    <div class="clf-form-actions">
+      <button type="submit" class="btn btn-primary"><%= mode === 'edit' ? 'Guardar cambios' : 'Publicar anuncio' %></button>
+      <a class="btn btn-ghost" href="/clasificados/mios">Cancelar</a>
+    </div>
+    <p class="muted clf-form-note">Tu anuncio será revisado por el equipo antes de publicarse.</p>
+  </form>
+</main>
+
+<%- include('../partials/footer') %>
