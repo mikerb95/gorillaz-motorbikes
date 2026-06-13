@@ -240,7 +240,7 @@ router.get('/api/liquidador/drafts', requireLiquidadorAccess, async (req, res) =
 });
 
 // Descartar un borrador sin terminar.
-router.delete('/api/liquidador/draft/:id', async (req, res) => {
+router.delete('/api/liquidador/draft/:id', requireLiquidadorAccess, async (req, res) => {
   try {
     const existing = await getQuotationById(req.params.id);
     if (existing && existing.status === 'draft') await deleteQuotation(req.params.id);
