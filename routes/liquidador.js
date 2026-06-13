@@ -225,7 +225,7 @@ router.post('/api/liquidador/draft', requireLiquidadorAccess, async (req, res) =
 });
 
 // Lista de borradores sin terminar (para retomar desde otro dispositivo).
-router.get('/api/liquidador/drafts', async (req, res) => {
+router.get('/api/liquidador/drafts', requireLiquidadorAccess, async (req, res) => {
   try {
     const drafts = await getDraftQuotations(15);
     res.json(drafts.map(d => ({
