@@ -80,7 +80,51 @@ function invalidateCatalogCache() {
   catalogCache = null;
 }
 
-router.get('/liquidador', async (req, res) => {
+// Gate de acceso: pide el PIN cuando no hay sesión de admin ni cookie válida.
+router.get('/liquidador/acceso', (req, res) => {
+  const returnTo = safeReturn(req.query.returnTo);
+  if (hasLiqAccess(req, res)) return res.redirect(returnTo);
+  res.render('liquidador-acceso', {
+    title: 'Acceso al liquidador — Gorillaz Motorbikes',
+    error: null,
+    pinConfigured: settings.get('liquidador_pin_hash') != null,
+    returnTo,
+  });
+});
+
+router.post('/liquidador/acceso', async (req, res) => {
+  const returnTo = safeReturn(req.body.returnTo);
+  const hash = settings.get('liquidador_pin_hash');
+  const render = (status, error, pinConfigured = !!hash) =>
+    res.status(status).render('liquidador-acceso', {
+      title: 'Acceso al liquidador — Gorillaz Motorbikes',
+      error, pinConfigured, returnTo,
+    });
+
+  if (!hash) return render(400, 'El PIN del liquidador no está configurado. Pídele al administrador que lo defina.', false);
+
+  const pin = String(req.body.pin || '').trim();
+  if (!/^\d{4,6}$/.test(pin)) return render(400, 'PIN inválido.');
+
+  if (await isThrottleLocked(LIQ_PIN_KEY, LIQ_PIN_MAX_FAIL, LIQ_PIN_WINDOW_MS)) {
+    return render(429, 'Demasiados intentos. Espera unos minutos o entra como administrador.');
+  }
+  if (!(await bcrypt.compare(pin, hash))) {
+    await recordThrottleFailure(LIQ_PIN_KEY, LIQ_PIN_WINDOW_MS);
+    return render(401, 'PIN incorrecto.');
+  }
+
+  const token = jwt.sign({ liq: true }, JWT_SECRET, { expiresIn: '12h' });
+  res.cookie('liq_jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 12,
+  });
+  res.redirect(returnTo);
+});
+
+router.get('/liquidador', requireLiquidadorAccess, async (req, res) => {
   // Si llega ?id=, se reabre una cotización (borrador o confirmada) para editarla.
   let editQuotation = null;
   if (req.query.id) {
