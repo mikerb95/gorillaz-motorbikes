@@ -280,7 +280,7 @@ router.post('/api/liquidador/quotation', requireLiquidadorAccess, async (req, re
 });
 
 // Editar una cotización ya confirmada (ítems, moto, placa).
-router.put('/api/liquidador/quotation/:id', async (req, res) => {
+router.put('/api/liquidador/quotation/:id', requireLiquidadorAccess, async (req, res) => {
   try {
     const existing = await getQuotationById(req.params.id);
     if (!existing) return res.status(404).json({ error: 'Cotización no encontrada.' });
