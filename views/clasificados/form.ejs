@@ -62,14 +62,23 @@
 
     <div class="clf-field-row">
       <div class="clf-field">
-        <label for="city">Ciudad (opcional)</label>
-        <input id="city" name="city" maxlength="60" value="<%= v('city') %>" placeholder="Ej: Bogotá" />
+        <label for="department">Departamento (opcional)</label>
+        <select id="department" name="department" class="dept-select" data-location-group="clf-form" data-current-dept="<%= v('department') %>">
+          <option value="">— Seleccione —</option>
+        </select>
       </div>
       <div class="clf-field">
-        <label for="contactPhone">Teléfono / WhatsApp de contacto</label>
-        <input id="contactPhone" name="contactPhone" value="<%= v('contactPhone') %>" placeholder="Ej: 300 123 4567" />
-        <small class="muted">Si lo dejas vacío usaremos el teléfono de tu perfil.</small>
+        <label for="city">Ciudad / Municipio (opcional)</label>
+        <select id="city" name="city" class="city-select" data-location-group="clf-form" data-current="<%= v('city') %>">
+          <option value="">— Seleccione un departamento —</option>
+        </select>
       </div>
+    </div>
+
+    <div class="clf-field">
+      <label for="contactPhone">Teléfono / WhatsApp de contacto</label>
+      <input id="contactPhone" name="contactPhone" value="<%= v('contactPhone') %>" placeholder="Ej: 300 123 4567" />
+      <small class="muted">Si lo dejas vacío usaremos el teléfono de tu perfil.</small>
     </div>
 
     <div class="clf-field">
