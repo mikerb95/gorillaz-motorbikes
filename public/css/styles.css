@@ -8376,7 +8376,6 @@ main:has(.club-panel) { padding-top: 0 !important; }
   opacity: 1; transition: opacity .15s ease;
 }
 .clf-existing-img input:not(:checked) ~ img { opacity: .4; filter: grayscale(1) }
-.clf-existing-img input:not(:checked) ~ img + ::after { content: "" }
 .clf-existing-img:has(input:not(:checked)) { outline: 2px dashed #ef4444; outline-offset: 2px }
 .clf-existing-img:has(input:not(:checked))::after { content: "Quitar"; color: #ef4444; font-size: .62rem; top: 6px }
 /* Input de archivos como dropzone */
