@@ -2,14 +2,52 @@
 const express  = require('express');
 const path     = require('path');
 const fs       = require('fs');
-const { createQuotation, updateQuotation, getDraftQuotations, getQuotationById, updateQuotationPhone, deleteQuotation, getInvoiceById, getServiceOrderById } = require('../db');
+const jwt      = require('jsonwebtoken');
+const bcrypt   = require('bcryptjs');
+const { createQuotation, updateQuotation, getDraftQuotations, getQuotationById, updateQuotationPhone, deleteQuotation, getInvoiceById, getServiceOrderById, isThrottleLocked, recordThrottleFailure } = require('../db');
 const { catalog } = require('../helpers/catalog');
+const { JWT_SECRET } = require('../config');
 const settings = require('../helpers/settings');
 
 const router = express.Router();
 
 const CONFIG_PATH   = path.join(__dirname, '..', 'data', 'cotizador-config.json');
 const SERVICES_PATH = path.join(__dirname, '..', 'data', 'services-catalog.json');
+
+// ── Protección de acceso ────────────────────────────────────────────────────
+// El liquidador es una herramienta interna (crea cotizaciones), así que su
+// página y su API quedan tras un control de acceso. Se entra de dos formas:
+//   1) Sesión de admin (correo+contraseña) → acceso automático.
+//   2) PIN rápido configurable, pensado para desbloquearlo en un dispositivo del
+//      taller sin iniciar la sesión completa de admin. El PIN se valida contra
+//      un hash bcrypt en app_settings y emite la cookie de sesión `liq_jwt`.
+// Las páginas públicas (/cotizacion/:id, /factura/:id) quedan fuera de esto:
+// son enlaces que se comparten con el cliente.
+const LIQ_PIN_KEY       = 'liquidador_pin';
+const LIQ_PIN_WINDOW_MS = 15 * 60 * 1000;
+const LIQ_PIN_MAX_FAIL  = 20;
+
+// Solo rutas internas del liquidador; evita open-redirect tras desbloquear.
+function safeReturn(raw) {
+  const rt = typeof raw === 'string' ? raw : '';
+  return /^\/liquidador(\/|$|\?)/.test(rt) ? rt : '/liquidador';
+}
+
+function hasLiqAccess(req, res) {
+  if (res.locals.user && res.locals.user.role === 'admin') return true;
+  const token = req.cookies && req.cookies.liq_jwt;
+  if (token) {
+    try { jwt.verify(token, JWT_SECRET); return true; }
+    catch { /* token expirado/inválido */ }
+  }
+  return false;
+}
+
+function requireLiquidadorAccess(req, res, next) {
+  if (hasLiqAccess(req, res)) return next();
+  if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Acceso no autorizado.' });
+  return res.redirect('/liquidador/acceso?returnTo=' + encodeURIComponent(req.originalUrl));
+}
 
 // Config canónica en app_settings; los archivos JSON quedan como fallback de
 // lectura para los valores previos a la migración a BD.
