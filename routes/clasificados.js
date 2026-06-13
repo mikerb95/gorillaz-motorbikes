@@ -60,7 +60,7 @@ function parseForm(body) {
     return { error: 'El teléfono de contacto no es válido.' };
 
   return {
-    data: { title, description, category, condition, brand, city, contactPhone, negotiable, price },
+    data: { title, description, category, condition, brand, city, department, contactPhone, negotiable, price },
   };
 }
 
