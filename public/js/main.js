@@ -585,6 +585,32 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.remove('logo-hover-dim');
     });
 
+    // Mobile only (no hover): auto-alternate the logo mark/name every 3s,
+    // replicating the desktop hover swap since touch devices can't hover.
+    const mobileMq = window.matchMedia('(max-width: 900px)');
+    const reduceMotionMq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let logoSwapTimer = null;
+    const startLogoAutoSwap = () => {
+      if (logoSwapTimer) return;
+      logoSwapTimer = setInterval(() => {
+        if (document.hidden) return; // pause while tab is in background
+        logo.classList.toggle('is-hidden');
+      }, 3000);
+    };
+    const stopLogoAutoSwap = () => {
+      if (!logoSwapTimer) return;
+      clearInterval(logoSwapTimer);
+      logoSwapTimer = null;
+      logo.classList.remove('is-hidden'); // restore the base mark on desktop
+    };
+    const syncLogoAutoSwap = () => {
+      if (mobileMq.matches && !reduceMotionMq.matches) startLogoAutoSwap();
+      else stopLogoAutoSwap();
+    };
+    syncLogoAutoSwap();
+    mobileMq.addEventListener('change', syncLogoAutoSwap);
+    reduceMotionMq.addEventListener('change', syncLogoAutoSwap);
+
     // Keep blob responsive on resize
     window.addEventListener('resize', () => {
       if (blob.classList.contains('is-visible') && lastEl) setToEl(lastEl);
