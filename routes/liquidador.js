@@ -252,7 +252,7 @@ router.delete('/api/liquidador/draft/:id', requireLiquidadorAccess, async (req, 
 });
 
 // Confirma una cotización: convierte un borrador en confirmada, o crea una nueva.
-router.post('/api/liquidador/quotation', async (req, res) => {
+router.post('/api/liquidador/quotation', requireLiquidadorAccess, async (req, res) => {
   try {
     const { id, clientPhone, clientPhoneCountry } = req.body;
     const check = validateQuotationFields(req.body);
