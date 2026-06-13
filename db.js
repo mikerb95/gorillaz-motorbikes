@@ -1637,6 +1637,7 @@ async function updateClassified(id, fields) {
   if (fields.condition !== undefined)    { set.push('condition = ?');     args.push(fields.condition); }
   if (fields.brand !== undefined)        { set.push('brand = ?');         args.push(fields.brand || null); }
   if (fields.city !== undefined)         { set.push('city = ?');          args.push(fields.city || null); }
+  if (fields.department !== undefined)   { set.push('department = ?');    args.push(fields.department || null); }
   if (fields.contactPhone !== undefined) { set.push('contact_phone = ?'); args.push(fields.contactPhone || null); }
   if (fields.images !== undefined)       { set.push('images = ?');        args.push(JSON.stringify(fields.images || [])); }
   if (fields.status !== undefined)       { set.push('status = ?');        args.push(fields.status); }
