@@ -69,7 +69,7 @@
             </div>
             <div class="clf-card-meta">
               <% if (l.brand) { %><span><%= l.brand %></span><% } %>
-              <% if (l.city) { %><span>📍 <%= l.city %></span><% } %>
+              <% if (l.city || l.department) { %><span>📍 <%= [l.city, l.department].filter(Boolean).join(', ') %></span><% } %>
             </div>
           </div>
         </article>
