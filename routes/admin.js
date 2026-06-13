@@ -842,9 +842,26 @@ router.get('/configuracion', requireAuth, requireAdmin, async (req, res) => {
     puntosConfig:      loadPuntosConfig(),
     empleados:         await getAllEmployees(),
     usuarios:          await getAllUsers(),
+    liquidadorPinSet:  settings.get('liquidador_pin_hash') != null,
     flash: req.query.flash || null,
     tab:   req.query.tab   || 'liquidador',
   });
+});
+
+// PIN de acceso rápido al liquidador (alternativa a la sesión de admin).
+router.post('/configuracion/liquidador-pin', requireAuth, requireAdmin, async (req, res) => {
+  const pin = String(req.body.pin || '').trim();
+  if (!/^\d{4,6}$/.test(pin)) {
+    return res.redirect('/admin/configuracion?tab=liquidador&flash=error');
+  }
+  await settings.set('liquidador_pin_hash', await bcrypt.hash(pin, 10));
+  res.redirect('/admin/configuracion?tab=liquidador&flash=saved');
+});
+
+// Quita el PIN: el liquidador queda accesible solo con sesión de admin.
+router.post('/configuracion/liquidador-pin/quitar', requireAuth, requireAdmin, async (req, res) => {
+  await settings.set('liquidador_pin_hash', null);
+  res.redirect('/admin/configuracion?tab=liquidador&flash=saved');
 });
 
 // ── Empleados (acceso al portal del taller con PIN) ───────────────────────

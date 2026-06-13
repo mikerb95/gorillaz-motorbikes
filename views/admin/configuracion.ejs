@@ -83,6 +83,31 @@
         </div>
       </form>
     </div>
+
+    <div class="crm-card" style="padding:24px">
+      <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">PIN de acceso al liquidador</h2>
+      <p class="muted" style="font-size:13px;margin:0 0 20px">
+        El liquidador solo se abre con tu sesión de administrador o con este PIN rápido.
+        Úsalo para desbloquearlo en un dispositivo del taller sin iniciar tu sesión completa.
+        <strong><%= liquidadorPinSet ? 'Hay un PIN configurado.' : 'Aún no hay PIN configurado (solo entras como administrador).' %></strong>
+      </p>
+      <form method="post" action="/admin/configuracion/liquidador-pin" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div>
+          <label class="cfg-label"><%= liquidadorPinSet ? 'Cambiar PIN' : 'Definir PIN' %> (4 a 6 dígitos)</label>
+          <input type="password" name="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+            maxlength="6" placeholder="••••"
+            style="width:160px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:18px;letter-spacing:6px;font-family:inherit;outline:none;text-align:center" />
+        </div>
+        <button class="btn btn-primary" type="submit">Guardar PIN</button>
+      </form>
+      <% if (liquidadorPinSet) { %>
+        <form method="post" action="/admin/configuracion/liquidador-pin/quitar" style="margin-top:12px">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button class="btn btn-ghost btn-sm" type="submit">Quitar PIN</button>
+        </form>
+      <% } %>
+    </div>
   </div>
 </div>
 
