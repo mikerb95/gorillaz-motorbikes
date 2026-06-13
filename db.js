@@ -1756,5 +1756,7 @@ module.exports = {
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
   getServiceOrdersByPlate,
+  createClassified, updateClassified, setClassifiedStatus, getClassifiedById,
+  getActiveClassifieds, getClassifiedsByUser, getAllClassifieds, countClassifiedsByStatus, deleteClassified,
   backupAllTables,
 };
