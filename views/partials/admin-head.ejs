@@ -24,106 +24,117 @@
       <span>Admin</span>
     </div>
 
+    <div class="crm-nav-search">
+      <svg class="crm-nav-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="crmNavSearch" class="crm-nav-search-input" placeholder="Buscar…" aria-label="Buscar sección o configuración" autocomplete="off" spellcheck="false" />
+      <button type="button" id="crmNavSearchClear" class="crm-nav-search-clear" aria-label="Limpiar búsqueda" hidden>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
     <nav class="crm-nav">
       <a class="crm-nav-link" href="/admin" data-path="/admin">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         Dashboard
       </a>
-      <a class="crm-nav-link" href="/admin/usuarios" data-path="/admin/usuarios">
+      <a class="crm-nav-link" href="/admin/usuarios" data-path="/admin/usuarios" data-keywords="clientes miembros socios cuentas roles">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
         Usuarios
       </a>
-      <a class="crm-nav-link" href="/admin/citas" data-path="/admin/citas">
+      <a class="crm-nav-link" href="/admin/citas" data-path="/admin/citas" data-keywords="agendamiento reservas turnos">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
         Citas
       </a>
-      <a class="crm-nav-link" href="/admin/agenda-servicios" data-path="/admin/agenda-servicios">
+      <a class="crm-nav-link" href="/admin/agenda-servicios" data-path="/admin/agenda-servicios" data-keywords="taller calendario mecánica pintura programación">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
         Agenda Servicios
       </a>
-      <a class="crm-nav-link" href="/admin/eventos" data-path="/admin/eventos">
+      <a class="crm-nav-link" href="/admin/eventos" data-path="/admin/eventos" data-keywords="rodadas encuentros actividades asistencias club">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Eventos
       </a>
-      <a class="crm-nav-link" href="/admin/visitas" data-path="/admin/visitas">
+      <a class="crm-nav-link" href="/admin/visitas" data-path="/admin/visitas" data-keywords="confirmaciones puntos taller pendientes">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
         Visitas
       </a>
-      <a class="crm-nav-link" href="/admin/cursos" data-path="/admin/cursos">
+      <a class="crm-nav-link" href="/admin/cursos" data-path="/admin/cursos" data-keywords="formación capacitación precios">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
         Cursos
       </a>
-      <a class="crm-nav-link" href="/admin/clases" data-path="/admin/clases">
+      <a class="crm-nav-link" href="/admin/clases" data-path="/admin/clases" data-keywords="temas diapositivas material contenido">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         Clases
       </a>
-      <a class="crm-nav-link" href="/admin/tienda" data-path="/admin/tienda">
+      <a class="crm-nav-link" href="/admin/tienda" data-path="/admin/tienda" data-keywords="productos catálogo stock inventario precios shop">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
         Tienda
       </a>
-      <a class="crm-nav-link" href="/admin/clasificados" data-path="/admin/clasificados">
+      <a class="crm-nav-link" href="/admin/clasificados" data-path="/admin/clasificados" data-keywords="ventas motos usadas repuestos accesorios aprobar moderación">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         Clasificados
       </a>
-      <a class="crm-nav-link" href="/admin/calendario" data-path="/admin/calendario">
+      <a class="crm-nav-link" href="/admin/calendario" data-path="/admin/calendario" data-keywords="disponibilidad fechas bloqueadas">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Calendario
       </a>
-      <a class="crm-nav-link" href="/admin/newsletter" data-path="/admin/newsletter">
+      <a class="crm-nav-link" href="/admin/newsletter" data-path="/admin/newsletter" data-keywords="correo email campañas suscriptores boletín">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Newsletter
       </a>
 
-      <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
+      <div class="crm-nav-divider" style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
 
-      <a class="crm-nav-link" href="/admin/ordenes-servicio" data-path="/admin/ordenes-servicio">
+      <a class="crm-nav-link" href="/admin/ordenes-servicio" data-path="/admin/ordenes-servicio" data-keywords="taller mecánica reparación trabajos OT">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
         Órdenes de Servicio
       </a>
-      <a class="crm-nav-link" href="/admin/facturas" data-path="/admin/facturas">
+      <a class="crm-nav-link" href="/admin/facturas" data-path="/admin/facturas" data-keywords="ventas pagos cobros recibos">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
         Facturas
       </a>
-      <a class="crm-nav-link" href="/admin/cotizaciones" data-path="/admin/cotizaciones">
+      <a class="crm-nav-link" href="/admin/cotizaciones" data-path="/admin/cotizaciones" data-keywords="cotizador presupuesto liquidador">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Cotizaciones
       </a>
-      <a class="crm-nav-link" href="/admin/cotizador-items" data-path="/admin/cotizador-items">
+      <a class="crm-nav-link" href="/admin/cotizador-items" data-path="/admin/cotizador-items" data-keywords="servicios repuestos productos liquidador catálogo precios">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         Ítems del Cotizador
       </a>
-      <a class="crm-nav-link" href="/admin/configuracion" data-path="/admin/configuracion">
+      <a class="crm-nav-link" href="/admin/configuracion" data-path="/admin/configuracion" data-keywords="ajustes settings opciones preferencias">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         Configuración
       </a>
 
-      <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
+      <div class="crm-nav-divider" style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
 
-      <a class="crm-nav-link" href="/admin/finanzas" data-path="/admin/finanzas">
+      <a class="crm-nav-link" href="/admin/finanzas" data-path="/admin/finanzas" data-keywords="contabilidad ingresos egresos gastos flujo caja reportes">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
         Finanzas
       </a>
 
-      <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
+      <div class="crm-nav-divider" style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
 
-      <a class="crm-nav-link" href="/admin/auditoria" data-path="/admin/auditoria">
+      <a class="crm-nav-link" href="/admin/auditoria" data-path="/admin/auditoria" data-keywords="logs registro actividad historial seguridad">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Auditoría
       </a>
 
-      <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
+      <div class="crm-nav-divider" style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
 
-      <a class="crm-nav-link" href="/admin/dev" data-path="/admin/dev">
+      <a class="crm-nav-link" href="/admin/dev" data-path="/admin/dev" data-keywords="desarrollo backup respaldo herramientas">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         DEV
       </a>
 
-      <div style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
+      <div class="crm-nav-divider" style="height:1px;background:rgba(255,255,255,.12);margin:6px 12px"></div>
 
-      <a class="crm-nav-link" href="/admin/ayuda" data-path="/admin/ayuda">
+      <a class="crm-nav-link" href="/admin/ayuda" data-path="/admin/ayuda" data-keywords="soporte documentación faq preguntas">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Ayuda
       </a>
+
+      <div id="crmNavExtra" class="crm-nav-extra" hidden></div>
+      <div id="crmNavEmpty" class="crm-nav-empty" hidden>Sin resultados</div>
     </nav>
 
     <div class="crm-sidebar-footer">
