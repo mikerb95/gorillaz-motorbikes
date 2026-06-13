@@ -99,4 +99,4 @@ const uploadSlideImage = (req, res, next) => {
   });
 };
 
-module.exports = { uploadProduct, uploadSlideImage, uploadToBlob, deleteFromBlob };
+module.exports = { uploadProduct, uploadClassified, uploadSlideImage, uploadToBlob, deleteFromBlob };
