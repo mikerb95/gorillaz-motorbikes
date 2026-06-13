@@ -294,7 +294,7 @@ router.put('/api/liquidador/quotation/:id', requireLiquidadorAccess, async (req,
   }
 });
 
-router.post('/api/liquidador/quotation/:id/phone', async (req, res) => {
+router.post('/api/liquidador/quotation/:id/phone', requireLiquidadorAccess, async (req, res) => {
   try {
     const { clientPhone, clientPhoneCountry } = req.body;
     const digits = (clientPhone || '').replace(/\D/g, '');
