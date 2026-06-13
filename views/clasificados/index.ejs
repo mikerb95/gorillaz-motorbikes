@@ -9,67 +9,87 @@
     <span>Clasificados</span>
   </nav>
 
-  <header class="clf-header">
-    <div>
-      <h1 class="section-title">Clasificados del Club</h1>
-      <p class="muted">Compra y vende motos, partes y accesorios entre miembros del club. La publicación es un beneficio exclusivo para socios.</p>
+  <header class="clf-hero">
+    <div class="clf-hero-text">
+      <span class="clf-eyebrow">Beneficio del club</span>
+      <h1 class="clf-hero-title">Clasificados</h1>
+      <p class="clf-hero-sub">Compra y vende motos, partes y accesorios entre miembros del club. Publicar es exclusivo para socios; cada anuncio pasa por revisión del equipo.</p>
     </div>
-    <% if (user) { %>
-      <a class="btn btn-primary" href="/clasificados/nuevo">＋ Publicar anuncio</a>
-    <% } else { %>
-      <a class="btn btn-primary" href="/club/login?return=/clasificados/nuevo">Inicia sesión para publicar</a>
-    <% } %>
+    <div class="clf-hero-cta">
+      <% if (user) { %>
+        <a class="btn btn-primary clf-cta-pub" href="/clasificados/nuevo"><span aria-hidden="true">＋</span> Publicar anuncio</a>
+        <a class="clf-hero-link" href="/clasificados/mios">Ver mis anuncios →</a>
+      <% } else { %>
+        <a class="btn btn-primary clf-cta-pub" href="/club/login?return=/clasificados/nuevo">Inicia sesión para publicar</a>
+        <a class="clf-hero-link" href="/club/registro">¿Aún no eres socio? Únete →</a>
+      <% } %>
+    </div>
   </header>
 
-  <form class="clf-filters" method="get" action="/clasificados">
+  <form class="clf-toolbar" method="get" action="/clasificados">
+    <% if (selectedCat) { %><input type="hidden" name="cat" value="<%= selectedCat %>" /><% } %>
     <div class="clf-search-wrap">
-      <input name="q" placeholder="Buscar por título, marca o descripción" value="<%= q %>" />
-      <button type="submit" class="clf-search-btn" aria-label="Buscar">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </button>
+      <svg class="clf-search-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input name="q" placeholder="Buscar por título, marca o descripción…" value="<%= q %>" />
+      <button type="submit" class="clf-search-btn">Buscar</button>
     </div>
     <% if (cities && cities.length) { %>
-      <select name="city" onchange="this.form.submit()" class="clf-city-select">
-        <option value="">Toda Colombia</option>
-        <% cities.forEach(c => { %>
-          <option value="<%= c %>" <%= city === c ? 'selected' : '' %>><%= c %></option>
-        <% }) %>
-      </select>
+      <div class="clf-select-wrap">
+        <select name="city" onchange="this.form.submit()" aria-label="Filtrar por ciudad">
+          <option value="">📍 Toda Colombia</option>
+          <% cities.forEach(c => { %>
+            <option value="<%= c %>" <%= city === c ? 'selected' : '' %>><%= c %></option>
+          <% }) %>
+        </select>
+      </div>
     <% } %>
   </form>
 
-  <div class="clf-cats" role="tablist" aria-label="Categorías">
-    <a class="clf-cat-chip <%= !selectedCat ? 'is-active' : '' %>" href="/clasificados<%= q ? ('?q=' + encodeURIComponent(q)) : '' %>">Todo</a>
+  <nav class="clf-cats" aria-label="Categorías">
+    <a class="clf-cat-chip <%= !selectedCat ? 'is-active' : '' %>" href="/clasificados<%= q ? ('?q=' + encodeURIComponent(q)) : (city ? '?' : '') %><%= q && city ? '&' : '' %><%= city ? ('city=' + encodeURIComponent(city)) : '' %>">
+      <span class="clf-cat-ico" aria-hidden="true">🗂️</span> Todo <span class="clf-cat-count"><%= total %></span>
+    </a>
     <% categories.forEach(c => { %>
-      <a class="clf-cat-chip <%= selectedCat === c.slug ? 'is-active' : '' %>" href="/clasificados?cat=<%= c.slug %><%= q ? ('&q=' + encodeURIComponent(q)) : '' %>">
-        <span aria-hidden="true"><%= c.icon %></span> <%= c.name %>
+      <a class="clf-cat-chip <%= selectedCat === c.slug ? 'is-active' : '' %>" data-cat="<%= c.slug %>"
+         href="/clasificados?cat=<%= c.slug %><%= q ? ('&q=' + encodeURIComponent(q)) : '' %><%= city ? ('&city=' + encodeURIComponent(city)) : '' %>">
+        <span class="clf-cat-ico" aria-hidden="true"><%= c.icon %></span> <%= c.name %> <span class="clf-cat-count"><%= c.count %></span>
       </a>
     <% }) %>
-  </div>
+  </nav>
 
   <% if (!listings.length) { %>
     <div class="clf-empty">
-      <p>Todavía no hay anuncios publicados<%= selectedCat || q || city ? ' con estos filtros' : '' %>.</p>
-      <% if (user) { %><a class="btn btn-ghost" href="/clasificados/nuevo">Publica el primero</a><% } %>
+      <div class="clf-empty-ico" aria-hidden="true">🏍️</div>
+      <p class="clf-empty-title">No hay anuncios<%= selectedCat || q || city ? ' con estos filtros' : ' por ahora' %></p>
+      <p class="clf-empty-sub">
+        <% if (selectedCat || q || city) { %>Prueba quitar algún filtro o <a href="/clasificados">ver todo</a>.
+        <% } else if (user) { %>Sé el primero en publicar algo para el club.
+        <% } else { %>Vuelve pronto: los miembros publican aquí sus motos, partes y accesorios.<% } %>
+      </p>
+      <% if (user) { %><a class="btn btn-primary" href="/clasificados/nuevo">＋ Publicar el primero</a><% } %>
     </div>
   <% } else { %>
+    <div class="clf-results-bar">
+      <span><strong><%= listings.length %></strong> anuncio<%= listings.length === 1 ? '' : 's' %><%= selectedCat ? (' en ' + catName(selectedCat)) : '' %></span>
+    </div>
     <div class="clf-grid">
       <% listings.forEach(l => { %>
-        <article class="clf-card">
+        <article class="clf-card" data-cat="<%= l.category %>">
           <a class="clf-card-media" href="/clasificados/<%= l.id %>">
             <img src="<%= (l.images && l.images[0]) || '/images/download.png' %>" alt="<%= l.title %>" loading="lazy">
-            <span class="clf-chip clf-chip-cat"><%= catName(l.category) %></span>
+            <span class="clf-chip clf-chip-cat"><span aria-hidden="true"><%= (categories.find(c => c.slug === l.category) || {}).icon || '🏷️' %></span> <%= catName(l.category) %></span>
             <% if (l.condition === 'nuevo') { %><span class="clf-chip clf-chip-new">Nuevo</span><% } %>
+            <% if (l.images && l.images.length > 1) { %><span class="clf-chip clf-chip-count"><%= l.images.length %> 📷</span><% } %>
           </a>
           <div class="clf-card-body">
             <a class="clf-card-title" href="/clasificados/<%= l.id %>"><%= l.title %></a>
             <div class="clf-card-price">
               $<%= l.price.toLocaleString('es-CO') %>
-              <% if (l.negotiable) { %><small class="muted">· Negociable</small><% } %>
+              <% if (l.negotiable) { %><span class="clf-neg">Negociable</span><% } %>
             </div>
             <div class="clf-card-meta">
-              <% if (l.brand) { %><span><%= l.brand %></span><% } %>
-              <% if (l.city || l.department) { %><span>📍 <%= [l.city, l.department].filter(Boolean).join(', ') %></span><% } %>
+              <% if (l.brand) { %><span class="clf-meta-brand"><%= l.brand %></span><% } %>
+              <% if (l.city || l.department) { %><span class="clf-meta-loc"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><%= [l.city, l.department].filter(Boolean).join(', ') %></span><% } %>
             </div>
           </div>
         </article>
