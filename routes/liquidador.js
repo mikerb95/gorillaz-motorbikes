@@ -112,27 +112,27 @@ function invalidateCatalogCache() {
 }
 
 // Gate de acceso: pide el PIN cuando no hay sesión de admin ni cookie válida.
-router.get('/liquidador/acceso', (req, res) => {
+router.get('/liquidador/acceso', async (req, res) => {
   const returnTo = safeReturn(req.query.returnTo);
   if (hasLiqAccess(req, res)) return res.redirect(returnTo);
   res.render('liquidador-acceso', {
     title: 'Acceso al liquidador — Gorillaz Motorbikes',
     error: null,
-    pinConfigured: settings.get('liquidador_pin_hash') != null,
+    pinConfigured: await liquidadorPinAvailable(),
     returnTo,
   });
 });
 
 router.post('/liquidador/acceso', async (req, res) => {
   const returnTo = safeReturn(req.body.returnTo);
-  const hash = settings.get('liquidador_pin_hash');
-  const render = (status, error, pinConfigured = !!hash) =>
+  const pinAvailable = await liquidadorPinAvailable();
+  const render = (status, error, pinConfigured = pinAvailable) =>
     res.status(status).render('liquidador-acceso', {
       title: 'Acceso al liquidador — Gorillaz Motorbikes',
       error, pinConfigured, returnTo,
     });
 
-  if (!hash) return render(400, 'El PIN del liquidador no está configurado. Pídele al administrador que lo defina.', false);
+  if (!pinAvailable) return render(400, 'El acceso por PIN no está configurado. Inicia sesión como administrador.', false);
 
   const pin = String(req.body.pin || '').trim();
   if (!/^\d{4,6}$/.test(pin)) return render(400, 'PIN inválido.');
@@ -140,7 +140,7 @@ router.post('/liquidador/acceso', async (req, res) => {
   if (await isThrottleLocked(LIQ_PIN_KEY, LIQ_PIN_MAX_FAIL, LIQ_PIN_WINDOW_MS)) {
     return render(429, 'Demasiados intentos. Espera unos minutos o entra como administrador.');
   }
-  if (!(await bcrypt.compare(pin, hash))) {
+  if (!(await pinUnlocksLiquidador(pin))) {
     await recordThrottleFailure(LIQ_PIN_KEY, LIQ_PIN_WINDOW_MS);
     return render(401, 'PIN incorrecto.');
   }
