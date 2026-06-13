@@ -1,0 +1,76 @@
+<%- include('../partials/head', { title: 'Mis anuncios' }) %>
+
+<%
+  const STATUS = {
+    pending:  { label: 'En revisión', cls: 'pending' },
+    active:   { label: 'Publicado',   cls: 'active'  },
+    rejected: { label: 'Rechazado',   cls: 'rejected'},
+    sold:     { label: 'Vendido',     cls: 'sold'    },
+  };
+%>
+
+<main class="container clf-page">
+  <nav class="breadcrumb">
+    <a href="/clasificados">Clasificados</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Mis anuncios</span>
+  </nav>
+
+  <header class="clf-header">
+    <h1 class="section-title">Mis anuncios</h1>
+    <a class="btn btn-primary" href="/clasificados/nuevo">＋ Publicar anuncio</a>
+  </header>
+
+  <% if (!listings.length) { %>
+    <div class="clf-empty">
+      <p>Aún no has publicado anuncios.</p>
+      <a class="btn btn-ghost" href="/clasificados/nuevo">Crear mi primer anuncio</a>
+    </div>
+  <% } else { %>
+    <div class="clf-mine">
+      <% listings.forEach(l => { const st = STATUS[l.status] || STATUS.pending; %>
+        <article class="clf-mine-row">
+          <a class="clf-mine-thumb" href="/clasificados/<%= l.id %>">
+            <img src="<%= (l.images && l.images[0]) || '/images/download.png' %>" alt="<%= l.title %>" loading="lazy">
+          </a>
+          <div class="clf-mine-info">
+            <div class="clf-mine-top">
+              <a class="clf-card-title" href="/clasificados/<%= l.id %>"><%= l.title %></a>
+              <span class="clf-status-badge clf-status-<%= st.cls %>"><%= st.label %></span>
+            </div>
+            <div class="clf-card-meta">
+              <span><%= catName(l.category) %></span>
+              <span>$<%= l.price.toLocaleString('es-CO') %></span>
+            </div>
+            <% if (l.status === 'rejected' && l.rejectReason) { %>
+              <p class="clf-reject-reason">Motivo: <%= l.rejectReason %></p>
+            <% } %>
+          </div>
+          <div class="clf-mine-actions">
+            <% if (l.status !== 'sold') { %>
+              <a class="btn btn-ghost btn-sm" href="/clasificados/<%= l.id %>/editar">Editar</a>
+            <% } %>
+            <% if (l.status === 'active') { %>
+              <form method="post" action="/clasificados/<%= l.id %>/vendido" onsubmit="return confirm('¿Marcar este anuncio como vendido?')">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <button class="btn btn-ghost btn-sm" type="submit">Marcar vendido</button>
+              </form>
+            <% } %>
+            <% if (l.status === 'sold' || l.status === 'rejected') { %>
+              <form method="post" action="/clasificados/<%= l.id %>/reactivar">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <button class="btn btn-ghost btn-sm" type="submit">Reactivar</button>
+              </form>
+            <% } %>
+            <form method="post" action="/clasificados/<%= l.id %>/eliminar" onsubmit="return confirm('¿Eliminar este anuncio definitivamente?')">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button class="btn btn-danger btn-sm" type="submit">Eliminar</button>
+            </form>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+</main>
+
+<%- include('../partials/footer') %>
