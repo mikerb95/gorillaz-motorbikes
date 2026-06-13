@@ -136,7 +136,7 @@
     const dividers = Array.from(nav.querySelectorAll('.crm-nav-divider'));
 
     // Strip accents + lowercase for forgiving matching
-    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[0300-036f]/g, '');
 
     // SVG icons reused for extra items
     const ICON = {
