@@ -1570,6 +1570,139 @@ async function getServiceOrdersByPlate(plate) {
   return r.rows.map(rowToServiceOrder);
 }
 
+// ── Clasificados ────────────────────────────────────────────────────────────
+
+function rowToClassified(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    userId: row.user_id,
+    sellerName: row.seller_name || '',
+    category: row.category || 'moto',
+    title: row.title,
+    description: row.description || '',
+    price: Number(row.price) || 0,
+    negotiable: row.negotiable === 1,
+    condition: row.condition || 'usado',
+    brand: row.brand || '',
+    city: row.city || '',
+    contactPhone: row.contact_phone || '',
+    images: safeJson(row.images, []),
+    status: row.status || 'pending',
+    rejectReason: row.reject_reason || '',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function createClassified(data) {
+  const id = data.id || uuidv4();
+  await db.execute({
+    sql: `INSERT INTO classifieds
+            (id, user_id, seller_name, category, title, description, price,
+             negotiable, condition, brand, city, contact_phone, images, status)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      id,
+      data.userId,
+      data.sellerName || '',
+      data.category || 'moto',
+      data.title,
+      data.description || '',
+      data.price || 0,
+      data.negotiable ? 1 : 0,
+      data.condition || 'usado',
+      data.brand || null,
+      data.city || null,
+      data.contactPhone || null,
+      JSON.stringify(data.images || []),
+      data.status || 'pending',
+    ],
+  });
+  return id;
+}
+
+async function updateClassified(id, fields) {
+  const set = [];
+  const args = [];
+  if (fields.category !== undefined)     { set.push('category = ?');      args.push(fields.category); }
+  if (fields.title !== undefined)        { set.push('title = ?');         args.push(fields.title); }
+  if (fields.description !== undefined)  { set.push('description = ?');    args.push(fields.description); }
+  if (fields.price !== undefined)        { set.push('price = ?');         args.push(fields.price); }
+  if (fields.negotiable !== undefined)   { set.push('negotiable = ?');    args.push(fields.negotiable ? 1 : 0); }
+  if (fields.condition !== undefined)    { set.push('condition = ?');     args.push(fields.condition); }
+  if (fields.brand !== undefined)        { set.push('brand = ?');         args.push(fields.brand || null); }
+  if (fields.city !== undefined)         { set.push('city = ?');          args.push(fields.city || null); }
+  if (fields.contactPhone !== undefined) { set.push('contact_phone = ?'); args.push(fields.contactPhone || null); }
+  if (fields.images !== undefined)       { set.push('images = ?');        args.push(JSON.stringify(fields.images || [])); }
+  if (fields.status !== undefined)       { set.push('status = ?');        args.push(fields.status); }
+  if (fields.rejectReason !== undefined) { set.push('reject_reason = ?'); args.push(fields.rejectReason || null); }
+  if (set.length === 0) return;
+  set.push(`updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')`);
+  args.push(id);
+  await db.execute({ sql: `UPDATE classifieds SET ${set.join(', ')} WHERE id = ?`, args });
+}
+
+async function setClassifiedStatus(id, status, rejectReason) {
+  await db.execute({
+    sql: `UPDATE classifieds SET status = ?, reject_reason = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?`,
+    args: [status, rejectReason || null, id],
+  });
+}
+
+async function getClassifiedById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM classifieds WHERE id = ?', args: [id] });
+  return rowToClassified(r.rows[0] || null);
+}
+
+// Catálogo público: solo anuncios aprobados. Filtros opcionales por categoría,
+// texto (título/descripción/marca) y ciudad.
+async function getActiveClassifieds({ category, q, city } = {}) {
+  const where = [`status = 'active'`];
+  const args = [];
+  if (category) { where.push('category = ?'); args.push(category); }
+  if (city)     { where.push('city = ?');     args.push(city); }
+  if (q) {
+    where.push('(LOWER(title) LIKE ? OR LOWER(description) LIKE ? OR LOWER(brand) LIKE ?)');
+    const like = `%${q.toLowerCase()}%`;
+    args.push(like, like, like);
+  }
+  const r = await db.execute({
+    sql: `SELECT * FROM classifieds WHERE ${where.join(' AND ')} ORDER BY created_at DESC`,
+    args,
+  });
+  return r.rows.map(rowToClassified);
+}
+
+async function getClassifiedsByUser(userId) {
+  const r = await db.execute({
+    sql: 'SELECT * FROM classifieds WHERE user_id = ? ORDER BY created_at DESC',
+    args: [userId],
+  });
+  return r.rows.map(rowToClassified);
+}
+
+async function getAllClassifieds(status) {
+  if (status) {
+    const r = await db.execute({
+      sql: 'SELECT * FROM classifieds WHERE status = ? ORDER BY created_at DESC',
+      args: [status],
+    });
+    return r.rows.map(rowToClassified);
+  }
+  const r = await db.execute('SELECT * FROM classifieds ORDER BY created_at DESC');
+  return r.rows.map(rowToClassified);
+}
+
+async function countClassifiedsByStatus(status) {
+  const r = await db.execute({ sql: 'SELECT COUNT(*) as n FROM classifieds WHERE status = ?', args: [status] });
+  return Number(r.rows[0].n);
+}
+
+async function deleteClassified(id) {
+  await db.execute({ sql: 'DELETE FROM classifieds WHERE id = ?', args: [id] });
+}
+
 // ── Backup ────────────────────────────────────────────────────────────────
 
 async function backupAllTables() {
