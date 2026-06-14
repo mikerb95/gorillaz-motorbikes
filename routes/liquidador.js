@@ -178,6 +178,8 @@ router.get('/liquidador', requireLiquidadorAccess, async (req, res) => {
     canonicalPath: '/liquidador',
     waConfig: loadConfig(),
     editQuotation,
+    // Solo los admin (sesión, no acceso por PIN) pueden entrar a /admin/cotizaciones.
+    isAdmin: !!(res.locals.user && res.locals.user.role === 'admin'),
   });
 });
 
