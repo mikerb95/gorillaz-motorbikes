@@ -481,7 +481,7 @@ async function createUser(data) {
       data.nickname || null,
       data.bloodType || null,
       data.clubNotifications === false ? 0 : 1,
-      JSON.stringify(data.membership || { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Descuentos en taller', 'Acceso al club'] }),
+      JSON.stringify(data.membership || { level: 'Básica', since: hoyCO(), expires: null, benefits: ['Descuentos en taller', 'Acceso al club'] }),
       JSON.stringify(data.visits || []),
       JSON.stringify(data.vehicles || []),
       data.emergencyName || null,
