@@ -51,7 +51,7 @@
       <h2>Información</h2>
       <div class="row">
         <div><div class="k">Moto / Placa</div><div class="v"><%= order.motorcycle || '—' %></div></div>
-        <div><div class="k">Ingreso</div><div class="v"><%= new Date(order.createdAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) %></div></div>
+        <div><div class="k">Ingreso</div><div class="v"><%= fechaCO(order.createdAt, {day:'2-digit',month:'short',year:'numeric'}) %></div></div>
         <div><div class="k">Entrega estimada</div><div class="v"><%= order.estimatedDate || '—' %></div></div>
       </div>
       <% if (order.notes) { %>
