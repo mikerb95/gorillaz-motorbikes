@@ -84,7 +84,7 @@
                 <span class="badge badge-warning">Pendiente</span>
               <% } %>
             </td>
-            <td style="font-size:.8rem;color:#71717a"><%= new Date(s.created_at).toLocaleDateString('es-CO') %></td>
+            <td style="font-size:.8rem;color:#71717a"><%= fechaCO(s.created_at, {}) %></td>
             <td>
               <form action="/admin/newsletter/eliminar" method="post" data-confirm="¿Eliminar este suscriptor?">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
