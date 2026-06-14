@@ -167,7 +167,7 @@ const fmt = n => '$' + Number(n).toLocaleString('es-CO');
           </td>
           <td style="font-weight:600;font-size:.85rem"><%= mov.label %></td>
           <td class="muted" style="font-size:.8rem;white-space:nowrap">
-            <%= new Date(mov.date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+            <%= fechaCO(mov.date, { day: '2-digit', month: 'short', year: 'numeric' }) %>
           </td>
           <td style="font-size:.82rem;text-transform:capitalize">
             <%= METHOD_LABELS[mov.method] || mov.method || '—' %>

@@ -49,9 +49,8 @@
             };
             const a = actionLabels[log.action] || { label: log.action, cls: 'badge-muted' };
             const targetLabels = { event: 'Evento', user: 'Usuario', attendance: 'Asistencia' };
-            const date = new Date(log.createdAt);
-            const dateStr = date.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
-            const timeStr = date.toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
+            const dateStr = fechaCO(log.createdAt, { day:'2-digit', month:'short', year:'numeric' });
+            const timeStr = horaCO(log.createdAt, { hour:'2-digit', minute:'2-digit' });
           %>
           <tr class="audit-row"
               data-search="<%= (log.adminName + ' ' + log.action + ' ' + (log.targetType||'')).toLowerCase() %>"
