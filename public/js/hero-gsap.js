@@ -7,14 +7,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const hero = document.querySelector('.hero[data-slideshow]');
   if (!hero || typeof gsap === 'undefined') return;
 
-  // Only hide content for animation once we know GSAP is available
-  document.documentElement.classList.add('gsap-hero');
-
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let slidesSrc;
   try { slidesSrc = JSON.parse(hero.getAttribute('data-slideshow') || '[]'); } catch { slidesSrc = []; }
   if (!slidesSrc.length) return;
+
+  // Hide content for the entrance animation only now that GSAP is available AND
+  // we know we'll actually run (slides present) — otherwise an early return above
+  // would leave .hero-content stuck at opacity:0.
+  document.documentElement.classList.add('gsap-hero');
 
   const container = hero.querySelector('.hero-slides');
   const content   = hero.querySelector('.hero-content');
