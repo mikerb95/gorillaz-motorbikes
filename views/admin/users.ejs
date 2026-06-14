@@ -103,7 +103,7 @@
             </td>
             <td style="font-size:.8rem;color:#52525b"><%= u.phone || '—' %></td>
             <td style="font-size:.75rem;color:#71717a">
-              <% if (u.createdAt) { %><%= new Date(u.createdAt).toLocaleDateString('es-CO') %><% } else { %>—<% } %>
+              <% if (u.createdAt) { %><%= fechaCO(u.createdAt, {}) %><% } else { %>—<% } %>
             </td>
             <td>
               <div class="crm-table-actions">
