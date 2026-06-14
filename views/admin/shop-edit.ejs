@@ -24,9 +24,9 @@
   <!-- Meta info -->
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;font-size:.75rem;color:#71717a">
     <span>ID: <code style="background:#f4f4f5;padding:2px 6px;border-radius:5px"><%= product.id %></code></span>
-    <% if (product.createdAt) { %><span>Creado: <%= new Date(product.createdAt).toLocaleDateString('es-CO') %></span>
+    <% if (product.createdAt) { %><span>Creado: <%= fechaCO(product.createdAt, {}) %></span>
       <% } %>
-        <% if (product.updatedAt) { %><span>Actualizado: <%= new Date(product.updatedAt).toLocaleDateString('es-CO') %>
+        <% if (product.updatedAt) { %><span>Actualizado: <%= fechaCO(product.updatedAt, {}) %>
           </span>
           <% } %>
   </div>
