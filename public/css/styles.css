@@ -7580,13 +7580,19 @@ main:has(.club-panel) { padding-top: 0 !important; }
 .hero-content {
   position: relative;
   z-index: 2;
-  padding: 0 24px 80px;
-  color: #fff;
-  max-width: 720px
+  /* Align the hero text with the navbar / page content column (.container box):
+     full-bleed hero, but the inner content sits in the same 1400px centered box. */
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 12px 80px;
+  color: #fff
 }
 
 .hero-content h2 {
   margin: 0 0 24px;
+  /* Cap the line length for readability (was on .hero-content before it became the layout box) */
+  max-width: 720px;
   font-size: clamp(1.8rem, 4.5vw, 3rem);
   font-weight: 900;
   line-height: 1.1;
