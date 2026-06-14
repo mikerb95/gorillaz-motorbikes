@@ -56,8 +56,8 @@ const thisMonthRev = thisMonthQ.reduce((s,q) => s + q.total, 0);
             <span class="badge badge-warning" style="font-size:.8rem;font-weight:900">#<%= d.label %></span>
           </td>
           <td class="muted" style="font-size:.82rem;white-space:nowrap">
-            <%= new Date(d.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %><br>
-            <span style="font-size:.76rem"><%= new Date(d.createdAt).toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' }) %></span>
+            <%= fechaCO(d.createdAt, { day:'2-digit', month:'short', year:'numeric' }) %><br>
+            <span style="font-size:.76rem"><%= horaCO(d.createdAt, { hour:'2-digit', minute:'2-digit' }) %></span>
           </td>
           <td>
             <% if (d.plate) { %>
