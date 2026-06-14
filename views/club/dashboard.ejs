@@ -517,7 +517,7 @@
                 </span>
                 <div class="passkey-info">
                   <span class="passkey-name"><%= pk.name || 'Passkey' %></span>
-                  <span class="passkey-date">Registrada el <%= new Date(pk.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %></span>
+                  <span class="passkey-date">Registrada el <%= fechaCO(pk.createdAt, { day:'2-digit', month:'short', year:'numeric' }) %></span>
                 </div>
                 <form method="post" action="/club/auth/passkey/<%= pk.id %>/delete" style="margin:0" onsubmit="return confirm('¿Eliminar esta passkey?')">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
