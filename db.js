@@ -864,7 +864,7 @@ async function addUserScore(userId, points, concept, description) {
     if (!r.rows[0]) { await tx.rollback(); return; }
     const row        = r.rows[0];
     const newScore   = (Number(row.score) || 0) + points;
-    const entry      = { date: new Date().toISOString().slice(0, 10), points, concept, description };
+    const entry      = { date: hoyCO(), points, concept, description };
     const history    = [entry, ...safeJson(row.score_history, [])].slice(0, 100);
     await tx.execute({
       sql: 'UPDATE users SET score = ?, score_history = ? WHERE id = ?',
