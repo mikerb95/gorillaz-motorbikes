@@ -211,6 +211,48 @@ body.has-subbar .nav-bar .header-inner {
   visibility: visible
 }
 
+/* Mobile (no hover): swap the mark <-> name as a smooth 3D flip instead of a flat crossfade.
+   Driven only by transform/backface-visibility so it's GPU-accelerated and reads as intentional. */
+@media (max-width: 900px) {
+  .site-header .logo {
+    perspective: 700px;
+  }
+
+  .site-header .logo .logo-base,
+  .site-header .logo .logo-name {
+    opacity: 1;
+    visibility: visible;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: rotateY(0deg);
+    transition: transform .6s cubic-bezier(.45, .05, .25, 1), filter .6s ease;
+  }
+
+  /* Name starts flipped away (back-facing, hidden by backface-visibility) */
+  .site-header .logo .logo-name {
+    transform: rotateY(180deg);
+  }
+
+  /* is-hidden = show the name: both faces rotate +180 in the same direction */
+  .site-header .logo.is-hidden .logo-base {
+    opacity: 1;
+    transform: rotateY(180deg);
+  }
+
+  .site-header .logo.is-hidden .logo-name {
+    opacity: 1;
+    transform: rotateY(360deg);
+  }
+
+  /* Respect reduced-motion: no flip, just keep the mark visible */
+  @media (prefers-reduced-motion: reduce) {
+    .site-header .logo .logo-base,
+    .site-header .logo .logo-name {
+      transition: none;
+    }
+  }
+}
+
 .nav {
   display: flex;
   align-items: center;
