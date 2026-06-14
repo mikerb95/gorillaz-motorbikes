@@ -56,6 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Hero content entrance
   if (content && !reduced) {
+    // The .gsap-hero CSS hides the CONTAINER (.hero-content). Reveal it first,
+    // then stagger its children in — otherwise the parent stays opacity:0 and
+    // nothing is ever visible no matter how the children animate.
+    gsap.set(content, { opacity: 1, y: 0 });
     const heading = content.querySelector('h2');
     const btnRow  = content.querySelector('.btn-row');
     const tl = gsap.timeline({ delay: 0.5 });
