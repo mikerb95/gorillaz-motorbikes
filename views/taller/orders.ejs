@@ -62,7 +62,7 @@
         <div class="tl-moto"><%= o.motorcycle || 'Sin moto registrada' %></div>
         <div class="tl-meta">
           <%= o.items.length %> ítem<%= o.items.length !== 1 ? 's' : '' %>
-          · Ingreso <%= new Date(o.createdAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short'}) %>
+          · Ingreso <%= fechaCO(o.createdAt, {day:'2-digit',month:'short'}) %>
           <% if (o.estimatedDate) { %> · Entrega <%= o.estimatedDate %><% } %>
         </div>
       </a>
