@@ -5193,6 +5193,58 @@ main.schedule-full {
   letter-spacing: .04em
 }
 
+/* ── Resumen inteligente de cotizaciones ── */
+.qsum-kpis { grid-template-columns: repeat(4, 1fr) }
+.qsum-foot { min-height: 16px; display: flex; align-items: center; gap: 6px; margin-top: 2px }
+.qsum-delta { font-size: .72rem; font-weight: 800; display: inline-flex; align-items: center; gap: 3px }
+.qsum-delta.up { color: #16a34a }
+.qsum-delta.down { color: #dc2626 }
+.qsum-delta.flat { color: #9ca3af }
+.qsum-sub { font-size: .72rem; font-weight: 700; color: #9ca3af }
+.qsum-warn { color: #b45309 }
+
+/* selector de periodo */
+.qsum-periods { display: inline-flex; background: #f4f4f5; border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap }
+.qsum-period { font-size: .76rem; font-weight: 700; color: #52525b; padding: 6px 12px; border-radius: 8px; text-decoration: none; white-space: nowrap; transition: background .15s, color .15s }
+.qsum-period:hover { color: #18181b }
+.qsum-period.active { background: #fff; color: #18181b; box-shadow: 0 1px 3px rgba(0, 0, 0, .08) }
+
+/* tira de insights: embudo + sparkline + top */
+.qsum-insights { display: grid; grid-template-columns: 1.25fr 1fr 1fr; background: #fff; border: 1px solid #e4e4e7; border-radius: 14px; overflow: hidden; margin-bottom: 24px }
+.qsum-insight { padding: 16px 18px }
+.qsum-insight + .qsum-insight { border-left: 1px solid #f0f0f1 }
+.qsum-insight-title { font-size: .7rem; font-weight: 800; color: #71717a; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px }
+
+/* embudo */
+.qsum-funnel-step { display: flex; align-items: center; gap: 9px; margin-bottom: 9px }
+.qsum-funnel-step:last-child { margin-bottom: 0 }
+.qsum-funnel-bar { height: 9px; border-radius: 5px; background: #F25C05; min-width: 6px; flex-shrink: 0 }
+.qsum-funnel-bar.b2 { background: #fb923c }
+.qsum-funnel-bar.b3 { background: #22c55e }
+.qsum-funnel-meta { font-size: .74rem; font-weight: 700; color: #52525b; white-space: nowrap }
+.qsum-funnel-meta b { color: #18181b }
+.qsum-funnel-pct { color: #9ca3af; font-weight: 800 }
+
+/* sparkline */
+.qsum-spark { display: flex; align-items: flex-end; gap: 6px; height: 56px }
+.qsum-spark-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; justify-content: flex-end; height: 100% }
+.qsum-spark-bar { width: 100%; max-width: 20px; background: #fed7aa; border-radius: 3px 3px 0 0; min-height: 3px }
+.qsum-spark-col.is-last .qsum-spark-bar { background: #F25C05 }
+.qsum-spark-label { font-size: .62rem; font-weight: 700; color: #a1a1aa }
+
+/* top servicios */
+.qsum-top { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px }
+.qsum-top li { display: flex; justify-content: space-between; gap: 10px; font-size: .78rem; min-width: 0 }
+.qsum-top .nm { font-weight: 700; color: #27272a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.qsum-top .vl { font-weight: 800; color: #52525b; white-space: nowrap }
+.qsum-empty { font-size: .76rem; color: #a1a1aa }
+
+@media (max-width: 860px) {
+  .qsum-kpis { grid-template-columns: repeat(2, 1fr) }
+  .qsum-insights { grid-template-columns: 1fr }
+  .qsum-insight + .qsum-insight { border-left: 0; border-top: 1px solid #f0f0f1 }
+}
+
 /* ── CRM page header ── */
 .crm-page-header {
   display: flex;
