@@ -197,7 +197,7 @@
             <% } %>
           </td>
           <td style="font-size:.83rem"><%= mov.ref %><% if (mov.cat) { %> <span class="muted" style="font-size:.75rem">— <%= mov.cat %></span><% } %></td>
-          <td class="muted" style="font-size:.78rem;white-space:nowrap"><%= new Date(mov.date).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %></td>
+          <td class="muted" style="font-size:.78rem;white-space:nowrap"><%= fechaCO(mov.date, { day:'2-digit', month:'short', year:'numeric' }) %></td>
           <td style="text-align:right;font-weight:700;color:<%= mov.type==='ingreso'?'#16a34a':'#dc2626' %>"><%= mov.type==='ingreso'?'+':'-' %><%= fmt(mov.amount) %></td>
           <td><% if (mov.link) { %><a class="btn btn-ghost btn-sm" href="<%= mov.link %>">Ver</a><% } %></td>
         </tr>
