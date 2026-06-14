@@ -4,6 +4,7 @@ const { JWT_SECRET, RECAPTCHA_SITE_KEY } = require('../config');
 const { getUserById, getAllEvents } = require('../db');
 const catalog = require('../data/catalog');
 const { readFlash } = require('../helpers/flash');
+const { fechaCO, horaCO, fechaHoraCO } = require('../helpers/datetime');
 
 const jwtCart = (req, res, next) => {
   const token = req.cookies.jwt;
@@ -54,6 +55,12 @@ const templateLocals = async (req, res, next) => {
 
   // Disponible para todas las plantillas; el widget solo se pinta si hay clave.
   res.locals.recaptchaSiteKey = RECAPTCHA_SITE_KEY;
+
+  // Formateadores de fecha/hora en hora Colombia para todas las vistas EJS.
+  // Convierten los timestamps UTC de la BD a America/Bogota (UTC−5).
+  res.locals.fechaCO     = fechaCO;
+  res.locals.horaCO      = horaCO;
+  res.locals.fechaHoraCO = fechaHoraCO;
 
   const c = req.cart || { items: {}, count: 0, subtotal: 0 };
   let count = 0, subtotal = 0;
