@@ -54,10 +54,18 @@ function fechaHoraCO(value, opts = { ...DEFAULT_DATE, ...DEFAULT_TIME }) {
   return d.toLocaleString('es-CO', { timeZone: TZ, ...opts });
 }
 
+// Fecha (YYYY-MM-DD) en hora Colombia para cualquier valor; por defecto, ahora.
+// Útil para agrupar timestamps UTC por día/mes/año calendario de Colombia.
+function isoCO(value) {
+  const d = value != null ? toDate(value) : new Date();
+  if (!d) return null;
+  return d.toLocaleDateString('en-CA', { timeZone: TZ }); // en-CA → YYYY-MM-DD
+}
+
 // «Hoy» en hora Colombia como YYYY-MM-DD, para guardar registros «solo día»
 // (membresía, historial de puntos…) con el día correcto en Colombia.
 function hoyCO() {
-  return new Date().toLocaleDateString('en-CA', { timeZone: TZ }); // en-CA → YYYY-MM-DD
+  return isoCO();
 }
 
-module.exports = { TZ, isDateOnly, toDate, fechaCO, horaCO, fechaHoraCO, hoyCO };
+module.exports = { TZ, isDateOnly, toDate, fechaCO, horaCO, fechaHoraCO, isoCO, hoyCO };
