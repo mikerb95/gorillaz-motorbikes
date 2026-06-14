@@ -50,7 +50,7 @@
           <tr>
             <td><%= c.subject %></td>
             <td><%= c.sent_count %></td>
-            <td style="font-size:.8rem;color:#71717a"><%= new Date(c.sent_at).toLocaleString('es-CO', { dateStyle:'short', timeStyle:'short' }) %></td>
+            <td style="font-size:.8rem;color:#71717a"><%= fechaHoraCO(c.sent_at, { dateStyle:'short', timeStyle:'short' }) %></td>
           </tr>
         <% }) %>
       </tbody>

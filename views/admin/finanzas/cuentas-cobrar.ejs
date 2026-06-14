@@ -82,7 +82,7 @@
           %>
         <tr>
           <td><span class="badge badge-warning" style="font-weight:900;font-size:.78rem"><%= inv.label %></span></td>
-          <td class="muted" style="font-size:.78rem;white-space:nowrap"><%= new Date(inv.createdAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) %></td>
+          <td class="muted" style="font-size:.78rem;white-space:nowrap"><%= fechaCO(inv.createdAt, {day:'2-digit',month:'short',year:'numeric'}) %></td>
           <td><a href="/admin/ordenes-servicio/<%= inv.serviceOrderId %>" style="color:#F25C05;font-size:.82rem;text-decoration:none">Ver orden</a></td>
           <td style="text-align:right;font-weight:700;color:#d97706"><%= fmt(inv.total) %></td>
           <td style="font-weight:700;color:<%= inv.days > 90 ? '#dc2626' : inv.days > 60 ? '#ea580c' : inv.days > 30 ? '#d97706' : '#16a34a' %>"><%= inv.days %>d</td>
