@@ -10,6 +10,7 @@ const { setFlash } = require('../helpers/flash');
 const settings = require('../helpers/settings');
 const { catalog, saveCatalog } = require('../helpers/catalog');
 const { SCORE_POINTS, loadPuntosConfig, DEFAULTS: PUNTOS_DEFAULTS }  = require('../helpers/score');
+const { buildQuotationSummary } = require('../helpers/quotationStats');
 const {
   countUsers, countEvents, countAppointments,
   getAllUsers, getUserById, getUserByCedula, updateUser, deleteUser,
