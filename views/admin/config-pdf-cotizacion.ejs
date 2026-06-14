@@ -229,7 +229,7 @@
   });
 
   const el = id => document.getElementById(id);
-  el('previewDate').textContent = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+  el('previewDate').textContent = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric', timeZone:'America/Bogota' });
 
   function update() {
     const color   = /^#[0-9a-fA-F]{6}$/.test(f.headerColorTxt.value) ? f.headerColorTxt.value : '#F25C05';
