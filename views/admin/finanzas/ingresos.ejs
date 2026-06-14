@@ -62,7 +62,7 @@
           <tr>
             <td><span class="badge <%= mov.type==='factura'?'badge-success':'badge-info' %>" style="font-size:.7rem"><%= mov.type==='factura'?'Factura':'Pedido' %></span></td>
             <td style="font-weight:700;font-size:.82rem"><%= mov.ref %></td>
-            <td class="muted" style="font-size:.78rem;white-space:nowrap"><%= new Date(mov.date).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) %></td>
+            <td class="muted" style="font-size:.78rem;white-space:nowrap"><%= fechaCO(mov.date, {day:'2-digit',month:'short',year:'numeric'}) %></td>
             <td style="font-size:.8rem;text-transform:capitalize"><%= METHOD_LABELS[mov.method] || mov.method %></td>
             <td style="text-align:right;font-size:.82rem"><%= fmt(mov.subtotal) %></td>
             <td style="text-align:right;font-size:.8rem" class="muted"><%= mov.tax > 0 ? fmt(mov.tax) : '—' %></td>
