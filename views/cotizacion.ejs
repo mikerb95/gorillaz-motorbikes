@@ -294,7 +294,7 @@
     doc.text('GORILLAZ MOTORBIKES', 14, 12);
     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
     doc.text('gorillazmotorbikes.com  |  Bogotá, Colombia', 14, 20);
-    const dateStr = new Date(QUOTATION.createdAt).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+    const dateStr = new Date(QUOTATION.createdAt).toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric', timeZone:'America/Bogota' });
     doc.text('Fecha: ' + dateStr, 196, 12, { align: 'right' });
     doc.text('Cotización N° ' + (QUOTATION.label || QUOTATION.consecutive), 196, 20, { align: 'right' });
 
