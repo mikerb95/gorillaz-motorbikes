@@ -52,7 +52,7 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
         <tr>
           <td><span class="badge badge-info" style="font-weight:900;font-size:.8rem"><%= o.label %></span></td>
           <td class="muted" style="font-size:.82rem;white-space:nowrap">
-            <%= new Date(o.createdAt).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) %>
+            <%= fechaCO(o.createdAt, { day:'2-digit', month:'short', year:'numeric' }) %>
           </td>
           <td style="font-weight:700;font-size:.85rem"><%= o.motorcycle || '—' %></td>
           <td style="font-size:.85rem"><% if (o.mechanic) { %><%= o.mechanic %><% } else { %><span class="muted">Sin asignar</span><% } %></td>
