@@ -1,29 +1,104 @@
 <%- include('../partials/admin-head', { title: 'Cotizaciones' }) %>
 
 <%
-const totalRevenue = quotations.reduce((s,q) => s + q.total, 0);
-const thisMonth = new Date().toISOString().slice(0,7);
-const thisMonthQ = quotations.filter(q => q.createdAt && q.createdAt.startsWith(thisMonth));
-const thisMonthRev = thisMonthQ.reduce((s,q) => s + q.total, 0);
+  const s = summary;
+  const fmt = n => '$' + Number(n || 0).toLocaleString('es-CO');
+  const periods = [
+    { key: 'mes',          label: 'Este mes' },
+    { key: 'mes-anterior', label: 'Mes anterior' },
+    { key: 'anio',         label: 'Este año' },
+    { key: 'todo',         label: 'Todo' },
+  ];
+  const sparkMax = Math.max(1, ...s.spark.map(p => p.value));
+  function deltaTag(d) {
+    if (d === null || typeof d === 'undefined') return '';
+    const cls = d > 0 ? 'up' : (d < 0 ? 'down' : 'flat');
+    const arrow = d > 0 ? '▲' : (d < 0 ? '▼' : '—');
+    return `<span class="qsum-delta ${cls}">${arrow} ${Math.abs(d)}%</span>`;
+  }
 %>
 
 <div class="crm-page-header">
-
   <a class="btn btn-primary btn-sm" href="/liquidador" target="_blank" rel="noopener">+ Nueva cotización</a>
+  <nav class="qsum-periods" aria-label="Periodo del resumen">
+    <% periods.forEach(p => { %>
+      <a class="qsum-period <%= s.periodo === p.key ? 'active' : '' %>" href="/admin/cotizaciones?periodo=<%= p.key %>"><%= p.label %></a>
+    <% }) %>
+  </nav>
 </div>
 
-<div class="crm-kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+<!-- Fila 1 · KPIs inteligentes -->
+<div class="crm-kpi-row qsum-kpis" style="margin-bottom:14px">
   <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value"><%= quotations.length %></div>
-    <div class="crm-kpi-label">Total cotizaciones</div>
+    <div class="crm-kpi-value" style="font-size:1.25rem"><%= fmt(s.value) %></div>
+    <div class="crm-kpi-label">Cotizado · <%= s.periodoLabel %></div>
+    <div class="qsum-foot">
+      <%- deltaTag(s.valueDelta) %>
+      <% if (s.prevLabel && s.valueDelta !== null) { %><span class="qsum-sub">vs <%= s.prevLabel %></span><% } %>
+    </div>
   </div>
   <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value"><%= thisMonthQ.length %></div>
-    <div class="crm-kpi-label">Este mes</div>
+    <div class="crm-kpi-value"><%= s.convRate %>%</div>
+    <div class="crm-kpi-label">Conversión a orden</div>
+    <div class="qsum-foot"><span class="qsum-sub"><%= s.converted %> de <%= s.count %> cotizaciones</span></div>
   </div>
   <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value" style="font-size:1.1rem">$<%= totalRevenue.toLocaleString('es-CO') %></div>
-    <div class="crm-kpi-label">Valor total cotizado</div>
+    <div class="crm-kpi-value" style="font-size:1.25rem"><%= fmt(s.avg) %></div>
+    <div class="crm-kpi-label">Ticket promedio</div>
+    <div class="qsum-foot"><%- deltaTag(s.avgDelta) %></div>
+  </div>
+  <div class="crm-kpi-card" style="cursor:default">
+    <div class="crm-kpi-value"><%= s.pendientes %></div>
+    <div class="crm-kpi-label">Pendientes de seguimiento</div>
+    <div class="qsum-foot">
+      <% if (s.pendientesOld > 0) { %><span class="qsum-sub qsum-warn">⚠ <%= s.pendientesOld %> con +7 días</span><% } else { %><span class="qsum-sub">Sin atrasos</span><% } %>
+    </div>
+  </div>
+</div>
+
+<!-- Fila 2 · embudo + tendencia + top servicios -->
+<div class="qsum-insights">
+  <div class="qsum-insight">
+    <div class="qsum-insight-title">Embudo de conversión</div>
+    <%
+      const fMax = Math.max(1, s.count);
+      const steps = [
+        { n: s.count,     lbl: 'Cotizadas',  cls: '',   pct: null },
+        { n: s.converted, lbl: 'Órdenes',    cls: 'b2', pct: s.convRate },
+        { n: s.invoiced,  lbl: 'Facturadas', cls: 'b3', pct: s.winRate },
+      ];
+    %>
+    <% steps.forEach(st => { %>
+      <div class="qsum-funnel-step">
+        <div class="qsum-funnel-bar <%= st.cls %>" style="width:<%= Math.round((st.n / fMax) * 100) %>%"></div>
+        <div class="qsum-funnel-meta"><b><%= st.n %></b> <%= st.lbl %><% if (st.pct !== null) { %> <span class="qsum-funnel-pct"><%= st.pct %>%</span><% } %></div>
+      </div>
+    <% }) %>
+  </div>
+
+  <div class="qsum-insight">
+    <div class="qsum-insight-title">Cotizado · últimos 6 meses</div>
+    <div class="qsum-spark">
+      <% s.spark.forEach((p, i) => { %>
+        <div class="qsum-spark-col <%= i === s.spark.length - 1 ? 'is-last' : '' %>" title="<%= p.label %>: <%= fmt(p.value) %>">
+          <div class="qsum-spark-bar" style="height:<%= Math.max(3, Math.round((p.value / sparkMax) * 40)) %>px"></div>
+          <div class="qsum-spark-label"><%= p.label %></div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <div class="qsum-insight">
+    <div class="qsum-insight-title">Top servicios · <%= s.periodoLabel %></div>
+    <% if (!s.topItems || s.topItems.length === 0) { %>
+      <div class="qsum-empty">Sin datos en el periodo.</div>
+    <% } else { %>
+      <ol class="qsum-top">
+        <% s.topItems.forEach(t => { %>
+          <li><span class="nm" title="<%= t.name %>"><%= t.name %></span><span class="vl"><%= fmt(t.value) %></span></li>
+        <% }) %>
+      </ol>
+    <% } %>
   </div>
 </div>
 
