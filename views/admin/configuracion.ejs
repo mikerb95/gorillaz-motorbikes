@@ -662,7 +662,7 @@
   };
   const el = id => document.getElementById(id);
   if (el('previewDate')) {
-    el('previewDate').textContent = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+    el('previewDate').textContent = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric', timeZone:'America/Bogota' });
     if (pf.headerColor) {
       pf.headerColor.addEventListener('input', () => { pf.headerColorTxt.value = pf.headerColor.value; updatePdf(); });
       pf.headerColorTxt.addEventListener('input', () => {
