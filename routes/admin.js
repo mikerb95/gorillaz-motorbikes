@@ -742,9 +742,11 @@ router.post('/newsletter/enviar', requireAuth, requireAdmin, async (req, res) =>
 // ── Cotizaciones ──────────────────────────────────────────────────────────
 
 router.get('/cotizaciones', requireAuth, requireAdmin, async (req, res) => {
-  const [quotations, drafts] = await Promise.all([getAllQuotations(), getDraftQuotations(50)]);
-  const totalRevenue = quotations.reduce((s, q) => s + q.total, 0);
-  res.render('admin/quotations', { quotations, drafts, totalRevenue });
+  const [quotations, drafts, orders, invoices] = await Promise.all([
+    getAllQuotations(), getDraftQuotations(50), getAllServiceOrders(), getAllInvoices(),
+  ]);
+  const summary = buildQuotationSummary(quotations, orders, invoices, req.query.periodo);
+  res.render('admin/quotations', { quotations, drafts, summary });
 });
 
 router.get('/cotizaciones/:id', requireAuth, requireAdmin, async (req, res) => {
