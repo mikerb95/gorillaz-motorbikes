@@ -211,40 +211,37 @@ body.has-subbar .nav-bar .header-inner {
   visibility: visible
 }
 
-/* Mobile (no hover): swap the mark <-> name as a smooth 3D flip instead of a flat crossfade.
-   Driven only by transform/backface-visibility so it's GPU-accelerated and reads as intentional. */
+/* Mobile (no hover): swap the mark <-> name as a smooth 2D zoom-dissolve instead of a flat crossfade.
+   Pure opacity + scale (NO 3D/perspective/backface): the fixed, transparent .site-header sits over the
+   hero and .nav-bar uses overflow:hidden, so promoting it to a 3D layer made the hero repaint/flicker. */
 @media (max-width: 900px) {
-  .site-header .logo {
-    perspective: 700px;
+  /* Base mark: visible by default; zooms up and fades out on swap */
+  .site-header .logo .logo-base {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity .5s ease, transform .5s cubic-bezier(.34, 1.56, .64, 1);
   }
 
-  .site-header .logo .logo-base,
+  /* Name: starts small and transparent, pops in on swap */
   .site-header .logo .logo-name {
-    opacity: 1;
+    opacity: 0;
     visibility: visible;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: rotateY(0deg);
-    transition: transform .6s cubic-bezier(.45, .05, .25, 1), filter .6s ease;
+    transform: scale(.55);
+    transition: opacity .5s ease, transform .5s cubic-bezier(.34, 1.56, .64, 1);
   }
 
-  /* Name starts flipped away (back-facing, hidden by backface-visibility) */
-  .site-header .logo .logo-name {
-    transform: rotateY(180deg);
-  }
-
-  /* is-hidden = show the name: both faces rotate +180 in the same direction */
   .site-header .logo.is-hidden .logo-base {
-    opacity: 1;
-    transform: rotateY(180deg);
+    opacity: 0;
+    transform: scale(1.35);
   }
 
   .site-header .logo.is-hidden .logo-name {
     opacity: 1;
-    transform: rotateY(360deg);
+    visibility: visible;
+    transform: scale(1);
   }
 
-  /* Respect reduced-motion: no flip, just keep the mark visible */
+  /* Respect reduced-motion: no animation, just keep the mark visible */
   @media (prefers-reduced-motion: reduce) {
     .site-header .logo .logo-base,
     .site-header .logo .logo-name {
