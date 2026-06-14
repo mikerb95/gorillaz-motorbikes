@@ -1,6 +1,7 @@
 'use strict';
 const { createClient } = require('@libsql/client');
 const { v4: uuidv4 } = require('uuid');
+const { hoyCO } = require('./helpers/datetime');
 
 if (!process.env.TURSO_URL || !process.env.TURSO_TOKEN) {
   console.warn('[WARN] TURSO_URL o TURSO_TOKEN no configurados');
