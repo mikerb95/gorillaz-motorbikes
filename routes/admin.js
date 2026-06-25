@@ -24,7 +24,7 @@ const {
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
   getAllQuotations, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
-  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
+  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
@@ -1185,7 +1185,7 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
     paymentMethod:      req.body.paymentMethod || 'efectivo',
     notes:              (req.body.notes || '').trim() || null,
   });
-  await updateServiceOrder(order.id, { status: 'facturado', invoiceId, pendingReview: false });
+  await updateServiceOrder(order.id, { status: 'facturado', invoiceId, pendingReview: false }, res.locals.user?.name || 'Admin');
   res.redirect('/admin/facturas/' + invoiceId);
 });
 
