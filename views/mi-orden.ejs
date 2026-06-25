@@ -228,8 +228,12 @@
     <%
       const statusLabels = {
         pendiente: 'Pendiente',
+        ingreso_taller: 'Ingreso al taller',
+        trabajo_en_curso: 'Trabajo en curso',
+        en_pausa: 'En pausa',
         en_proceso: 'En proceso',
         trabajo_completo: 'Listo para recoger',
+        entregado: 'Entregado',
         facturado: 'Entregado',
       };
       const statusLabel = statusLabels[order.status] || order.status;
