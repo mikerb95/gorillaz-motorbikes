@@ -1173,7 +1173,7 @@ async function createServiceOrder(data) {
         data.clientPhone || null,
         data.clientPhoneCountry || '+57',
         data.mechanic || null,
-        data.status || 'pendiente',
+        data.status || 'ingreso_taller',
         data.notes || null,
         data.estimatedDate || null,
         data.employeeId || null,
