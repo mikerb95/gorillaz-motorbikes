@@ -1215,7 +1215,17 @@ async function getAllServiceOrders() {
   return r.rows.map(rowToServiceOrder);
 }
 
-async function updateServiceOrder(id, fields) {
+async function updateServiceOrder(id, fields, actor) {
+  // Si se cambia el estado, registramos un evento de trazabilidad — pero solo
+  // cuando es un cambio real (distinto al estado actual), para no llenar la
+  // línea de tiempo de duplicados al guardar otros campos.
+  let logStatus = null;
+  if (fields.status !== undefined) {
+    const cur = await db.execute({ sql: 'SELECT status FROM service_orders WHERE id = ?', args: [id] });
+    const prev = cur.rows[0]?.status;
+    if (prev !== undefined && prev !== fields.status) logStatus = fields.status;
+  }
+
   const set = [], args = [];
   if (fields.items         !== undefined) { set.push('items = ?');          args.push(JSON.stringify(fields.items)); }
   if (fields.total         !== undefined) { set.push('total = ?');          args.push(fields.total); }
@@ -1231,6 +1241,28 @@ async function updateServiceOrder(id, fields) {
   set.push('updated_at = ?'); args.push(new Date().toISOString());
   args.push(id);
   await db.execute({ sql: `UPDATE service_orders SET ${set.join(', ')} WHERE id = ?`, args });
+
+  if (logStatus) {
+    await db.execute({
+      sql: `INSERT INTO service_order_events (id, service_order_id, status, actor, created_at)
+            VALUES (?,?,?,?,?)`,
+      args: [uuidv4(), id, logStatus, actor || null, new Date().toISOString()],
+    });
+  }
+}
+
+// Eventos de trazabilidad de una orden, en orden cronológico ascendente.
+async function getServiceOrderEvents(serviceOrderId) {
+  const r = await db.execute({
+    sql: 'SELECT * FROM service_order_events WHERE service_order_id = ? ORDER BY created_at ASC',
+    args: [serviceOrderId],
+  });
+  return r.rows.map(row => ({
+    id: row.id,
+    status: row.status,
+    actor: row.actor || null,
+    createdAt: row.created_at,
+  }));
 }
 
 async function updateServiceOrderPhone(id, clientPhone, clientPhoneCountry) {
@@ -1772,7 +1804,7 @@ module.exports = {
   createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersByUser, countOrders,
   createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
-  getServiceOrdersByEmployee, countPendingReviewOrders,
+  getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   isThrottleLocked, recordThrottleFailure,
   getAllSettings, setSetting,
