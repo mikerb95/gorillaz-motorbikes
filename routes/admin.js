@@ -1062,6 +1062,7 @@ router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, asyn
     notes:              (req.body.notes || '').trim() || null,
     estimatedDate:      req.body.estimatedDate || null,
     status:             'ingreso_taller',
+    actor:              res.locals.user?.name || 'Admin',
   });
   res.redirect('/admin/ordenes-servicio/' + id);
 });
@@ -1117,6 +1118,7 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, re
     estimatedDate:      req.body.estimatedDate || null,
     employeeId,
     status:             'ingreso_taller',
+    actor:              res.locals.user?.name || 'Admin',
   });
   res.redirect('/admin/ordenes-servicio/' + id);
 });
@@ -1129,7 +1131,8 @@ router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) 
   const parqueaderoConfig = loadParqueaderoConfig();
   const empleados = await getActiveEmployees();
   const empleadoAsignado = order.employeeId ? await getEmployeeById(order.employeeId) : null;
-  res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig, empleados, empleadoAsignado });
+  const events = await getServiceOrderEvents(order.id);
+  res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig, empleados, empleadoAsignado, events });
 });
 
 router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
@@ -1147,7 +1150,7 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async
   }
   // El admin que toca la orden la da por revisada: limpia el aviso del taller.
   if (order && order.pendingReview) updates.pendingReview = false;
-  await updateServiceOrder(req.params.id, updates);
+  await updateServiceOrder(req.params.id, updates, res.locals.user?.name || 'Admin');
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
