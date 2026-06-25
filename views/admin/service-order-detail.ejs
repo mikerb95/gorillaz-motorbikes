@@ -299,7 +299,87 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   </div>
   <% } %>
 
+  <!-- Zona de peligro -->
+  <div class="crm-card" style="padding:20px 24px;border:1px solid #fecaca;background:#fef2f2">
+    <h2 style="font-size:13px;font-weight:800;color:#b91c1c;text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px">Zona de peligro</h2>
+    <% if (order.invoiceId) { %>
+      <p style="margin:0;font-size:13px;color:#7f1d1d">
+        Esta orden ya está <strong>facturada</strong> (<%= invoice ? invoice.label : 'factura asociada' %>) y no se puede borrar.
+        Si necesitas eliminarla, primero anula la factura.
+      </p>
+    <% } else { %>
+      <p style="margin:0 0 12px;font-size:13px;color:#7f1d1d">
+        Borrar esta orden la elimina de forma permanente junto con su historial de trazabilidad. Esta acción no se puede deshacer.
+      </p>
+      <button type="button" id="openDeleteModal" data-modal-open="#deleteOrderModal" class="btn btn-sm"
+challenge style="background:#dc2626;color:#fff;border:none">🗑 Borrar orden</button>
+    <% } %>
+  </div>
+
 </div>
+
+<!-- Modal borrar orden -->
+<% if (!order.invoiceId) { %>
+<div class="modal" id="deleteOrderModal" aria-hidden="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;max-width:460px;width:90%;padding:0">
+    <div style="padding:20px 24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0;font-size:16px;font-weight:800;color:#b91c1c">⚠️ Borrar orden de servicio</h3>
+      <button type="button" data-modal-close style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/borrar" style="padding:20px 24px">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <p style="margin:0 0 14px;font-size:13.5px;color:#374151;line-height:1.5">
+        Vas a borrar la orden <strong><%= order.label %></strong> (<%= order.items.length %> ítem<%= order.items.length === 1 ? '' : 's' %>,
+        total $<%= order.total.toLocaleString('es-CO') %>) y todo su historial de trazabilidad.
+        <strong>Esta operación es permanente y no se puede deshacer.</strong>
+      </p>
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:9px;padding:10px 14px;margin-bottom:18px;font-size:12.5px;color:#7f1d1d">
+        Por seguridad, el botón se habilita después de 10 segundos. Tómate ese tiempo para confirmar que es la orden correcta.
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn btn-ghost" type="button" data-modal-close>Cancelar</button>
+        <button id="confirmDeleteBtn" type="submit" class="btn btn-sm" disabled
+                style="background:#dc2626;color:#fff;border:none;opacity:.5;cursor:not-allowed">Espera 10 s…</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+(function () {
+  var openBtn = document.getElementById('openDeleteModal');
+  var btn = document.getElementById('confirmDeleteBtn');
+  if (!openBtn || !btn) return;
+  var timer = null;
+
+  function start() {
+    var left = 10;
+    clearInterval(timer);
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+    btn.style.cursor = 'not-allowed';
+    btn.textContent = 'Espera ' + left + ' s…';
+    timer = setInterval(function () {
+      left--;
+      if (left <= 0) {
+        clearInterval(timer);
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.textContent = 'Borrar definitivamente';
+      } else {
+        btn.textContent = 'Espera ' + left + ' s…';
+      }
+    }, 1000);
+  }
+
+  // Reinicia la cuenta cada vez que se abre, y la detiene al cerrar.
+  openBtn.addEventListener('click', start);
+  document.querySelectorAll('#deleteOrderModal [data-modal-close]').forEach(function (c) {
+    c.addEventListener('click', function () { clearInterval(timer); });
+  });
+})();
+</script>
+<% } %>
 
 <!-- Modal editar orden -->
 <div class="modal" id="editOrderModal" aria-hidden="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
