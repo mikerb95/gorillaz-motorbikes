@@ -157,7 +157,7 @@ router.post('/orden/:id/estado', requireEmployee, async (req, res) => {
     if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
     updates.pendingReview = true;
   }
-  await updateServiceOrder(order.id, updates);
+  await updateServiceOrder(order.id, updates, req.employee.name);
 
   if (finaliza) notifyAdmin(order, req.employee).catch(() => {});
 
