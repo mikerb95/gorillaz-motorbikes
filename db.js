@@ -1191,6 +1191,12 @@ async function createServiceOrder(data) {
         data.employeeId || null,
       ],
     });
+    // Primer evento de la línea de tiempo: el estado con que nace la orden.
+    await tx.execute({
+      sql: `INSERT INTO service_order_events (id, service_order_id, status, actor, created_at)
+            VALUES (?,?,?,?,?)`,
+      args: [uuidv4(), id, data.status || 'ingreso_taller', data.actor || null, now],
+    });
     await tx.commit();
   } catch (e) {
     await tx.rollback();
