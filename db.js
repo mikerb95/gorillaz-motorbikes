@@ -1265,6 +1265,21 @@ async function getServiceOrderEvents(serviceOrderId) {
   }));
 }
 
+// Borrado permanente de una orden de servicio y su historial de eventos.
+// No toca facturas: la ruta bloquea el borrado de órdenes ya facturadas para
+// no dejar facturas huérfanas (la contabilidad es el registro legal).
+async function deleteServiceOrder(id) {
+  const tx = await db.transaction('write');
+  try {
+    await tx.execute({ sql: 'DELETE FROM service_order_events WHERE service_order_id = ?', args: [id] });
+    await tx.execute({ sql: 'DELETE FROM service_orders WHERE id = ?', args: [id] });
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    throw e;
+  }
+}
+
 async function updateServiceOrderPhone(id, clientPhone, clientPhoneCountry) {
   await db.execute({
     sql: 'UPDATE service_orders SET client_phone = ?, client_phone_country = ?, updated_at = ? WHERE id = ?',
@@ -1804,7 +1819,7 @@ module.exports = {
   createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersByUser, countOrders,
   createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
-  getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents,
+  getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents, deleteServiceOrder,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   isThrottleLocked, recordThrottleFailure,
   getAllSettings, setSetting,

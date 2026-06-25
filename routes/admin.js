@@ -24,7 +24,7 @@ const {
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
   getAllQuotations, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
-  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents,
+  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, deleteServiceOrder,
   createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
