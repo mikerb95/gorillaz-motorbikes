@@ -1061,6 +1061,7 @@ router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, asyn
     mechanic:           await resolveMechanicName(employeeId),
     notes:              (req.body.notes || '').trim() || null,
     estimatedDate:      req.body.estimatedDate || null,
+    status:             'ingreso_taller',
   });
   res.redirect('/admin/ordenes-servicio/' + id);
 });
