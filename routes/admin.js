@@ -1189,6 +1189,16 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
   res.redirect('/admin/facturas/' + invoiceId);
 });
 
+// Borrado permanente de una orden. Se bloquea si ya tiene factura: anular esa
+// factura es el paso previo, para no dejar registros contables huérfanos.
+router.post('/ordenes-servicio/:id/borrar', requireAuth, requireAdmin, async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order) return res.redirect('/admin/ordenes-servicio');
+  if (order.invoiceId) return res.redirect('/admin/ordenes-servicio/' + order.id + '?error=facturada');
+  await deleteServiceOrder(order.id);
+  res.redirect('/admin/ordenes-servicio?flash=borrada');
+});
+
 // ── Facturas ──────────────────────────────────────────────────────────────
 
 router.get('/facturas', requireAuth, requireAdmin, async (req, res) => {
