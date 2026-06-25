@@ -267,6 +267,17 @@ async function initDb() {
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
       updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    // Trazabilidad de órdenes de servicio: una fila por cada estado que toma la
+    // orden (incluido el inicial). Alimenta la línea de tiempo del detalle.
+    // Se registra desde createServiceOrder/updateServiceOrder; el histórico
+    // previo a esta tabla no existe, así que arranca en blanco por orden.
+    `CREATE TABLE IF NOT EXISTS service_order_events (
+      id TEXT PRIMARY KEY,
+      service_order_id TEXT NOT NULL,
+      status TEXT NOT NULL,
+      actor TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
@@ -318,6 +329,7 @@ async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_events_date  ON events(date)`,
     `CREATE INDEX IF NOT EXISTS idx_classifieds_status ON classifieds(status)`,
     `CREATE INDEX IF NOT EXISTS idx_classifieds_user   ON classifieds(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_so_events_order ON service_order_events(service_order_id)`,
   ];
   for (const sql of indexes) {
     try { await db.execute(sql); } catch { /* index already exists */ }
