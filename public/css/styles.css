@@ -5104,11 +5104,30 @@ main.schedule-full {
 }
 
 /* ── KPI Cards ── */
+.crm-dash-section-title {
+  font-size: .72rem;
+  font-weight: 800;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 4px 0 12px
+}
+
 .crm-kpi-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
   margin-bottom: 24px
+}
+
+/* Cola con pendientes: acento naranja cuando el contador es > 0 */
+.crm-kpi-card.alert {
+  border-color: #F25C05;
+  background: #fff8f3
+}
+
+.crm-kpi-card.alert .crm-kpi-value {
+  color: #F25C05
 }
 
 .crm-kpi-card {
