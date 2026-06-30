@@ -1163,10 +1163,33 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, asy
   const employeeId = req.body.employeeId || null;
   const updates = {
     motorcycle,
+    clientPhone:        (req.body.clientPhone || '').replace(/\D/g, '') || null,
+    clientPhoneCountry: req.body.clientPhoneCountry || '+57',
     employeeId,
     mechanic: await resolveMechanicName(employeeId),
     estimatedDate: req.body.estimatedDate || null,
   };
+  // Los ítems solo se editan mientras la orden no esté facturada: cambiar el
+  // total después de emitida la factura dejaría ambos documentos descuadrados.
+  if (!order.invoiceId) {
+    let items;
+    try { items = JSON.parse(req.body.items || '[]'); } catch { items = null; }
+    const clean = Array.isArray(items) ? items.reduce((acc, it) => {
+      const name  = String(it.name || '').trim();
+      const price = Math.round(Number(it.price));
+      const qty   = Math.round(Number(it.qty));
+      if (name && Number.isInteger(price) && price >= 1 && Number.isInteger(qty) && qty >= 1) {
+        acc.push({ name: name.slice(0, 200), type: it.type || 'custom', price, qty });
+      }
+      return acc;
+    }, []) : [];
+    // Si no llegó ningún ítem válido se conservan los actuales (una orden no
+    // puede quedar vacía); cualquier cambio real recalcula el total.
+    if (clean.length > 0) {
+      updates.items = clean;
+      updates.total = clean.reduce((s, it) => s + it.price * it.qty, 0);
+    }
+  }
   await updateServiceOrder(req.params.id, updates);
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
