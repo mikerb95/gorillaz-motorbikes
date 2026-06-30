@@ -383,21 +383,29 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
 
 <!-- Modal editar orden -->
 <div class="modal" id="editOrderModal" aria-hidden="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:12px;max-width:500px;width:90%;padding:0;max-height:90vh;overflow-y:auto">
+  <div style="background:#fff;border-radius:12px;max-width:760px;width:92%;padding:0;max-height:90vh;overflow-y:auto">
     <div style="padding:20px 24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
       <h3 style="margin:0;font-size:16px;font-weight:800">Editar orden</h3>
       <button type="button" data-modal-close style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
     </div>
-    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/editar-datos" style="padding:20px 24px">
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/editar-datos" id="editOrderForm" style="padding:20px 24px">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <div style="display:grid;gap:14px;margin-bottom:20px">
+      <input type="hidden" name="items" id="editItemsField" />
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px">
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Placa</label>
           <input type="text" name="plate" value="<%= (order.motorcycle || '').split(' — ')[0] || '' %>" maxlength="20" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" />
         </div>
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Moto (marca/modelo)</label>
-          <input type="text" name="motorcycle" value="<%= (order.motorcycle || '').split(' — ').pop() || '' %>" maxlength="80" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+          <input type="text" name="motorcycle" value="<%= (order.motorcycle || '').split(' — ').slice(1).join(' — ') || '' %>" maxlength="80" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">WhatsApp cliente</label>
+          <div style="display:flex;gap:6px">
+            <input type="text" name="clientPhoneCountry" value="<%= order.clientPhoneCountry || '+57' %>" style="width:62px;padding:9px 8px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;text-align:center" />
+            <input type="text" name="clientPhone" inputmode="numeric" value="<%= order.clientPhone || '' %>" placeholder="3001234567" style="flex:1;min-width:0;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+          </div>
         </div>
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Mecánico</label>
@@ -416,6 +424,41 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
           <input type="date" name="estimatedDate" value="<%= order.estimatedDate || '' %>" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
         </div>
       </div>
+
+      <% if (order.invoiceId) { %>
+        <div style="padding:12px 14px;background:#fef3c7;border:1px solid #fde68a;border-radius:9px;font-size:12.5px;color:#92400e;margin-bottom:20px">
+          Esta orden ya está facturada; los ítems no se pueden modificar para no descuadrar la factura.
+        </div>
+      <% } else { %>
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Ítems</label>
+          <div class="crm-table-wrap">
+            <table class="crm-table" id="editItemsTable">
+              <thead>
+                <tr>
+                  <th style="min-width:160px">Ítem</th>
+                  <th style="width:120px">Tipo</th>
+                  <th style="width:70px;text-align:center">Cant.</th>
+                  <th style="width:120px;text-align:right">Precio</th>
+                  <th style="width:110px;text-align:right">Subtotal</th>
+                  <th style="width:36px"></th>
+                </tr>
+              </thead>
+              <tbody id="editItemsBody"></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" style="text-align:right;font-weight:800;padding:12px 10px;font-size:13px;color:#374151">TOTAL</td>
+                  <td style="text-align:right;font-weight:900;font-size:16px;color:var(--brand);padding:12px 10px" id="editGrandTotal">$0</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <datalist id="editCatalogList"></datalist>
+          <button type="button" class="btn btn-ghost btn-sm" id="editAddRow" style="margin-top:10px">+ Agregar ítem</button>
+        </div>
+      <% } %>
+
       <div style="display:flex;gap:10px">
         <button class="btn btn-primary" type="submit">Guardar cambios</button>
         <button class="btn btn-ghost" type="button" data-modal-close>Cancelar</button>
@@ -438,5 +481,99 @@ document.querySelectorAll('[data-modal-close]').forEach(btn => {
   });
 });
 </script>
+
+<% if (!order.invoiceId) { %>
+<script>
+(function () {
+  const body       = document.getElementById('editItemsBody');
+  const addBtn     = document.getElementById('editAddRow');
+  const grandTotal = document.getElementById('editGrandTotal');
+  const catalog    = document.getElementById('editCatalogList');
+  const form       = document.getElementById('editOrderForm');
+  const itemsField = document.getElementById('editItemsField');
+  const initial    = <%- JSON.stringify(order.items || []) %>;
+
+  const fmt = n => '$' + (Number(n) || 0).toLocaleString('es-CO');
+
+  function recalc() {
+    let total = 0;
+    body.querySelectorAll('tr').forEach(tr => {
+      const price = Number(tr.querySelector('.it-price').value) || 0;
+      const qty   = Number(tr.querySelector('.it-qty').value)   || 0;
+      const sub   = price * qty;
+      tr.querySelector('.it-sub').textContent = fmt(sub);
+      total += sub;
+    });
+    grandTotal.textContent = fmt(total);
+  }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); }
+
+  function addRow(data = {}) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="it-name" list="editCatalogList" autocomplete="off" placeholder="Nombre del ítem" style="width:100%;padding:7px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" value="${esc(data.name)}"></td>
+      <td><select class="it-type" style="width:100%;padding:7px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box">
+        <option value="service">Servicio</option>
+        <option value="product">Producto</option>
+        <option value="custom">Personalizado</option>
+      </select></td>
+      <td><input class="it-qty" type="number" min="1" value="${data.qty || 1}" style="width:100%;padding:7px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;text-align:center"></td>
+      <td><input class="it-price" type="number" min="0" step="1" value="${data.price || ''}" placeholder="0" style="width:100%;padding:7px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;text-align:right"></td>
+      <td class="it-sub" style="text-align:right;font-weight:800;color:var(--brand)">$0</td>
+      <td><button type="button" class="it-del btn btn-ghost btn-sm" style="color:#dc2626;padding:4px 8px">✕</button></td>`;
+    if (data.type) tr.querySelector('.it-type').value = data.type;
+    body.appendChild(tr);
+
+    tr.querySelector('.it-del').addEventListener('click', () => { tr.remove(); recalc(); });
+    tr.querySelectorAll('.it-price, .it-qty').forEach(el => el.addEventListener('input', recalc));
+
+    const nameInput = tr.querySelector('.it-name');
+    let t;
+    nameInput.addEventListener('input', () => {
+      clearTimeout(t);
+      const q = nameInput.value.trim();
+      if (q.length < 3) return;
+      t = setTimeout(async () => {
+        try {
+          const r = await fetch('/api/liquidador/search?q=' + encodeURIComponent(q));
+          const list = await r.json();
+          catalog.innerHTML = '';
+          list.forEach(item => {
+            const o = document.createElement('option');
+            o.value = item.name;
+            catalog.appendChild(o);
+          });
+          const match = list.find(i => i.name === nameInput.value);
+          if (match) tr.querySelector('.it-type').value = match.type;
+        } catch {}
+      }, 250);
+    });
+    recalc();
+  }
+
+  addBtn.addEventListener('click', () => addRow());
+  if (initial.length) initial.forEach(it => addRow(it)); else addRow();
+
+  form.addEventListener('submit', e => {
+    const items = [];
+    body.querySelectorAll('tr').forEach(tr => {
+      const name  = tr.querySelector('.it-name').value.trim();
+      const price = Math.round(Number(tr.querySelector('.it-price').value));
+      const qty   = Math.round(Number(tr.querySelector('.it-qty').value));
+      if (name && price >= 1 && qty >= 1) {
+        items.push({ name, type: tr.querySelector('.it-type').value, price, qty });
+      }
+    });
+    if (items.length === 0) {
+      e.preventDefault();
+      alert('Agrega al menos un ítem válido (nombre, cantidad y precio).');
+      return;
+    }
+    itemsField.value = JSON.stringify(items);
+  });
+})();
+</script>
+<% } %>
 
 <%- include('../partials/admin-foot') %>
