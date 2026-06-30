@@ -1229,6 +1229,9 @@ async function updateServiceOrder(id, fields, actor) {
   const set = [], args = [];
   if (fields.items         !== undefined) { set.push('items = ?');          args.push(JSON.stringify(fields.items)); }
   if (fields.total         !== undefined) { set.push('total = ?');          args.push(fields.total); }
+  if (fields.motorcycle    !== undefined) { set.push('motorcycle = ?');     args.push(fields.motorcycle); }
+  if (fields.clientPhone        !== undefined) { set.push('client_phone = ?');         args.push(fields.clientPhone); }
+  if (fields.clientPhoneCountry !== undefined) { set.push('client_phone_country = ?'); args.push(fields.clientPhoneCountry); }
   if (fields.mechanic      !== undefined) { set.push('mechanic = ?');       args.push(fields.mechanic); }
   if (fields.status        !== undefined) { set.push('status = ?');         args.push(fields.status); }
   if (fields.notes         !== undefined) { set.push('notes = ?');          args.push(fields.notes); }
