@@ -20,7 +20,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -317,6 +317,9 @@ async function initDb() {
     // invalida si no coincide (al cambiar contraseña o eliminar la cuenta).
     `ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE classifieds ADD COLUMN department TEXT`,
+    // Detalle opcional de un hito de trazabilidad (p. ej. la etiqueta de la
+    // factura en los eventos 'factura_generada' / 'factura_anulada').
+    `ALTER TABLE service_order_events ADD COLUMN detail TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
@@ -1272,11 +1275,11 @@ async function getServiceOrderEvents(serviceOrderId) {
 // Registra un hito arbitrario en la trazabilidad de una orden (p. ej. 'editado'),
 // sin tocar el estado actual. Lo usan las acciones que no son cambios de estado
 // pero que igual conviene dejar en la línea de tiempo.
-async function addServiceOrderEvent(serviceOrderId, status, actor) {
+async function addServiceOrderEvent(serviceOrderId, status, actor, detail = null) {
   await db.execute({
-    sql: `INSERT INTO service_order_events (id, service_order_id, status, actor, created_at)
-          VALUES (?,?,?,?,?)`,
-    args: [uuidv4(), serviceOrderId, status, actor || null, new Date().toISOString()],
+    sql: `INSERT INTO service_order_events (id, service_order_id, status, actor, detail, created_at)
+          VALUES (?,?,?,?,?,?)`,
+    args: [uuidv4(), serviceOrderId, status, actor || null, detail || null, new Date().toISOString()],
   });
 }
 
