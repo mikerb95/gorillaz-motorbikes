@@ -340,6 +340,7 @@ async function initDb() {
   }
 
   await ensureNewsletterTokens();
+  await reconcileAnnulledInvoices();
 
   // Marca el esquema como migrado para que los próximos cold starts salgan
   // temprano en la comprobación de versión de arriba.
@@ -1282,6 +1283,33 @@ async function addServiceOrderEvent(serviceOrderId, status, actor, detail = null
           VALUES (?,?,?,?,?,?)`,
     args: [uuidv4(), serviceOrderId, status, actor || null, detail || null, createdAt || new Date().toISOString()],
   });
+}
+
+// Reconciliación única: desliga las órdenes que quedaron atadas a una factura
+// ya anulada (anteriores al deslinde automático). Deja intacta la trazabilidad
+// —rellena 'factura_generada' si falta y marca 'factura_anulada'— y devuelve la
+// orden a 'trabajo_completo' para que salga bien en listados y vuelva a editarse.
+// Es idempotente: una vez desligada, el JOIN ya no la selecciona.
+async function reconcileAnnulledInvoices() {
+  const r = await db.execute(`
+    SELECT so.id AS order_id, i.label AS invoice_label, i.created_at AS invoice_created
+    FROM service_orders so
+    JOIN invoices i ON so.invoice_id = i.id
+    WHERE i.status = 'anulada'
+  `);
+  for (const row of r.rows) {
+    const orderId = row.order_id;
+    const evs = await db.execute({ sql: 'SELECT status FROM service_order_events WHERE service_order_id = ?', args: [orderId] });
+    const has = s => evs.rows.some(e => e.status === s);
+    if (!has('factura_generada')) {
+      await addServiceOrderEvent(orderId, 'factura_generada', null, row.invoice_label, row.invoice_created);
+    }
+    if (!has('factura_anulada')) {
+      await addServiceOrderEvent(orderId, 'factura_anulada', 'Sistema', row.invoice_label);
+    }
+    await updateServiceOrder(orderId, { invoiceId: null, status: 'trabajo_completo' }, 'Sistema');
+  }
+  if (r.rows.length) console.log(`✅ Reconciliadas ${r.rows.length} orden(es) atadas a facturas anuladas`);
 }
 
 // Borrado permanente de una orden de servicio y su historial de eventos.
