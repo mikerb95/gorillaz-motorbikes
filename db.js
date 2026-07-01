@@ -368,6 +368,23 @@ function safeJson(str, fallback) {
   try { return str ? JSON.parse(str) : fallback; } catch { return fallback; }
 }
 
+// Paginación genérica por offset para listados admin. `table` y `order` son
+// literales controlados por el código (nunca input de usuario); `where`/`args`
+// van parametrizados. Devuelve las filas ya mapeadas + metadatos para el
+// paginador. Se limita `size` a 100 como tope de seguridad.
+async function paginate(table, { where = '', args = [], order = 'created_at DESC', page = 1, size = 25, map = r => r } = {}) {
+  const lim  = Math.max(1, Math.min(100, Number(size) || 25));
+  const pg   = Math.max(1, Number(page) || 1);
+  const off  = (pg - 1) * lim;
+  const w    = where ? `WHERE ${where}` : '';
+  const [rowsR, countR] = await Promise.all([
+    db.execute({ sql: `SELECT * FROM ${table} ${w} ORDER BY ${order} LIMIT ? OFFSET ?`, args: [...args, lim, off] }),
+    db.execute({ sql: `SELECT COUNT(*) AS n FROM ${table} ${w}`, args }),
+  ]);
+  const total = Number(countR.rows[0].n);
+  return { rows: rowsR.rows.map(map), total, page: pg, size: lim, pages: Math.max(1, Math.ceil(total / lim)) };
+}
+
 function rowToUser(row) {
   if (!row) return null;
   const firstName = row.first_name || '';
@@ -1234,6 +1251,22 @@ async function getAllServiceOrders() {
   return r.rows.map(rowToServiceOrder);
 }
 
+// Listado paginado (opcionalmente filtrado por estado) para el panel admin.
+async function getServiceOrdersPage({ page = 1, size = 25, status = '' } = {}) {
+  const where = status ? 'status = ?' : '';
+  const args  = status ? [status] : [];
+  return paginate('service_orders', { where, args, page, size, map: rowToServiceOrder });
+}
+
+// Conteo por estado con una sola query (para los KPI del listado, que deben
+// reflejar el total y no solo la página visible).
+async function getServiceOrderStatusCounts() {
+  const r = await db.execute('SELECT status, COUNT(*) AS n FROM service_orders GROUP BY status');
+  const out = {};
+  r.rows.forEach(row => { out[row.status] = Number(row.n); });
+  return out;
+}
+
 async function updateServiceOrder(id, fields, actor) {
   // Si se cambia el estado, registramos un evento de trazabilidad — pero solo
   // cuando es un cambio real (distinto al estado actual), para no llenar la
@@ -1540,6 +1573,30 @@ async function getInvoiceById(id) {
 async function getAllInvoices() {
   const r = await db.execute('SELECT * FROM invoices ORDER BY created_at DESC');
   return r.rows.map(rowToInvoice);
+}
+
+// Listado paginado (opcionalmente filtrado por estado) para el panel admin.
+async function getInvoicesPage({ page = 1, size = 25, status = '' } = {}) {
+  const where = status ? 'status = ?' : '';
+  const args  = status ? [status] : [];
+  return paginate('invoices', { where, args, page, size, map: rowToInvoice });
+}
+
+// KPI del listado de facturas agregados en SQL (independientes de la página).
+async function getInvoiceStats() {
+  const r = await db.execute(`
+    SELECT
+      SUM(CASE WHEN status = 'pendiente' THEN 1 ELSE 0 END) AS pendientes,
+      SUM(CASE WHEN status = 'pagada'    THEN 1 ELSE 0 END) AS pagadas,
+      COALESCE(SUM(CASE WHEN status = 'pagada' THEN total ELSE 0 END), 0) AS total_pagado
+    FROM invoices
+  `);
+  const row = r.rows[0] || {};
+  return {
+    pendientes:  Number(row.pendientes)  || 0,
+    pagadas:     Number(row.pagadas)     || 0,
+    totalPagado: Number(row.total_pagado) || 0,
+  };
 }
 
 async function updateInvoiceStatus(id, status, paymentMethod) {
@@ -1879,12 +1936,12 @@ module.exports = {
   createJobApplication,
   createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersByUser, countOrders,
   createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
-  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
+  createServiceOrder, getServiceOrderById, getAllServiceOrders, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
   getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   isThrottleLocked, recordThrottleFailure,
   getAllSettings, setSetting,
-  createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
+  createInvoice, getInvoiceById, getAllInvoices, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
   getServiceOrdersByPlate,

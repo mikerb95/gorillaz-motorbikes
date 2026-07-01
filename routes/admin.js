@@ -24,8 +24,8 @@ const {
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
   getAllQuotations, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
-  createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
-  createInvoice, getInvoiceById, getAllInvoices, updateInvoiceStatus, countInvoices,
+  createServiceOrder, getServiceOrderById, getAllServiceOrders, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
+  createInvoice, getInvoiceById, getAllInvoices, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
   backupAllTables,
@@ -1068,8 +1068,16 @@ router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, asyn
 });
 
 router.get('/ordenes-servicio', requireAuth, requireAdmin, async (req, res) => {
-  const orders = await getAllServiceOrders();
-  res.render('admin/service-orders', { orders });
+  const status = req.query.status || '';
+  const page   = Number(req.query.page) || 1;
+  const [pageData, counts] = await Promise.all([
+    getServiceOrdersPage({ page, size: 25, status }),
+    getServiceOrderStatusCounts(),
+  ]);
+  res.render('admin/service-orders', {
+    orders: pageData.rows, counts, status,
+    page: pageData.page, pages: pageData.pages, total: pageData.total,
+  });
 });
 
 // Crear una orden de servicio directamente, sin partir de una cotización.
@@ -1265,8 +1273,16 @@ router.post('/ordenes-servicio/:id/borrar', requireAuth, requireAdmin, async (re
 // ── Facturas ──────────────────────────────────────────────────────────────
 
 router.get('/facturas', requireAuth, requireAdmin, async (req, res) => {
-  const invoices = await getAllInvoices();
-  res.render('admin/invoices', { invoices });
+  const status = req.query.status || '';
+  const page   = Number(req.query.page) || 1;
+  const [pageData, stats] = await Promise.all([
+    getInvoicesPage({ page, size: 25, status }),
+    getInvoiceStats(),
+  ]);
+  res.render('admin/invoices', {
+    invoices: pageData.rows, stats, status,
+    page: pageData.page, pages: pageData.pages, total: pageData.total,
+  });
 });
 
 router.get('/facturas/:id', requireAuth, requireAdmin, async (req, res) => {
