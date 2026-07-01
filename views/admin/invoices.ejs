@@ -2,22 +2,31 @@
 
 <%
 const STATUS = { pendiente:{label:'Pendiente',cls:'badge-warning'}, pagada:{label:'Pagada',cls:'badge-success'}, anulada:{label:'Anulada',cls:'badge-danger'} };
-const totalPagado = invoices.filter(i=>i.status==='pagada').reduce((s,i)=>s+i.total,0);
+// `stats` (agregados en SQL) y `status`/`page`/`pages`/`total` llegan del servidor.
+const s = typeof stats !== 'undefined' ? stats : { pendientes: 0, pagadas: 0, totalPagado: 0 };
+const activeStatus = typeof status !== 'undefined' ? status : '';
 %>
 
 <div class="crm-page-header">
 
 </div>
 
-<div class="crm-kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= invoices.filter(i=>i.status==='pendiente').length %></div><div class="crm-kpi-label">Pendientes de pago</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= invoices.filter(i=>i.status==='pagada').length %></div><div class="crm-kpi-label">Pagadas</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value" style="font-size:1.1rem">$<%= totalPagado.toLocaleString('es-CO') %></div><div class="crm-kpi-label">Total recaudado</div></div>
+<div class="crm-kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+  <a class="crm-kpi-card" href="<%= activeStatus === 'pendiente' ? '/admin/facturas' : '?status=pendiente' %>" style="text-decoration:none;color:inherit;<%= activeStatus==='pendiente' ? 'outline:2px solid var(--brand);outline-offset:-2px' : '' %>"><div class="crm-kpi-value"><%= s.pendientes %></div><div class="crm-kpi-label">Pendientes de pago</div></a>
+  <a class="crm-kpi-card" href="<%= activeStatus === 'pagada' ? '/admin/facturas' : '?status=pagada' %>" style="text-decoration:none;color:inherit;<%= activeStatus==='pagada' ? 'outline:2px solid var(--brand);outline-offset:-2px' : '' %>"><div class="crm-kpi-value"><%= s.pagadas %></div><div class="crm-kpi-label">Pagadas</div></a>
+  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value" style="font-size:1.1rem">$<%= s.totalPagado.toLocaleString('es-CO') %></div><div class="crm-kpi-label">Total recaudado</div></div>
 </div>
 
+<% if (activeStatus) { %>
+  <div style="margin-bottom:16px;font-size:.85rem;color:#6b7280">
+    Filtrando por <strong><%= (STATUS[activeStatus]||{label:activeStatus}).label %></strong>
+    · <a href="/admin/facturas" style="color:var(--brand);font-weight:700">Ver todas</a>
+  </div>
+<% } %>
+
 <div class="crm-card">
-  <% if (invoices.length === 0) { %>
-    <p class="muted" style="padding:32px;text-align:center">No hay facturas aún.</p>
+  <% if (total === 0) { %>
+    <p class="muted" style="padding:32px;text-align:center"><%= activeStatus ? 'No hay facturas con este estado.' : 'No hay facturas aún.' %></p>
   <% } else { %>
   <div class="crm-table-wrap">
     <table class="crm-table">
@@ -43,6 +52,7 @@ const totalPagado = invoices.filter(i=>i.status==='pagada').reduce((s,i)=>s+i.to
       </tbody>
     </table>
   </div>
+  <%- include('../partials/pager', { page, pages, params: { status: activeStatus } }) %>
   <% } %>
 </div>
 

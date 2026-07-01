@@ -9,8 +9,17 @@ const STATUS = {
   entregado:        { label: 'Entregado',          cls: 'badge-success' },
   facturado:        { label: 'Facturado',          cls: 'badge-success' },
 };
-const counts = { ingreso_taller: 0, trabajo_en_curso: 0, en_pausa: 0, trabajo_completo: 0, entregado: 0 };
-orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+// `counts` (por estado) y `status`/`page`/`pages`/`total` llegan del servidor;
+// los KPI reflejan el total real, no solo la página visible.
+const c = typeof counts !== 'undefined' ? counts : {};
+const activeStatus = typeof status !== 'undefined' ? status : '';
+const KPI = [
+  { k:'ingreso_taller',   l:'Ingreso a taller' },
+  { k:'trabajo_en_curso', l:'Trabajo en curso' },
+  { k:'en_pausa',         l:'En pausa'          },
+  { k:'trabajo_completo', l:'Trabajo completo' },
+  { k:'entregado',        l:'Entregados'        },
+];
 %>
 
 <div class="crm-page-header">
@@ -18,17 +27,25 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
   <a class="btn btn-primary btn-sm" href="/admin/ordenes-servicio/nueva">+ Nueva orden</a>
 </div>
 
-<div class="crm-kpi-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px">
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.ingreso_taller %></div><div class="crm-kpi-label">Ingreso a taller</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.trabajo_en_curso %></div><div class="crm-kpi-label">Trabajo en curso</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.en_pausa %></div><div class="crm-kpi-label">En pausa</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.trabajo_completo %></div><div class="crm-kpi-label">Trabajo completo</div></div>
-  <div class="crm-kpi-card" style="cursor:default"><div class="crm-kpi-value"><%= counts.entregado %></div><div class="crm-kpi-label">Entregados</div></div>
+<div class="crm-kpi-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:12px">
+  <% KPI.forEach(k => { const on = activeStatus === k.k; %>
+    <a class="crm-kpi-card" href="<%= on ? '/admin/ordenes-servicio' : '?status=' + k.k %>" style="text-decoration:none;color:inherit;<%= on ? 'outline:2px solid var(--brand);outline-offset:-2px' : '' %>">
+      <div class="crm-kpi-value"><%= c[k.k] || 0 %></div>
+      <div class="crm-kpi-label"><%= k.l %></div>
+    </a>
+  <% }) %>
 </div>
 
+<% if (activeStatus) { %>
+  <div style="margin-bottom:16px;font-size:.85rem;color:#6b7280">
+    Filtrando por <strong><%= (KPI.find(k=>k.k===activeStatus)||{l:activeStatus}).l %></strong>
+    · <a href="/admin/ordenes-servicio" style="color:var(--brand);font-weight:700">Ver todas</a>
+  </div>
+<% } %>
+
 <div class="crm-card">
-  <% if (orders.length === 0) { %>
-    <p class="muted" style="padding:32px;text-align:center">No hay órdenes de servicio aún. Crea una con <a href="/admin/ordenes-servicio/nueva" style="color:var(--brand);font-weight:700">+ Nueva orden</a> o desde el detalle de una cotización.</p>
+  <% if (total === 0) { %>
+    <p class="muted" style="padding:32px;text-align:center"><%= activeStatus ? 'No hay órdenes con este estado.' : 'No hay órdenes de servicio aún. Crea una con' %> <% if (!activeStatus) { %><a href="/admin/ordenes-servicio/nueva" style="color:var(--brand);font-weight:700">+ Nueva orden</a> o desde el detalle de una cotización.<% } %></p>
   <% } else { %>
   <div class="crm-table-wrap">
     <table class="crm-table">
@@ -74,6 +91,7 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
       </tbody>
     </table>
   </div>
+  <%- include('../partials/pager', { page, pages, params: { status: activeStatus } }) %>
   <% } %>
 </div>
 
