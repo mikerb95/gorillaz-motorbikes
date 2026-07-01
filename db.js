@@ -276,6 +276,7 @@ async function initDb() {
       service_order_id TEXT NOT NULL,
       status TEXT NOT NULL,
       actor TEXT,
+      detail TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
   ];
