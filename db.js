@@ -334,6 +334,20 @@ async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_classifieds_status ON classifieds(status)`,
     `CREATE INDEX IF NOT EXISTS idx_classifieds_user   ON classifieds(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_so_events_order ON service_order_events(service_order_id)`,
+    // Tablas calientes de listados/dashboard: aceleran el ORDER BY created_at de
+    // los listados, los filtros por estado y los JOIN/lookup por orden, y evitan
+    // full scans a medida que crecen las órdenes/facturas/cotizaciones.
+    `CREATE INDEX IF NOT EXISTS idx_so_created        ON service_orders(created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_so_status         ON service_orders(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_so_employee       ON service_orders(employee_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_invoices_created  ON invoices(created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_invoices_status   ON invoices(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_invoices_so       ON invoices(service_order_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_quotations_created ON quotations(created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_quotations_status  ON quotations(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_orders_created    ON orders(created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_orders_user       ON orders(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_users_score       ON users(score)`,
   ];
   for (const sql of indexes) {
     try { await db.execute(sql); } catch { /* index already exists */ }
