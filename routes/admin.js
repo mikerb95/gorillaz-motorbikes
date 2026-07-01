@@ -24,7 +24,7 @@ const {
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
   getAllQuotations, getConvertedQuotationIds, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
-  createServiceOrder, getServiceOrderById, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
+  createServiceOrder, getServiceOrderById, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, addServiceOrderEvent, detachOrderFromInvoice, deleteServiceOrder,
   createInvoice, getInvoiceById, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
@@ -1157,12 +1157,15 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, re
 // para reabrir la edición de ítems. Se usa tanto al anular como al abrir una
 // orden que quedó vinculada a una factura ya anulada (autocorrección).
 async function detachAnnulledInvoice(order, invoice, actor) {
+  // Claim atómico primero: solo la petición que realmente desliga la orden
+  // registra los hitos, evitando duplicados si dos requests coinciden.
+  if (!(await detachOrderFromInvoice(order.id, invoice.id))) return;
   const evs = await getServiceOrderEvents(order.id);
   if (!evs.some(e => e.status === 'factura_generada')) {
     await addServiceOrderEvent(order.id, 'factura_generada', null, invoice.label, invoice.createdAt);
   }
   await addServiceOrderEvent(order.id, 'factura_anulada', actor, invoice.label);
-  await updateServiceOrder(order.id, { invoiceId: null, status: 'trabajo_completo' }, actor);
+  await addServiceOrderEvent(order.id, 'trabajo_completo', actor); // cambio de estado
 }
 
 router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) => {

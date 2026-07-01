@@ -1381,26 +1381,42 @@ async function addServiceOrderEvent(serviceOrderId, status, actor, detail = null
 // —rellena 'factura_generada' si falta y marca 'factura_anulada'— y devuelve la
 // orden a 'trabajo_completo' para que salga bien en listados y vuelva a editarse.
 // Es idempotente: una vez desligada, el JOIN ya no la selecciona.
+// Deslinde atómico: pone invoice_id=NULL y estado 'trabajo_completo' SOLO si la
+// orden sigue apuntando a esa factura. Devuelve true si esta llamada fue la que
+// realmente la desligó (rowsAffected>0). Sirve de "claim": ante ejecuciones
+// concurrentes (dos cold starts / dos requests), solo una gana y registra hitos.
+async function detachOrderFromInvoice(orderId, invoiceId) {
+  const r = await db.execute({
+    sql: `UPDATE service_orders SET invoice_id = NULL, status = 'trabajo_completo', updated_at = ?
+          WHERE id = ? AND invoice_id = ?`,
+    args: [new Date().toISOString(), orderId, invoiceId],
+  });
+  return Number(r.rowsAffected) > 0;
+}
+
 async function reconcileAnnulledInvoices() {
   const r = await db.execute(`
-    SELECT so.id AS order_id, i.label AS invoice_label, i.created_at AS invoice_created
+    SELECT so.id AS order_id, i.id AS invoice_id, i.label AS invoice_label, i.created_at AS invoice_created
     FROM service_orders so
     JOIN invoices i ON so.invoice_id = i.id
     WHERE i.status = 'anulada'
   `);
+  let n = 0;
   for (const row of r.rows) {
     const orderId = row.order_id;
+    // Claim atómico primero: si otra ejecución ya la desligó, se salta (sin
+    // duplicar hitos).
+    if (!(await detachOrderFromInvoice(orderId, row.invoice_id))) continue;
+    n++;
     const evs = await db.execute({ sql: 'SELECT status FROM service_order_events WHERE service_order_id = ?', args: [orderId] });
     const has = s => evs.rows.some(e => e.status === s);
     if (!has('factura_generada')) {
       await addServiceOrderEvent(orderId, 'factura_generada', null, row.invoice_label, row.invoice_created);
     }
-    if (!has('factura_anulada')) {
-      await addServiceOrderEvent(orderId, 'factura_anulada', 'Sistema', row.invoice_label);
-    }
-    await updateServiceOrder(orderId, { invoiceId: null, status: 'trabajo_completo' }, 'Sistema');
+    await addServiceOrderEvent(orderId, 'factura_anulada', 'Sistema', row.invoice_label);
+    await addServiceOrderEvent(orderId, 'trabajo_completo', 'Sistema'); // cambio de estado
   }
-  if (r.rows.length) console.log(`✅ Reconciliadas ${r.rows.length} orden(es) atadas a facturas anuladas`);
+  if (n) console.log(`✅ Reconciliadas ${n} orden(es) atadas a facturas anuladas`);
 }
 
 // Borrado permanente de una orden de servicio y su historial de eventos.
@@ -1981,7 +1997,7 @@ module.exports = {
   createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersPage, getOrderStats, getOrdersByUser, countOrders,
   createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, getConvertedQuotationIds, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
-  getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
+  getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents, addServiceOrderEvent, detachOrderFromInvoice, deleteServiceOrder,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   isThrottleLocked, recordThrottleFailure,
   getAllSettings, setSetting,
