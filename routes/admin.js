@@ -1289,7 +1289,7 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) 
     const order = await getServiceOrderById(invoice.serviceOrderId);
     if (order && order.invoiceId === invoice.id) {
       const actor = res.locals.user?.name || 'Admin';
-      await addServiceOrderEvent(order.id, 'factura_anulada', actor);
+      await addServiceOrderEvent(order.id, 'factura_anulada', actor, invoice.label);
       await updateServiceOrder(order.id, { invoiceId: null, status: 'trabajo_completo' }, actor);
     }
   }
