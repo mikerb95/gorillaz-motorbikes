@@ -86,17 +86,20 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   <%
   const STATUS_LABEL = {
     pendiente:'Pendiente', ingreso_taller:'Ingreso a taller', trabajo_en_curso:'Trabajo en curso',
-    en_pausa:'En pausa', trabajo_completo:'Trabajo completo', entregado:'Entregado', facturado:'Facturado'
+    en_pausa:'En pausa', trabajo_completo:'Trabajo completo', entregado:'Entregado', facturado:'Facturado',
+    editado:'Orden editada'
   };
   const STATUS_COLOR = {
     pendiente:'#9ca3af', ingreso_taller:'#f59e0b', trabajo_en_curso:'#3b82f6',
-    en_pausa:'#f59e0b', trabajo_completo:'#22c55e', entregado:'#16a34a', facturado:'#16a34a'
+    en_pausa:'#f59e0b', trabajo_completo:'#22c55e', entregado:'#16a34a', facturado:'#16a34a',
+    editado:'#8b5cf6'
   };
+  const STATUS_ICON = { editado:'✏️' };
   const evs = typeof events !== 'undefined' ? events : [];
   const timeline = [];
   if (quotation) timeline.push({ at: quotation.createdAt, icon:'📝', color:'#6366f1', title:'Cotización ' + quotation.label + ' creada' });
   timeline.push({ at: order.createdAt, icon:'🔧', color:'#0ea5e9', title:'Orden de servicio creada' + (order.quotationId ? ' · desde cotización' : ' · manual') });
-  evs.forEach(e => timeline.push({ at: e.createdAt, icon:'●', color: STATUS_COLOR[e.status] || '#9ca3af', title: STATUS_LABEL[e.status] || e.status, actor: e.actor }));
+  evs.forEach(e => timeline.push({ at: e.createdAt, icon: STATUS_ICON[e.status] || '●', color: STATUS_COLOR[e.status] || '#9ca3af', title: STATUS_LABEL[e.status] || e.status, actor: e.actor }));
   // Respaldo para órdenes anteriores al registro de eventos: usa el sello de trabajo completado.
   if (evs.length === 0 && order.trabajoCompletoAt) timeline.push({ at: order.trabajoCompletoAt, icon:'●', color:'#22c55e', title:'Trabajo completo' });
   if (invoice) timeline.push({ at: invoice.createdAt, icon:'🧾', color:'#16a34a', title:'Factura ' + invoice.label + ' generada' });

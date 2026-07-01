@@ -1191,6 +1191,21 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, asy
     }
   }
   await updateServiceOrder(req.params.id, updates);
+
+  // Deja constancia en la trazabilidad, pero solo si algún campo cambió de
+  // verdad, para no ensuciar la línea de tiempo al abrir/guardar sin editar.
+  const changed =
+    updates.motorcycle          !== order.motorcycle ||
+    (updates.clientPhone || null)        !== (order.clientPhone || null) ||
+    (updates.clientPhoneCountry || null) !== (order.clientPhoneCountry || null) ||
+    (updates.employeeId || null)         !== (order.employeeId || null) ||
+    (updates.estimatedDate || null)      !== (order.estimatedDate || null) ||
+    (updates.total !== undefined && updates.total !== order.total) ||
+    (updates.items !== undefined && JSON.stringify(updates.items) !== JSON.stringify(order.items));
+  if (changed) {
+    await addServiceOrderEvent(req.params.id, 'editado', res.locals.user?.name || 'Admin');
+  }
+
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
