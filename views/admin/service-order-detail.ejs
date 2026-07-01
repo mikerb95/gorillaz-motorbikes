@@ -87,22 +87,34 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   const STATUS_LABEL = {
     pendiente:'Pendiente', ingreso_taller:'Ingreso a taller', trabajo_en_curso:'Trabajo en curso',
     en_pausa:'En pausa', trabajo_completo:'Trabajo completo', entregado:'Entregado', facturado:'Facturado',
-    editado:'Orden editada', factura_anulada:'Factura anulada'
+    editado:'Orden editada', factura_generada:'Factura generada', factura_anulada:'Factura anulada'
   };
   const STATUS_COLOR = {
     pendiente:'#9ca3af', ingreso_taller:'#f59e0b', trabajo_en_curso:'#3b82f6',
     en_pausa:'#f59e0b', trabajo_completo:'#22c55e', entregado:'#16a34a', facturado:'#16a34a',
-    editado:'#8b5cf6', factura_anulada:'#dc2626'
+    editado:'#8b5cf6', factura_generada:'#16a34a', factura_anulada:'#dc2626'
   };
-  const STATUS_ICON = { editado:'✏️', factura_anulada:'🚫' };
+  const STATUS_ICON = { editado:'✏️', factura_generada:'🧾', factura_anulada:'🚫' };
+  // Título de un evento: los hitos de factura anteponen su etiqueta (guardada
+  // en detail) para que el historial siga leyéndose aunque la orden ya no esté
+  // vinculada a esa factura.
+  const eventTitle = e => {
+    if (e.status === 'factura_generada') return e.detail ? 'Factura ' + e.detail + ' generada' : 'Factura generada';
+    if (e.status === 'factura_anulada')  return e.detail ? 'Factura ' + e.detail + ' anulada'  : 'Factura anulada';
+    return STATUS_LABEL[e.status] || e.status;
+  };
   const evs = typeof events !== 'undefined' ? events : [];
   const timeline = [];
   if (quotation) timeline.push({ at: quotation.createdAt, icon:'📝', color:'#6366f1', title:'Cotización ' + quotation.label + ' creada' });
   timeline.push({ at: order.createdAt, icon:'🔧', color:'#0ea5e9', title:'Orden de servicio creada' + (order.quotationId ? ' · desde cotización' : ' · manual') });
-  evs.forEach(e => timeline.push({ at: e.createdAt, icon: STATUS_ICON[e.status] || '●', color: STATUS_COLOR[e.status] || '#9ca3af', title: STATUS_LABEL[e.status] || e.status, actor: e.actor }));
+  evs.forEach(e => timeline.push({ at: e.createdAt, icon: STATUS_ICON[e.status] || '●', color: STATUS_COLOR[e.status] || '#9ca3af', title: eventTitle(e), actor: e.actor }));
   // Respaldo para órdenes anteriores al registro de eventos: usa el sello de trabajo completado.
   if (evs.length === 0 && order.trabajoCompletoAt) timeline.push({ at: order.trabajoCompletoAt, icon:'●', color:'#22c55e', title:'Trabajo completo' });
-  if (invoice) timeline.push({ at: invoice.createdAt, icon:'🧾', color:'#16a34a', title:'Factura ' + invoice.label + ' generada' });
+  // Respaldo del hito de factura solo para órdenes previas al evento persistente:
+  // si ya hay un 'factura_generada' en el historial, no se duplica.
+  if (invoice && !evs.some(e => e.status === 'factura_generada')) {
+    timeline.push({ at: invoice.createdAt, icon:'🧾', color:'#16a34a', title:'Factura ' + invoice.label + ' generada' });
+  }
   timeline.sort((a, b) => new Date(a.at) - new Date(b.at));
   %>
   <div class="crm-card" style="padding:20px 24px">
