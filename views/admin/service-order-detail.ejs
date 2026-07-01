@@ -265,8 +265,9 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   <% if (order.status === 'trabajo_completo' && !order.invoiceId) { %>
   <div class="crm-card" style="padding:20px 24px;border-top:3px solid #22c55e">
     <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Generar Factura</h2>
-    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/convertir-factura">
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/convertir-factura" id="convertInvoiceForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="paidNow" id="paidNowField" value="" />
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px">
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Método de pago</label>
@@ -309,9 +310,41 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
         <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Notas de factura</label>
         <textarea name="notes" rows="2" placeholder="Observaciones finales, garantía, etc." style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"></textarea>
       </div>
-      <button class="btn btn-primary" type="submit">Generar Factura →</button>
+      <button class="btn btn-primary" type="button" data-modal-open="#payNowModal">Generar Factura →</button>
     </form>
   </div>
+
+  <!-- Modal: ¿se pagó al facturar? -->
+  <div class="modal" id="payNowModal" aria-hidden="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;max-width:440px;width:90%;padding:0">
+      <div style="padding:20px 24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0;font-size:16px;font-weight:800;color:#374151">💰 Confirmar factura</h3>
+        <button type="button" data-modal-close style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
+      </div>
+      <div style="padding:20px 24px">
+        <p style="margin:0 0 18px;font-size:14px;color:#374151;line-height:1.5">
+          ¿El cliente <strong>pagó en este momento</strong>?
+          Si confirmas, la factura quedará marcada como <strong>pagada</strong> de una vez.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button type="button" id="payYesBtn" class="btn btn-primary"
+                  style="background:#16a34a;border-color:#16a34a">Sí, pagó ahora → Factura pagada</button>
+          <button type="button" id="payNoBtn" class="btn btn-ghost">No, dejar pendiente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  (function () {
+    var form  = document.getElementById('convertInvoiceForm');
+    var field = document.getElementById('paidNowField');
+    var yes   = document.getElementById('payYesBtn');
+    var no    = document.getElementById('payNoBtn');
+    if (!form || !field) return;
+    if (yes) yes.addEventListener('click', function () { field.value = '1'; form.submit(); });
+    if (no)  no.addEventListener('click',  function () { field.value = '0'; form.submit(); });
+  })();
+  </script>
   <% } %>
 
   <!-- Zona de peligro -->

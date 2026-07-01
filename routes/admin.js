@@ -1273,6 +1273,7 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
     subtotal,
     tax,
     paymentMethod:      req.body.paymentMethod || 'efectivo',
+    status:             req.body.paidNow === '1' ? 'pagada' : 'pendiente',
     notes:              (req.body.notes || '').trim() || null,
   });
   const actor = res.locals.user?.name || 'Admin';
