@@ -1123,11 +1123,32 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, re
   res.redirect('/admin/ordenes-servicio/' + id);
 });
 
+// Desliga una orden de una factura anulada dejando la trazabilidad intacta:
+// rellena el hito 'factura_generada' si la orden es anterior al registro de
+// eventos, marca 'factura_anulada', y devuelve la orden a 'trabajo_completo'
+// para reabrir la edición de ítems. Se usa tanto al anular como al abrir una
+// orden que quedó vinculada a una factura ya anulada (autocorrección).
+async function detachAnnulledInvoice(order, invoice, actor) {
+  const evs = await getServiceOrderEvents(order.id);
+  if (!evs.some(e => e.status === 'factura_generada')) {
+    await addServiceOrderEvent(order.id, 'factura_generada', null, invoice.label, invoice.createdAt);
+  }
+  await addServiceOrderEvent(order.id, 'factura_anulada', actor, invoice.label);
+  await updateServiceOrder(order.id, { invoiceId: null, status: 'trabajo_completo' }, actor);
+}
+
 router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) => {
-  const order = await getServiceOrderById(req.params.id);
+  let order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/admin/ordenes-servicio');
+  let invoice = order.invoiceId ? await getInvoiceById(order.invoiceId) : null;
+  // Autocorrección: si la orden sigue atada a una factura ya anulada (p. ej.
+  // anulada antes de existir el deslinde), se reconcilia al vuelo y se recarga.
+  if (invoice && invoice.status === 'anulada' && order.invoiceId === invoice.id) {
+    await detachAnnulledInvoice(order, invoice, res.locals.user?.name || 'Admin');
+    order = await getServiceOrderById(req.params.id);
+    invoice = null;
+  }
   const quotation = order.quotationId ? await getQuotationById(order.quotationId) : null;
-  const invoice   = order.invoiceId   ? await getInvoiceById(order.invoiceId)     : null;
   const parqueaderoConfig = loadParqueaderoConfig();
   const empleados = await getActiveEmployees();
   const empleadoAsignado = order.employeeId ? await getEmployeeById(order.employeeId) : null;
@@ -1288,9 +1309,7 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) 
   if (req.body.status === 'anulada' && invoice && invoice.status !== 'anulada' && invoice.serviceOrderId) {
     const order = await getServiceOrderById(invoice.serviceOrderId);
     if (order && order.invoiceId === invoice.id) {
-      const actor = res.locals.user?.name || 'Admin';
-      await addServiceOrderEvent(order.id, 'factura_anulada', actor, invoice.label);
-      await updateServiceOrder(order.id, { invoiceId: null, status: 'trabajo_completo' }, actor);
+      await detachAnnulledInvoice(order, invoice, res.locals.user?.name || 'Admin');
     }
   }
 
