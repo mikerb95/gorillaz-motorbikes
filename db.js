@@ -373,16 +373,17 @@ function safeJson(str, fallback) {
 // van parametrizados. Devuelve las filas ya mapeadas + metadatos para el
 // paginador. Se limita `size` a 100 como tope de seguridad.
 async function paginate(table, { where = '', args = [], order = 'created_at DESC', page = 1, size = 25, map = r => r } = {}) {
-  const lim  = Math.max(1, Math.min(100, Number(size) || 25));
-  const pg   = Math.max(1, Number(page) || 1);
-  const off  = (pg - 1) * lim;
-  const w    = where ? `WHERE ${where}` : '';
-  const [rowsR, countR] = await Promise.all([
-    db.execute({ sql: `SELECT * FROM ${table} ${w} ORDER BY ${order} LIMIT ? OFFSET ?`, args: [...args, lim, off] }),
-    db.execute({ sql: `SELECT COUNT(*) AS n FROM ${table} ${w}`, args }),
-  ]);
-  const total = Number(countR.rows[0].n);
-  return { rows: rowsR.rows.map(map), total, page: pg, size: lim, pages: Math.max(1, Math.ceil(total / lim)) };
+  const lim = Math.max(1, Math.min(100, Number(size) || 25));
+  const w   = where ? `WHERE ${where}` : '';
+  // Se cuenta primero para acotar la página pedida al rango real: así un
+  // ?page= fuera de rango devuelve la última página, no una tabla vacía.
+  const countR = await db.execute({ sql: `SELECT COUNT(*) AS n FROM ${table} ${w}`, args });
+  const total  = Number(countR.rows[0].n);
+  const pages  = Math.max(1, Math.ceil(total / lim));
+  const pg     = Math.min(pages, Math.max(1, Number(page) || 1));
+  const off    = (pg - 1) * lim;
+  const rowsR  = await db.execute({ sql: `SELECT * FROM ${table} ${w} ORDER BY ${order} LIMIT ? OFFSET ?`, args: [...args, lim, off] });
+  return { rows: rowsR.rows.map(map), total, page: pg, size: lim, pages };
 }
 
 function rowToUser(row) {
