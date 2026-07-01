@@ -1391,7 +1391,9 @@ async function detachOrderFromInvoice(orderId, invoiceId) {
           WHERE id = ? AND invoice_id = ?`,
     args: [new Date().toISOString(), orderId, invoiceId],
   });
-  return Number(r.rowsAffected) > 0;
+  // El cliente libSQL expone el conteo como rowsAffected o changes según versión
+  // (mismo criterio que claimStockDecrement); se toleran ambos.
+  return (r.rowsAffected ?? r.changes ?? 0) > 0;
 }
 
 async function reconcileAnnulledInvoices() {
