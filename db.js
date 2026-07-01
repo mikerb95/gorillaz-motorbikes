@@ -1268,6 +1268,17 @@ async function getServiceOrderEvents(serviceOrderId) {
   }));
 }
 
+// Registra un hito arbitrario en la trazabilidad de una orden (p. ej. 'editado'),
+// sin tocar el estado actual. Lo usan las acciones que no son cambios de estado
+// pero que igual conviene dejar en la línea de tiempo.
+async function addServiceOrderEvent(serviceOrderId, status, actor) {
+  await db.execute({
+    sql: `INSERT INTO service_order_events (id, service_order_id, status, actor, created_at)
+          VALUES (?,?,?,?,?)`,
+    args: [uuidv4(), serviceOrderId, status, actor || null, new Date().toISOString()],
+  });
+}
+
 // Borrado permanente de una orden de servicio y su historial de eventos.
 // No toca facturas: la ruta bloquea el borrado de órdenes ya facturadas para
 // no dejar facturas huérfanas (la contabilidad es el registro legal).
@@ -1822,7 +1833,7 @@ module.exports = {
   createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersByUser, countOrders,
   createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
-  getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents, deleteServiceOrder,
+  getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   isThrottleLocked, recordThrottleFailure,
   getAllSettings, setSetting,
