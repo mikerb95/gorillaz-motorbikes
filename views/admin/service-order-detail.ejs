@@ -87,14 +87,14 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   const STATUS_LABEL = {
     pendiente:'Pendiente', ingreso_taller:'Ingreso a taller', trabajo_en_curso:'Trabajo en curso',
     en_pausa:'En pausa', trabajo_completo:'Trabajo completo', entregado:'Entregado', facturado:'Facturado',
-    editado:'Orden editada'
+    editado:'Orden editada', factura_anulada:'Factura anulada'
   };
   const STATUS_COLOR = {
     pendiente:'#9ca3af', ingreso_taller:'#f59e0b', trabajo_en_curso:'#3b82f6',
     en_pausa:'#f59e0b', trabajo_completo:'#22c55e', entregado:'#16a34a', facturado:'#16a34a',
-    editado:'#8b5cf6'
+    editado:'#8b5cf6', factura_anulada:'#dc2626'
   };
-  const STATUS_ICON = { editado:'✏️' };
+  const STATUS_ICON = { editado:'✏️', factura_anulada:'🚫' };
   const evs = typeof events !== 'undefined' ? events : [];
   const timeline = [];
   if (quotation) timeline.push({ at: quotation.createdAt, icon:'📝', color:'#6366f1', title:'Cotización ' + quotation.label + ' creada' });

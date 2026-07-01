@@ -1275,7 +1275,21 @@ router.post('/facturas/:id/telefono', requireAuth, requireAdmin, async (req, res
 });
 
 router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) => {
+  const invoice = await getInvoiceById(req.params.id);
   await updateInvoiceStatus(req.params.id, req.body.status, req.body.paymentMethod);
+
+  // Al anular una factura se desliga de su orden para que vuelva a ser editable:
+  // se limpia el vínculo, la orden regresa a 'trabajo completo' y queda el hito
+  // en la trazabilidad. Solo en la transición real a 'anulada'.
+  if (req.body.status === 'anulada' && invoice && invoice.status !== 'anulada' && invoice.serviceOrderId) {
+    const order = await getServiceOrderById(invoice.serviceOrderId);
+    if (order && order.invoiceId === invoice.id) {
+      const actor = res.locals.user?.name || 'Admin';
+      await addServiceOrderEvent(order.id, 'factura_anulada', actor);
+      await updateServiceOrder(order.id, { invoiceId: null, status: 'trabajo_completo' }, actor);
+    }
+  }
+
   res.redirect('/admin/facturas/' + req.params.id);
 });
 
