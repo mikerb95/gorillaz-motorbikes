@@ -1,0 +1,29 @@
+<%
+// Paginador reutilizable. Locals esperados:
+//   page  (nº de página actual), pages (total de páginas)
+//   params (objeto opcional con filtros a preservar, p.ej. { status: 'pagada' })
+const _pages  = typeof pages !== 'undefined' ? Number(pages) : 1;
+const _page   = typeof page  !== 'undefined' ? Number(page)  : 1;
+const _params = typeof params !== 'undefined' && params ? params : {};
+const _href = p => {
+  const u = new URLSearchParams();
+  Object.keys(_params).forEach(k => { if (_params[k]) u.set(k, _params[k]); });
+  u.set('page', p);
+  return '?' + u.toString();
+};
+%>
+<% if (_pages > 1) { %>
+<div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:16px 12px">
+  <% if (_page > 1) { %>
+    <a class="btn btn-ghost btn-sm" href="<%= _href(_page - 1) %>">← Anterior</a>
+  <% } else { %>
+    <span class="btn btn-ghost btn-sm" style="opacity:.4;pointer-events:none">← Anterior</span>
+  <% } %>
+  <span class="muted" style="font-size:.85rem;font-weight:600">Página <%= _page %> de <%= _pages %></span>
+  <% if (_page < _pages) { %>
+    <a class="btn btn-ghost btn-sm" href="<%= _href(_page + 1) %>">Siguiente →</a>
+  <% } else { %>
+    <span class="btn btn-ghost btn-sm" style="opacity:.4;pointer-events:none">Siguiente →</span>
+  <% } %>
+</div>
+<% } %>
