@@ -1268,6 +1268,7 @@ async function getServiceOrderEvents(serviceOrderId) {
     id: row.id,
     status: row.status,
     actor: row.actor || null,
+    detail: row.detail || null,
     createdAt: row.created_at,
   }));
 }
