@@ -224,7 +224,7 @@ body.has-subbar .nav-bar .header-inner {
 
   /* Name: starts small and transparent, pops in on swap */
   .site-header .logo .logo-name {
-    height: 70%;
+    height: 25px;
     opacity: 0;
     visibility: visible;
     transform: scale(.55);
