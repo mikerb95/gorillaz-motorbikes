@@ -1329,6 +1329,14 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) 
     }
   }
 
+  const STATUS_LABELS = { pendiente: 'Pendiente', pagada: 'Pagada', anulada: 'Anulada' };
+  const label = STATUS_LABELS[req.body.status] || req.body.status;
+  if (req.body.status === 'anulada') {
+    setFlash(res, 'success', `Factura anulada.`);
+  } else {
+    setFlash(res, 'success', `Estado de la factura actualizado a «${label}».`);
+  }
+
   res.redirect('/admin/facturas/' + req.params.id);
 });
 
