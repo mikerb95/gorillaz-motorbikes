@@ -230,6 +230,7 @@
       </tbody>
     </table>
   </div>
+  <%- include('../partials/pager', { page, pages, params: { periodo: typeof periodo !== 'undefined' ? periodo : '' } }) %>
   <% } %>
 </div>
 

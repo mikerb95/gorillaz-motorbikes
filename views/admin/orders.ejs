@@ -7,36 +7,43 @@ const STATUS_MAP = {
   paid:                 { label: 'Pagado',          cls: 'badge-success' },
   failed:               { label: 'Fallido',         cls: 'badge-danger' },
 };
-const counts = { pending: 0, pending_confirmation: 0, paid: 0, failed: 0 };
-orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+// `stats` (agregados en SQL) y `status`/`page`/`pages`/`total` llegan del servidor.
+const st_ = typeof stats !== 'undefined' ? stats : { pending:0, pending_confirmation:0, paid:0, totalRecaudado:0 };
+const activeStatus = typeof status !== 'undefined' ? status : '';
+const KPI = [
+  { k:'pending',              l:'Pendientes' },
+  { k:'pending_confirmation', l:'En confirmación' },
+  { k:'paid',                 l:'Pagados' },
+];
 %>
 
 <div class="crm-page-header">
 
 </div>
 
-<div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+<div class="crm-kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
+  <% KPI.forEach(k => { const on = activeStatus === k.k; %>
+    <a class="crm-kpi-card" href="<%= on ? '/admin/pedidos' : '?status=' + k.k %>" style="text-decoration:none;color:inherit;<%= on ? 'outline:2px solid var(--brand);outline-offset:-2px' : '' %>">
+      <div class="crm-kpi-value"><%= st_[k.k] || 0 %></div>
+      <div class="crm-kpi-label"><%= k.l %></div>
+    </a>
+  <% }) %>
   <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value"><%= counts.pending %></div>
-    <div class="crm-kpi-label">Pendientes</div>
-  </div>
-  <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value"><%= counts.pending_confirmation %></div>
-    <div class="crm-kpi-label">En confirmación</div>
-  </div>
-  <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value"><%= counts.paid %></div>
-    <div class="crm-kpi-label">Pagados</div>
-  </div>
-  <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value">$<%= orders.filter(o => o.status === 'paid').reduce((s, o) => s + o.total, 0).toLocaleString('es-CO') %></div>
+    <div class="crm-kpi-value">$<%= (st_.totalRecaudado || 0).toLocaleString('es-CO') %></div>
     <div class="crm-kpi-label">Total recaudado</div>
   </div>
 </div>
 
+<% if (activeStatus) { %>
+  <div style="margin-bottom:16px;font-size:.85rem;color:#6b7280">
+    Filtrando por <strong><%= (KPI.find(k=>k.k===activeStatus)||{l:activeStatus}).l %></strong>
+    · <a href="/admin/pedidos" style="color:var(--brand);font-weight:700">Ver todos</a>
+  </div>
+<% } %>
+
 <div class="crm-card">
-  <% if (orders.length === 0) { %>
-    <p class="muted" style="padding:24px;text-align:center">No hay pedidos aún.</p>
+  <% if (total === 0) { %>
+    <p class="muted" style="padding:24px;text-align:center"><%= activeStatus ? 'No hay pedidos con este estado.' : 'No hay pedidos aún.' %></p>
   <% } else { %>
   <div class="crm-table-wrap">
     <table class="crm-table">
@@ -93,6 +100,7 @@ orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; })
       </tbody>
     </table>
   </div>
+  <%- include('../partials/pager', { page, pages, params: { status: activeStatus } }) %>
   <% } %>
 </div>
 

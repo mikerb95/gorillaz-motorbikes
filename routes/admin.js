@@ -19,13 +19,13 @@ const {
   logAdminAction, getAdminAuditLog,
   getAllAppointments, createAppointment, updateAppointment, deleteAppointment,
   addUserScore,
-  getAllOrders, countOrders, updateOrderStatus,
+  getOrdersPage, getOrderStats, countOrders, updateOrderStatus,
   getAllNewsletterSubscribers, getConfirmedNewsletterSubscribers,
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
-  getAllQuotations, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
-  createServiceOrder, getServiceOrderById, getAllServiceOrders, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
-  createInvoice, getInvoiceById, getAllInvoices, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
+  getAllQuotations, getConvertedQuotationIds, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
+  createServiceOrder, getServiceOrderById, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
+  createInvoice, getInvoiceById, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
   backupAllTables,
@@ -87,8 +87,16 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 router.get('/pedidos', requireAuth, requireAdmin, async (req, res) => {
-  const orders = await getAllOrders();
-  res.render('admin/orders', { orders });
+  const status = req.query.status || '';
+  const page   = Number(req.query.page) || 1;
+  const [pageData, stats] = await Promise.all([
+    getOrdersPage({ page, size: 25, status }),
+    getOrderStats(),
+  ]);
+  res.render('admin/orders', {
+    orders: pageData.rows, stats, status,
+    page: pageData.page, pages: pageData.pages, total: pageData.total,
+  });
 });
 
 router.post('/pedidos/estado', requireAuth, requireAdmin, async (req, res) => {
@@ -742,11 +750,23 @@ router.post('/newsletter/enviar', requireAuth, requireAdmin, async (req, res) =>
 // ── Cotizaciones ──────────────────────────────────────────────────────────
 
 router.get('/cotizaciones', requireAuth, requireAdmin, async (req, res) => {
-  const [quotations, drafts, orders, invoices] = await Promise.all([
-    getAllQuotations(), getDraftQuotations(50), getAllServiceOrders(), getAllInvoices(),
+  // El resumen necesita todas las cotizaciones confirmadas (métricas del periodo,
+  // top ítems, sparkline). De órdenes/facturas solo se necesitan los quotationId
+  // convertidos → se traen como sets ligeros, sin cargar esas tablas completas.
+  const [quotations, drafts, { orderQids, invoiceQids }] = await Promise.all([
+    getAllQuotations(), getDraftQuotations(50), getConvertedQuotationIds(),
   ]);
-  const summary = buildQuotationSummary(quotations, orders, invoices, req.query.periodo);
-  res.render('admin/quotations', { quotations, drafts, summary });
+  const summary = buildQuotationSummary(quotations, orderQids, invoiceQids, req.query.periodo);
+
+  // La tabla se pagina en memoria (las cotizaciones ya están cargadas para el
+  // resumen): evita renderizar miles de filas sin una query adicional.
+  const size  = 25;
+  const total = quotations.length;
+  const pages = Math.max(1, Math.ceil(total / size));
+  const page  = Math.min(pages, Math.max(1, Number(req.query.page) || 1));
+  const pageRows = quotations.slice((page - 1) * size, page * size);
+
+  res.render('admin/quotations', { quotations: pageRows, drafts, summary, page, pages, total, periodo: req.query.periodo || '' });
 });
 
 router.get('/cotizaciones/:id', requireAuth, requireAdmin, async (req, res) => {

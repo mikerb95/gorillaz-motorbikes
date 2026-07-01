@@ -887,6 +887,35 @@ async function getAllOrders() {
   return r.rows.map(rowToOrder);
 }
 
+// Listado paginado de pedidos de tienda (opcionalmente filtrado por estado).
+async function getOrdersPage({ page = 1, size = 25, status = '' } = {}) {
+  const where = status ? 'status = ?' : '';
+  const args  = status ? [status] : [];
+  return paginate('orders', { where, args, page, size, map: rowToOrder });
+}
+
+// KPI del listado de pedidos agregados en SQL (independientes de la página):
+// conteo por estado + total recaudado (pagados).
+async function getOrderStats() {
+  const r = await db.execute(`
+    SELECT
+      SUM(CASE WHEN status = 'pending'              THEN 1 ELSE 0 END) AS pending,
+      SUM(CASE WHEN status = 'pending_confirmation' THEN 1 ELSE 0 END) AS pending_confirmation,
+      SUM(CASE WHEN status = 'paid'                 THEN 1 ELSE 0 END) AS paid,
+      SUM(CASE WHEN status = 'failed'               THEN 1 ELSE 0 END) AS failed,
+      COALESCE(SUM(CASE WHEN status = 'paid' THEN total ELSE 0 END), 0) AS total_recaudado
+    FROM orders
+  `);
+  const row = r.rows[0] || {};
+  return {
+    pending:              Number(row.pending)              || 0,
+    pending_confirmation: Number(row.pending_confirmation) || 0,
+    paid:                 Number(row.paid)                 || 0,
+    failed:               Number(row.failed)               || 0,
+    totalRecaudado:       Number(row.total_recaudado)      || 0,
+  };
+}
+
 async function getOrdersByUser(userId) {
   const r = await db.execute({
     sql: 'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC',
@@ -1133,6 +1162,20 @@ async function updateQuotationPhone(id, clientPhone, clientPhoneCountry) {
 async function getAllQuotations() {
   const r = await db.execute("SELECT * FROM quotations WHERE status != 'draft' ORDER BY created_at DESC");
   return r.rows.map(rowToQuotation);
+}
+
+// Ids de cotizaciones que ya se convirtieron en orden y/o factura. Devuelve solo
+// esa columna (no filas completas) para el resumen de conversión: evita cargar
+// service_orders/invoices enteras —con sus blobs de ítems— solo para leer un id.
+async function getConvertedQuotationIds() {
+  const [ordR, invR] = await Promise.all([
+    db.execute('SELECT DISTINCT quotation_id FROM service_orders WHERE quotation_id IS NOT NULL'),
+    db.execute('SELECT DISTINCT quotation_id FROM invoices WHERE quotation_id IS NOT NULL'),
+  ]);
+  return {
+    orderQids:   new Set(ordR.rows.map(x => x.quotation_id)),
+    invoiceQids: new Set(invR.rows.map(x => x.quotation_id)),
+  };
 }
 
 async function getQuotationsByMotorcyclePlates(plates) {
@@ -1934,8 +1977,8 @@ module.exports = {
   createNewsletterCampaign, getAllNewsletterCampaigns,
   createEnrollment,
   createJobApplication,
-  createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersByUser, countOrders,
-  createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
+  createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersPage, getOrderStats, getOrdersByUser, countOrders,
+  createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, getConvertedQuotationIds, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
   getServiceOrdersByEmployee, countPendingReviewOrders, getServiceOrderEvents, addServiceOrderEvent, deleteServiceOrder,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,

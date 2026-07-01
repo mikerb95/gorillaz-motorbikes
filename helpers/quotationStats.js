@@ -48,16 +48,17 @@ function pctDelta(cur, prev) {
 
 /**
  * @param {Array} quotations  cotizaciones confirmadas (status != 'draft')
- * @param {Array} orders      órdenes de servicio (con quotationId)
- * @param {Array} invoices    facturas (con quotationId)
+ * @param {Set}   orderQids   ids de cotizaciones que llegaron a orden
+ * @param {Set}   invoiceQids ids de cotizaciones que llegaron a factura
  * @param {string} periodoParam  'mes' | 'mes-anterior' | 'anio' | 'todo'
  */
-function buildQuotationSummary(quotations, orders, invoices, periodoParam) {
+function buildQuotationSummary(quotations, orderQids, invoiceQids, periodoParam) {
   const periodo = PERIODOS[periodoParam] ? periodoParam : 'mes';
 
-  // Ids de cotizaciones que ya se convirtieron en orden / factura.
-  const orderQids   = new Set((orders   || []).map(o => o.quotationId).filter(Boolean));
-  const invoiceQids = new Set((invoices || []).map(i => i.quotationId).filter(Boolean));
+  // Sets de ids ya convertidos (calculados en DB con SELECT DISTINCT, no
+  // cargando las tablas completas). Se toleran arrays por retrocompatibilidad.
+  if (!(orderQids   instanceof Set)) orderQids   = new Set((orderQids   || []).map(o => o && o.quotationId).filter(Boolean));
+  if (!(invoiceQids instanceof Set)) invoiceQids = new Set((invoiceQids || []).map(i => i && i.quotationId).filter(Boolean));
 
   // Cada cotización con su fecha calendario de Colombia (YYYY-MM-DD).
   const q = (quotations || []).map(x => ({
