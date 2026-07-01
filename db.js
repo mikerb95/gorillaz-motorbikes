@@ -1276,11 +1276,11 @@ async function getServiceOrderEvents(serviceOrderId) {
 // Registra un hito arbitrario en la trazabilidad de una orden (p. ej. 'editado'),
 // sin tocar el estado actual. Lo usan las acciones que no son cambios de estado
 // pero que igual conviene dejar en la línea de tiempo.
-async function addServiceOrderEvent(serviceOrderId, status, actor, detail = null) {
+async function addServiceOrderEvent(serviceOrderId, status, actor, detail = null, createdAt = null) {
   await db.execute({
     sql: `INSERT INTO service_order_events (id, service_order_id, status, actor, detail, created_at)
           VALUES (?,?,?,?,?,?)`,
-    args: [uuidv4(), serviceOrderId, status, actor || null, detail || null, new Date().toISOString()],
+    args: [uuidv4(), serviceOrderId, status, actor || null, detail || null, createdAt || new Date().toISOString()],
   });
 }
 
