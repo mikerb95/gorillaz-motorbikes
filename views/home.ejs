@@ -274,7 +274,11 @@
                 <% } else { %>
                   <span class="fp-price">$<%= p.price.toLocaleString('es-CO') %></span>
                 <% } %>
-                <button type="button" class="fp-add-btn btn-add-cart" data-id="<%= p.id %>" aria-label="Añadir al carrito">+</button>
+                <button type="button" class="fp-add-btn btn-add-cart" data-id="<%= p.id %>"
+                  data-name="<%= p.name %>"
+                  data-image="<%= (p.gallery && p.gallery[0]) || p.image || '/images/download.png' %>"
+                  data-price="$<%= (p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price).toLocaleString('es-CO') %>"
+                  aria-label="Añadir al carrito">+</button>
               </div>
             </div>
           </article>
