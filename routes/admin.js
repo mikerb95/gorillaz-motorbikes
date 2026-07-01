@@ -1214,7 +1214,7 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
   const tax = Math.round(Number(req.body.tax || 0));
   const subtotal = order.total;
-  const { id: invoiceId } = await createInvoice({
+  const { id: invoiceId, label: invoiceLabel } = await createInvoice({
     serviceOrderId:     order.id,
     quotationId:        order.quotationId,
     items:              order.items,
@@ -1223,7 +1223,11 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
     paymentMethod:      req.body.paymentMethod || 'efectivo',
     notes:              (req.body.notes || '').trim() || null,
   });
-  await updateServiceOrder(order.id, { status: 'facturado', invoiceId, pendingReview: false }, res.locals.user?.name || 'Admin');
+  const actor = res.locals.user?.name || 'Admin';
+  await updateServiceOrder(order.id, { status: 'facturado', invoiceId, pendingReview: false }, actor);
+  // Hito persistente en la trazabilidad: sobrevive aunque luego se anule la
+  // factura y se desligue la orden (no se deriva del vínculo vivo).
+  await addServiceOrderEvent(order.id, 'factura_generada', actor, invoiceLabel);
   res.redirect('/admin/facturas/' + invoiceId);
 });
 
