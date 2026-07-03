@@ -279,6 +279,23 @@ async function initDb() {
       detail TEXT,
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    // Check-in del cliente al llegar al taller (escaneando el QR del mostrador).
+    // Le ahorra al mecánico transcribir los datos: solo busca por placa y
+    // continúa creando la orden de servicio. 'pendiente' hasta que un mecánico
+    // la convierte en orden ('atendido'), momento en que queda enlazada a ella.
+    `CREATE TABLE IF NOT EXISTS checkins (
+      id TEXT PRIMARY KEY,
+      client_name TEXT NOT NULL,
+      client_phone TEXT NOT NULL,
+      client_phone_country TEXT NOT NULL DEFAULT '+57',
+      plate TEXT NOT NULL,
+      brand TEXT,
+      reference TEXT,
+      status TEXT NOT NULL DEFAULT 'pendiente',
+      service_order_id TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
