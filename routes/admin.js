@@ -490,6 +490,47 @@ router.post('/clasificados/eliminar', requireAuth, requireAdmin, async (req, res
   } catch (e) { next(e); }
 });
 
+// ── Duplicado de placas: gestión de solicitudes ─────────────────────────────
+
+const PLATE_REQUEST_STATUSES = ['pendiente', 'en_tramite', 'listo', 'entregado', 'cancelado'];
+
+router.get('/duplicado-placas', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const filter = PLATE_REQUEST_STATUSES.includes(req.query.status) ? req.query.status : '';
+    const requests = await getAllPlateRequests(filter || undefined);
+    const counts = {};
+    for (const s of PLATE_REQUEST_STATUSES) counts[s] = await countPlateRequestsByStatus(s);
+    res.render('admin/duplicado-placas', { requests, filter, counts });
+  } catch (e) { next(e); }
+});
+
+router.post('/duplicado-placas/estado', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const id = (req.body.id || '').toString();
+    const status = (req.body.status || '').toString();
+    const adminNotes = (req.body.adminNotes || '').toString().trim().slice(0, 500);
+    if (!PLATE_REQUEST_STATUSES.includes(status)) return res.redirect('/admin/duplicado-placas');
+    const request = await getPlateRequestById(id);
+    if (!request) return res.redirect('/admin/duplicado-placas');
+    await updatePlateRequestStatus(id, status, adminNotes || request.adminNotes);
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'actualizar_duplicado_placa', 'plate_request', id, { status });
+    setFlash(res, 'success', 'Solicitud actualizada.');
+    res.redirect('/admin/duplicado-placas');
+  } catch (e) { next(e); }
+});
+
+router.post('/duplicado-placas/eliminar', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const id = (req.body.id || '').toString();
+    const request = await getPlateRequestById(id);
+    if (!request) return res.redirect('/admin/duplicado-placas');
+    await deletePlateRequest(id);
+    await logAdminAction(res.locals.user.id, res.locals.user.name, 'eliminar_duplicado_placa', 'plate_request', id, { customerName: request.customerName });
+    setFlash(res, 'success', 'Solicitud eliminada.');
+    res.redirect('/admin/duplicado-placas');
+  } catch (e) { next(e); }
+});
+
 router.get('/clases', requireAuth, requireAdmin, (req, res) =>
   res.render('admin/classes', { classesData, flash: req.query.flash || null }));
 
