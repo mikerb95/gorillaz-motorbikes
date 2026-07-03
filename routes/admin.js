@@ -1406,7 +1406,7 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, requirePin('/admi
   if (newStatus === 'anulada' && invoice.serviceOrderId) {
     const order = await getServiceOrderById(invoice.serviceOrderId);
     if (order && order.invoiceId === invoice.id) {
-      await detachAnnulledInvoice(order, invoice, res.locals.user?.name || 'Admin');
+      await detachAnnulledInvoice(order, invoice, req.pinActor);
     }
   }
 

@@ -1310,6 +1310,7 @@ function rowToServiceOrder(row) {
     employeeId: row.employee_id || null,
     pendingReview: Number(row.pending_review) === 1,
     trabajoCompletoAt: row.trabajo_completo_at || null,
+    deliveredAt: row.delivered_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -1408,6 +1409,7 @@ async function updateServiceOrder(id, fields, actor) {
   if (fields.employeeId         !== undefined) { set.push('employee_id = ?');          args.push(fields.employeeId); }
   if (fields.pendingReview      !== undefined) { set.push('pending_review = ?');       args.push(fields.pendingReview ? 1 : 0); }
   if (fields.trabajoCompletoAt  !== undefined) { set.push('trabajo_completo_at = ?');  args.push(fields.trabajoCompletoAt); }
+  if (fields.deliveredAt        !== undefined) { set.push('delivered_at = ?');         args.push(fields.deliveredAt); }
   if (set.length === 0) return;
   set.push('updated_at = ?'); args.push(new Date().toISOString());
   args.push(id);
@@ -1766,7 +1768,7 @@ async function convertServiceOrderToInvoice(order, { notes = null } = {}, actor)
 // momento en que se sabe con certeza si aplica cobro de parqueadero. Agrega
 // el parqueadero y el IVA al total, fija el método de pago y el estado final
 // de la factura (pendiente/pagada), y marca la orden como 'entregado'.
-async function deliverServiceOrder(order, invoice, { tax = 0, parkingAmount = 0, paymentMethod = 'efectivo', paidNow = false, notes = null } = {}, actor) {
+async function deliverServiceOrder(order, invoice, { tax = 0, parkingAmount = 0, paymentMethod = 'efectivo', paidNow = false, notes = null, deliveredAt = null } = {}, actor) {
   if (order.status !== 'facturado' || !invoice || invoice.id !== order.invoiceId || invoice.status !== 'proforma') {
     throw new Error('La orden no está lista para entregar.');
   }
@@ -1780,7 +1782,7 @@ async function deliverServiceOrder(order, invoice, { tax = 0, parkingAmount = 0,
     sql: `UPDATE invoices SET tax=?, parking_amount=?, total=?, payment_method=?, notes=?, status=?, paid_at=? WHERE id=?`,
     args: [cleanTax, cleanParking, total, paymentMethod || 'efectivo', notes || null, status, paidAt, invoice.id],
   });
-  await updateServiceOrder(order.id, { status: 'entregado', deliveredAt: nowCOT() }, actor);
+  await updateServiceOrder(order.id, { status: 'entregado', deliveredAt: deliveredAt || now }, actor);
   await addServiceOrderEvent(order.id, 'factura_cerrada', actor, invoice.label);
   return { total };
 }
