@@ -1233,12 +1233,22 @@ router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) 
   const empleados = await getActiveEmployees();
   const empleadoAsignado = order.employeeId ? await getEmployeeById(order.employeeId) : null;
   const events = await getServiceOrderEvents(order.id);
-  res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig, empleados, empleadoAsignado, events });
+  // Estimado de parqueadero para prellenar el formulario de entrega: el valor
+  // final se confirma/edita ahí mismo al momento de entregar la moto.
+  const parking = order.trabajoCompletoAt ? calcParking(order, parqueaderoConfig) : { aplica: false };
+  res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig, parking, empleados, empleadoAsignado, events });
 });
 
 router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
   const { status, notes, estimatedDate, employeeId } = req.body;
   const order = await getServiceOrderById(req.params.id);
+  // 'entregado' solo se marca desde el flujo dedicado de entrega (que cierra la
+  // factura proforma con el parqueadero); un POST directo aquí no puede saltarse
+  // ese paso.
+  if (status === 'entregado') {
+    setFlash(res, 'error', 'Para entregar la moto usa el formulario de entrega (cierra la factura con el parqueadero).');
+    return res.redirect('/admin/ordenes-servicio/' + req.params.id);
+  }
   const updates = {
     status:        status || 'ingreso_taller',
     notes:         (notes || '').trim() || null,
@@ -1246,7 +1256,8 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, requi
     employeeId:    employeeId || null,
     mechanic:      await resolveMechanicName(employeeId || null),
   };
-  if (status === 'trabajo_completo' && order && !order.trabajoCompletoAt) {
+  const finaliza = status === 'trabajo_completo' && order && !order.trabajoCompletoAt;
+  if (finaliza) {
     updates.trabajoCompletoAt = nowCOT();
   }
   // El admin que toca la orden la da por revisada: limpia el aviso del taller.
