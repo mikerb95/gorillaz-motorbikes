@@ -1681,8 +1681,9 @@ async function createInvoice(data) {
   const now      = new Date().toISOString();
   const subtotal = data.subtotal || data.total || 0;
   // El IVA nunca puede ser negativo: dejaría el total por debajo del subtotal.
-  const tax      = Math.max(0, Math.round(Number(data.tax) || 0));
-  const total    = subtotal + tax;
+  const tax           = Math.max(0, Math.round(Number(data.tax) || 0));
+  const parkingAmount = Math.max(0, Math.round(Number(data.parkingAmount) || 0));
+  const total    = subtotal + tax + parkingAmount;
   const status   = data.status || 'pendiente';
   // El ingreso se reconoce por fecha de pago: si nace pagada, se sella ahora.
   const paidAt   = status === 'pagada' ? now : null;
@@ -1694,14 +1695,14 @@ async function createInvoice(data) {
     label = fmtLabel('F-', consecutive, now);
     await tx.execute({
       sql: `INSERT INTO invoices
-            (id, consecutive, label, service_order_id, quotation_id, items, subtotal, tax, total, payment_method, status, notes, paid_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            (id, consecutive, label, service_order_id, quotation_id, items, subtotal, tax, parking_amount, total, payment_method, status, notes, paid_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         id, consecutive, label,
         data.serviceOrderId,
         data.quotationId || null,
         JSON.stringify(data.items || []),
-        subtotal, tax, total,
+        subtotal, tax, parkingAmount, total,
         data.paymentMethod || 'efectivo',
         status,
         data.notes || null,

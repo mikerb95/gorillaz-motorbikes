@@ -1235,7 +1235,7 @@ router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) 
   res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig, empleados, empleadoAsignado, events });
 });
 
-router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
+router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
   const { status, notes, estimatedDate, employeeId } = req.body;
   const order = await getServiceOrderById(req.params.id);
   const updates = {
