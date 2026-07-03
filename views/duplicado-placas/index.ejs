@@ -1,0 +1,179 @@
+<%- include('../partials/head', { title: title || 'Duplicado de placas y portaplacas | Gorillaz Motorbikes' }) %>
+
+<main>
+  <section class="services-hero">
+    <div class="services-hero-inner container">
+      <h1 class="section-title">Duplicado de placas y portaplacas</h1>
+      <p class="section-subtitle">¿Perdiste, te robaron o se deterioraron tus placas? Gestionamos el trámite
+        completo con un fabricante autorizado por el Ministerio de Transporte (norma MT-001) para que no tengas
+        que hacer filas.</p>
+      <div class="btn-row">
+        <a class="btn btn-outline" href="#solicitar">Solicitar ahora</a>
+      </div>
+    </div>
+    <div class="services-hero-bg" aria-hidden="true"></div>
+    <div class="services-hero-gradient" aria-hidden="true"></div>
+  </section>
+
+  <section class="container">
+    <ul class="services-grid" style="list-style:none; padding:0; margin:24px 0; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px">
+      <li>
+        <div class="service-card" style="min-height:120px">
+          <div class="service-content">
+            <h3>1. Cuéntanos qué pasó</h3>
+            <p>Completa el formulario: perdida, hurto o deterioro, y el tipo de placa que necesitas.</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="service-card" style="min-height:120px">
+          <div class="service-content">
+            <h3>2. Te contactamos</h3>
+            <p>Nuestro equipo te escribe por WhatsApp para confirmar datos, documentos y costo.</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="service-card" style="min-height:120px">
+          <div class="service-content">
+            <h3>3. Recibes tu duplicado</h3>
+            <p>Gestionamos el trámite con el fabricante autorizado y coordinamos la entrega, en promedio 1 a 3 días hábiles.</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="container">
+    <h2 class="section-title" style="font-size:26px">Requisitos según tu caso</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:12px">
+      <div class="crm-card" style="background:var(--surface, #16171b); border-radius:var(--radius-lg); padding:18px">
+        <h3 style="margin-top:0">Pérdida o hurto</h3>
+        <ul>
+          <li>Tarjeta de propiedad del vehículo</li>
+          <li>Foto del número de chasis</li>
+          <li>Acta de pérdida o hurto (recomendada, no obligatoria)</li>
+        </ul>
+      </div>
+      <div class="crm-card" style="background:var(--surface, #16171b); border-radius:var(--radius-lg); padding:18px">
+        <h3 style="margin-top:0">Deterioro</h3>
+        <ul>
+          <li>Tarjeta de propiedad del vehículo</li>
+          <li>Foto de la placa dañada</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:16px; font-size:14px; color:var(--muted, #9ca3af)">
+      No es legal circular sin placas. Gorillaz Motorbikes actúa como intermediario: gestionamos tu trámite con
+      un fabricante autorizado por el Ministerio de Transporte bajo la norma técnica MT-001
+      <!-- TODO: confirmar nombre del aliado fabricante autorizado --> — no fabricamos las placas directamente.
+    </p>
+  </section>
+
+  <section class="container">
+    <h2 class="section-title" style="font-size:26px">Portaplacas para moto</h2>
+    <p class="section-subtitle" style="text-align:left; margin:0 0 12px">Evita perder tu placa de nuevo: portaplacas
+      antivibración, resistentes y de instalación rápida, disponibles para la mayoría de marcas.</p>
+  </section>
+
+  <section id="solicitar" class="container">
+    <h2 class="section-title" style="font-size:26px">Solicita tu duplicado o portaplacas</h2>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="flash-toast flash-error" style="position:static; margin-bottom:16px">
+        <span><%= error %></span>
+      </div>
+    <% } %>
+
+    <form method="post" action="/duplicado-placas/solicitar" id="plateRequestForm" style="max-width:640px; display:grid; gap:14px">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <label>
+        ¿Qué necesitas?
+        <select name="type" id="prType" required>
+          <option value="">— Selecciona —</option>
+          <option value="placa_carro" <%= (form && form.type === 'placa_carro') ? 'selected' : '' %>>Duplicado de placa — Carro</option>
+          <option value="placa_moto" <%= (form && form.type === 'placa_moto') ? 'selected' : '' %>>Duplicado de placa — Moto</option>
+          <option value="placa_publico" <%= (form && form.type === 'placa_publico') ? 'selected' : '' %>>Duplicado de placa — Servicio público</option>
+          <option value="portaplacas" <%= (form && form.type === 'portaplacas') ? 'selected' : '' %>>Portaplacas para moto</option>
+        </select>
+      </label>
+
+      <div id="prPlateFields" style="display:grid; gap:14px">
+        <label>
+          Motivo
+          <select name="reason">
+            <option value="">— Selecciona —</option>
+            <option value="perdida" <%= (form && form.reason === 'perdida') ? 'selected' : '' %>>Pérdida</option>
+            <option value="hurto" <%= (form && form.reason === 'hurto') ? 'selected' : '' %>>Hurto</option>
+            <option value="deterioro" <%= (form && form.reason === 'deterioro') ? 'selected' : '' %>>Deterioro</option>
+          </select>
+        </label>
+        <label>
+          Placa actual (si la conoces)
+          <input type="text" name="plate" maxlength="10" value="<%= (form && form.plate) || '' %>" placeholder="ABC123" />
+        </label>
+      </div>
+
+      <div id="prBrandField" style="display:none">
+        <label>
+          Marca de la moto
+          <input type="text" name="vehicleBrand" data-brand-suggest value="<%= (form && form.vehicleBrand) || '' %>" placeholder="Ej: Yamaha" />
+        </label>
+      </div>
+
+      <label>
+        Nombre completo
+        <input type="text" name="customerName" required minlength="3" maxlength="80" value="<%= (form && form.customerName) || '' %>" />
+      </label>
+
+      <label>
+        Teléfono / WhatsApp
+        <input type="tel" name="customerPhone" required value="<%= (form && form.customerPhone) || '' %>" placeholder="300 000 0000" />
+      </label>
+
+      <label>
+        Correo (opcional)
+        <input type="email" name="customerEmail" value="<%= (form && form.customerEmail) || '' %>" />
+      </label>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
+        <label>
+          Departamento
+          <select class="dept-select" name="department" data-location-group="prLoc" data-current-dept="<%= (form && form.department) || '' %>"></select>
+        </label>
+        <label>
+          Ciudad
+          <select class="city-select" name="city" data-location-group="prLoc" data-current="<%= (form && form.city) || '' %>"></select>
+        </label>
+      </div>
+
+      <label>
+        Notas adicionales (opcional)
+        <textarea name="notes" maxlength="1000" rows="3"><%= (form && form.notes) || '' %></textarea>
+      </label>
+
+      <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+      <p style="font-size:13px; color:var(--muted, #9ca3af)">
+        También puedes escribirnos directo por
+        <a href="https://wa.me/573213204299" target="_blank" rel="noopener">WhatsApp</a>.
+      </p>
+    </form>
+  </section>
+</main>
+
+<script>
+  (function () {
+    var typeSel = document.getElementById('prType');
+    var plateFields = document.getElementById('prPlateFields');
+    var brandField = document.getElementById('prBrandField');
+    function sync() {
+      var isPortaplacas = typeSel.value === 'portaplacas';
+      plateFields.style.display = isPortaplacas ? 'none' : 'grid';
+      brandField.style.display = isPortaplacas ? 'block' : 'none';
+    }
+    if (typeSel) { typeSel.addEventListener('change', sync); sync(); }
+  })();
+</script>
+
+<%- include('../partials/footer') %>
