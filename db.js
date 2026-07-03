@@ -382,6 +382,7 @@ async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_checkins_status    ON checkins(status)`,
     `CREATE INDEX IF NOT EXISTS idx_checkins_plate     ON checkins(plate)`,
     `CREATE INDEX IF NOT EXISTS idx_checkins_created   ON checkins(created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_pres_sessions_expires ON presentation_sessions(expires_at)`,
   ];
   for (const sql of indexes) {
     try { await db.execute(sql); } catch { /* index already exists */ }
