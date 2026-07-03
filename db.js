@@ -1494,6 +1494,16 @@ async function getServiceOrdersByEmployee(employeeId) {
   return r.rows.map(rowToServiceOrder);
 }
 
+// Todas las órdenes activas del taller (cualquier empleado), para el tablero KDS.
+async function getActiveServiceOrders() {
+  const r = await db.execute(
+    `SELECT * FROM service_orders
+     WHERE status NOT IN ('facturado','entregado')
+     ORDER BY created_at DESC`
+  );
+  return r.rows.map(rowToServiceOrder);
+}
+
 // Órdenes finalizadas por un empleado, pendientes de revisión del admin (alimenta el badge).
 async function countPendingReviewOrders() {
   const r = await db.execute("SELECT COUNT(*) as n FROM service_orders WHERE pending_review = 1");
