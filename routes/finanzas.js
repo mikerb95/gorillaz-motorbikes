@@ -306,7 +306,7 @@ router.get('/flujo-caja', requireAuth, requireAdmin, async (req, res) => {
   const months = Array.from({ length: 12 }, (_, i) => {
     const m    = i + 1;
     const key  = `${year}-${String(m).padStart(2, '0')}`;
-    const inv  = paidInvoices.filter(x => inPeriod(x.createdAt, year, m)).reduce((s, x) => s + x.subtotal, 0);
+    const inv  = paidInvoices.filter(x => inPeriod(invIncomeDate(x), year, m)).reduce((s, x) => s + x.subtotal, 0);
     const ord  = paidOrders.filter(x => inPeriod(x.createdAt, year, m)).reduce((s, x) => s + x.total, 0);
     const gas  = gastos.filter(x => inPeriod(x.date, year, m)).reduce((s, x) => s + x.amount, 0);
     const ing  = inv + ord;
@@ -346,7 +346,8 @@ router.get('/estado-resultados', requireAuth, requireAdmin, async (req, res) => 
 
   const filter = (arr, dateKey) => arr.filter(x => inPeriod(x[dateKey], year, month));
 
-  const invPeriod = filter(paidInvoices, 'createdAt');
+  // Las facturas cuentan en su fecha de pago; pedidos y gastos por su fecha.
+  const invPeriod = paidInvoices.filter(i => inPeriod(invIncomeDate(i), year, month));
   const ordPeriod = filter(paidOrders, 'createdAt');
   const gasPeriod = filter(gastos, 'date');
 
