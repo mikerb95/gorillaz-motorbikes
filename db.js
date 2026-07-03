@@ -380,6 +380,7 @@ async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_so_employee       ON service_orders(employee_id)`,
     `CREATE INDEX IF NOT EXISTS idx_invoices_created  ON invoices(created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_invoices_status   ON invoices(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_invoices_paid_at  ON invoices(paid_at)`,
     `CREATE INDEX IF NOT EXISTS idx_invoices_so       ON invoices(service_order_id)`,
     `CREATE INDEX IF NOT EXISTS idx_quotations_created ON quotations(created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_quotations_status  ON quotations(status)`,
