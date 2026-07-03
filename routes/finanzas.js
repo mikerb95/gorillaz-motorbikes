@@ -124,7 +124,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   const totalIngresosAllTime = paidInvoices.reduce((s, i) => s + i.subtotal, 0) + paidOrders.reduce((s, o) => s + o.total, 0);
   const totalEgresosAllTime  = gastos.reduce((s, g) => s + g.amount, 0);
 
-  const periodoInv  = paidInvoices.filter(i => inPeriod(i.createdAt, year, month)).reduce((s, i) => s + i.subtotal, 0);
+  const periodoInv  = paidInvoices.filter(i => inPeriod(invIncomeDate(i), year, month)).reduce((s, i) => s + i.subtotal, 0);
   const periodoOrd  = paidOrders.filter(o => inPeriod(o.createdAt, year, month)).reduce((s, o) => s + o.total, 0);
   const periodoGas  = gastos.filter(g => inPeriod(g.date, year, month)).reduce((s, g) => s + g.amount, 0);
   const periodoIng  = periodoInv + periodoOrd;
@@ -141,12 +141,12 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   const catMax = Math.max(...Object.values(byCategory), 1);
 
   const byMethod = {};
-  paidInvoices.filter(i => inPeriod(i.createdAt, year, month)).forEach(i => {
+  paidInvoices.filter(i => inPeriod(invIncomeDate(i), year, month)).forEach(i => {
     byMethod[i.paymentMethod || 'efectivo'] = (byMethod[i.paymentMethod || 'efectivo'] || 0) + i.subtotal;
   });
 
   const recentMovements = [
-    ...paidInvoices.map(i => ({ type: 'ingreso', icon: 'factura', ref: i.label, date: i.createdAt, amount: i.subtotal, link: `/admin/facturas/${i.id}` })),
+    ...paidInvoices.map(i => ({ type: 'ingreso', icon: 'factura', ref: i.label, date: invIncomeDate(i), amount: i.subtotal, link: `/admin/facturas/${i.id}` })),
     ...paidOrders.map(o => ({ type: 'ingreso', icon: 'pedido', ref: `Pedido ${o.id.slice(0, 8)}`, date: o.createdAt, amount: o.total, link: null })),
     ...gastos.map(g => ({ type: 'egreso', icon: 'gasto', ref: g.description, date: g.date, amount: g.amount, cat: GASTO_CATS[g.category] || g.category, link: null })),
   ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
@@ -163,7 +163,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
     pendingCount: pendingInvoices.length,
     periodoIng, periodoGas, periodoNet, periodoMarg,
     periodoInv, periodoOrd,
-    invCount: paidInvoices.filter(i => inPeriod(i.createdAt, year, month)).length,
+    invCount: paidInvoices.filter(i => inPeriod(invIncomeDate(i), year, month)).length,
     ordCount: paidOrders.filter(o => inPeriod(o.createdAt, year, month)).length,
     gasCount: gastos.filter(g => inPeriod(g.date, year, month)).length,
     monthlyData, maxMonthly,
