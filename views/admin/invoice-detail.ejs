@@ -118,7 +118,7 @@ const isProforma = invoice.status === 'proforma';
   <% if (invoice.status !== 'anulada' && !isProforma) { %>
   <div class="crm-card" style="padding:20px 24px">
     <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Actualizar pago</h2>
-    <form method="post" action="/admin/facturas/<%= invoice.id %>/estado" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+    <form method="post" action="/admin/facturas/<%= invoice.id %>/estado" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end" data-require-pin data-pin-title="Autoriza el cambio de estado" data-pin-msg="Ingresa tu PIN para cambiar el estado de la factura (pagada/anulada).">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div>
         <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Estado</label>

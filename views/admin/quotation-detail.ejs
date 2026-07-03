@@ -114,7 +114,7 @@
   <h2 style="font-size:14px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">
     Convertir en Orden de Servicio
   </h2>
-  <form method="post" action="/admin/cotizaciones/<%= quotation.id %>/convertir-orden">
+  <form method="post" action="/admin/cotizaciones/<%= quotation.id %>/convertir-orden" data-require-pin data-pin-title="Autoriza la orden" data-pin-msg="Ingresa tu PIN para convertir la cotización en una orden de servicio.">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px">
       <div>
