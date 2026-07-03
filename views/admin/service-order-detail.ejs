@@ -1,20 +1,23 @@
 <%- include('../partials/admin-head', { title: 'Orden ' + order.label }) %>
 
 <%
+// 'facturado' y 'entregado' no son editables a mano en el selector: el primero
+// se alcanza solo al generarse la factura proforma (automático), el segundo
+// solo desde el formulario dedicado de entrega (que cierra esa factura).
 const STATUS_OPTS = [
   { v: 'ingreso_taller',   l: 'Ingreso a taller'  },
   { v: 'trabajo_en_curso', l: 'Trabajo en curso'  },
   { v: 'en_pausa',         l: 'En pausa'          },
   { v: 'trabajo_completo', l: 'Trabajo completo'  },
-  { v: 'entregado',        l: 'Entregado'         },
 ];
-const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-info', en_pausa:'badge-warning', trabajo_completo:'badge-success', entregado:'badge-success', facturado:'badge-success' };
+const STATUS_ALL_LABELS = { ingreso_taller:'Ingreso a taller', trabajo_en_curso:'Trabajo en curso', en_pausa:'En pausa', trabajo_completo:'Trabajo completo', facturado:'Facturado (proforma)', entregado:'Entregado' };
+const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-info', en_pausa:'badge-warning', trabajo_completo:'badge-success', facturado:'badge-success', entregado:'badge-success' };
 %>
 
 <div class="crm-page-header" style="flex-wrap:wrap;gap:10px">
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <a class="btn btn-ghost btn-sm" href="/admin/ordenes-servicio">← Órdenes</a>
-    <span class="badge <%= STATUS_CLS[order.status] || 'badge-warning' %>" style="font-size:.85rem"><%= (STATUS_OPTS.find(s => s.v === order.status) || { l: order.status }).l %></span>
+    <span class="badge <%= STATUS_CLS[order.status] || 'badge-warning' %>" style="font-size:.85rem"><%= STATUS_ALL_LABELS[order.status] || order.status %></span>
   </div>
   <% if (order.quotationId) { %>
     <a class="btn btn-ghost btn-sm" href="/admin/cotizaciones/<%= order.quotationId %>">Ver cotización origen →</a>
@@ -25,8 +28,8 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   <div style="max-width:920px;margin-bottom:16px;padding:14px 18px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px;display:flex;align-items:center;gap:10px">
     <span style="font-size:20px">✅</span>
     <div style="font-size:13px;color:#065f46;font-weight:700">
-      Un empleado marcó esta orden como <strong>Trabajo completo</strong>. Ya puedes contactar al cliente,
-      generar la factura/PDF y marcarla como pagada. El aviso se quita al guardar cambios o al facturar.
+      Un empleado marcó esta orden como <strong>Trabajo completo</strong>. Ya se generó la factura proforma;
+      ya puedes contactar al cliente. El aviso se quita al guardar cambios.
     </div>
   </div>
 <% } %>
@@ -74,7 +77,12 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
         <div style="font-size:13px;color:#374151"><%= order.notes %></div>
       </div>
     <% } %>
-    <% if (invoice) { %>
+    <% if (invoice && invoice.status === 'proforma') { %>
+      <div style="margin-top:14px;padding:10px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:700;color:#92400e">Factura <strong><%= invoice.label %></strong>: proforma, pendiente de entrega</span>
+        <a class="btn btn-ghost btn-sm" href="/admin/facturas/<%= invoice.id %>">Ver proforma →</a>
+      </div>
+    <% } else if (invoice) { %>
       <div style="margin-top:14px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
         <span style="font-size:13px;font-weight:700;color:#166534">Factura generada: <strong><%= invoice.label %></strong></span>
         <a class="btn btn-ghost btn-sm" href="/admin/facturas/<%= invoice.id %>">Ver factura →</a>

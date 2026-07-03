@@ -1333,17 +1333,46 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, req
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
+// Recuperación manual: solo aplica si la orden quedó en 'trabajo_completo' sin
+// factura (p. ej. su proforma se anuló). En el flujo normal la proforma se
+// genera sola al pasar a 'trabajo_completo' — ver los handlers de /estado y
+// /actualizar.
 router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
-  const actor = req.pinActor;
   const { invoiceId } = await convertServiceOrderToInvoice(order, {
-    tax:           Math.max(0, Math.round(Number(req.body.tax) || 0)),
-    paymentMethod: req.body.paymentMethod || 'efectivo',
-    paidNow:       req.body.paidNow === '1',
-    notes:         (req.body.notes || '').trim() || null,
-  }, actor);
-  res.redirect('/admin/facturas/' + invoiceId);
+    notes: (req.body.notes || '').trim() || null,
+  }, req.pinActor);
+  res.redirect('/admin/ordenes-servicio/' + req.params.id + '?flash=proforma#' + invoiceId);
+});
+
+// Entrega de la moto: único momento en que se sabe con certeza si aplica
+// parqueadero, así que aquí se cierra definitivamente la factura proforma
+// (IVA, parqueadero, método de pago y si ya se pagó) y la orden pasa a
+// 'entregado'.
+router.post('/ordenes-servicio/:id/entregar', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order) return res.redirect('/admin/ordenes-servicio');
+  const invoice = order.invoiceId ? await getInvoiceById(order.invoiceId) : null;
+  if (!invoice || invoice.status !== 'proforma') {
+    setFlash(res, 'error', 'Esta orden no tiene una factura proforma pendiente de entrega.');
+    return res.redirect('/admin/ordenes-servicio/' + req.params.id);
+  }
+  try {
+    await deliverServiceOrder(order, invoice, {
+      tax:           Math.max(0, Math.round(Number(req.body.tax) || 0)),
+      parkingAmount: Math.max(0, Math.round(Number(req.body.parkingAmount) || 0)),
+      paymentMethod: req.body.paymentMethod || 'efectivo',
+      paidNow:       req.body.paidNow === '1',
+      notes:         (req.body.notes || '').trim() || null,
+      deliveredAt:   nowCOT(),
+    }, req.pinActor);
+  } catch (e) {
+    setFlash(res, 'error', e.message);
+    return res.redirect('/admin/ordenes-servicio/' + req.params.id);
+  }
+  setFlash(res, 'success', 'Moto entregada y factura cerrada.');
+  res.redirect('/admin/facturas/' + invoice.id);
 });
 
 // Borrado permanente de una orden. Se bloquea si ya tiene factura: anular esa
@@ -1419,6 +1448,13 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, requirePin('/admi
   // ingreso dos veces. Para rehacer el cobro se emite una factura nueva.
   if (invoice.status === 'anulada') {
     setFlash(res, 'error', 'Una factura anulada no puede cambiar de estado.');
+    return res.redirect('/admin/facturas/' + req.params.id);
+  }
+  // Una proforma no tiene total definitivo (falta el parqueadero, que solo se
+  // sabe al entregar la moto): no puede marcarse pendiente/pagada desde aquí,
+  // solo anularse si la orden se cancela antes de la entrega.
+  if (invoice.status === 'proforma' && newStatus !== 'anulada') {
+    setFlash(res, 'error', 'Esta es una factura proforma: ciérrala desde el formulario de entrega de la moto.');
     return res.redirect('/admin/facturas/' + req.params.id);
   }
 
