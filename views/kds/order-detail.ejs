@@ -125,16 +125,13 @@
         </form>
       </div>
 
-      <% if (order.status === 'trabajo_completo' && !order.invoiceId) { %>
-        <a class="invoice-cta" href="/kds/orden/<%= order.id %>/facturar">Cerrar y facturar →</a>
-      <% } %>
       <% if (order.invoiceId) { %>
-        <div class="card" style="text-align:center;color:#166534;font-weight:800">✓ Esta orden ya fue facturada.</div>
+        <div class="card" style="text-align:center;color:#166534;font-weight:800">✓ Factura proforma generada. El admin la cierra al entregar la moto.</div>
       <% } %>
 
     <% } else { %>
       <div class="login-note">
-        <a href="/kds/login">Inicia sesión</a> con tu PIN para gestionar esta orden (cambiar estado, añadir ítems o facturar).
+        <a href="/kds/login">Inicia sesión</a> con tu PIN para gestionar esta orden (cambiar estado o añadir ítems).
       </div>
     <% } %>
 
