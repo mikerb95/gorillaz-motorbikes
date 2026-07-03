@@ -5,6 +5,7 @@ const fs       = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { courses, classes: classesData, availability, saveCourses, saveClasses, saveAvailability } = require('../helpers/content');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requirePin, verifyPinHandler } = require('../middleware/employeePin');
 const { uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
 const { setFlash } = require('../helpers/flash');
 const settings = require('../helpers/settings');
