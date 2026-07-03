@@ -226,7 +226,7 @@ router.get('/orden/:id/facturar', requireKdsEmployee, async (req, res) => {
   res.render('kds/invoice-close', { order, error: null });
 });
 
-router.post('/orden/:id/facturar', requireKdsEmployee, async (req, res) => {
+router.post('/orden/:id/facturar', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/kds/orden/' + req.params.id);
 
@@ -238,7 +238,7 @@ router.post('/orden/:id/facturar', requireKdsEmployee, async (req, res) => {
       paymentMethod: req.body.paymentMethod || 'efectivo',
       paidNow:       false,
       notes:         (req.body.notes || '').trim() || null,
-    }, req.employee.name);
+    }, req.pinActor);
   } catch (e) {
     return res.status(400).render('kds/invoice-close', { order, error: e.message });
   }

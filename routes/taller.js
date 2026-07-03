@@ -146,7 +146,7 @@ router.get('/checkin/:id/orden', requireEmployee, async (req, res) => {
   res.render('taller/service-order-new', { checkin, error: null });
 });
 
-router.post('/checkin/:id/orden', requireEmployee, async (req, res) => {
+router.post('/checkin/:id/orden', requireEmployee, requirePin('/taller/checkin'), async (req, res) => {
   const checkin = await getCheckinById(req.params.id);
   if (!checkin || checkin.status !== 'pendiente') return res.redirect('/taller/checkin');
 
@@ -180,7 +180,7 @@ router.post('/checkin/:id/orden', requireEmployee, async (req, res) => {
     notes:              `Cliente: ${checkin.clientName}`,
     employeeId:         req.employee.id,
     status:             'ingreso_taller',
-    actor:              req.employee.name,
+    actor:              req.pinActor,
   });
 
   await markCheckinAttended(checkin.id, id);
