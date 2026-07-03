@@ -73,6 +73,7 @@ function loadServicesCatalog() {
 const saveServicesCatalog = (list) => settings.set('services_catalog', list);
 const { resendClient } = require('../config');
 const { invalidateCatalogCache } = require('./liquidador');
+const { calcParking } = require('./services');
 
 const router = express.Router();
 
