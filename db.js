@@ -1642,6 +1642,7 @@ function rowToInvoice(row) {
     status: row.status,
     notes: row.notes || null,
     createdAt: row.created_at,
+    paidAt: row.paid_at || null,
   };
 }
 
@@ -1649,8 +1650,12 @@ async function createInvoice(data) {
   const id       = data.id || uuidv4();
   const now      = new Date().toISOString();
   const subtotal = data.subtotal || data.total || 0;
-  const tax      = data.tax || 0;
+  // El IVA nunca puede ser negativo: dejaría el total por debajo del subtotal.
+  const tax      = Math.max(0, Math.round(Number(data.tax) || 0));
   const total    = subtotal + tax;
+  const status   = data.status || 'pendiente';
+  // El ingreso se reconoce por fecha de pago: si nace pagada, se sella ahora.
+  const paidAt   = status === 'pagada' ? now : null;
   let consecutive, label;
   const tx = await db.transaction('write');
   try {
@@ -1659,8 +1664,8 @@ async function createInvoice(data) {
     label = fmtLabel('F-', consecutive, now);
     await tx.execute({
       sql: `INSERT INTO invoices
-            (id, consecutive, label, service_order_id, quotation_id, items, subtotal, tax, total, payment_method, status, notes)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+            (id, consecutive, label, service_order_id, quotation_id, items, subtotal, tax, total, payment_method, status, notes, paid_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
         id, consecutive, label,
         data.serviceOrderId,
@@ -1668,8 +1673,9 @@ async function createInvoice(data) {
         JSON.stringify(data.items || []),
         subtotal, tax, total,
         data.paymentMethod || 'efectivo',
-        data.status || 'pendiente',
+        status,
         data.notes || null,
+        paidAt,
       ],
     });
     await tx.commit();
@@ -1680,14 +1686,36 @@ async function createInvoice(data) {
   return { id, consecutive, label };
 }
 
-// Convierte una orden 'trabajo_completo' en factura: crea la factura, marca la
-// orden como 'facturado' y deja el hito en la trazabilidad. Reusada por el
-// panel admin (routes/admin.js) y por el tablero KDS del taller (routes/kds.js).
+// Claim atómico: ata la orden a la factura SOLO si sigue sin facturar y en
+// 'trabajo_completo'. Devuelve true si esta llamada fue la que la facturó. Ante
+// dos requests concurrentes (admin y KDS, o doble clic) solo una gana, evitando
+// dos facturas para la misma orden. Mismo patrón que detachOrderFromInvoice.
+async function claimServiceOrderInvoice(orderId, invoiceId) {
+  const r = await db.execute({
+    sql: `UPDATE service_orders
+          SET invoice_id = ?, status = 'facturado', pending_review = 0, updated_at = ?
+          WHERE id = ? AND invoice_id IS NULL AND status = 'trabajo_completo'`,
+    args: [invoiceId, new Date().toISOString(), orderId],
+  });
+  return (r.rowsAffected ?? r.changes ?? 0) > 0;
+}
+
+// Convierte una orden 'trabajo_completo' en factura: reclama la orden de forma
+// atómica, crea la factura con ese id (para no dejar huecos en el consecutivo si
+// hay carrera) y deja los hitos en la trazabilidad. Reusada por el panel admin
+// (routes/admin.js) y por el tablero KDS del taller (routes/kds.js).
 async function convertServiceOrderToInvoice(order, { tax = 0, paymentMethod = 'efectivo', paidNow = false, notes = null } = {}, actor) {
   if (order.invoiceId || order.status !== 'trabajo_completo') {
     throw new Error('La orden no está lista para facturar o ya tiene factura.');
   }
-  const { id: invoiceId, label: invoiceLabel } = await createInvoice({
+  // Reclamar antes de emitir: si otra operación ya la facturó, no se consume un
+  // consecutivo (el número de factura debe quedar contiguo para la DIAN).
+  const invoiceId = uuidv4();
+  if (!(await claimServiceOrderInvoice(order.id, invoiceId))) {
+    throw new Error('La orden ya fue facturada por otra operación.');
+  }
+  const { label: invoiceLabel } = await createInvoice({
+    id:             invoiceId,
     serviceOrderId: order.id,
     quotationId:    order.quotationId,
     items:          order.items,
@@ -1697,7 +1725,7 @@ async function convertServiceOrderToInvoice(order, { tax = 0, paymentMethod = 'e
     status:         paidNow ? 'pagada' : 'pendiente',
     notes,
   });
-  await updateServiceOrder(order.id, { status: 'facturado', invoiceId, pendingReview: false }, actor);
+  await addServiceOrderEvent(order.id, 'facturado', actor);          // cambio de estado
   await addServiceOrderEvent(order.id, 'factura_generada', actor, invoiceLabel);
   return { invoiceId, invoiceLabel };
 }
@@ -1737,10 +1765,20 @@ async function getInvoiceStats() {
 }
 
 async function updateInvoiceStatus(id, status, paymentMethod) {
-  await db.execute({
-    sql: 'UPDATE invoices SET status = ?, payment_method = ? WHERE id = ?',
-    args: [status, paymentMethod || 'efectivo', id],
-  });
+  // paid_at marca cuándo se reconoció el ingreso: se sella al pasar a 'pagada'
+  // (COALESCE conserva la fecha original si ya estaba pagada) y se limpia si la
+  // factura sale de ese estado (pendiente/anulada no son ingreso).
+  if (status === 'pagada') {
+    await db.execute({
+      sql: `UPDATE invoices SET status = ?, payment_method = ?, paid_at = COALESCE(paid_at, ?) WHERE id = ?`,
+      args: [status, paymentMethod || 'efectivo', new Date().toISOString(), id],
+    });
+  } else {
+    await db.execute({
+      sql: `UPDATE invoices SET status = ?, payment_method = ?, paid_at = NULL WHERE id = ?`,
+      args: [status, paymentMethod || 'efectivo', id],
+    });
+  }
 }
 
 async function countInvoices() {
