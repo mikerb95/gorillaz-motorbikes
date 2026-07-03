@@ -311,6 +311,27 @@ async function initDb() {
       updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
       expires_at TEXT NOT NULL
     )`,
+    // Duplicado de placas y portaplacas: el taller es intermediario, no
+    // fabricante. La solicitud entra 'pendiente' y un admin la mueve por el
+    // trámite (en_tramite → listo → entregado) o la cancela. Contacto directo
+    // por WhatsApp/teléfono, sin pago online (igual que classifieds).
+    `CREATE TABLE IF NOT EXISTS plate_duplicate_requests (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      reason TEXT,
+      plate TEXT,
+      vehicle_brand TEXT,
+      customer_name TEXT NOT NULL,
+      customer_phone TEXT NOT NULL,
+      customer_email TEXT,
+      city TEXT,
+      department TEXT,
+      notes TEXT,
+      status TEXT NOT NULL DEFAULT 'pendiente',
+      admin_notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
@@ -391,6 +412,8 @@ async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_checkins_plate     ON checkins(plate)`,
     `CREATE INDEX IF NOT EXISTS idx_checkins_created   ON checkins(created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_pres_sessions_expires ON presentation_sessions(expires_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_plate_requests_status  ON plate_duplicate_requests(status)`,
+    `CREATE INDEX IF NOT EXISTS idx_plate_requests_created ON plate_duplicate_requests(created_at)`,
   ];
   for (const sql of indexes) {
     try { await db.execute(sql); } catch { /* index already exists */ }
