@@ -7976,7 +7976,16 @@ main:has(.club-panel) { padding-top: 0 !important; }
   text-align: left
 }
 
-/* ─── Reviews placeholder (descomenta cuando conectes Google) ── */
+.section-label {
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin: 0 0 6px
+}
+
+/* ─── Reviews placeholder (descomenta cuando conectes Google Business API para mostrar reseñas reales) ── */
 /*
 .reviews-section {
   padding-top: 40px;
@@ -8020,15 +8029,6 @@ main:has(.club-panel) { padding-top: 0 !important; }
 .review-date {
   font-size: .75rem;
   color: var(--muted)
-}
-
-.section-label {
-  font-size: .7rem;
-  font-weight: 800;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--brand);
-  margin: 0 0 6px
 }
 */
 
