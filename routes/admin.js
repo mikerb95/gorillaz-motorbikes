@@ -1355,7 +1355,7 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) 
   // Al anular una factura se desliga de su orden para que vuelva a ser editable:
   // se limpia el vínculo, la orden regresa a 'trabajo completo' y queda el hito
   // en la trazabilidad. Solo en la transición real a 'anulada'.
-  if (req.body.status === 'anulada' && invoice && invoice.status !== 'anulada' && invoice.serviceOrderId) {
+  if (newStatus === 'anulada' && invoice.serviceOrderId) {
     const order = await getServiceOrderById(invoice.serviceOrderId);
     if (order && order.invoiceId === invoice.id) {
       await detachAnnulledInvoice(order, invoice, res.locals.user?.name || 'Admin');
@@ -1363,8 +1363,8 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) 
   }
 
   const STATUS_LABELS = { pendiente: 'Pendiente', pagada: 'Pagada', anulada: 'Anulada' };
-  const label = STATUS_LABELS[req.body.status] || req.body.status;
-  if (req.body.status === 'anulada') {
+  const label = STATUS_LABELS[newStatus] || newStatus;
+  if (newStatus === 'anulada') {
     setFlash(res, 'success', `Factura anulada.`);
   } else {
     setFlash(res, 'success', `Estado de la factura actualizado a «${label}».`);
