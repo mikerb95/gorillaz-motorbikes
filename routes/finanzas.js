@@ -40,44 +40,67 @@ const MONTH_SHORT  = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
+// Todos los cortes de periodo se calculan en hora Colombia (America/Bogota).
+// La DB guarda timestamps UTC; agrupar con getFullYear/getMonth del servidor
+// (UTC en Vercel) empujaría lo facturado de noche al día/mes siguiente. isoCO()
+// devuelve 'YYYY-MM-DD' ya convertido a Colombia.
+function periodParts(dateStr) {
+  const iso = isoCO(dateStr);
+  if (!iso) return null;
+  const [y, m] = iso.split('-').map(Number);
+  return { y, m };
+}
+
+// «Ahora» en año/mes de Colombia (para el periodo por defecto y las ventanas).
+function nowParts() {
+  const [y, m] = isoCO().split('-').map(Number);
+  return { y, m };
+}
+
+// Lista de los últimos `count` meses (más antiguo → más reciente) como {y, m},
+// contando desde el mes actual en Colombia.
+function monthsBack(count) {
+  const { y, m } = nowParts();
+  const base = y * 12 + (m - 1);
+  return Array.from({ length: count }, (_, i) => {
+    const idx = base - (count - 1 - i);
+    return { y: Math.floor(idx / 12), m: (idx % 12) + 1 };
+  });
+}
+
+// El ingreso de una factura se reconoce en su fecha de pago (paidAt); fallback a
+// la de emisión por si faltara (dato antiguo sin sellar).
+function invIncomeDate(i) { return i.paidAt || i.createdAt; }
+
 function parsePeriod(query) {
-  const now = new Date();
-  const p   = query.period || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const [y, m] = p.split('-').map(Number);
-  return { param: p, year: y, month: m };
+  const { y, m } = nowParts();
+  const p = query.period || `${y}-${String(m).padStart(2, '0')}`;
+  const [py, pm] = p.split('-').map(Number);
+  return { param: p, year: py, month: pm };
 }
 
 function parseYear(query) {
-  const now = new Date();
-  return Number(query.year) || now.getFullYear();
+  return Number(query.year) || nowParts().y;
 }
 
 function inPeriod(dateStr, y, m) {
-  const d = new Date(dateStr);
-  return d.getFullYear() === y && (d.getMonth() + 1) === m;
+  const p = periodParts(dateStr);
+  return !!p && p.y === y && p.m === m;
 }
 
 function inYear(dateStr, y) {
-  return new Date(dateStr).getFullYear() === y;
+  const p = periodParts(dateStr);
+  return !!p && p.y === y;
 }
 
 function getAvailablePeriods(n = 13) {
-  const now = new Date();
-  const out = [];
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-  }
-  return out;
+  return monthsBack(n).map(({ y, m }) => `${y}-${String(m).padStart(2, '0')}`);
 }
 
 function buildMonthlyChart(paidInvoices, paidOrders, gastos, n = 12) {
-  const now = new Date();
-  return Array.from({ length: n }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (n - 1 - i), 1);
-    const y = d.getFullYear(), m = d.getMonth() + 1;
+  return monthsBack(n).map(({ y, m }) => {
     const key = `${y}-${String(m).padStart(2, '0')}`;
-    const inv = paidInvoices.filter(x => inPeriod(x.createdAt, y, m)).reduce((s, x) => s + x.subtotal, 0);
+    const inv = paidInvoices.filter(x => inPeriod(invIncomeDate(x), y, m)).reduce((s, x) => s + x.subtotal, 0);
     const ord = paidOrders.filter(x => inPeriod(x.createdAt, y, m)).reduce((s, x) => s + x.total, 0);
     const gas = gastos.filter(x => inPeriod(x.date, y, m)).reduce((s, x) => s + x.amount, 0);
     return { key, label: `${MONTH_SHORT[m - 1]} ${y}`, fullLabel: `${MONTH_NAMES[m - 1]} ${y}`, shortLabel: MONTH_SHORT[m - 1], inv, ord, gas, ing: inv + ord, net: inv + ord - gas };
