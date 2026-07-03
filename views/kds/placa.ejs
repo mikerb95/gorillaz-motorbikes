@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Buscar placa — Panel de Producción</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; font-family: Montserrat, system-ui, sans-serif; background: #f3f4f6; color: #111; }
+    .kds-top { background: #0f1115; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+    .kds-back { color: #fff; text-decoration: none; font-weight: 800; font-size: 16px; }
+    .kds-top .label { font-weight: 900; font-size: 17px; }
+    .kds-wrap { max-width: 560px; margin: 0 auto; padding: 24px 16px 60px; }
+    .kds-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 12px; padding: 12px 14px; font-size: 13px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+    .plate-display {
+      background: #fff; border: 3px solid #111; border-radius: 14px; padding: 22px;
+      text-align: center; font-size: 38px; font-weight: 900; letter-spacing: 6px; margin-bottom: 20px; min-height: 84px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .plate-display.empty { color: #9ca3af; font-size: 18px; letter-spacing: normal; font-weight: 700; }
+    .kds-keypad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }
+    .kds-key { padding: 16px 0; font-size: 18px; font-weight: 800; background: #fff; color: #111; border: 1.5px solid #e5e7eb; border-radius: 12px; cursor: pointer; font-family: inherit; }
+    .kds-key:active { background: #f3f4f6; }
+    .kds-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .kds-actions button { padding: 18px 0; font-size: 16px; font-weight: 800; border: none; border-radius: 14px; cursor: pointer; font-family: inherit; }
+    .kds-clear { background: #e5e7eb; color: #374151; }
+    .kds-go { background: #F25C05; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="kds-top">
+    <a class="kds-back" href="/kds">←</a>
+    <span class="label">Buscar por placa</span>
+  </div>
+
+  <div class="kds-wrap">
+    <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
+
+    <div class="plate-display empty" id="plateDisplay">Digita la placa</div>
+
+    <div class="kds-keypad" id="keypad"></div>
+
+    <div class="kds-actions">
+      <button type="button" class="kds-clear" id="clearBtn">Borrar todo</button>
+      <button type="button" class="kds-go" id="goBtn">Buscar →</button>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const chars   = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+    const keypad  = document.getElementById('keypad');
+    const display = document.getElementById('plateDisplay');
+    let plate = '';
+
+    chars.forEach(c => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'kds-key';
+      btn.textContent = c;
+      btn.addEventListener('click', () => {
+        if (plate.length >= 8) return;
+        plate += c;
+        render();
+      });
+      keypad.appendChild(btn);
+    });
+
+    function render() {
+      if (plate) { display.textContent = plate; display.classList.remove('empty'); }
+      else { display.textContent = 'Digita la placa'; display.classList.add('empty'); }
+    }
+
+    document.getElementById('clearBtn').addEventListener('click', () => { plate = ''; render(); });
+    document.getElementById('goBtn').addEventListener('click', () => {
+      if (!plate) return;
+      window.location.href = '/kds/placa/buscar?placa=' + encodeURIComponent(plate);
+    });
+  })();
+  </script>
+</body>
+</html>

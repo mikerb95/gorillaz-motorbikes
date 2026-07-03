@@ -43,12 +43,13 @@
   // propio índice al navegar localmente para que el celular vea el mismo estado.
   let sessionCode = null;
   let pollTimer = null;
+  const csrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
 
   const pushIndex = () => {
     if (!sessionCode) return;
     fetch(`/api/presentacion/${sessionCode}/set`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
       body: JSON.stringify({ index: idx }),
     }).catch(() => {});
   };
@@ -83,7 +84,10 @@
     remoteBtn.addEventListener('click', async () => {
       if (!sessionCode) {
         try {
-          const res = await fetch(`/clases/${root.dataset.course}/${root.dataset.topic}/control/iniciar`, { method: 'POST' });
+          const res = await fetch(`/clases/${root.dataset.course}/${root.dataset.topic}/control/iniciar`, {
+            method: 'POST',
+            headers: { 'X-CSRF-Token': csrfToken() },
+          });
           const data = await res.json();
           if (data.ok) {
             sessionCode = data.code;
