@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Panel de Producción — Gorillaz</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      font-family: Montserrat, system-ui, sans-serif; background: #0f1115; padding: 20px;
+    }
+    .kds-card {
+      width: 100%; max-width: 420px; background: #fff; border-radius: 20px;
+      padding: 30px 26px; box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+    .kds-logo { text-align: center; margin-bottom: 14px; }
+    .kds-logo img { height: 56px; }
+    .kds-title { text-align: center; font-size: 19px; font-weight: 900; margin: 0 0 4px; color: #111; }
+    .kds-sub { text-align: center; font-size: 13px; color: #6b7280; margin: 0 0 20px; }
+    .kds-error {
+      background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+      border-radius: 12px; padding: 12px 14px; font-size: 13px; font-weight: 700; margin-bottom: 16px; text-align: center;
+    }
+    .kds-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 22px; }
+    .kds-dot { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #d1d5db; }
+    .kds-dot.filled { background: #F25C05; border-color: #F25C05; }
+    .kds-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .kds-key {
+      padding: 22px 0; font-size: 26px; font-weight: 800; background: #f3f4f6; color: #111;
+      border: none; border-radius: 16px; cursor: pointer; font-family: inherit;
+    }
+    .kds-key:active { background: #e5e7eb; }
+    .kds-key.action { background: #0f1115; color: #fff; font-size: 16px; }
+    .kds-key.enter { background: #F25C05; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="kds-card">
+    <div class="kds-logo"><img src="/images/nobg_logo/logo_transp.png" alt="Gorillaz" /></div>
+    <h1 class="kds-title">Panel de Producción</h1>
+    <p class="kds-sub">Ingresa tu PIN para gestionar órdenes</p>
+
+    <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
+
+    <div class="kds-dots" id="dots">
+      <% for (let i = 0; i < 6; i++) { %><div class="kds-dot" data-i="<%= i %>"></div><% } %>
+    </div>
+
+    <form method="post" action="/kds/login" id="loginForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="next" value="<%= next %>" />
+      <input type="hidden" name="pin" id="pinField" />
+    </form>
+
+    <div class="kds-keypad">
+      <button type="button" class="kds-key" data-d="1">1</button>
+      <button type="button" class="kds-key" data-d="2">2</button>
+      <button type="button" class="kds-key" data-d="3">3</button>
+      <button type="button" class="kds-key" data-d="4">4</button>
+      <button type="button" class="kds-key" data-d="5">5</button>
+      <button type="button" class="kds-key" data-d="6">6</button>
+      <button type="button" class="kds-key" data-d="7">7</button>
+      <button type="button" class="kds-key" data-d="8">8</button>
+      <button type="button" class="kds-key" data-d="9">9</button>
+      <button type="button" class="kds-key action" id="clearBtn">Borrar</button>
+      <button type="button" class="kds-key" data-d="0">0</button>
+      <button type="button" class="kds-key enter" id="enterBtn">Entrar</button>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const dots   = Array.from(document.querySelectorAll('.kds-dot'));
+    const field  = document.getElementById('pinField');
+    const form   = document.getElementById('loginForm');
+    let pin = '';
+
+    function render() {
+      dots.forEach((d, i) => d.classList.toggle('filled', i < pin.length));
+    }
+
+    document.querySelectorAll('.kds-key[data-d]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pin.length >= 6) return;
+        pin += btn.dataset.d;
+        render();
+      });
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => { pin = ''; render(); });
+
+    document.getElementById('enterBtn').addEventListener('click', () => {
+      if (pin.length < 4) return;
+      field.value = pin;
+      form.submit();
+    });
+  })();
+  </script>
+</body>
+</html>
