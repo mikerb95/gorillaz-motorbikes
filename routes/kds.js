@@ -223,10 +223,12 @@ router.post('/orden/:id/facturar', requireKdsEmployee, async (req, res) => {
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/kds/orden/' + req.params.id);
 
   try {
+    // El pago lo confirma el admin desde el panel: el KDS solo emite la factura
+    // en 'pendiente' (nunca marca 'pagada'). Ver /admin/facturas/:id/estado.
     await convertServiceOrderToInvoice(order, {
-      tax:           Math.round(Number(req.body.tax || 0)),
+      tax:           Math.max(0, Math.round(Number(req.body.tax) || 0)),
       paymentMethod: req.body.paymentMethod || 'efectivo',
-      paidNow:       req.body.paidNow === '1',
+      paidNow:       false,
       notes:         (req.body.notes || '').trim() || null,
     }, req.employee.name);
   } catch (e) {

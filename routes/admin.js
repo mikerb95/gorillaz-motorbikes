@@ -1266,7 +1266,7 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
   const actor = res.locals.user?.name || 'Admin';
   const { invoiceId } = await convertServiceOrderToInvoice(order, {
-    tax:           Math.round(Number(req.body.tax || 0)),
+    tax:           Math.max(0, Math.round(Number(req.body.tax) || 0)),
     paymentMethod: req.body.paymentMethod || 'efectivo',
     paidNow:       req.body.paidNow === '1',
     notes:         (req.body.notes || '').trim() || null,
