@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Tablero TV — Gorillaz</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      font-family: Montserrat, system-ui, sans-serif; background: #0f1115; color: #fff;
+      display: grid; grid-template-columns: 1fr 360px; grid-template-rows: 1fr auto; height: 100vh;
+    }
+    .tv-media { grid-column: 1; grid-row: 1; background: #000; position: relative; }
+    .tv-media iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+    .tv-side {
+      grid-column: 2; grid-row: 1 / span 2; background: #16181d; border-left: 1px solid #23262e;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .tv-side h2 {
+      font-size: 12px; font-weight: 800; color: #9ca3af; text-transform: uppercase;
+      letter-spacing: .5px; margin: 0; padding: 16px 18px 10px;
+    }
+    .tv-list { flex: 1; overflow-y: auto; padding: 0 12px 12px; }
+    .tv-card {
+      background: #1c1f27; border: 1px solid #262a33; border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 10px; transition: background .3s, border-color .3s;
+    }
+    .tv-card .name { font-weight: 900; font-size: 15px; }
+    .tv-card .service { font-size: 13px; color: #cbd5e1; margin-top: 2px; }
+    .tv-card .meta { font-size: 11px; color: #6b7280; margin-top: 6px; display: flex; justify-content: space-between; }
+    .tv-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+    .b-pendiente  { background: #fef3c7; color: #92400e; }
+    .b-confirmada { background: #dbeafe; color: #1e40af; }
+    .b-cancelada  { background: #fee2e2; color: #991b1b; }
+    .tv-empty { text-align: center; color: #6b7280; font-size: 12px; padding: 24px 8px; }
+
+    .tv-card.is-new {
+      border-color: #F25C05; background: #2a1b10;
+      animation: tv-flash 1.8s ease-out 3;
+    }
+    @keyframes tv-flash {
+      0%, 100% { box-shadow: none; }
+      50% { box-shadow: 0 0 0 2px #F25C05; }
+    }
+
+    .tv-foot {
+      grid-column: 1; grid-row: 2; background: #16181d; border-top: 1px solid #23262e;
+      display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;
+    }
+    .tv-foot .brand { font-weight: 900; font-size: 15px; }
+    .tv-foot .clock { font-size: 14px; color: #9ca3af; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="tv-media">
+    <iframe
+      src="https://www.youtube.com/embed/videoseries?list=<%= playlistId %>&autoplay=1&mute=1&loop=1&controls=0&rel=0&modestbranding=1"
+      title="Gorillaz TV" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+
+  <div class="tv-side">
+    <h2>Citas recientes</h2>
+    <div class="tv-list" id="tv-list">
+      <div class="tv-empty">Cargando…</div>
+    </div>
+    <audio id="tv-ding" preload="auto">
+      <source src="/static/audio/notification.mp3" type="audio/mpeg" />
+    </audio>
+  </div>
+
+  <div class="tv-foot">
+    <div class="brand">Gorillaz Motorbikes</div>
+    <div class="clock" id="tv-clock"></div>
+  </div>
+
+  <script>
+    (function () {
+      const listEl = document.getElementById('tv-list');
+      const clockEl = document.getElementById('tv-clock');
+      const dingEl = document.getElementById('tv-ding');
+      let seenIds = null; // null hasta el primer fetch, para no marcar "nueva" toda la carga inicial
+
+      const STATUS_LABEL = { pendiente: 'Pendiente', confirmada: 'Confirmada', cancelada: 'Cancelada' };
+
+      function renderList(items) {
+        if (!items.length) {
+          listEl.innerHTML = '<div class="tv-empty">Sin citas registradas.</div>';
+          return;
+        }
+        const wasFirstLoad = seenIds === null;
+        const nextSeen = new Set();
+        listEl.innerHTML = items.map(a => {
+          nextSeen.add(a.id);
+          const isNew = !wasFirstLoad && seenIds && !seenIds.has(a.id);
+          const badgeClass = 'b-' + (a.status || 'pendiente');
+          const badgeLabel = STATUS_LABEL[a.status] || a.status || '';
+          return `
+            <div class="tv-card${isNew ? ' is-new' : ''}">
+              <div class="name">${escapeHtml(a.customer || '')}</div>
+              <div class="service">${escapeHtml(a.service || '')}</div>
+              <div class="meta">
+                <span>${escapeHtml(a.date || '')}${a.time ? ' · ' + escapeHtml(a.time) : ''}</span>
+                <span class="tv-badge ${badgeClass}">${escapeHtml(badgeLabel)}</span>
+              </div>
+            </div>`;
+        }).join('');
+
+        if (!wasFirstLoad) {
+          const hasNew = items.some(a => seenIds && !seenIds.has(a.id));
+          if (hasNew) dingEl.play().catch(() => {});
+        }
+        seenIds = nextSeen;
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+      }
+
+      async function poll() {
+        try {
+          const res = await fetch('/admin/tv/data.json', { cache: 'no-store' });
+          const data = await res.json();
+          renderList(data.appointments || []);
+        } catch (e) { /* siguiente intento en 5s */ }
+      }
+
+      function tickClock() {
+        clockEl.textContent = new Date().toLocaleString('es-CO', {
+          timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit',
+          weekday: 'short', day: 'numeric', month: 'short',
+        });
+      }
+
+      poll();
+      tickClock();
+      setInterval(poll, 5000);
+      setInterval(tickClock, 1000);
+    })();
+  </script>
+</body>
+</html>
