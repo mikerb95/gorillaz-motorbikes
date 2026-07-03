@@ -191,3 +191,5 @@ router.post('/mi-orden', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.calcParking = calcParking;
+module.exports.loadParqueaderoConfig = loadParqueaderoConfig;

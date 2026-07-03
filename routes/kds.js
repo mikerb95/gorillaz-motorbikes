@@ -136,7 +136,7 @@ router.get('/orden/nueva', requireKdsEmployee, (req, res) => {
   res.render('kds/order-new', { placa, catalog, error: null });
 });
 
-router.post('/orden/nueva', requireKdsEmployee, async (req, res) => {
+router.post('/orden/nueva', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
   const placa = String(req.body.placa || '').trim();
   const catalog = loadServicesCatalog();
   if (!placa) {
@@ -171,7 +171,7 @@ router.post('/orden/nueva', requireKdsEmployee, async (req, res) => {
     notes:              (req.body.notes || '').trim() || null,
     employeeId:         req.employee.id,
     status:             'ingreso_taller',
-    actor:              req.employee.name,
+    actor:              req.pinActor,
   });
 
   res.redirect('/kds/orden/' + id);
