@@ -1329,9 +1329,28 @@ router.post('/facturas/:id/telefono', requireAuth, requireAdmin, async (req, res
   }
 });
 
+const INVOICE_STATUSES = ['pendiente', 'pagada', 'anulada'];
+
 router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) => {
   const invoice = await getInvoiceById(req.params.id);
-  await updateInvoiceStatus(req.params.id, req.body.status, req.body.paymentMethod);
+  if (!invoice) return res.redirect('/admin/facturas');
+
+  // El estado debe ser uno de los válidos: un POST directo con otro valor haría
+  // desaparecer la factura de todos los reportes (que filtran por estos estados).
+  const newStatus = req.body.status;
+  if (!INVOICE_STATUSES.includes(newStatus)) {
+    setFlash(res, 'error', 'Estado de factura inválido.');
+    return res.redirect('/admin/facturas/' + req.params.id);
+  }
+  // 'anulada' es terminal: una factura anulada no puede volver a pendiente/pagada.
+  // Reabrirla permitiría re-facturar la orden (se desligó al anular) y contar el
+  // ingreso dos veces. Para rehacer el cobro se emite una factura nueva.
+  if (invoice.status === 'anulada') {
+    setFlash(res, 'error', 'Una factura anulada no puede cambiar de estado.');
+    return res.redirect('/admin/facturas/' + req.params.id);
+  }
+
+  await updateInvoiceStatus(req.params.id, newStatus, req.body.paymentMethod);
 
   // Al anular una factura se desliga de su orden para que vuelva a ser editable:
   // se limpia el vínculo, la orden regresa a 'trabajo completo' y queda el hito
