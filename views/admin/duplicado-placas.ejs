@@ -1,0 +1,91 @@
+<%- include('../partials/admin-head', { title: 'Duplicado de placas' }) %>
+
+<%
+  const STATUS = {
+    pendiente:   { label: 'Pendiente',   color: '#f59e0b' },
+    en_tramite:  { label: 'En trámite',  color: '#3b82f6' },
+    listo:       { label: 'Listo',       color: '#22c55e' },
+    entregado:   { label: 'Entregado',   color: '#6b7280' },
+    cancelado:   { label: 'Cancelado',   color: '#dc2626' },
+  };
+  const TYPES = {
+    placa_carro:   'Placa — Carro',
+    placa_moto:    'Placa — Moto',
+    placa_publico: 'Placa — Servicio público',
+    portaplacas:   'Portaplacas',
+  };
+  const REASONS = { perdida: 'Pérdida', hurto: 'Hurto', deterioro: 'Deterioro' };
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const tab = (key, label) => {
+    const active = filter === key || (!filter && key === '');
+    const href = key ? ('/admin/duplicado-placas?status=' + key) : '/admin/duplicado-placas';
+    const n = key ? counts[key] : total;
+    return `<a class="clf-adm-tab${active ? ' is-active' : ''}" href="${href}">${label} <span>${n}</span></a>`;
+  };
+%>
+
+<div class="crm-page-header">
+  <h2 style="margin:0;font-size:18px">Solicitudes de duplicado de placas y portaplacas</h2>
+</div>
+
+<div class="clf-adm-tabs">
+  <%- tab('', 'Todos') %>
+  <%- tab('pendiente', 'Pendientes') %>
+  <%- tab('en_tramite', 'En trámite') %>
+  <%- tab('listo', 'Listos') %>
+  <%- tab('entregado', 'Entregados') %>
+  <%- tab('cancelado', 'Cancelados') %>
+</div>
+
+<% if (!requests.length) { %>
+  <div class="crm-card"><p style="margin:0;color:#6b7280">No hay solicitudes<%= filter ? ' en este estado' : '' %>.</p></div>
+<% } else { %>
+  <div class="clf-adm-list">
+    <% requests.forEach(r => { const st = STATUS[r.status] || STATUS.pendiente; %>
+      <div class="crm-card clf-adm-card">
+        <div class="clf-adm-body">
+          <div class="clf-adm-head">
+            <span class="clf-adm-title"><%= TYPES[r.type] || r.type %></span>
+            <span class="clf-adm-badge" style="background:<%= st.color %>"><%= st.label %></span>
+          </div>
+          <div class="clf-adm-meta">
+            <span>👤 <%= r.customerName %></span>
+            <span>📞 <a href="https://wa.me/57<%= r.customerPhone.replace(/\D/g,'') %>" target="_blank" rel="noopener"><%= r.customerPhone %></a></span>
+            <% if (r.customerEmail) { %><span>✉️ <%= r.customerEmail %></span><% } %>
+            <% if (r.reason) { %><span><%= REASONS[r.reason] || r.reason %></span><% } %>
+            <% if (r.plate) { %><span>Placa: <%= r.plate %></span><% } %>
+            <% if (r.vehicleBrand) { %><span>Marca: <%= r.vehicleBrand %></span><% } %>
+            <% if (r.city) { %><span>📍 <%= r.city %><%= r.department ? ', ' + r.department : '' %></span><% } %>
+          </div>
+          <% if (r.notes) { %><p class="clf-adm-desc"><%= r.notes %></p><% } %>
+          <% if (r.adminNotes) { %><p class="clf-adm-reason">Nota interna: <%= r.adminNotes %></p><% } %>
+
+          <div class="clf-adm-actions">
+            <details class="clf-adm-reject">
+              <summary class="btn btn-ghost btn-sm">Cambiar estado</summary>
+              <form method="post" action="/admin/duplicado-placas/estado" class="clf-adm-reject-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="id" value="<%= r.id %>" />
+                <select name="status">
+                  <% Object.keys(STATUS).forEach(s => { %>
+                    <option value="<%= s %>" <%= r.status === s ? 'selected' : '' %>><%= STATUS[s].label %></option>
+                  <% }) %>
+                </select>
+                <input name="adminNotes" maxlength="500" placeholder="Nota interna (opcional)" value="<%= r.adminNotes %>" />
+                <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+              </form>
+            </details>
+            <form method="post" action="/admin/duplicado-placas/eliminar"
+              data-confirm="¿Eliminar esta solicitud definitivamente?" data-confirm-label="Eliminar">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <input type="hidden" name="id" value="<%= r.id %>" />
+              <button class="btn btn-ghost btn-sm" type="submit">Eliminar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../partials/admin-foot') %>
