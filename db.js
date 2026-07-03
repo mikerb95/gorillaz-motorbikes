@@ -2202,6 +2202,7 @@ module.exports = {
   logAdminAction, getAdminAuditLog,
   getServiceOrdersByPlate,
   createCheckin, getCheckinById, getPendingCheckins, getPendingCheckinsByPlate, markCheckinAttended,
+  createPresentationSession, getPresentationSession, setPresentationSlideIndex,
   createClassified, updateClassified, setClassifiedStatus, getClassifiedById,
   getActiveClassifieds, getClassifiedsByUser, getAllClassifieds, countClassifiedsByStatus, deleteClassified,
   backupAllTables,
