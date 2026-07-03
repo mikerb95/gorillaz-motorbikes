@@ -124,7 +124,11 @@
 
   forms.forEach(function (form) {
     form.addEventListener('submit', function (e) {
-      // Si ya inyectamos el PIN (envío programático), dejar pasar.
+      // Otro handler ya bloqueó el envío (p. ej. validación de ítems vacíos):
+      // no abrir el modal. Depende de que este listener corra después (el script
+      // se carga al final de la página).
+      if (e.defaultPrevented) return;
+      // Si ya inyectamos el PIN (reenvío tras verificar), dejar pasar.
       if (form.querySelector('input[name="pin"].pin-gate-field')) return;
       e.preventDefault();
       open(form);
