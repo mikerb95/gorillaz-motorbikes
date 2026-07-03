@@ -21,7 +21,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 10;
+const SCHEMA_VERSION = 11;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -352,6 +352,12 @@ async function initDb() {
     // Detalle opcional de un hito de trazabilidad (p. ej. la etiqueta de la
     // factura en los eventos 'factura_generada' / 'factura_anulada').
     `ALTER TABLE service_order_events ADD COLUMN detail TEXT`,
+    // Fecha de pago de la factura: el ingreso se reconoce cuando se cobra, no
+    // cuando se emite. Se fija al pasar a 'pagada' y se limpia si sale de ese
+    // estado. Backfill: las facturas ya pagadas usan su fecha de emisión como
+    // aproximación (no se guardó la de pago históricamente).
+    `ALTER TABLE invoices ADD COLUMN paid_at TEXT`,
+    `UPDATE invoices SET paid_at = created_at WHERE status = 'pagada' AND paid_at IS NULL`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
