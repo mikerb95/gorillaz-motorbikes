@@ -231,31 +231,4 @@ router.post('/orden/:id/items', requireKdsEmployee, requirePin('/kds'), async (r
   res.redirect('/kds/orden/' + order.id);
 });
 
-// ── Cierre y facturación ────────────────────────────────────────────────
-router.get('/orden/:id/facturar', requireKdsEmployee, async (req, res) => {
-  const order = await getServiceOrderById(req.params.id);
-  if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/kds/orden/' + req.params.id);
-  res.render('kds/invoice-close', { order, error: null });
-});
-
-router.post('/orden/:id/facturar', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
-  const order = await getServiceOrderById(req.params.id);
-  if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/kds/orden/' + req.params.id);
-
-  try {
-    // El pago lo confirma el admin desde el panel: el KDS solo emite la factura
-    // en 'pendiente' (nunca marca 'pagada'). Ver /admin/facturas/:id/estado.
-    await convertServiceOrderToInvoice(order, {
-      tax:           Math.max(0, Math.round(Number(req.body.tax) || 0)),
-      paymentMethod: req.body.paymentMethod || 'efectivo',
-      paidNow:       false,
-      notes:         (req.body.notes || '').trim() || null,
-    }, req.pinActor);
-  } catch (e) {
-    return res.status(400).render('kds/invoice-close', { order, error: e.message });
-  }
-
-  res.redirect('/kds?flash=facturada');
-});
-
 module.exports = router;
