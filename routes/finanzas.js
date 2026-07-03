@@ -367,7 +367,7 @@ router.get('/estado-resultados', requireAuth, requireAdmin, async (req, res) => 
   const prevMonth = month === 1 ? 12 : month - 1;
   const prevYear  = month === 1 ? year - 1 : year;
   const filterPrev = (arr, dateKey) => arr.filter(x => inPeriod(x[dateKey], prevYear, prevMonth));
-  const prevIng  = filterPrev(paidInvoices, 'createdAt').reduce((s, i) => s + i.subtotal, 0) + filterPrev(paidOrders, 'createdAt').reduce((s, o) => s + o.total, 0);
+  const prevIng  = paidInvoices.filter(i => inPeriod(invIncomeDate(i), prevYear, prevMonth)).reduce((s, i) => s + i.subtotal, 0) + filterPrev(paidOrders, 'createdAt').reduce((s, o) => s + o.total, 0);
   const prevGas  = filterPrev(gastos, 'date').reduce((s, g) => s + g.amount, 0);
   const prevUtil = prevIng - prevGas;
   const ingDelta = prevIng > 0 ? Math.round(((totalIngresos - prevIng) / prevIng) * 100) : null;
