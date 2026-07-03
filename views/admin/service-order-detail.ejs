@@ -469,7 +469,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
       <h3 style="margin:0;font-size:16px;font-weight:800">Editar orden</h3>
       <button type="button" data-modal-close style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
     </div>
-    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/editar-datos" id="editOrderForm" style="padding:20px 24px">
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/editar-datos" id="editOrderForm" style="padding:20px 24px" data-require-pin data-pin-title="Autoriza la edición" data-pin-msg="Ingresa tu PIN para guardar los cambios de la orden.">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="items" id="editItemsField" />
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px">
