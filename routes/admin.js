@@ -28,6 +28,7 @@ const {
   createInvoice, convertServiceOrderToInvoice, getInvoiceById, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
+  getAllPlateRequests, getPlateRequestById, updatePlateRequestStatus, deletePlateRequest, countPlateRequestsByStatus,
   backupAllTables,
 } = require('../db');
 const bcrypt = require('bcryptjs');
@@ -79,11 +80,12 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
     countUsers(), countEvents(), countAppointments(), countOrders(),
     getAllNewsletterSubscribers(), countQuotations(), countServiceOrders(), countInvoices(),
     countClassifiedsByStatus('pending'),
+    countPlateRequestsByStatus('pendiente'),
   ]);
-  const [users, events, citas, pedidos, allSubsR, cotizaciones, ordenes, facturas, clasificados] = results.map(r => r.status === 'fulfilled' ? r.value : 0);
+  const [users, events, citas, pedidos, allSubsR, cotizaciones, ordenes, facturas, clasificados, duplicadosPlacas] = results.map(r => r.status === 'fulfilled' ? r.value : 0);
   const allSubs      = Array.isArray(allSubsR) ? allSubsR : [];
   const suscriptores = allSubs.filter(s => s.confirmed).length;
-  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores, cotizaciones, ordenes, facturas, clasificados } });
+  res.render('admin/index', { stats: { users, events, citas, cursos: courses.length, productos: (catalog.products || []).length, pedidos, suscriptores, cotizaciones, ordenes, facturas, clasificados, duplicadosPlacas } });
 });
 
 router.get('/pedidos', requireAuth, requireAdmin, async (req, res) => {
