@@ -213,7 +213,14 @@ router.post('/orden/:id/estado', requireEmployee, requirePin('/taller'), async (
   }
   await updateServiceOrder(order.id, updates, req.pinActor);
 
-  if (finaliza) notifyAdmin(order, req.employee).catch(() => {});
+  if (finaliza) {
+    notifyAdmin(order, req.employee).catch(() => {});
+    // Al quedar lista la moto se emite la factura proforma automáticamente: es
+    // el único momento en que se sabe con certeza si aplica parqueadero, así
+    // que el total definitivo se cierra recién al entregar la moto.
+    convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.pinActor)
+      .catch(e => console.error('Auto-facturación proforma falló:', e.message));
+  }
 
   res.redirect('/taller/orden/' + order.id);
 });
