@@ -105,6 +105,35 @@
     font-size: 14px;
   }
 
+  .brand-suggest {
+    position: relative;
+  }
+  .brand-suggest-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    z-index: 20;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .brand-suggest-list li {
+    padding: 9px 10px;
+    border-radius: 7px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .brand-suggest-list li:hover {
+    background: #f3f4f6;
+  }
+
   @media (max-width: 540px) {
     .checkin-wrap { margin-top: 36px; }
     .checkin-card { padding: 20px 16px; }
