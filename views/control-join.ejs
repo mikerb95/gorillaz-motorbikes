@@ -1,0 +1,64 @@
+<%- include('partials/head', { title: 'Control remoto — Gorillaz Motorbikes' }) %>
+
+<style>
+  .ctrljoin-wrap {
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: calc(100dvh - var(--header-offset, 100px));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+  }
+  .ctrljoin-wrap h1 { font-size: 22px; font-weight: 900; margin: 0; text-align: center; }
+  .ctrljoin-wrap p.hint { color: var(--muted); text-align: center; margin: 0; font-size: 14px; }
+  .ctrljoin-error {
+    background: #fee2e2; color: #991b1b; border-radius: var(--radius);
+    padding: 10px 14px; font-size: 14px; text-align: center;
+  }
+  .ctrljoin-code {
+    width: 100%;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: 10px;
+    text-align: center;
+    padding: 18px 12px;
+    border-radius: var(--radius-lg);
+    border: 2px solid #e5e7eb;
+    font-variant-numeric: tabular-nums;
+  }
+  .ctrljoin-code:focus { outline: none; border-color: var(--brand); }
+  .ctrljoin-submit {
+    width: 100%;
+    padding: 18px;
+    font-size: 18px;
+    font-weight: 800;
+    border-radius: var(--radius-lg);
+    border: none;
+    background: var(--brand);
+    color: #fff;
+  }
+</style>
+
+<div class="ctrljoin-wrap">
+  <h1>Control remoto</h1>
+  <p class="hint">Ingresa el código de 6 dígitos que se muestra en la pantalla que está proyectando.</p>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="ctrljoin-error"><%= error %></div>
+  <% } %>
+  <form action="/control" method="get" autocomplete="off">
+    <input
+      class="ctrljoin-code"
+      type="text"
+      inputmode="numeric"
+      pattern="\d{6}"
+      maxlength="6"
+      name="code"
+      placeholder="000000"
+      autofocus
+      required
+    >
+    <button class="ctrljoin-submit" type="submit" style="margin-top:14px">Conectar</button>
+  </form>
+</div>
