@@ -296,6 +296,20 @@ async function initDb() {
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
       updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    // Emparejamiento celular↔PC para el control remoto de /clases/.../
+    // presentation. El PC crea la sesión con un código corto y hace polling de
+    // slide_index; el celular solo empuja next/prev por el código, sin ver los
+    // slides. expires_at acota cuánto vive una sesión abandonada.
+    `CREATE TABLE IF NOT EXISTS presentation_sessions (
+      code TEXT PRIMARY KEY,
+      course TEXT NOT NULL,
+      topic TEXT NOT NULL,
+      slide_index INTEGER NOT NULL DEFAULT 0,
+      slide_count INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      expires_at TEXT NOT NULL
+    )`,
   ];
 
   for (const sql of tables) {
