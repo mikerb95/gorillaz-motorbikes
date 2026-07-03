@@ -14,11 +14,9 @@ const isProforma = invoice.status === 'proforma';
     <span class="badge <%= STATUS_CLS[invoice.status] %>"><%= STATUS_LABEL[invoice.status] || invoice.status %></span>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <% if (!isProforma) { %>
-      <button class="btn btn-ghost btn-sm" id="btnPdf">Descargar PDF</button>
-      <% if (invoice.status !== 'anulada') { %>
-        <button class="btn btn-sm" id="btnWa" style="background:#25D366;color:#fff;border-color:#25D366">Enviar por WhatsApp</button>
-      <% } %>
+    <button class="btn btn-ghost btn-sm" id="btnPdf">Descargar PDF</button>
+    <% if (invoice.status !== 'anulada') { %>
+      <button class="btn btn-sm" id="btnWa" style="background:#25D366;color:#fff;border-color:#25D366">Enviar por WhatsApp</button>
     <% } %>
   </div>
 </div>
@@ -27,8 +25,8 @@ const isProforma = invoice.status === 'proforma';
 <div style="max-width:860px;margin-bottom:16px;padding:14px 18px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
   <span style="font-size:20px">🧾</span>
   <div style="font-size:13px;color:#92400e;font-weight:700">
-    Esta es una <strong>factura proforma</strong>: el total todavía no incluye parqueadero y no se puede enviar ni marcar como pagada.
-    Se cierra definitivamente desde la orden de servicio al entregar la moto.
+    Esta es una <strong>factura proforma</strong>: el total todavía no incluye parqueadero y no se puede marcar como pagada.
+    Puedes enviarla igual como documento preliminar; se cierra definitivamente desde la orden de servicio al entregar la moto.
     <% if (order) { %><a href="/admin/ordenes-servicio/<%= order.id %>" style="color:#92400e;text-decoration:underline">Ir a la orden →</a><% } %>
   </div>
 </div>
