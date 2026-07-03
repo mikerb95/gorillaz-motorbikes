@@ -2,9 +2,19 @@
 
 const express   = require('express');
 const rateLimit = require('express-rate-limit');
+const QRCode    = require('qrcode');
 const { createCheckin } = require('../db');
 
 const router = express.Router();
+const BASE_URL = process.env.BASE_URL || 'https://gorillazmotorbikes.com';
+
+// QR fijo para imprimir y pegar en el mostrador del taller.
+router.get('/checkin/qr.png', async (req, res) => {
+  const png = await QRCode.toBuffer(`${BASE_URL}/checkin`, { type: 'png', errorCorrectionLevel: 'M', width: 512, margin: 2 });
+  res.setHeader('Content-Type', 'image/png');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.send(png);
+});
 
 // Evita spam del formulario público (el QR queda expuesto en el mostrador).
 const checkinLimiter = rateLimit({

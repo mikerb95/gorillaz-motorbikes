@@ -60,4 +60,20 @@
   // Prevent scroll
   document.body.style.overflow = 'hidden';
   window.addEventListener('beforeunload', () => { document.body.style.overflow = ''; });
+
+  // Floating logo island: tap to expand/collapse on touch devices (no hover)
+  const header = document.querySelector('.site-header');
+  const logo = header && header.querySelector('.logo');
+  if (header && logo) {
+    logo.addEventListener('click', (e) => {
+      if (!window.matchMedia('(hover: none)').matches) return;
+      e.preventDefault();
+      header.classList.toggle('is-expanded');
+    });
+    document.addEventListener('click', (e) => {
+      if (header.classList.contains('is-expanded') && !header.contains(e.target)) {
+        header.classList.remove('is-expanded');
+      }
+    });
+  }
 })();
