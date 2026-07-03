@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Nueva orden — Panel de Producción</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; font-family: Montserrat, system-ui, sans-serif; background: #f3f4f6; color: #111; }
+    .kds-top { background: #0f1115; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 10; }
+    .kds-back { color: #fff; text-decoration: none; font-weight: 800; font-size: 16px; }
+    .kds-top .label { font-weight: 900; font-size: 17px; }
+    .kds-wrap { max-width: 720px; margin: 0 auto; padding: 18px 16px 60px; }
+    .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #eef0f2; }
+    .card h2 { font-size: 12px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 12px; }
+    .kds-error { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+    input[type=text], input[type=tel], input[type=number], textarea {
+      width: 100%; padding: 13px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 15px;
+      font-family: inherit; outline: none; box-sizing: border-box; margin-bottom: 12px;
+    }
+    input:focus, textarea:focus { border-color: #F25C05; }
+    label.k { display: block; font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
+    .cat-btn { padding: 16px 10px; font-size: 13px; font-weight: 800; background: #f3f4f6; color: #111; border: none; border-radius: 12px; cursor: pointer; font-family: inherit; text-align: center; }
+    .cat-btn:active { background: #e5e7eb; }
+    .cat-btn.other { background: #fff7ed; color: #9a3412; border: 1.5px dashed #fdba74; }
+    .item-list { margin-top: 14px; }
+    .item-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+    .item-row .del { background: none; border: none; color: #dc2626; font-size: 16px; cursor: pointer; padding: 4px 8px; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; margin-top: 8px; border-top: 2px solid #111; font-weight: 900; font-size: 17px; }
+    .total-row span:last-child { color: #F25C05; }
+    .quick-add { display: none; margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed #e5e7eb; }
+    .qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .qty-btn { width: 48px; height: 48px; font-size: 22px; font-weight: 900; background: #f3f4f6; border: none; border-radius: 10px; cursor: pointer; }
+    .qty-row input { margin: 0; text-align: center; font-size: 18px; font-weight: 800; }
+    .save { width: 100%; margin-top: 6px; padding: 16px; font-size: 16px; font-weight: 800; background: #F25C05; color: #fff; border: none; border-radius: 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="kds-top">
+    <a class="kds-back" href="/kds/placa">←</a>
+    <span class="label">Nueva orden de servicio</span>
+  </div>
+
+  <div class="kds-wrap">
+    <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
+
+    <form method="post" action="/kds/orden/nueva" id="soForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="items" id="itemsField" />
+
+      <div class="card">
+        <h2>Datos de ingreso</h2>
+        <label class="k">Placa</label>
+        <input type="text" name="placa" value="<%= placa %>" required style="text-transform:uppercase" />
+        <label class="k">Teléfono del cliente (opcional)</label>
+        <input type="tel" name="clientPhone" placeholder="3001234567" />
+        <label class="k">Notas (opcional)</label>
+        <textarea name="notes" rows="2" placeholder="Detalles del ingreso..."></textarea>
+      </div>
+
+      <div class="card">
+        <h2>Servicios / repuestos</h2>
+        <div class="cat-grid" id="catGrid">
+          <% catalog.forEach(c => { %>
+            <button type="button" class="cat-btn" data-name="<%= c.name %>" data-type="<%= c.type || 'service' %>"><%= c.name %></button>
+          <% }) %>
+          <button type="button" class="cat-btn other" id="otherBtn">Otro ítem…</button>
+        </div>
+
+        <div class="quick-add" id="quickAdd">
+          <label class="k">Ítem</label>
+          <input type="text" id="qaName" readonly />
+          <div class="qty-row">
+            <button type="button" class="qty-btn" id="qtyMinus">−</button>
+            <input type="number" id="qaQty" value="1" min="1" style="width:70px" />
+            <button type="button" class="qty-btn" id="qtyPlus">+</button>
+          </div>
+          <label class="k">Precio unitario</label>
+          <input type="number" id="qaPrice" min="0" step="1" placeholder="0" />
+          <button type="button" class="save" id="qaAdd">+ Agregar a la orden</button>
+        </div>
+
+        <div class="item-list" id="itemList"></div>
+        <div class="total-row"><span>Total</span><span id="grandTotal">$0</span></div>
+      </div>
+
+      <button class="save" type="submit">Crear orden de servicio →</button>
+    </form>
+  </div>
+
+  <script>
+  (function () {
+    let items = [];
+    const itemsField = document.getElementById('itemsField');
+    const itemList   = document.getElementById('itemList');
+    const grandTotal = document.getElementById('grandTotal');
+    const quickAdd   = document.getElementById('quickAdd');
+    const qaName     = document.getElementById('qaName');
+    const qaQty      = document.getElementById('qaQty');
+    const qaPrice    = document.getElementById('qaPrice');
+    let qaType = 'service';
+
+    const fmt = n => '$' + (Number(n) || 0).toLocaleString('es-CO');
+
+    function openQuickAdd(name, type, editableName) {
+      qaName.value = name;
+      qaName.readOnly = !editableName;
+      qaType = type;
+      qaQty.value = 1;
+      qaPrice.value = '';
+      quickAdd.style.display = 'block';
+      qaPrice.focus();
+    }
+
+    document.querySelectorAll('.cat-btn[data-name]').forEach(btn => {
+      btn.addEventListener('click', () => openQuickAdd(btn.dataset.name, btn.dataset.type, false));
+    });
+    document.getElementById('otherBtn').addEventListener('click', () => openQuickAdd('', 'custom', true));
+
+    document.getElementById('qtyMinus').addEventListener('click', () => { qaQty.value = Math.max(1, Number(qaQty.value) - 1); });
+    document.getElementById('qtyPlus').addEventListener('click', () => { qaQty.value = Number(qaQty.value) + 1; });
+
+    function renderItems() {
+      itemList.innerHTML = '';
+      let total = 0;
+      items.forEach((it, idx) => {
+        total += it.price * it.qty;
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = '<span>' + it.name + ' ×' + it.qty + '</span><span>' + fmt(it.price * it.qty) +
+          ' <button type="button" class="del" data-idx="' + idx + '">✕</button></span>';
+        itemList.appendChild(row);
+      });
+      itemList.querySelectorAll('.del').forEach(b => {
+        b.addEventListener('click', () => { items.splice(Number(b.dataset.idx), 1); renderItems(); });
+      });
+      grandTotal.textContent = fmt(total);
+      itemsField.value = JSON.stringify(items);
+    }
+
+    document.getElementById('qaAdd').addEventListener('click', () => {
+      const name  = qaName.value.trim();
+      const qty   = Math.round(Number(qaQty.value));
+      const price = Math.round(Number(qaPrice.value));
+      if (!name || !(qty >= 1) || !(price >= 1)) { alert('Completa nombre, cantidad y precio.'); return; }
+      items.push({ name, type: qaType, qty, price });
+      quickAdd.style.display = 'none';
+      renderItems();
+    });
+
+    document.getElementById('soForm').addEventListener('submit', e => {
+      if (items.length === 0) {
+        e.preventDefault();
+        alert('Agrega al menos un ítem del catálogo o "Otro".');
+      }
+    });
+
+    renderItems();
+  })();
+  </script>
+</body>
+</html>
