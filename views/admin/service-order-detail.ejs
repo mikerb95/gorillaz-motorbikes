@@ -108,8 +108,9 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   // en detail) para que el historial siga leyéndose aunque la orden ya no esté
   // vinculada a esa factura.
   const eventTitle = e => {
-    if (e.status === 'factura_generada') return e.detail ? 'Factura ' + e.detail + ' generada' : 'Factura generada';
+    if (e.status === 'factura_generada') return e.detail ? 'Factura ' + e.detail + ' generada (proforma)' : 'Factura proforma generada';
     if (e.status === 'factura_anulada')  return e.detail ? 'Factura ' + e.detail + ' anulada'  : 'Factura anulada';
+    if (e.status === 'factura_cerrada')  return e.detail ? 'Factura ' + e.detail + ' cerrada al entregar' : 'Factura cerrada al entregar';
     return STATUS_LABEL[e.status] || e.status;
   };
   const evs = typeof events !== 'undefined' ? events : [];
