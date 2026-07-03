@@ -2216,6 +2216,81 @@ async function deleteClassified(id) {
   await db.execute({ sql: 'DELETE FROM classifieds WHERE id = ?', args: [id] });
 }
 
+// ── Duplicado de placas ─────────────────────────────────────────────────────
+
+function rowToPlateRequest(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    type: row.type,
+    reason: row.reason || '',
+    plate: row.plate || '',
+    vehicleBrand: row.vehicle_brand || '',
+    customerName: row.customer_name,
+    customerPhone: row.customer_phone,
+    customerEmail: row.customer_email || '',
+    city: row.city || '',
+    department: row.department || '',
+    notes: row.notes || '',
+    status: row.status || 'pendiente',
+    adminNotes: row.admin_notes || '',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function createPlateRequest(data) {
+  const id = data.id || uuidv4();
+  await db.execute({
+    sql: `INSERT INTO plate_duplicate_requests
+            (id, type, reason, plate, vehicle_brand, customer_name, customer_phone,
+             customer_email, city, department, notes, status)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+    args: [
+      id, data.type, data.reason || null, data.plate || null, data.vehicleBrand || null,
+      data.customerName, data.customerPhone, data.customerEmail || null,
+      data.city || null, data.department || null, data.notes || null,
+      data.status || 'pendiente',
+    ],
+  });
+  return id;
+}
+
+async function getPlateRequestById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM plate_duplicate_requests WHERE id = ?', args: [id] });
+  return rowToPlateRequest(r.rows[0] || null);
+}
+
+async function getAllPlateRequests(status) {
+  if (status) {
+    const r = await db.execute({
+      sql: 'SELECT * FROM plate_duplicate_requests WHERE status = ? ORDER BY created_at DESC',
+      args: [status],
+    });
+    return r.rows.map(rowToPlateRequest);
+  }
+  const r = await db.execute('SELECT * FROM plate_duplicate_requests ORDER BY created_at DESC');
+  return r.rows.map(rowToPlateRequest);
+}
+
+async function updatePlateRequestStatus(id, status, adminNotes) {
+  await db.execute({
+    sql: `UPDATE plate_duplicate_requests
+            SET status = ?, admin_notes = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')
+          WHERE id = ?`,
+    args: [status, adminNotes || null, id],
+  });
+}
+
+async function countPlateRequestsByStatus(status) {
+  const r = await db.execute({ sql: 'SELECT COUNT(*) as n FROM plate_duplicate_requests WHERE status = ?', args: [status] });
+  return Number(r.rows[0].n);
+}
+
+async function deletePlateRequest(id) {
+  await db.execute({ sql: 'DELETE FROM plate_duplicate_requests WHERE id = ?', args: [id] });
+}
+
 // ── Backup ────────────────────────────────────────────────────────────────
 
 async function backupAllTables() {
