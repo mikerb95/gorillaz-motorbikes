@@ -3,6 +3,13 @@
 <!-- ── Operación: colas y métricas accionables del día ── -->
 <h2 class="crm-dash-section-title">Operación</h2>
 <div class="crm-kpi-row">
+  <a class="crm-kpi-card<%= stats.duplicadosPlacas > 0 ? ' alert' : '' %>" href="/admin/duplicado-placas?status=pendiente">
+    <div class="crm-kpi-icon amber">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="10" y2="10"/><line x1="6" y1="14" x2="14" y2="14"/></svg>
+    </div>
+    <div class="crm-kpi-value"><%= stats.duplicadosPlacas %></div>
+    <div class="crm-kpi-label">Duplicados de placas pendientes</div>
+  </a>
   <a class="crm-kpi-card<%= stats.clasificados > 0 ? ' alert' : '' %>" href="/admin/clasificados?status=pending">
     <div class="crm-kpi-icon amber">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
