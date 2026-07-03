@@ -172,7 +172,7 @@ const isProforma = invoice.status === 'proforma';
     doc.text('FACTURA N° '+INV.label,196,20,{align:'right'});
 
     doc.setTextColor(17,17,17); doc.setFontSize(14); doc.setFont('helvetica','bold');
-    doc.text('FACTURA DE SERVICIO',14,40);
+    doc.text(INV.isProforma ? 'FACTURA PROFORMA (preliminar)' : 'FACTURA DE SERVICIO',14,40);
     if (ORDER) {
       doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(107,114,128);
       const infoLine = [ORDER.motorcycle && 'Moto: '+ORDER.motorcycle, ORDER.clientPhone && 'Tel: '+(ORDER.clientPhoneCountry||'+57')+' '+ORDER.clientPhone].filter(Boolean).join('   |   ');
