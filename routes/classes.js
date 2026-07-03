@@ -5,7 +5,7 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/clases/:course/:topic', requireAuth, requireAdmin, (req, res) => {
+router.get('/clases/:course/:topic', (req, res) => {
   const { course, topic } = req.params;
   const courseObj = classesData[course];
   if (!courseObj) return res.status(404).render('404');
