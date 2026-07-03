@@ -29,9 +29,11 @@
   slides.forEach(s => deck.appendChild(makeSlide(s)));
 
   let idx = 0;
+  const progressEl = document.querySelector('[data-pres="progress"]');
   const update = () => {
     deck.style.setProperty('--i', String(idx));
     Array.from(deck.children).forEach((el, i) => el.setAttribute('aria-hidden', i===idx? 'false':'true'));
+    if (progressEl) progressEl.textContent = slides.length ? `${idx + 1} / ${slides.length}` : '';
   };
   update();
 
