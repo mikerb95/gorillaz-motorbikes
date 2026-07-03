@@ -185,7 +185,7 @@ router.get('/orden/:id', async (req, res) => {
   res.render('kds/order-detail', { order, EMP_STATUS, catalog });
 });
 
-router.post('/orden/:id/estado', requireKdsEmployee, async (req, res) => {
+router.post('/orden/:id/estado', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/kds');
 
@@ -197,12 +197,12 @@ router.post('/orden/:id/estado', requireKdsEmployee, async (req, res) => {
     if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
     updates.pendingReview = true;
   }
-  await updateServiceOrder(order.id, updates, req.employee.name);
+  await updateServiceOrder(order.id, updates, req.pinActor);
 
   res.redirect('/kds/orden/' + order.id);
 });
 
-router.post('/orden/:id/items', requireKdsEmployee, async (req, res) => {
+router.post('/orden/:id/items', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/kds');
 
@@ -212,8 +212,8 @@ router.post('/orden/:id/items', requireKdsEmployee, async (req, res) => {
   if (name && Number.isInteger(price) && price >= 1 && Number.isInteger(qty) && qty >= 1) {
     const items = [...order.items, { name: name.slice(0, 200), type: req.body.type || 'custom', price, qty }];
     const total = items.reduce((s, it) => s + it.price * it.qty, 0);
-    await updateServiceOrder(order.id, { items, total }, req.employee.name);
-    await addServiceOrderEvent(order.id, 'editado', req.employee.name, `+ ${name} ×${qty}`);
+    await updateServiceOrder(order.id, { items, total }, req.pinActor);
+    await addServiceOrderEvent(order.id, 'editado', req.pinActor, `+ ${name} ×${qty}`);
   }
 
   res.redirect('/kds/orden/' + order.id);
