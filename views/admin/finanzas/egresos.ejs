@@ -54,7 +54,7 @@
     <!-- Formulario nuevo gasto -->
     <div class="crm-card" style="margin-bottom:20px">
       <span class="crm-card-title"><%= editGasto ? 'Editar gasto' : 'Registrar nuevo gasto' %></span>
-      <form method="post" action="<%= editGasto ? '/admin/finanzas/egresos/'+editGasto.id+'/actualizar' : '/admin/finanzas/egresos/crear' %>">
+      <form method="post" action="<%= editGasto ? '/admin/finanzas/egresos/'+editGasto.id+'/actualizar' : '/admin/finanzas/egresos/crear' %>" data-require-pin data-pin-title="Autoriza el gasto" data-pin-msg="Ingresa tu PIN para registrar este gasto en la contabilidad.">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <input type="hidden" name="period" value="<%= periodParam %>" />
         <div class="crm-form-grid cols-3">
