@@ -108,7 +108,11 @@
         }
         field.value = pin;
         close();
-        form.submit();   // envío programático: no re-dispara este handler
+        // requestSubmit re-dispara el evento submit (para que corran los
+        // serializadores de ítems de la página); nuestro handler lo deja pasar
+        // al detectar el campo pin ya inyectado. Fallback a submit() en navegadores
+        // sin requestSubmit (el campo de ítems ya quedó poblado en el 1er submit).
+        if (form.requestSubmit) form.requestSubmit(); else form.submit();
         return;
       }
       errEl.textContent = data.error || 'No se pudo verificar el PIN.';
