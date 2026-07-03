@@ -1130,7 +1130,7 @@ router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, requ
     notes:              (req.body.notes || '').trim() || null,
     estimatedDate:      req.body.estimatedDate || null,
     status:             'ingreso_taller',
-    actor:              res.locals.user?.name || 'Admin',
+    actor:              req.pinActor,
   });
   res.redirect('/admin/ordenes-servicio/' + id);
 });
@@ -1153,7 +1153,7 @@ router.get('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, res
   res.render('admin/service-order-new', { error: null, empleados: await getActiveEmployees() });
 });
 
-router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, res) => {
+router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio/nueva'), async (req, res) => {
   let items;
   try {
     items = JSON.parse(req.body.items || '[]');
@@ -1194,7 +1194,7 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, re
     estimatedDate:      req.body.estimatedDate || null,
     employeeId,
     status:             'ingreso_taller',
-    actor:              res.locals.user?.name || 'Admin',
+    actor:              req.pinActor,
   });
   res.redirect('/admin/ordenes-servicio/' + id);
 });

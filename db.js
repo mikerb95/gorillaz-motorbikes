@@ -1666,6 +1666,7 @@ function rowToInvoice(row) {
     items: safeJson(row.items, []),
     subtotal: Number(row.subtotal),
     tax: Number(row.tax),
+    parkingAmount: Number(row.parking_amount) || 0,
     total: Number(row.total),
     paymentMethod: row.payment_method,
     status: row.status,
