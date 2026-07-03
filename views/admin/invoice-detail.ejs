@@ -142,7 +142,7 @@ const isProforma = invoice.status === 'proforma';
   <div class="crm-card" style="padding:20px 24px;border:1px solid #fecaca;background:#fef2f2">
     <h2 style="font-size:13px;font-weight:800;color:#b91c1c;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px">Anular proforma</h2>
     <p style="margin:0 0 12px;font-size:13px;color:#7f1d1d">Si la orden se canceló antes de entregar la moto, anula esta proforma. La orden vuelve a «Trabajo completo» y queda editable.</p>
-    <form method="post" action="/admin/facturas/<%= invoice.id %>/estado">
+    <form method="post" action="/admin/facturas/<%= invoice.id %>/estado" data-require-pin data-pin-title="Autoriza la anulación" data-pin-msg="Ingresa tu PIN para anular esta factura proforma.">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="status" value="anulada" />
       <button class="btn btn-sm" type="submit" style="background:#dc2626;color:#fff;border:none">Anular proforma</button>
