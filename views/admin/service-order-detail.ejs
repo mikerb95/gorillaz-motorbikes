@@ -181,7 +181,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   <% if (order.status !== 'facturado' && order.status !== 'entregado') { %>
   <div class="crm-card" style="padding:20px 24px">
     <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Actualizar orden</h2>
-    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/actualizar">
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/actualizar" data-require-pin data-pin-title="Autoriza el cambio de estado" data-pin-msg="Ingresa tu PIN para registrar y confirmar la actualización de la orden.">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px">
         <div>
@@ -277,7 +277,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   <div class="crm-card" style="padding:20px 24px;border-top:3px solid #22c55e">
     <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px">Generar factura proforma</h2>
     <p style="margin:0 0 14px;font-size:12.5px;color:#9ca3af">Esta orden no tiene factura asociada (normalmente se genera sola al quedar «Trabajo completo»). El IVA, el parqueadero y el método de pago se confirman al entregar la moto.</p>
-    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/convertir-factura">
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/convertir-factura" data-require-pin data-pin-title="Autoriza la facturación" data-pin-msg="Ingresa tu PIN para emitir la factura de esta orden.">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div style="margin-bottom:12px">
         <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Notas de factura</label>
@@ -407,7 +407,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
       <h3 style="margin:0;font-size:16px;font-weight:800;color:#b91c1c">⚠️ Borrar orden de servicio</h3>
       <button type="button" data-modal-close style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
     </div>
-    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/borrar" style="padding:20px 24px">
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/borrar" style="padding:20px 24px" data-require-pin data-pin-title="Autoriza el borrado" data-pin-msg="Ingresa tu PIN para eliminar esta orden y su historial. Esta acción no se puede deshacer.">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <p style="margin:0 0 14px;font-size:13.5px;color:#374151;line-height:1.5">
         Vas a borrar la orden <strong><%= order.label %></strong> (<%= order.items.length %> ítem<%= order.items.length === 1 ? '' : 's' %>,
