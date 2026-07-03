@@ -1,7 +1,7 @@
 <%- include('../partials/admin-head', { title: 'Facturas' }) %>
 
 <%
-const STATUS = { pendiente:{label:'Pendiente',cls:'badge-warning'}, pagada:{label:'Pagada',cls:'badge-success'}, anulada:{label:'Anulada',cls:'badge-danger'} };
+const STATUS = { pendiente:{label:'Pendiente',cls:'badge-warning'}, pagada:{label:'Pagada',cls:'badge-success'}, anulada:{label:'Anulada',cls:'badge-danger'}, proforma:{label:'Proforma',cls:'badge-warning'} };
 // `stats` (agregados en SQL) y `status`/`page`/`pages`/`total` llegan del servidor.
 const s = typeof stats !== 'undefined' ? stats : { pendientes: 0, pagadas: 0, totalPagado: 0 };
 const activeStatus = typeof status !== 'undefined' ? status : '';
