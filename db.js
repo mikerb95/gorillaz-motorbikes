@@ -1673,6 +1673,28 @@ async function createInvoice(data) {
   return { id, consecutive, label };
 }
 
+// Convierte una orden 'trabajo_completo' en factura: crea la factura, marca la
+// orden como 'facturado' y deja el hito en la trazabilidad. Reusada por el
+// panel admin (routes/admin.js) y por el tablero KDS del taller (routes/kds.js).
+async function convertServiceOrderToInvoice(order, { tax = 0, paymentMethod = 'efectivo', paidNow = false, notes = null } = {}, actor) {
+  if (order.invoiceId || order.status !== 'trabajo_completo') {
+    throw new Error('La orden no está lista para facturar o ya tiene factura.');
+  }
+  const { id: invoiceId, label: invoiceLabel } = await createInvoice({
+    serviceOrderId: order.id,
+    quotationId:    order.quotationId,
+    items:          order.items,
+    subtotal:       order.total,
+    tax,
+    paymentMethod,
+    status:         paidNow ? 'pagada' : 'pendiente',
+    notes,
+  });
+  await updateServiceOrder(order.id, { status: 'facturado', invoiceId, pendingReview: false }, actor);
+  await addServiceOrderEvent(order.id, 'factura_generada', actor, invoiceLabel);
+  return { invoiceId, invoiceLabel };
+}
+
 async function getInvoiceById(id) {
   const r = await db.execute({ sql: 'SELECT * FROM invoices WHERE id = ?', args: [id] });
   return rowToInvoice(r.rows[0] || null);
