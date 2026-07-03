@@ -1,5 +1,6 @@
 'use strict';
 const { createClient } = require('@libsql/client');
+const { randomInt } = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const { hoyCO } = require('./helpers/datetime');
 
