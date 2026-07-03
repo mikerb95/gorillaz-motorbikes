@@ -31,9 +31,10 @@
     if (busy) return;
     busy = true;
     try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
       const res = await fetch(`/api/presentacion/${code}/nav`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
         body: JSON.stringify({ dir }),
       });
       const data = await res.json();
