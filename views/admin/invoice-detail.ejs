@@ -115,7 +115,7 @@ const isProforma = invoice.status === 'proforma';
   </div>
 
   <!-- Cambiar estado / método de pago -->
-  <% if (invoice.status !== 'anulada') { %>
+  <% if (invoice.status !== 'anulada' && !isProforma) { %>
   <div class="crm-card" style="padding:20px 24px">
     <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Actualizar pago</h2>
     <form method="post" action="/admin/facturas/<%= invoice.id %>/estado" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
