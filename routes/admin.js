@@ -1309,10 +1309,10 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, req
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
-router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, async (req, res) => {
+router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
-  const actor = res.locals.user?.name || 'Admin';
+  const actor = req.pinActor;
   const { invoiceId } = await convertServiceOrderToInvoice(order, {
     tax:           Math.max(0, Math.round(Number(req.body.tax) || 0)),
     paymentMethod: req.body.paymentMethod || 'efectivo',
@@ -1324,7 +1324,7 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
 
 // Borrado permanente de una orden. Se bloquea si ya tiene factura: anular esa
 // factura es el paso previo, para no dejar registros contables huérfanos.
-router.post('/ordenes-servicio/:id/borrar', requireAuth, requireAdmin, async (req, res) => {
+router.post('/ordenes-servicio/:id/borrar', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/admin/ordenes-servicio');
   if (order.invoiceId) return res.redirect('/admin/ordenes-servicio/' + order.id + '?error=facturada');
@@ -1379,7 +1379,7 @@ router.post('/facturas/:id/telefono', requireAuth, requireAdmin, async (req, res
 
 const INVOICE_STATUSES = ['pendiente', 'pagada', 'anulada'];
 
-router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) => {
+router.post('/facturas/:id/estado', requireAuth, requireAdmin, requirePin('/admin/facturas'), async (req, res) => {
   const invoice = await getInvoiceById(req.params.id);
   if (!invoice) return res.redirect('/admin/facturas');
 
