@@ -17,6 +17,11 @@ const requireEmployee = (req, res, next) => {
   next();
 };
 
+const requireKdsEmployee = (req, res, next) => {
+  if (!req.employee) return res.redirect('/kds/login');
+  next();
+};
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -26,4 +31,4 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
-module.exports = { requireAuth, requireAdmin, requireEmployee, authLimiter };
+module.exports = { requireAuth, requireAdmin, requireEmployee, requireKdsEmployee, authLimiter };
