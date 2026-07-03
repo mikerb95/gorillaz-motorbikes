@@ -99,7 +99,7 @@ router.post('/logout', (req, res) => {
 // ── Tablero (visible sin sesión; las acciones se ocultan sin empleado) ────
 router.get('/', async (req, res) => {
   const orders = await getActiveServiceOrders();
-  res.render('kds/board', { orders, EMP_STATUS });
+  res.render('kds/board', { orders, EMP_STATUS, flash: req.query.flash || null });
 });
 
 router.get('/orders.json', async (req, res) => {
