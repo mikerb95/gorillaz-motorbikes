@@ -1,0 +1,38 @@
+<%- include('partials/head', { title: 'Déjanos tu reseña — Gorillaz Motorbikes' }) %>
+<main class="container section reviews-cta-page">
+  <h1 class="section-title">¿Cómo te fue con nosotros?</h1>
+  <p class="section-subtitle">Tu reseña en Google nos ayuda a seguir mejorando y a que más moteros nos encuentren.</p>
+
+  <div class="card reviews-cta-card">
+    <div class="reviews-cta-stars" aria-hidden="true">★★★★★</div>
+    <p>
+      Cada reseña cuenta la experiencia real de un cliente: le da confianza al próximo motero que busca un taller
+      serio, y a nosotros nos dice qué estamos haciendo bien y qué podemos ajustar. Si tuviste una buena experiencia,
+      te tomará menos de un minuto.
+    </p>
+    <div class="btn-row" style="justify-content:center;margin-top:20px">
+      <a class="btn" href="<%= googleReviewUrl %>" target="_blank" rel="noopener">Calificarnos en Google</a>
+    </div>
+  </div>
+
+  <div class="card reviews-cta-card" style="max-width:900px;margin:24px auto 0">
+    <h2 style="margin-top:0">Cómo dejar tu reseña</h2>
+    <div class="stack">
+      <div><strong>1. Abre el enlace.</strong> Te lleva directo a nuestra ficha de Gorillaz Motorbikes en Google Maps.</div>
+      <div><strong>2. Busca "Escribir una reseña".</strong> Está en la sección de reseñas de la ficha, junto a la calificación.</div>
+      <div><strong>3. Cuéntanos tu experiencia.</strong> Con unas estrellas y unas palabras es suficiente — mientras más honesto, mejor.</div>
+    </div>
+  </div>
+
+  <div class="card reviews-cta-card" style="max-width:900px;margin:24px auto 0">
+    <h2 style="margin-top:0">¿Algo no salió como esperabas?</h2>
+    <p>
+      Preferimos saberlo directamente para poder resolverlo. Escríbenos por WhatsApp antes de calificar y hacemos
+      lo posible por arreglarlo.
+    </p>
+    <div class="btn-row" style="margin-top:12px">
+      <a class="btn btn-outline" href="https://wa.me/573213204299" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>
