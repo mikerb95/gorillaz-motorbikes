@@ -12,6 +12,7 @@ const {
   getActiveEmployees, getEmployeeById, getEmployeeByUserId, getUserByEmail,
   getServiceOrdersByEmployee, getServiceOrderById, updateServiceOrder,
   isThrottleLocked, recordThrottleFailure,
+  getPendingCheckins, getPendingCheckinsByPlate, getCheckinById, markCheckinAttended, createServiceOrder,
 } = require('../db');
 
 const router = express.Router();
