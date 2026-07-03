@@ -52,7 +52,7 @@ app.use(helmet({
       'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
       'img-src': ["'self'", 'data:', 'blob:', 'https:'],
       'connect-src': ["'self'", 'https://nominatim.openstreetmap.org', 'https://www.google.com', 'https://www.gstatic.com'],
-      'frame-src': ["'self'", 'https://www.google.com', 'https://maps.google.com'],
+      'frame-src': ["'self'", 'https://www.google.com', 'https://maps.google.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
       'frame-ancestors': ["'self'"],
       'object-src': ["'none'"],
       'base-uri': ["'self'"],
