@@ -1264,23 +1264,13 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, asy
 router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
-  const tax = Math.round(Number(req.body.tax || 0));
-  const subtotal = order.total;
-  const { id: invoiceId, label: invoiceLabel } = await createInvoice({
-    serviceOrderId:     order.id,
-    quotationId:        order.quotationId,
-    items:              order.items,
-    subtotal,
-    tax,
-    paymentMethod:      req.body.paymentMethod || 'efectivo',
-    status:             req.body.paidNow === '1' ? 'pagada' : 'pendiente',
-    notes:              (req.body.notes || '').trim() || null,
-  });
   const actor = res.locals.user?.name || 'Admin';
-  await updateServiceOrder(order.id, { status: 'facturado', invoiceId, pendingReview: false }, actor);
-  // Hito persistente en la trazabilidad: sobrevive aunque luego se anule la
-  // factura y se desligue la orden (no se deriva del vínculo vivo).
-  await addServiceOrderEvent(order.id, 'factura_generada', actor, invoiceLabel);
+  const { invoiceId } = await convertServiceOrderToInvoice(order, {
+    tax:           Math.round(Number(req.body.tax || 0)),
+    paymentMethod: req.body.paymentMethod || 'efectivo',
+    paidNow:       req.body.paidNow === '1',
+    notes:         (req.body.notes || '').trim() || null,
+  }, actor);
   res.redirect('/admin/facturas/' + invoiceId);
 });
 

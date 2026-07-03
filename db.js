@@ -1951,6 +1951,67 @@ async function markCheckinAttended(id, serviceOrderId) {
   });
 }
 
+// ── Control remoto de presentaciones (clases) ───────────────────────────────
+// Emparejamiento PC↔celular por código corto. El PC crea la sesión al abrir
+// /clases/:course/:topic y hace polling de slide_index; el celular la consulta
+// por código y solo envía next/prev. Sin websockets (no viables en serverless).
+
+function rowToPresentationSession(row) {
+  if (!row) return null;
+  return {
+    code: row.code,
+    course: row.course,
+    topic: row.topic,
+    slideIndex: Number(row.slide_index) || 0,
+    slideCount: Number(row.slide_count) || 1,
+    expiresAt: row.expires_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function createPresentationSession(course, topic, slideCount) {
+  // Limpieza perezosa: no hay cron, así que cada sesión nueva se lleva de paso
+  // las que ya vencieron en vez de acumular filas muertas.
+  await db.execute({
+    sql: `DELETE FROM presentation_sessions WHERE expires_at < strftime('%Y-%m-%dT%H:%M:%SZ','now')`,
+  });
+  const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+    try {
+      await db.execute({
+        sql: `INSERT INTO presentation_sessions (code, course, topic, slide_count, expires_at)
+              VALUES (?,?,?,?,?)`,
+        args: [code, course, topic, Math.max(1, slideCount), expiresAt],
+      });
+      return code;
+    } catch {
+      // código ya en uso (colisión improbable con 6 dígitos): reintenta con otro.
+    }
+  }
+  throw new Error('No se pudo generar un código de sesión único');
+}
+
+async function getPresentationSession(code) {
+  const r = await db.execute({
+    sql: `SELECT * FROM presentation_sessions WHERE code = ? AND expires_at > strftime('%Y-%m-%dT%H:%M:%SZ','now')`,
+    args: [code],
+  });
+  return rowToPresentationSession(r.rows[0] || null);
+}
+
+async function setPresentationSlideIndex(code, index) {
+  const r = await db.execute({
+    sql: `UPDATE presentation_sessions
+            SET slide_index = MAX(0, MIN(?, slide_count - 1)),
+                updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')
+          WHERE code = ? AND expires_at > strftime('%Y-%m-%dT%H:%M:%SZ','now')
+          RETURNING slide_index, slide_count`,
+    args: [index, code],
+  });
+  return r.rows[0] ? { slideIndex: Number(r.rows[0].slide_index), slideCount: Number(r.rows[0].slide_count) } : null;
+}
+
 // ── Clasificados ────────────────────────────────────────────────────────────
 
 function rowToClassified(row) {
