@@ -246,15 +246,23 @@
         </div>
       <% }) %>
 
-      <% if (invoice.tax > 0) { %>
+      <% if (invoice.tax > 0 || invoice.parkingAmount > 0) { %>
       <div class="cot-sum-row" style="margin-top:12px">
         <span>Subtotal</span>
         <span>COP <%= invoice.subtotal.toLocaleString('es-CO') %></span>
       </div>
+      <% if (invoice.tax > 0) { %>
       <div class="cot-sum-row">
         <span>IVA</span>
         <span>COP <%= invoice.tax.toLocaleString('es-CO') %></span>
       </div>
+      <% } %>
+      <% if (invoice.parkingAmount > 0) { %>
+      <div class="cot-sum-row">
+        <span>Parqueadero</span>
+        <span>COP <%= invoice.parkingAmount.toLocaleString('es-CO') %></span>
+      </div>
+      <% } %>
       <% } %>
 
       <div class="cot-total-row">
