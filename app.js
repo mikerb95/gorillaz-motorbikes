@@ -97,6 +97,7 @@ app.use('/historial',      require('./routes/historial'));
 app.use('/runt',           require('./routes/runt'));
 app.use('/club',           require('./routes/club'));
 app.use('/taller',         require('./routes/taller'));
+app.use('/kds',            require('./routes/kds'));
 app.use('/admin/finanzas', require('./routes/finanzas'));
 app.use('/admin',          require('./routes/admin'));
 

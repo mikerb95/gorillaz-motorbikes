@@ -1,6 +1,6 @@
 <%- include('../partials/head', { title: topicTitle + ' — ' + courseTitle, user }) %>
 
-<main class="presentation" data-slides='<%- JSON.stringify(slides || []) %>' style="padding-top:0">
+<main class="presentation" data-slides='<%- JSON.stringify(slides || []) %>' data-course="<%= courseKey %>" data-topic="<%= topicKey %>" style="padding-top:0">
   <header class="presentation-bar">
     <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
       <div>
@@ -11,12 +11,23 @@
         <span class="presentation-progress" data-pres="progress"></span>
         <button class="btn btn-sm btn-outline" type="button" data-pres="prev" title="Anterior (←)">Anterior</button>
         <button class="btn btn-sm" type="button" data-pres="next" title="Siguiente (→)">Siguiente</button>
+        <button class="btn btn-sm btn-outline" type="button" data-pres="remote" title="Controlar desde el celular">Control remoto 📱</button>
         <button class="btn btn-sm btn-outline" type="button" data-pres="fs" title="Pantalla completa (F)">Pantalla completa</button>
       </div>
     </div>
   </header>
 
   <section class="deck" id="deck"></section>
+
+  <div class="presentation-remote-modal" data-pres="remote-modal" hidden>
+    <div class="presentation-remote-card">
+      <button type="button" class="presentation-remote-close" data-pres="remote-close" aria-label="Cerrar">✕</button>
+      <h2>Control remoto</h2>
+      <p>Escanea el código con la cámara de tu celular, o entra a <strong>/control</strong> e ingresa el código manualmente.</p>
+      <img class="presentation-remote-qr" data-pres="remote-qr" alt="Código QR de control remoto">
+      <div class="presentation-remote-code" data-pres="remote-code"></div>
+    </div>
+  </div>
 </main>
 
 <script src="/static/js/presentation.js"></script>
