@@ -2392,6 +2392,79 @@ main.schedule-full {
   height: max-content
 }
 
+/* Presentation mode: navbar becomes a small floating logo island that
+   expands horizontally to reveal the full navbar on hover/focus/tap. */
+body.is-presentation .site-header .nav-bar {
+  width: -moz-fit-content;
+  width: fit-content;
+  transition: width .35s ease;
+}
+
+body.is-presentation .site-header .header-inner {
+  grid-template-columns: 0px auto 0px;
+  transition: grid-template-columns .35s ease;
+}
+
+body.is-presentation .site-header .nav-left,
+body.is-presentation .site-header .header-right {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+body.is-presentation .site-header .sub-embed {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height .3s ease, opacity .2s ease, padding .3s ease;
+}
+
+body.is-presentation .site-header:hover .nav-bar,
+body.is-presentation .site-header:focus-within .nav-bar,
+body.is-presentation .site-header.is-expanded .nav-bar {
+  width: min(100%, 1400px);
+}
+
+body.is-presentation .site-header:hover .header-inner,
+body.is-presentation .site-header:focus-within .header-inner,
+body.is-presentation .site-header.is-expanded .header-inner {
+  grid-template-columns: 1fr auto 1fr;
+}
+
+body.is-presentation .site-header:hover .nav-left,
+body.is-presentation .site-header:hover .header-right,
+body.is-presentation .site-header:focus-within .nav-left,
+body.is-presentation .site-header:focus-within .header-right,
+body.is-presentation .site-header.is-expanded .nav-left,
+body.is-presentation .site-header.is-expanded .header-right {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity .25s ease .1s;
+}
+
+body.is-presentation .site-header:hover .sub-embed,
+body.is-presentation .site-header:focus-within .sub-embed,
+body.is-presentation .site-header.is-expanded .sub-embed {
+  max-height: 200px;
+  padding-top: 8px;
+  padding-bottom: 12px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.is-presentation .site-header .nav-bar,
+  body.is-presentation .site-header .header-inner,
+  body.is-presentation .site-header .nav-left,
+  body.is-presentation .site-header .header-right,
+  body.is-presentation .site-header .sub-embed {
+    transition: none;
+  }
+}
+
 /* Presentation mode */
 .presentation .presentation-bar {
   position: sticky;
