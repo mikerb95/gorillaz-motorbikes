@@ -253,7 +253,7 @@ const isProforma = invoice.status === 'proforma';
 
       const link = window.location.origin + '/factura/' + INV.id;
       const lines = [
-        '🧾 *Factura Gorillaz Motorbikes*',
+        INV.isProforma ? '🧾 *Factura proforma Gorillaz Motorbikes (preliminar)*' : '🧾 *Factura Gorillaz Motorbikes*',
         'N° ' + INV.label,
       ];
       if (ORDER && ORDER.motorcycle) lines.push('🏍️ ' + ORDER.motorcycle);
@@ -265,8 +265,9 @@ const isProforma = invoice.status === 'proforma';
         if (INV.tax > 0) lines.push('IVA: $' + INV.tax.toLocaleString('es-CO'));
         if (INV.parkingAmount > 0) lines.push('Parqueadero: $' + INV.parkingAmount.toLocaleString('es-CO'));
       }
-      lines.push('*Total: $' + INV.total.toLocaleString('es-CO') + '*');
-      lines.push('Pago: ' + INV.paymentMethod.charAt(0).toUpperCase() + INV.paymentMethod.slice(1));
+      lines.push('*Total: $' + INV.total.toLocaleString('es-CO') + '*' + (INV.isProforma ? ' (preliminar)' : ''));
+      if (!INV.isProforma) lines.push('Pago: ' + INV.paymentMethod.charAt(0).toUpperCase() + INV.paymentMethod.slice(1));
+      if (INV.isProforma) lines.push('_El total puede variar por cobro de parqueadero al entregar la moto._');
       lines.push('');
       lines.push('📄 *Ver factura y descargar PDF:*');
       lines.push(link);
