@@ -136,6 +136,62 @@ router.get('/', requireEmployee, async (req, res) => {
   res.render('taller/orders', { orders, EMP_STATUS });
 });
 
+// ── Check-ins pendientes (clientes que registraron su ingreso por QR) ─────
+router.get('/checkin', requireEmployee, async (req, res) => {
+  const placa = String(req.query.placa || '').trim();
+  const checkins = placa ? await getPendingCheckinsByPlate(placa) : await getPendingCheckins();
+  res.render('taller/checkin-queue', { checkins, placa });
+});
+
+// ── Crear orden de servicio a partir de un check-in ────────────────────────
+router.get('/checkin/:id/orden', requireEmployee, async (req, res) => {
+  const checkin = await getCheckinById(req.params.id);
+  if (!checkin || checkin.status !== 'pendiente') return res.redirect('/taller/checkin');
+  res.render('taller/service-order-new', { checkin, error: null });
+});
+
+router.post('/checkin/:id/orden', requireEmployee, async (req, res) => {
+  const checkin = await getCheckinById(req.params.id);
+  if (!checkin || checkin.status !== 'pendiente') return res.redirect('/taller/checkin');
+
+  let items;
+  try { items = JSON.parse(req.body.items || '[]'); } catch { items = null; }
+
+  const clean = Array.isArray(items) ? items.reduce((acc, it) => {
+    const name  = String(it.name || '').trim();
+    const price = Math.round(Number(it.price));
+    const qty   = Math.round(Number(it.qty));
+    if (name && Number.isInteger(price) && price >= 1 && Number.isInteger(qty) && qty >= 1) {
+      acc.push({ name: name.slice(0, 200), type: it.type || 'custom', price, qty });
+    }
+    return acc;
+  }, []) : [];
+
+  if (clean.length === 0) {
+    return res.status(400).render('taller/service-order-new', { checkin, error: 'Agrega al menos un ítem válido (nombre, cantidad y precio).' });
+  }
+
+  const total      = clean.reduce((s, it) => s + it.price * it.qty, 0);
+  const motorcycle = [checkin.plate, [checkin.brand, checkin.reference].filter(Boolean).join(' ')].filter(Boolean).join(' — ') || null;
+
+  const { id } = await createServiceOrder({
+    items:              clean,
+    total,
+    motorcycle,
+    clientPhone:        checkin.clientPhone,
+    clientPhoneCountry: checkin.clientPhoneCountry,
+    mechanic:           req.employee.name,
+    notes:              `Cliente: ${checkin.clientName}`,
+    employeeId:         req.employee.id,
+    status:             'ingreso_taller',
+    actor:              req.employee.name,
+  });
+
+  await markCheckinAttended(checkin.id, id);
+
+  res.redirect('/taller/orden/' + id);
+});
+
 // ── Detalle de una orden propia ────────────────────────────────────────────
 router.get('/orden/:id', requireEmployee, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
