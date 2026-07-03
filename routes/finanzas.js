@@ -2,7 +2,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { requirePin, verifyPinHandler } = require('../middleware/employeePin');
+const { requirePin } = require('../middleware/employeePin');
 const { isoCO } = require('../helpers/datetime');
 const {
   getAllInvoices, getAllOrders,

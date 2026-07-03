@@ -2374,7 +2374,7 @@ module.exports = {
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   isThrottleLocked, recordThrottleFailure,
   getAllSettings, setSetting,
-  createInvoice, convertServiceOrderToInvoice, getInvoiceById, getAllInvoices, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
+  createInvoice, convertServiceOrderToInvoice, deliverServiceOrder, getInvoiceById, getAllInvoices, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
   getServiceOrdersByPlate,
