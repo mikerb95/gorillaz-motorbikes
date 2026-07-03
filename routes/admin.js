@@ -1256,13 +1256,25 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, requi
     employeeId:    employeeId || null,
     mechanic:      await resolveMechanicName(employeeId || null),
   };
-  const finaliza = status === 'trabajo_completo' && order && !order.trabajoCompletoAt;
-  if (finaliza) {
+  const entraCompleto = status === 'trabajo_completo' && order && order.status !== 'trabajo_completo';
+  if (status === 'trabajo_completo' && order && !order.trabajoCompletoAt) {
     updates.trabajoCompletoAt = nowCOT();
   }
   // El admin que toca la orden la da por revisada: limpia el aviso del taller.
   if (order && order.pendingReview) updates.pendingReview = false;
   await updateServiceOrder(req.params.id, updates, req.pinActor);
+
+  // Al quedar lista la moto se emite la factura proforma automáticamente: es
+  // el único momento en que se sabe con certeza si aplica parqueadero, así que
+  // el total definitivo se cierra recién al entregar la moto.
+  if (entraCompleto && !order.invoiceId) {
+    try {
+      await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.pinActor);
+    } catch (e) {
+      console.error('Auto-facturación proforma falló:', e.message);
+    }
+  }
+
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
