@@ -1838,6 +1838,71 @@ async function getServiceOrdersByPlate(plate) {
   return r.rows.map(rowToServiceOrder);
 }
 
+// ── Check-in de clientes (QR del mostrador) ─────────────────────────────────
+
+function rowToCheckin(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    clientName: row.client_name,
+    clientPhone: row.client_phone,
+    clientPhoneCountry: row.client_phone_country,
+    plate: row.plate,
+    brand: row.brand || null,
+    reference: row.reference || null,
+    status: row.status,
+    serviceOrderId: row.service_order_id || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function createCheckin(data) {
+  const id = data.id || uuidv4();
+  await db.execute({
+    sql: `INSERT INTO checkins (id, client_name, client_phone, client_phone_country, plate, brand, reference)
+          VALUES (?,?,?,?,?,?,?)`,
+    args: [
+      id,
+      data.clientName,
+      data.clientPhone,
+      data.clientPhoneCountry || '+57',
+      data.plate,
+      data.brand || null,
+      data.reference || null,
+    ],
+  });
+  return getCheckinById(id);
+}
+
+async function getCheckinById(id) {
+  const r = await db.execute({ sql: 'SELECT * FROM checkins WHERE id = ?', args: [id] });
+  return rowToCheckin(r.rows[0] || null);
+}
+
+// Cola de check-ins sin convertir en orden, del más antiguo al más reciente
+// (el que primero llegó, primero se atiende).
+async function getPendingCheckins() {
+  const r = await db.execute(`SELECT * FROM checkins WHERE status = 'pendiente' ORDER BY created_at ASC`);
+  return r.rows.map(rowToCheckin);
+}
+
+// Búsqueda del mecánico por placa: solo entre los check-ins aún pendientes.
+async function getPendingCheckinsByPlate(plate) {
+  const r = await db.execute({
+    sql: `SELECT * FROM checkins WHERE status = 'pendiente' AND UPPER(REPLACE(plate, ' ', '')) LIKE ? ORDER BY created_at ASC`,
+    args: [`%${plate.toUpperCase().replace(/\s/g, '')}%`],
+  });
+  return r.rows.map(rowToCheckin);
+}
+
+async function markCheckinAttended(id, serviceOrderId) {
+  await db.execute({
+    sql: `UPDATE checkins SET status = 'atendido', service_order_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?`,
+    args: [serviceOrderId, id],
+  });
+}
+
 // ── Clasificados ────────────────────────────────────────────────────────────
 
 function rowToClassified(row) {
