@@ -359,9 +359,10 @@
 
     y+=10;
     doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    if(INV.tax>0){
+    if(INV.tax>0 || INV.parkingAmount>0){
       doc.text('Subtotal:',148,y,{align:'right'}); doc.text('$'+INV.subtotal.toLocaleString('es-CO'),196,y,{align:'right'}); y+=7;
-      doc.text('IVA:',148,y,{align:'right'}); doc.text('$'+INV.tax.toLocaleString('es-CO'),196,y,{align:'right'}); y+=5;
+      if(INV.tax>0){ doc.text('IVA:',148,y,{align:'right'}); doc.text('$'+INV.tax.toLocaleString('es-CO'),196,y,{align:'right'}); y+=7; }
+      if(INV.parkingAmount>0){ doc.text('Parqueadero:',148,y,{align:'right'}); doc.text('$'+INV.parkingAmount.toLocaleString('es-CO'),196,y,{align:'right'}); y+=5; }
     }
     doc.setFillColor(242,92,5); doc.rect(120,y-6,76,11,'F');
     doc.setTextColor(255,255,255); doc.setFontSize(11); doc.setFont('helvetica','bold');
