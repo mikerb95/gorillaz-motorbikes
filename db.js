@@ -2092,6 +2092,7 @@ module.exports = {
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
   getServiceOrdersByPlate,
+  createCheckin, getCheckinById, getPendingCheckins, getPendingCheckinsByPlate, markCheckinAttended,
   createClassified, updateClassified, setClassifiedStatus, getClassifiedById,
   getActiveClassifieds, getClassifiedsByUser, getAllClassifieds, countClassifiedsByStatus, deleteClassified,
   backupAllTables,
