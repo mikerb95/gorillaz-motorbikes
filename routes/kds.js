@@ -193,11 +193,23 @@ router.post('/orden/:id/estado', requireKdsEmployee, requirePin('/kds'), async (
   if (!ALLOWED_STATUS.includes(status)) return res.redirect('/kds/orden/' + order.id);
 
   const updates = { status };
-  if (status === 'trabajo_completo' && order.status !== 'trabajo_completo') {
+  const finaliza = status === 'trabajo_completo' && order.status !== 'trabajo_completo';
+  if (finaliza) {
     if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
     updates.pendingReview = true;
   }
   await updateServiceOrder(order.id, updates, req.pinActor);
+
+  // Al quedar lista la moto se emite la factura proforma automáticamente: es
+  // el único momento en que se sabe con certeza si aplica parqueadero, así que
+  // el total definitivo se cierra recién al entregar la moto (panel admin).
+  if (finaliza) {
+    try {
+      await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.pinActor);
+    } catch (e) {
+      console.error('Auto-facturación proforma falló:', e.message);
+    }
+  }
 
   res.redirect('/kds/orden/' + order.id);
 });

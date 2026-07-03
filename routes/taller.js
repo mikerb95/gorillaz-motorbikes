@@ -196,7 +196,7 @@ router.get('/orden/:id', requireEmployee, async (req, res) => {
 });
 
 // ── Actualizar estado (limitado) ───────────────────────────────────────────
-router.post('/orden/:id/estado', requireEmployee, async (req, res) => {
+router.post('/orden/:id/estado', requireEmployee, requirePin('/taller'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order || order.employeeId !== req.employee.id) return res.redirect('/taller');
 
@@ -210,7 +210,7 @@ router.post('/orden/:id/estado', requireEmployee, async (req, res) => {
     if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
     updates.pendingReview = true;
   }
-  await updateServiceOrder(order.id, updates, req.employee.name);
+  await updateServiceOrder(order.id, updates, req.pinActor);
 
   if (finaliza) notifyAdmin(order, req.employee).catch(() => {});
 
