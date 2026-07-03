@@ -1250,11 +1250,11 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, requi
   }
   // El admin que toca la orden la da por revisada: limpia el aviso del taller.
   if (order && order.pendingReview) updates.pendingReview = false;
-  await updateServiceOrder(req.params.id, updates, res.locals.user?.name || 'Admin');
+  await updateServiceOrder(req.params.id, updates, req.pinActor);
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
-router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, async (req, res) => {
+router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/admin/ordenes-servicio');
   const plate = (req.body.plate || '').toUpperCase().trim();
@@ -1303,7 +1303,7 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, asy
     (updates.total !== undefined && updates.total !== order.total) ||
     (updates.items !== undefined && JSON.stringify(updates.items) !== JSON.stringify(order.items));
   if (changed) {
-    await addServiceOrderEvent(req.params.id, 'editado', res.locals.user?.name || 'Admin');
+    await addServiceOrderEvent(req.params.id, 'editado', req.pinActor);
   }
 
   res.redirect('/admin/ordenes-servicio/' + req.params.id);

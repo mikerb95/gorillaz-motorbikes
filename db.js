@@ -1731,11 +1731,14 @@ async function claimServiceOrderInvoice(orderId, invoiceId) {
   return (r.rowsAffected ?? r.changes ?? 0) > 0;
 }
 
-// Convierte una orden 'trabajo_completo' en factura: reclama la orden de forma
-// atómica, crea la factura con ese id (para no dejar huecos en el consecutivo si
-// hay carrera) y deja los hitos en la trazabilidad. Reusada por el panel admin
-// (routes/admin.js) y por el tablero KDS del taller (routes/kds.js).
-async function convertServiceOrderToInvoice(order, { tax = 0, paymentMethod = 'efectivo', paidNow = false, notes = null } = {}, actor) {
+// Convierte una orden 'trabajo_completo' en factura PROFORMA: reclama la orden
+// de forma atómica, crea la factura con ese id (para no dejar huecos en el
+// consecutivo si hay carrera) y deja los hitos en la trazabilidad. La factura
+// definitiva (IVA, método de pago, parqueadero y estado de pago) solo se conoce
+// al entregar la moto — ver deliverServiceOrder. Se dispara automáticamente al
+// pasar una orden a 'trabajo_completo' (routes/kds.js, routes/taller.js,
+// routes/admin.js) y como recuperación manual si la proforma se anuló.
+async function convertServiceOrderToInvoice(order, { notes = null } = {}, actor) {
   if (order.invoiceId || order.status !== 'trabajo_completo') {
     throw new Error('La orden no está lista para facturar o ya tiene factura.');
   }
@@ -1751,14 +1754,35 @@ async function convertServiceOrderToInvoice(order, { tax = 0, paymentMethod = 'e
     quotationId:    order.quotationId,
     items:          order.items,
     subtotal:       order.total,
-    tax,
-    paymentMethod,
-    status:         paidNow ? 'pagada' : 'pendiente',
+    status:         'proforma',
     notes,
   });
   await addServiceOrderEvent(order.id, 'facturado', actor);          // cambio de estado
   await addServiceOrderEvent(order.id, 'factura_generada', actor, invoiceLabel);
   return { invoiceId, invoiceLabel };
+}
+
+// Cierra la factura proforma al momento de entregar la moto: es el único
+// momento en que se sabe con certeza si aplica cobro de parqueadero. Agrega
+// el parqueadero y el IVA al total, fija el método de pago y el estado final
+// de la factura (pendiente/pagada), y marca la orden como 'entregado'.
+async function deliverServiceOrder(order, invoice, { tax = 0, parkingAmount = 0, paymentMethod = 'efectivo', paidNow = false, notes = null } = {}, actor) {
+  if (order.status !== 'facturado' || !invoice || invoice.id !== order.invoiceId || invoice.status !== 'proforma') {
+    throw new Error('La orden no está lista para entregar.');
+  }
+  const cleanTax     = Math.max(0, Math.round(Number(tax) || 0));
+  const cleanParking = Math.max(0, Math.round(Number(parkingAmount) || 0));
+  const total  = invoice.subtotal + cleanTax + cleanParking;
+  const status = paidNow ? 'pagada' : 'pendiente';
+  const now    = new Date().toISOString();
+  const paidAt = status === 'pagada' ? now : null;
+  await db.execute({
+    sql: `UPDATE invoices SET tax=?, parking_amount=?, total=?, payment_method=?, notes=?, status=?, paid_at=? WHERE id=?`,
+    args: [cleanTax, cleanParking, total, paymentMethod || 'efectivo', notes || null, status, paidAt, invoice.id],
+  });
+  await updateServiceOrder(order.id, { status: 'entregado', deliveredAt: nowCOT() }, actor);
+  await addServiceOrderEvent(order.id, 'factura_cerrada', actor, invoice.label);
+  return { total };
 }
 
 async function getInvoiceById(id) {
