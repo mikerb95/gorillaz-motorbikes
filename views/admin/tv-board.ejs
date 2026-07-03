@@ -67,9 +67,6 @@
     <div class="tv-list" id="tv-list">
       <div class="tv-empty">Cargando…</div>
     </div>
-    <audio id="tv-ding" preload="auto">
-      <source src="/static/audio/notification.mp3" type="audio/mpeg" />
-    </audio>
   </div>
 
   <div class="tv-foot">
@@ -81,7 +78,6 @@
     (function () {
       const listEl = document.getElementById('tv-list');
       const clockEl = document.getElementById('tv-clock');
-      const dingEl = document.getElementById('tv-ding');
       let seenIds = null; // null hasta el primer fetch, para no marcar "nueva" toda la carga inicial
 
       const STATUS_LABEL = { pendiente: 'Pendiente', confirmada: 'Confirmada', cancelada: 'Cancelada' };
@@ -109,10 +105,6 @@
             </div>`;
         }).join('');
 
-        if (!wasFirstLoad) {
-          const hasNew = items.some(a => seenIds && !seenIds.has(a.id));
-          if (hasNew) dingEl.play().catch(() => {});
-        }
         seenIds = nextSeen;
       }
 

@@ -99,6 +99,7 @@ app.use('/club',           require('./routes/club'));
 app.use('/taller',         require('./routes/taller'));
 app.use('/kds',            require('./routes/kds'));
 app.use('/admin/finanzas', require('./routes/finanzas'));
+app.use('/admin/tv',       require('./routes/tv'));
 app.use('/admin',          require('./routes/admin'));
 
 app.use((req, res) => res.status(404).render('404'));
