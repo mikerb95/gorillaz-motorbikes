@@ -86,7 +86,8 @@
         try {
           const res = await fetch(`/clases/${root.dataset.course}/${root.dataset.topic}/control/iniciar`, {
             method: 'POST',
-            headers: { 'X-CSRF-Token': csrfToken() },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() },
+            body: '{}',
           });
           const data = await res.json();
           if (data.ok) {
