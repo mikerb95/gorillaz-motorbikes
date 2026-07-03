@@ -2407,6 +2407,10 @@ body.is-presentation .site-header .header-inner {
 
 body.is-presentation .site-header .nav-left,
 body.is-presentation .site-header .header-right {
+  /* overflow other than visible zeroes out the grid item's automatic minimum
+     size, letting the 0px track above actually collapse instead of being
+     floored to the content's min-content width (e.g. the hamburger button). */
+  overflow: hidden;
   opacity: 0;
   pointer-events: none;
   transition: opacity .2s ease;
@@ -2440,6 +2444,7 @@ body.is-presentation .site-header:focus-within .nav-left,
 body.is-presentation .site-header:focus-within .header-right,
 body.is-presentation .site-header.is-expanded .nav-left,
 body.is-presentation .site-header.is-expanded .header-right {
+  overflow: visible;
   opacity: 1;
   pointer-events: auto;
   transition: opacity .25s ease .1s;
