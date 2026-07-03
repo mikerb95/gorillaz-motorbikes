@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title><%= order.label %> — Panel de Producción</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; font-family: Montserrat, system-ui, sans-serif; background: #f3f4f6; color: #111; }
+    .kds-top { background: #0f1115; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 10; }
+    .kds-back { color: #fff; text-decoration: none; font-weight: 800; font-size: 16px; }
+    .kds-top .label { font-weight: 900; font-size: 16px; }
+    .kds-wrap { max-width: 720px; margin: 0 auto; padding: 18px 16px 60px; }
+    .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #eef0f2; }
+    .card h2 { font-size: 12px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 12px; }
+    .row { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 14px; }
+    .k { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+    .v { font-weight: 800; font-size: 14px; }
+    .item { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+    .item:last-child { border-bottom: none; }
+    .item .q { color: #6b7280; font-weight: 700; }
+    .badge { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
+    .b-ingreso_taller { background: #fef3c7; color: #92400e; }
+    .b-trabajo_en_curso { background: #dbeafe; color: #1e40af; }
+    .b-en_pausa { background: #f3f4f6; color: #4b5563; }
+    .b-trabajo_completo { background: #dcfce7; color: #166534; }
+    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .status-btn {
+      padding: 18px 10px; font-size: 14px; font-weight: 800; background: #f3f4f6; color: #111;
+      border: 2px solid transparent; border-radius: 12px; cursor: pointer; font-family: inherit;
+    }
+    .status-btn.active { background: #111; color: #fff; }
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
+    .cat-btn { padding: 16px 10px; font-size: 13px; font-weight: 800; background: #f3f4f6; color: #111; border: none; border-radius: 12px; cursor: pointer; font-family: inherit; text-align: center; }
+    .cat-btn:active { background: #e5e7eb; }
+    .cat-btn.other { background: #fff7ed; color: #9a3412; border: 1.5px dashed #fdba74; }
+    .quick-add { display: none; margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed #e5e7eb; }
+    .qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .qty-btn { width: 48px; height: 48px; font-size: 22px; font-weight: 900; background: #f3f4f6; border: none; border-radius: 10px; cursor: pointer; }
+    .qty-row input { margin: 0; text-align: center; font-size: 18px; font-weight: 800; }
+    input[type=text], input[type=number], textarea {
+      width: 100%; padding: 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 15px;
+      font-family: inherit; outline: none; box-sizing: border-box;
+    }
+    input:focus { border-color: #F25C05; }
+    .save { width: 100%; margin-top: 14px; padding: 15px; font-size: 16px; font-weight: 800; background: #F25C05; color: #fff; border: none; border-radius: 12px; cursor: pointer; }
+    .invoice-cta { width: 100%; margin-top: 4px; padding: 18px; font-size: 17px; font-weight: 900; background: #16a34a; color: #fff; text-decoration: none; text-align: center; display: block; border-radius: 14px; }
+    .login-note { text-align: center; color: #6b7280; font-size: 13px; padding: 20px; }
+    .login-note a { color: #F25C05; font-weight: 800; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="kds-top">
+    <a class="kds-back" href="/kds">←</a>
+    <span class="label"><%= order.label %></span>
+    <% const st = EMP_STATUS.find(s => s.v === order.status) || { l: order.status }; %>
+    <span class="badge b-<%= order.status %>" style="margin-left:auto"><%= st.l %></span>
+  </div>
+
+  <div class="kds-wrap">
+
+    <div class="card">
+      <h2>Información</h2>
+      <div class="row">
+        <div><div class="k">Moto / Placa</div><div class="v"><%= order.motorcycle || '—' %></div></div>
+        <div><div class="k">Ingreso</div><div class="v"><%= fechaCO(order.createdAt, {day:'2-digit',month:'short',year:'numeric'}) %></div></div>
+        <div><div class="k">Mecánico asignado</div><div class="v"><%= order.mechanic || '—' %></div></div>
+      </div>
+      <% if (order.notes) { %>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6">
+          <div class="k">Notas</div>
+          <div style="font-size:14px;color:#374151"><%= order.notes %></div>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <h2>Ítems (<%= order.items.length %>)</h2>
+      <% order.items.forEach(it => { %>
+        <div class="item">
+          <span><%= it.name %></span>
+          <span class="q">×<%= it.qty %></span>
+        </div>
+      <% }) %>
+      <% if (!order.items.length) { %><div class="item">Sin ítems todavía.</div><% } %>
+    </div>
+
+    <% if (employee) { %>
+
+      <div class="card">
+        <h2>Añadir ítem</h2>
+        <div class="cat-grid" id="catGrid">
+          <% catalog.forEach(c => { %>
+            <button type="button" class="cat-btn" data-name="<%= c.name %>" data-type="<%= c.type || 'service' %>"><%= c.name %></button>
+          <% }) %>
+          <button type="button" class="cat-btn other" id="otherBtn">Otro ítem…</button>
+        </div>
+
+        <form method="post" action="/kds/orden/<%= order.id %>/items" class="quick-add" id="quickAdd">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <input type="hidden" name="type" id="qaType" />
+          <label class="k">Ítem</label>
+          <input type="text" name="name" id="qaName" style="margin-bottom:12px" />
+          <div class="qty-row">
+            <button type="button" class="qty-btn" id="qtyMinus">−</button>
+            <input type="number" name="qty" id="qaQty" value="1" min="1" style="width:70px" />
+            <button type="button" class="qty-btn" id="qtyPlus">+</button>
+          </div>
+          <input type="number" name="price" id="qaPrice" min="0" step="1" placeholder="Precio unitario" />
+          <button type="submit" class="save">+ Agregar a la orden</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Cambiar estado</h2>
+        <form method="post" action="/kds/orden/<%= order.id %>/estado">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="status-grid">
+            <% EMP_STATUS.forEach(s => { %>
+              <button type="submit" name="status" value="<%= s.v %>" class="status-btn <%= order.status === s.v ? 'active' : '' %>"><%= s.l %></button>
+            <% }) %>
+          </div>
+        </form>
+      </div>
+
+      <% if (order.status === 'trabajo_completo' && !order.invoiceId) { %>
+        <a class="invoice-cta" href="/kds/orden/<%= order.id %>/facturar">Cerrar y facturar →</a>
+      <% } %>
+      <% if (order.invoiceId) { %>
+        <div class="card" style="text-align:center;color:#166534;font-weight:800">✓ Esta orden ya fue facturada.</div>
+      <% } %>
+
+    <% } else { %>
+      <div class="login-note">
+        <a href="/kds/login">Inicia sesión</a> con tu PIN para gestionar esta orden (cambiar estado, añadir ítems o facturar).
+      </div>
+    <% } %>
+
+  </div>
+
+  <% if (employee) { %>
+  <script>
+  (function () {
+    const quickAdd = document.getElementById('quickAdd');
+    const qaName   = document.getElementById('qaName');
+    const qaType   = document.getElementById('qaType');
+    const qaQty    = document.getElementById('qaQty');
+    const qaPrice  = document.getElementById('qaPrice');
+
+    function openQuickAdd(name, type, editableName) {
+      qaName.value = name;
+      qaName.readOnly = !editableName;
+      qaType.value = type;
+      qaQty.value = 1;
+      qaPrice.value = '';
+      quickAdd.style.display = 'block';
+      qaPrice.focus();
+    }
+
+    document.querySelectorAll('.cat-btn[data-name]').forEach(btn => {
+      btn.addEventListener('click', () => openQuickAdd(btn.dataset.name, btn.dataset.type, false));
+    });
+    document.getElementById('otherBtn').addEventListener('click', () => openQuickAdd('', 'custom', true));
+
+    document.getElementById('qtyMinus').addEventListener('click', () => { qaQty.value = Math.max(1, Number(qaQty.value) - 1); });
+    document.getElementById('qtyPlus').addEventListener('click', () => { qaQty.value = Number(qaQty.value) + 1; });
+  })();
+  </script>
+  <% } %>
+</body>
+</html>
