@@ -37,8 +37,69 @@
   };
   update();
 
-  const go = (d) => { idx = Math.max(0, Math.min(slides.length-1, idx + d)); update(); };
+  // Control remoto: un celular emparejado por código puede empujar next/prev.
+  // La sesión vive en BD (sin websockets, no viables en serverless); este PC
+  // hace polling cada 1s para reflejar los comandos del celular, y empuja su
+  // propio índice al navegar localmente para que el celular vea el mismo estado.
+  let sessionCode = null;
+  let pollTimer = null;
+
+  const pushIndex = () => {
+    if (!sessionCode) return;
+    fetch(`/api/presentacion/${sessionCode}/set`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ index: idx }),
+    }).catch(() => {});
+  };
+
+  const setIndex = (newIdx, push) => {
+    idx = Math.max(0, Math.min(slides.length - 1, newIdx));
+    update();
+    if (push) pushIndex();
+  };
+
+  const go = (d) => setIndex(idx + d, true);
   const prev = () => go(-1), next = () => go(1);
+
+  const startPolling = () => {
+    if (pollTimer) return;
+    pollTimer = setInterval(async () => {
+      if (!sessionCode) return;
+      try {
+        const res = await fetch(`/api/presentacion/${sessionCode}/estado`);
+        const data = await res.json();
+        if (data.ok && data.index !== idx) setIndex(data.index, false);
+      } catch { /* red intermitente: se reintenta en el próximo tick */ }
+    }, 1000);
+  };
+
+  const remoteBtn   = document.querySelector('[data-pres="remote"]');
+  const remoteModal = document.querySelector('[data-pres="remote-modal"]');
+  const remoteClose = document.querySelector('[data-pres="remote-close"]');
+  const remoteCode  = document.querySelector('[data-pres="remote-code"]');
+  const remoteQr    = document.querySelector('[data-pres="remote-qr"]');
+  if (remoteBtn) {
+    remoteBtn.addEventListener('click', async () => {
+      if (!sessionCode) {
+        try {
+          const res = await fetch(`/clases/${root.dataset.course}/${root.dataset.topic}/control/iniciar`, { method: 'POST' });
+          const data = await res.json();
+          if (data.ok) {
+            sessionCode = data.code;
+            pushIndex();
+            startPolling();
+          }
+        } catch { /* el botón queda disponible para reintentar */ }
+      }
+      if (sessionCode && remoteModal) {
+        if (remoteCode) remoteCode.textContent = sessionCode;
+        if (remoteQr) remoteQr.src = `/clases/control/${sessionCode}/qr.png`;
+        remoteModal.hidden = false;
+      }
+    });
+  }
+  if (remoteClose) remoteClose.addEventListener('click', () => { remoteModal.hidden = true; });
 
   // Buttons
   document.querySelector('[data-pres="prev"]').addEventListener('click', prev);
