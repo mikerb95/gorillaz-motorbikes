@@ -1114,7 +1114,7 @@ async function resolveMechanicName(employeeId) {
   return emp ? emp.name : null;
 }
 
-router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, async (req, res) => {
+router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, requirePin('/admin/cotizaciones'), async (req, res) => {
   const quotation = await getQuotationById(req.params.id);
   if (!quotation) return res.redirect('/admin/cotizaciones');
   const employeeId = req.body.employeeId || null;

@@ -379,6 +379,12 @@ async function initDb() {
     // aproximación (no se guardó la de pago históricamente).
     `ALTER TABLE invoices ADD COLUMN paid_at TEXT`,
     `UPDATE invoices SET paid_at = created_at WHERE status = 'pagada' AND paid_at IS NULL`,
+    // Cobro de parqueadero: solo se conoce con certeza al entregar la moto, así
+    // que la factura nace 'proforma' (sin este valor) y se cierra al entregar.
+    `ALTER TABLE invoices ADD COLUMN parking_amount INTEGER NOT NULL DEFAULT 0`,
+    // Fecha real de entrega de la moto (distinta de estimated_date, que es solo
+    // la fecha estimada). Se sella al cerrar la factura proforma.
+    `ALTER TABLE service_orders ADD COLUMN delivered_at TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }

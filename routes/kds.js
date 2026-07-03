@@ -55,6 +55,9 @@ async function loadKdsEmployee(req, res, next) {
 }
 router.use(loadKdsEmployee);
 
+// Verifica el PIN para el modal de acciones sensibles (facturar, cambiar estado…).
+router.post('/verificar-pin', requireKdsEmployee, verifyPinHandler);
+
 function startKdsSession(res, emp, redirectTo) {
   const token = jwt.sign({ eid: emp.id }, JWT_SECRET, { expiresIn: '4h' });
   res.cookie('kds_jwt', token, {
