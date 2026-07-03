@@ -24,15 +24,7 @@ const PIN_THROTTLE_KEY  = 'taller_pin';
 const PIN_WINDOW_MS     = 15 * 60 * 1000;
 const PIN_MAX_FAILURES  = 20;
 
-// Estados que un empleado puede fijar desde el portal del taller.
-// No incluye "entregado" ni "facturado": eso queda reservado al admin.
-const EMP_STATUS = [
-  { v: 'ingreso_taller',   l: 'Ingreso a taller' },
-  { v: 'trabajo_en_curso', l: 'Trabajo en curso' },
-  { v: 'en_pausa',         l: 'En pausa'          },
-  { v: 'trabajo_completo', l: 'Trabajo completo'  },
-];
-const ALLOWED_STATUS = EMP_STATUS.map(s => s.v);
+const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
 
 const PDF_CONFIG_PATH = path.join(__dirname, '..', 'data', 'quotation-pdf-config.json');
 function adminEmail() {
