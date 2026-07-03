@@ -2348,5 +2348,7 @@ module.exports = {
   createPresentationSession, getPresentationSession, setPresentationSlideIndex,
   createClassified, updateClassified, setClassifiedStatus, getClassifiedById,
   getActiveClassifieds, getClassifiedsByUser, getAllClassifieds, countClassifiedsByStatus, deleteClassified,
+  createPlateRequest, getPlateRequestById, getAllPlateRequests, updatePlateRequestStatus,
+  countPlateRequestsByStatus, deletePlateRequest,
   backupAllTables,
 };
