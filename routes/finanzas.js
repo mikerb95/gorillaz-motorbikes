@@ -184,11 +184,11 @@ router.get('/ingresos', requireAuth, requireAdmin, async (req, res) => {
   const paidInvoices = invoices.filter(i => i.status === 'pagada');
   const paidOrders   = orders.filter(o => o.status === 'paid');
 
-  const periodoInv = paidInvoices.filter(i => inPeriod(i.createdAt, year, month));
+  const periodoInv = paidInvoices.filter(i => inPeriod(invIncomeDate(i), year, month));
   const periodoOrd = paidOrders.filter(o => inPeriod(o.createdAt, year, month));
 
   let movements = [];
-  if (source !== 'pedidos') movements.push(...periodoInv.map(i => ({ type: 'factura', ref: i.label, date: i.createdAt, method: i.paymentMethod, subtotal: i.subtotal, tax: i.tax, total: i.total, link: `/admin/facturas/${i.id}` })));
+  if (source !== 'pedidos') movements.push(...periodoInv.map(i => ({ type: 'factura', ref: i.label, date: invIncomeDate(i), method: i.paymentMethod, subtotal: i.subtotal, tax: i.tax, total: i.total, link: `/admin/facturas/${i.id}` })));
   if (source !== 'facturas') movements.push(...periodoOrd.map(o => ({ type: 'pedido', ref: o.id.slice(0, 8).toUpperCase(), date: o.createdAt, method: 'bold', subtotal: o.total, tax: 0, total: o.total, link: null })));
   movements.sort((a, b) => new Date(b.date) - new Date(a.date));
 
