@@ -199,9 +199,10 @@ const isProforma = invoice.status === 'proforma';
 
     y+=10;
     doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    if(INV.tax>0){
+    if(INV.tax>0 || INV.parkingAmount>0){
       doc.text('Subtotal:',148,y,{align:'right'}); doc.text('$'+INV.subtotal.toLocaleString('es-CO'),196,y,{align:'right'}); y+=7;
-      doc.text('IVA:',148,y,{align:'right'}); doc.text('$'+INV.tax.toLocaleString('es-CO'),196,y,{align:'right'}); y+=5;
+      if(INV.tax>0){ doc.text('IVA:',148,y,{align:'right'}); doc.text('$'+INV.tax.toLocaleString('es-CO'),196,y,{align:'right'}); y+=7; }
+      if(INV.parkingAmount>0){ doc.text('Parqueadero:',148,y,{align:'right'}); doc.text('$'+INV.parkingAmount.toLocaleString('es-CO'),196,y,{align:'right'}); y+=5; }
     }
     doc.setFillColor(242,92,5); doc.rect(120,y-6,76,11,'F');
     doc.setTextColor(255,255,255); doc.setFontSize(11); doc.setFont('helvetica','bold');
@@ -257,9 +258,10 @@ const isProforma = invoice.status === 'proforma';
       lines.push('');
       INV.items.forEach(it => lines.push('• ' + it.name + ' ×' + it.qty + ' — $' + (it.price * it.qty).toLocaleString('es-CO')));
       lines.push('');
-      if (INV.tax > 0) {
+      if (INV.tax > 0 || INV.parkingAmount > 0) {
         lines.push('Subtotal: $' + INV.subtotal.toLocaleString('es-CO'));
-        lines.push('IVA: $' + INV.tax.toLocaleString('es-CO'));
+        if (INV.tax > 0) lines.push('IVA: $' + INV.tax.toLocaleString('es-CO'));
+        if (INV.parkingAmount > 0) lines.push('Parqueadero: $' + INV.parkingAmount.toLocaleString('es-CO'));
       }
       lines.push('*Total: $' + INV.total.toLocaleString('es-CO') + '*');
       lines.push('Pago: ' + INV.paymentMethod.charAt(0).toUpperCase() + INV.paymentMethod.slice(1));
