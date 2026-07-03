@@ -2475,6 +2475,13 @@ body.is-presentation .site-header.is-expanded .sub-embed {
   border-bottom: 1px solid #eee
 }
 
+.presentation .presentation-progress {
+  font-variant-numeric: tabular-nums;
+  color: #666;
+  font-size: 14px;
+  margin-right: 4px
+}
+
 .presentation .deck {
   --i: 0;
   display: grid;
