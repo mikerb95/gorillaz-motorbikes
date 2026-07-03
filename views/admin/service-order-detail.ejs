@@ -178,7 +178,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   </div>
 
   <!-- Actualizar estado -->
-  <% if (order.status !== 'facturado') { %>
+  <% if (order.status !== 'facturado' && order.status !== 'entregado') { %>
   <div class="crm-card" style="padding:20px 24px">
     <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Actualizar orden</h2>
     <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/actualizar">
