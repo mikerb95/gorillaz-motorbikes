@@ -19,6 +19,9 @@
   { "id": "svc-revision-gral",    "name": "Revisión general preventiva",    "type": "service" },
   { "id": "svc-bujias",           "name": "Cambio de bujías",               "type": "service" },
   { "id": "svc-filtro-aire",      "name": "Cambio filtro de aire",          "type": "service" },
+  { "id": "svc-duplicado-placa-carro", "name": "Duplicado de placa - Carro",  "type": "service" },
+  { "id": "svc-duplicado-placa-moto",  "name": "Duplicado de placa - Moto",   "type": "service" },
+  { "id": "svc-portaplacas-moto",      "name": "Portaplacas para moto",       "type": "service" },
 
   { "id": "svc-sincronizacion-motor",     "name": "Sincronización de motor",                    "type": "service" },
   { "id": "svc-cuerpo-aceleracion",       "name": "Limpieza y ajuste de cuerpo de aceleración", "type": "service" },
