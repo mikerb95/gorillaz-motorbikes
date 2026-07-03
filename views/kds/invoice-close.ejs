@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Cerrar y facturar <%= order.label %> — Panel de Producción</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; font-family: Montserrat, system-ui, sans-serif; background: #f3f4f6; color: #111; }
+    .kds-top { background: #0f1115; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+    .kds-back { color: #fff; text-decoration: none; font-weight: 800; font-size: 16px; }
+    .kds-top .label { font-weight: 900; font-size: 16px; }
+    .kds-wrap { max-width: 640px; margin: 0 auto; padding: 18px 16px 60px; }
+    .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #eef0f2; }
+    .card h2 { font-size: 12px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 12px; }
+    .kds-error { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+    .total-line { display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; margin-bottom: 8px; }
+    .total-line span:last-child { color: #F25C05; }
+    .pm-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 10px; }
+    .pm-btn { padding: 18px 8px; font-size: 14px; font-weight: 800; background: #f3f4f6; color: #111; border: 2px solid transparent; border-radius: 12px; cursor: pointer; font-family: inherit; }
+    .pm-btn.active { background: #111; color: #fff; }
+    .yn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .yn-btn { padding: 18px 8px; font-size: 14px; font-weight: 800; border: 2px solid transparent; border-radius: 12px; cursor: pointer; font-family: inherit; background: #f3f4f6; color: #111; }
+    .yn-btn.active-yes { background: #16a34a; color: #fff; }
+    .yn-btn.active-no { background: #6b7280; color: #fff; }
+    textarea, input[type=number] { width: 100%; padding: 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; box-sizing: border-box; }
+    textarea:focus, input:focus { border-color: #F25C05; }
+    .k { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; display: block; }
+    .save { width: 100%; margin-top: 6px; padding: 18px; font-size: 17px; font-weight: 900; background: #16a34a; color: #fff; border: none; border-radius: 14px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="kds-top">
+    <a class="kds-back" href="/kds/orden/<%= order.id %>">←</a>
+    <span class="label">Cerrar y facturar <%= order.label %></span>
+  </div>
+
+  <div class="kds-wrap">
+    <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
+
+    <div class="card">
+      <div class="total-line"><span>Subtotal</span><span>$<%= order.total.toLocaleString('es-CO') %></span></div>
+      <div class="k"><%= order.items.length %> ítem(s) — <%= order.motorcycle || 'Sin placa' %></div>
+    </div>
+
+    <form method="post" action="/kds/orden/<%= order.id %>/facturar" id="invForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="hidden" name="paymentMethod" id="pmField" value="efectivo" />
+      <input type="hidden" name="paidNow" id="paidNowField" value="0" />
+
+      <div class="card">
+        <h2>Método de pago</h2>
+        <div class="pm-grid" id="pmGrid">
+          <button type="button" class="pm-btn active" data-v="efectivo">Efectivo</button>
+          <button type="button" class="pm-btn" data-v="nequi">Nequi</button>
+          <button type="button" class="pm-btn" data-v="daviplata">Daviplata</button>
+          <button type="button" class="pm-btn" data-v="tarjeta">Tarjeta</button>
+          <button type="button" class="pm-btn" data-v="transferencia">Transferencia</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>¿El cliente pagó ahora?</h2>
+        <div class="yn-grid" id="ynGrid">
+          <button type="button" class="yn-btn" id="ynYes">Sí, pagó</button>
+          <button type="button" class="yn-btn active-no" id="ynNo">Queda pendiente</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>IVA (opcional, en COP)</h2>
+        <input type="number" name="tax" value="0" min="0" step="1" />
+      </div>
+
+      <div class="card">
+        <h2>Notas de factura (opcional)</h2>
+        <textarea name="notes" rows="2" placeholder="Observaciones finales, garantía, etc."></textarea>
+      </div>
+
+      <button class="save" type="submit">✓ Generar factura</button>
+    </form>
+  </div>
+
+  <script>
+  (function () {
+    const pmField = document.getElementById('pmField');
+    document.querySelectorAll('#pmGrid .pm-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#pmGrid .pm-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        pmField.value = btn.dataset.v;
+      });
+    });
+
+    const paidNowField = document.getElementById('paidNowField');
+    const ynYes = document.getElementById('ynYes');
+    const ynNo  = document.getElementById('ynNo');
+    ynYes.addEventListener('click', () => {
+      paidNowField.value = '1';
+      ynYes.classList.add('active-yes'); ynNo.classList.remove('active-no');
+    });
+    ynNo.addEventListener('click', () => {
+      paidNowField.value = '0';
+      ynNo.classList.add('active-no'); ynYes.classList.remove('active-yes');
+    });
+  })();
+  </script>
+</body>
+</html>
