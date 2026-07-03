@@ -11,7 +11,7 @@ router.get('/clases/:course/:topic', requireAuth, requireAdmin, (req, res) => {
   if (!courseObj) return res.status(404).render('404');
   const topicObj = (courseObj.topics || {})[topic];
   if (!topicObj) return res.status(404).render('404');
-  res.render('classes/presentation', { courseKey: course, courseTitle: courseObj.title, topicKey: topic, topicTitle: topicObj.title, slides: topicObj.slides || [] });
+  res.render('classes/presentation', { courseKey: course, courseTitle: courseObj.title, topicKey: topic, topicTitle: topicObj.title, slides: topicObj.slides || [], bodyClass: 'is-presentation' });
 });
 
 module.exports = router;
