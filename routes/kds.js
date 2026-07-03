@@ -7,6 +7,7 @@ const bcrypt  = require('bcryptjs');
 
 const { JWT_SECRET } = require('../config');
 const { requireKdsEmployee, authLimiter } = require('../middleware/auth');
+const { requirePin, verifyPinHandler } = require('../middleware/employeePin');
 const settings = require('../helpers/settings');
 const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
 const {
