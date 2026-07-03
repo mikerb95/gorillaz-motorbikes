@@ -47,7 +47,7 @@ const JOIN_THROTTLE_KEY = 'presentation_control_join';
 const JOIN_THROTTLE_LIMIT = 30;
 const JOIN_THROTTLE_WINDOW_MS = 15 * 60 * 1000;
 
-router.get('/clases/:course/:topic', (req, res) => {
+router.get('/clases/:course/:topic', requireAuth, requireAdmin, (req, res) => {
   const { course, topic } = req.params;
   const courseObj = classesData[course];
   if (!courseObj) return res.status(404).render('404');
