@@ -271,14 +271,37 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   </div>
   <% } %>
 
-  <!-- Convertir en factura -->
+  <!-- Recuperación manual: la orden quedó en trabajo_completo sin factura (p. ej. -->
+  <!-- se anuló la proforma). En el flujo normal la proforma se genera sola.     -->
   <% if (order.status === 'trabajo_completo' && !order.invoiceId) { %>
   <div class="crm-card" style="padding:20px 24px;border-top:3px solid #22c55e">
-    <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px">Generar Factura</h2>
-    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/convertir-factura" id="convertInvoiceForm">
+    <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px">Generar factura proforma</h2>
+    <p style="margin:0 0 14px;font-size:12.5px;color:#9ca3af">Esta orden no tiene factura asociada (normalmente se genera sola al quedar «Trabajo completo»). El IVA, el parqueadero y el método de pago se confirman al entregar la moto.</p>
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/convertir-factura">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Notas de factura</label>
+        <textarea name="notes" rows="2" placeholder="Observaciones, opcional" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <button class="btn btn-primary" type="submit">Generar factura proforma →</button>
+    </form>
+  </div>
+  <% } %>
+
+  <!-- Entregar moto: cierra la factura proforma con el parqueadero, IVA y pago -->
+  <% if (order.status === 'facturado' && invoice && invoice.status === 'proforma') { %>
+  <div class="crm-card" style="padding:20px 24px;border-top:3px solid #22c55e">
+    <h2 style="font-size:13px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px">Entregar moto y cerrar factura</h2>
+    <p style="margin:0 0 14px;font-size:12.5px;color:#9ca3af">Factura proforma <strong><%= invoice.label %></strong> · subtotal $<%= invoice.subtotal.toLocaleString('es-CO') %>. Al confirmar la entrega se agrega el parqueadero y el IVA, y la factura queda definitiva.</p>
+    <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/entregar" id="deliverForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="paidNow" id="paidNowField" value="" />
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Parqueadero (COP)</label>
+          <input type="number" name="parkingAmount" id="parkingInput" value="<%= parking.aplica ? parking.totalParq : 0 %>" min="0" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+          <span style="font-size:11px;color:#9ca3af;margin-top:3px;display:block"><% if (parking.aplica) { %><%= parking.diasCobro %> día<%= parking.diasCobro !== 1 ? 's' : '' %> × $<%= parking.tarifaPorDia.toLocaleString('es-CO') %> (calculado, editable)<% } else { %>Sin cobro calculado (editable)<% } %></span>
+        </div>
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Método de pago</label>
           <select name="paymentMethod" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none">
@@ -298,7 +321,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
         <div id="ivaField" style="display:none;margin-top:8px;max-width:240px">
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">IVA (COP)</label>
           <input type="number" name="tax" id="ivaInput" value="0" min="0" disabled placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
-          <span style="font-size:11px;color:#9ca3af;margin-top:3px;display:block">Subtotal: $<%= order.total.toLocaleString('es-CO') %></span>
+          <span style="font-size:11px;color:#9ca3af;margin-top:3px;display:block">Subtotal: $<%= invoice.subtotal.toLocaleString('es-CO') %></span>
         </div>
       </div>
       <script>
@@ -308,7 +331,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
           if (cb.checked) {
             field.style.display = 'block';
             input.disabled = false;
-            if (!Number(input.value)) input.value = Math.round(<%= order.total %> * 0.19);
+            if (!Number(input.value)) input.value = Math.round(<%= invoice.subtotal %> * 0.19);
           } else {
             field.style.display = 'none';
             input.disabled = true;
@@ -318,17 +341,17 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
       </script>
       <div style="margin-bottom:12px">
         <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Notas de factura</label>
-        <textarea name="notes" rows="2" placeholder="Observaciones finales, garantía, etc." style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"></textarea>
+        <textarea name="notes" rows="2" placeholder="Observaciones finales, garantía, etc." style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"><%= invoice.notes || '' %></textarea>
       </div>
-      <button class="btn btn-primary" type="button" data-modal-open="#payNowModal">Generar Factura →</button>
+      <button class="btn btn-primary" type="button" data-modal-open="#payNowModal">Entregar y cerrar factura →</button>
     </form>
   </div>
 
-  <!-- Modal: ¿se pagó al facturar? -->
+  <!-- Modal: ¿se pagó al entregar? -->
   <div class="modal" id="payNowModal" aria-hidden="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
     <div style="background:#fff;border-radius:12px;max-width:440px;width:90%;padding:0">
       <div style="padding:20px 24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
-        <h3 style="margin:0;font-size:16px;font-weight:800;color:#374151">💰 Confirmar factura</h3>
+        <h3 style="margin:0;font-size:16px;font-weight:800;color:#374151">💰 Confirmar entrega</h3>
         <button type="button" data-modal-close style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">✕</button>
       </div>
       <div style="padding:20px 24px">
@@ -346,7 +369,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
   </div>
   <script>
   (function () {
-    var form  = document.getElementById('convertInvoiceForm');
+    var form  = document.getElementById('deliverForm');
     var field = document.getElementById('paidNowField');
     var yes   = document.getElementById('payYesBtn');
     var no    = document.getElementById('payNoBtn');
