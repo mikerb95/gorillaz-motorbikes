@@ -374,11 +374,8 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
     var yes   = document.getElementById('payYesBtn');
     var no    = document.getElementById('payNoBtn');
     if (!form || !field) return;
-    // requestSubmit (no submit()) para que el gate de PIN intercepte el envío:
-    // form.submit() no dispara el evento 'submit' y saltaría el modal.
-    function go() { if (form.requestSubmit) form.requestSubmit(); else form.submit(); }
-    if (yes) yes.addEventListener('click', function () { field.value = '1'; go(); });
-    if (no)  no.addEventListener('click',  function () { field.value = '0'; go(); });
+    if (yes) yes.addEventListener('click', function () { field.value = '1'; form.submit(); });
+    if (no)  no.addEventListener('click',  function () { field.value = '0'; form.submit(); });
   })();
   </script>
   <% } %>
