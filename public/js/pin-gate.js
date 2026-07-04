@@ -109,12 +109,17 @@
           form.appendChild(field);
         }
         field.value = pin;
+        var btn = submitter;
         close();
         // requestSubmit re-dispara el evento submit (para que corran los
         // serializadores de ítems de la página); nuestro handler lo deja pasar
-        // al detectar el campo pin ya inyectado. Fallback a submit() en navegadores
-        // sin requestSubmit (el campo de ítems ya quedó poblado en el 1er submit).
-        if (form.requestSubmit) form.requestSubmit(); else form.submit();
+        // al detectar el campo pin ya inyectado. Se pasa el submitter original
+        // para conservar su name/value (p. ej. <button name="status" value="…">).
+        // Fallback a submit() en navegadores sin requestSubmit (el campo de ítems
+        // ya quedó poblado en el 1er submit; los forms con botones-estado usan
+        // requestSubmit en navegadores modernos).
+        if (form.requestSubmit) form.requestSubmit(btn && form.contains(btn) ? btn : undefined);
+        else form.submit();
         return;
       }
       errEl.textContent = data.error || 'No se pudo verificar el PIN.';
