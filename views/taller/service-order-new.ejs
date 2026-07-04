@@ -56,7 +56,7 @@
       </div>
     </div>
 
-    <form method="post" action="/taller/checkin/<%= checkin.id %>/orden" id="soForm" data-require-pin data-pin-title="Autoriza con tu PIN" data-pin-msg="Ingresa tu PIN para crear esta orden de servicio.">
+    <form method="post" action="/taller/checkin/<%= checkin.id %>/orden" id="soForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="items" id="itemsField" />
 

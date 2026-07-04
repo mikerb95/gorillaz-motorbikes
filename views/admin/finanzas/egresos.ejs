@@ -54,7 +54,7 @@
     <!-- Formulario nuevo gasto -->
     <div class="crm-card" style="margin-bottom:20px">
       <span class="crm-card-title"><%= editGasto ? 'Editar gasto' : 'Registrar nuevo gasto' %></span>
-      <form method="post" action="<%= editGasto ? '/admin/finanzas/egresos/'+editGasto.id+'/actualizar' : '/admin/finanzas/egresos/crear' %>" data-require-pin data-pin-title="Autoriza el gasto" data-pin-msg="Ingresa tu PIN para registrar este gasto en la contabilidad.">
+      <form method="post" action="<%= editGasto ? '/admin/finanzas/egresos/'+editGasto.id+'/actualizar' : '/admin/finanzas/egresos/crear' %>">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <input type="hidden" name="period" value="<%= periodParam %>" />
         <div class="crm-form-grid cols-3">
@@ -126,7 +126,7 @@
               <td>
                 <div class="crm-table-actions">
                   <a class="btn btn-ghost btn-xs" href="/admin/finanzas/egresos?edit=<%= g.id %>&period=<%= periodParam %>&cat=<%= catFilter %>">Editar</a>
-                  <form method="post" action="/admin/finanzas/egresos/<%= g.id %>/eliminar" data-require-pin data-pin-title="Autoriza el borrado" data-pin-msg="Ingresa tu PIN para eliminar este gasto de la contabilidad.">
+                  <form method="post" action="/admin/finanzas/egresos/<%= g.id %>/eliminar">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                     <input type="hidden" name="period" value="<%= periodParam %>" />
                     <button type="submit" class="btn btn-ghost btn-xs" style="color:#dc2626">Eliminar</button>

@@ -7,7 +7,6 @@ const bcrypt  = require('bcryptjs');
 
 const { JWT_SECRET, resendClient } = require('../config');
 const { requireEmployee, authLimiter } = require('../middleware/auth');
-const { requirePin, verifyPinHandler } = require('../middleware/employeePin');
 const settings = require('../helpers/settings');
 const {
   getActiveEmployees, getEmployeeById, getEmployeeByUserId, getUserByEmail,
@@ -61,9 +60,6 @@ async function loadEmployee(req, res, next) {
   next();
 }
 router.use(loadEmployee);
-
-// Verifica el PIN para el modal de acciones sensibles (crear orden, cambiar estado).
-router.post('/verificar-pin', requireEmployee, verifyPinHandler);
 
 // ── Login ──────────────────────────────────────────────────────────────────
 router.get('/login', (req, res) => {

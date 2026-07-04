@@ -12,7 +12,7 @@
 </div>
 <% } %>
 
-<form method="post" action="/admin/ordenes-servicio/nueva" id="soForm" style="display:grid;gap:16px;grid-template-columns:1fr;max-width:860px" data-require-pin data-pin-title="Autoriza la orden" data-pin-msg="Ingresa tu PIN para crear esta orden de servicio.">
+<form method="post" action="/admin/ordenes-servicio/nueva" id="soForm" style="display:grid;gap:16px;grid-template-columns:1fr;max-width:860px">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
   <input type="hidden" name="items" id="itemsField" />
 

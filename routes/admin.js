@@ -5,7 +5,6 @@ const fs       = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { courses, classes: classesData, availability, saveCourses, saveClasses, saveAvailability } = require('../helpers/content');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { requirePin, verifyPinHandler } = require('../middleware/employeePin');
 const { uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
 const { setFlash } = require('../helpers/flash');
 const settings = require('../helpers/settings');
@@ -76,10 +75,6 @@ const { invalidateCatalogCache } = require('./liquidador');
 const { calcParking } = require('./services');
 
 const router = express.Router();
-
-// Verifica el PIN del empleado para el modal de acciones sensibles (no ejecuta
-// nada; solo valida y devuelve el nombre para mostrarlo antes de enviar el form).
-router.post('/verificar-pin', requireAuth, requireAdmin, verifyPinHandler);
 
 router.get('/', requireAuth, requireAdmin, async (req, res) => {
   const results = await Promise.allSettled([
