@@ -380,7 +380,11 @@
     doc.text('TOTAL:',128,y); doc.text('COP '+INV.total.toLocaleString('es-CO'),196,y,{align:'right'});
 
     y+=14; doc.setTextColor(107,114,128); doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    doc.text('Método de pago: '+INV.paymentMethod.charAt(0).toUpperCase()+INV.paymentMethod.slice(1),14,y);
+    if (INV.isProforma) {
+      doc.text('Documento preliminar: el total puede variar por cobro de parqueadero al entregar la moto.',14,y);
+    } else {
+      doc.text('Método de pago: '+INV.paymentMethod.charAt(0).toUpperCase()+INV.paymentMethod.slice(1),14,y);
+    }
     if(INV.notes){y+=7; doc.text('Nota: '+INV.notes,14,y);}
 
     doc.setFontSize(8); doc.text('Gorillaz Motorbikes — Bogotá, Colombia',14,285); doc.text('gorillazmotorbikes.com',196,285,{align:'right'});
