@@ -206,7 +206,7 @@
         <img src="/images/nobg_logo/logo_transp.png" alt="Gorillaz Motorbikes" />
         <span class="cot-brand-name">Gorillaz Motorbikes</span>
       </div>
-      <div class="cot-num">Factura <span><%= invoice.label %></span></div>
+      <div class="cot-num"><%= invoice.status === 'proforma' ? 'Factura proforma' : 'Factura' %> <span><%= invoice.label %></span></div>
 
       <div class="cot-meta-row">
         <div class="cot-meta-item">
@@ -221,10 +221,12 @@
           <span class="cot-meta-value"><%= order.motorcycle %></span>
         </div>
         <% } %>
+        <% if (invoice.status !== 'proforma') { %>
         <div class="cot-meta-item">
           <span class="cot-meta-label">Pago</span>
           <span class="cot-meta-value" style="text-transform:capitalize"><%= invoice.paymentMethod %></span>
         </div>
+        <% } %>
       </div>
     </div>
 
