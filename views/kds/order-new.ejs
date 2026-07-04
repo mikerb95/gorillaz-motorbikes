@@ -47,7 +47,7 @@
   <div class="kds-wrap">
     <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
 
-    <form method="post" action="/kds/orden/nueva" id="soForm">
+    <form method="post" action="/kds/orden/nueva" id="soForm" data-require-pin data-pin-title="Autoriza con tu PIN" data-pin-msg="Ingresa tu PIN para crear esta orden de servicio.">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="items" id="itemsField" />
 
@@ -161,5 +161,7 @@
     renderItems();
   })();
   </script>
+<script>window.PIN_VERIFY_URL = '/kds/verificar-pin';</script>
+<script src="/static/js/pin-gate.js"></script>
 </body>
 </html>
