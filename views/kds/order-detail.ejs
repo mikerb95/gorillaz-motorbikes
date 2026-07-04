@@ -98,7 +98,7 @@
           <button type="button" class="cat-btn other" id="otherBtn">Otro ítem…</button>
         </div>
 
-        <form method="post" action="/kds/orden/<%= order.id %>/items" class="quick-add" id="quickAdd">
+        <form method="post" action="/kds/orden/<%= order.id %>/items" class="quick-add" id="quickAdd" data-require-pin data-pin-title="Autoriza con tu PIN" data-pin-msg="Ingresa tu PIN para agregar este ítem a la orden.">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <input type="hidden" name="type" id="qaType" />
           <label class="k">Ítem</label>
@@ -115,7 +115,7 @@
 
       <div class="card">
         <h2>Cambiar estado</h2>
-        <form method="post" action="/kds/orden/<%= order.id %>/estado">
+        <form method="post" action="/kds/orden/<%= order.id %>/estado" data-require-pin data-pin-title="Autoriza con tu PIN" data-pin-msg="Ingresa tu PIN para registrar y confirmar el cambio de estado.">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <div class="status-grid">
             <% EMP_STATUS.forEach(s => { %>
@@ -166,5 +166,7 @@
   })();
   </script>
   <% } %>
+<script>window.PIN_VERIFY_URL = '/kds/verificar-pin';</script>
+<script src="/static/js/pin-gate.js"></script>
 </body>
 </html>
