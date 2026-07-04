@@ -15,7 +15,7 @@ const {
   isThrottleLocked, recordThrottleFailure,
   getActiveServiceOrders, getServiceOrdersByPlate, getServiceOrderById,
   createServiceOrder, updateServiceOrder, addServiceOrderEvent,
-  convertServiceOrderToInvoice,
+  convertServiceOrderToInvoice, applyStatusPolicy,
 } = require('../db');
 
 const router = express.Router();
@@ -192,18 +192,26 @@ router.post('/orden/:id/estado', requireKdsEmployee, requirePin('/kds'), async (
   const status = req.body.status;
   if (!ALLOWED_STATUS.includes(status)) return res.redirect('/kds/orden/' + order.id);
 
-  const updates = { status };
-  const finaliza = status === 'trabajo_completo' && order.status !== 'trabajo_completo';
+  // La política central decide qué pasa con la factura: devolver el estado de
+  // una orden con proforma viva la anula y la desliga; una factura cerrada o
+  // una orden entregada bloquean el cambio.
+  const policy = await applyStatusPolicy(order, status, req.pinActor);
+  if (!policy.allowed) return res.redirect('/kds/orden/' + order.id);
+  if (policy.invoiceDetached) order.invoiceId = null;
+
+  const updates = {};
+  if (policy.status) updates.status = policy.status;
+  const finaliza = policy.status === 'trabajo_completo' && order.status !== 'trabajo_completo';
   if (finaliza) {
     if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
     updates.pendingReview = true;
   }
-  await updateServiceOrder(order.id, updates, req.pinActor);
+  if (Object.keys(updates).length) await updateServiceOrder(order.id, updates, req.pinActor);
 
   // Al quedar lista la moto se emite la factura proforma automáticamente: es
   // el único momento en que se sabe con certeza si aplica parqueadero, así que
   // el total definitivo se cierra recién al entregar la moto (panel admin).
-  if (finaliza) {
+  if (finaliza && !order.invoiceId) {
     try {
       await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.pinActor);
     } catch (e) {
@@ -217,6 +225,9 @@ router.post('/orden/:id/estado', requireKdsEmployee, requirePin('/kds'), async (
 router.post('/orden/:id/items', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/kds');
+  // Con factura emitida los ítems quedan congelados: cambiarlos descuadraría
+  // la proforma (misma regla que el panel admin).
+  if (order.invoiceId) return res.redirect('/kds/orden/' + order.id);
 
   const name  = String(req.body.name || '').trim();
   const price = Math.round(Number(req.body.price));

@@ -13,7 +13,7 @@ const {
   getServiceOrdersByEmployee, getServiceOrderById, updateServiceOrder,
   isThrottleLocked, recordThrottleFailure,
   getPendingCheckins, getPendingCheckinsByPlate, getCheckinById, markCheckinAttended, createServiceOrder,
-  convertServiceOrderToInvoice,
+  convertServiceOrderToInvoice, applyStatusPolicy,
 } = require('../db');
 
 const router = express.Router();
@@ -200,22 +200,37 @@ router.post('/orden/:id/estado', requireEmployee, async (req, res) => {
   const status = req.body.status;
   if (!ALLOWED_STATUS.includes(status)) return res.redirect('/taller/orden/' + order.id);
 
-  const updates = { status };
+  // La política central decide qué pasa con la factura: devolver el estado de
+  // una orden con proforma viva la anula y la desliga; una factura cerrada o
+  // una orden entregada bloquean el cambio.
+  const policy = await applyStatusPolicy(order, status, req.employee.name);
+  if (!policy.allowed) return res.redirect('/taller/orden/' + order.id);
+  if (policy.invoiceDetached) order.invoiceId = null;
+
+  const updates = {};
+  if (policy.status) updates.status = policy.status;
   // Al finalizar: marcar momento, avisar al admin y dejar pendiente de revisión.
-  const finaliza = status === 'trabajo_completo' && order.status !== 'trabajo_completo';
+  const finaliza = policy.status === 'trabajo_completo' && order.status !== 'trabajo_completo';
   if (finaliza) {
     if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
     updates.pendingReview = true;
   }
-  await updateServiceOrder(order.id, updates, req.employee.name);
+  if (Object.keys(updates).length) await updateServiceOrder(order.id, updates, req.employee.name);
 
   if (finaliza) {
     notifyAdmin(order, req.employee).catch(() => {});
     // Al quedar lista la moto se emite la factura proforma automáticamente: es
     // el único momento en que se sabe con certeza si aplica parqueadero, así
-    // que el total definitivo se cierra recién al entregar la moto.
-    convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.employee.name)
-      .catch(e => console.error('Auto-facturación proforma falló:', e.message));
+    // que el total definitivo se cierra recién al entregar la moto. Con await:
+    // en serverless una promesa suelta puede morir al congelarse la función
+    // tras el redirect, dejando el claim a medias o sin factura emitida.
+    if (!order.invoiceId) {
+      try {
+        await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.employee.name);
+      } catch (e) {
+        console.error('Auto-facturación proforma falló:', e.message);
+      }
+    }
   }
 
   res.redirect('/taller/orden/' + order.id);

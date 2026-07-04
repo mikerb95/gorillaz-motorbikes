@@ -25,13 +25,14 @@ const {
   createNewsletterCampaign, getAllNewsletterCampaigns,
   getAllQuotations, getConvertedQuotationIds, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
   createServiceOrder, getServiceOrderById, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, addServiceOrderEvent, detachOrderFromInvoice, deleteServiceOrder,
-  createInvoice, convertServiceOrderToInvoice, deliverServiceOrder, getInvoiceById, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
+  convertServiceOrderToInvoice, applyStatusPolicy, deliverServiceOrder, getInvoiceById, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
   getAllPlateRequests, getPlateRequestById, updatePlateRequestStatus, deletePlateRequest, countPlateRequestsByStatus,
   backupAllTables,
 } = require('../db');
 const bcrypt = require('bcryptjs');
+const { ALLOWED_STATUS } = require('../helpers/service-order-status');
 
 // La config editable del admin vive en la tabla app_settings (vía
 // helpers/settings). Los archivos JSON en /data se mantienen solo como fallback
@@ -1237,6 +1238,8 @@ router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) 
 router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { status, notes, estimatedDate, employeeId } = req.body;
   const order = await getServiceOrderById(req.params.id);
+  if (!order) return res.redirect('/admin/ordenes-servicio');
+  const actor = res.locals.user?.name || 'Admin';
   // 'entregado' solo se marca desde el flujo dedicado de entrega (que cierra la
   // factura proforma con el parqueadero); un POST directo aquí no puede saltarse
   // ese paso.
@@ -1244,27 +1247,44 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async
     setFlash(res, 'error', 'Para entregar la moto usa el formulario de entrega (cierra la factura con el parqueadero).');
     return res.redirect('/admin/ordenes-servicio/' + req.params.id);
   }
+  // Solo estados alcanzables desde este formulario; 'facturado' se acepta
+  // únicamente como no-op cuando la orden ya está en ese estado.
+  const newStatus = status || 'ingreso_taller';
+  if (!ALLOWED_STATUS.includes(newStatus) && newStatus !== order.status) {
+    setFlash(res, 'error', 'Estado de orden inválido.');
+    return res.redirect('/admin/ordenes-servicio/' + req.params.id);
+  }
+  // La política central decide qué pasa con la factura: devolver el estado de
+  // una orden con proforma viva la anula y la desliga (la orden vuelve a ser
+  // editable); una factura ya cerrada bloquea el cambio.
+  const policy = await applyStatusPolicy(order, newStatus, actor);
+  if (!policy.allowed) {
+    setFlash(res, 'error', policy.msg);
+    return res.redirect('/admin/ordenes-servicio/' + req.params.id);
+  }
+  if (policy.invoiceDetached) order.invoiceId = null;
+
   const updates = {
-    status:        status || 'ingreso_taller',
     notes:         (notes || '').trim() || null,
     estimatedDate: estimatedDate || null,
     employeeId:    employeeId || null,
     mechanic:      await resolveMechanicName(employeeId || null),
   };
-  const entraCompleto = status === 'trabajo_completo' && order && order.status !== 'trabajo_completo';
-  if (status === 'trabajo_completo' && order && !order.trabajoCompletoAt) {
+  if (policy.status) updates.status = policy.status;
+  const entraCompleto = policy.status === 'trabajo_completo' && order.status !== 'trabajo_completo';
+  if (policy.status === 'trabajo_completo' && !order.trabajoCompletoAt) {
     updates.trabajoCompletoAt = nowCOT();
   }
   // El admin que toca la orden la da por revisada: limpia el aviso del taller.
-  if (order && order.pendingReview) updates.pendingReview = false;
-  await updateServiceOrder(req.params.id, updates, res.locals.user?.name || 'Admin');
+  if (order.pendingReview) updates.pendingReview = false;
+  await updateServiceOrder(req.params.id, updates, actor);
 
   // Al quedar lista la moto se emite la factura proforma automáticamente: es
   // el único momento en que se sabe con certeza si aplica parqueadero, así que
   // el total definitivo se cierra recién al entregar la moto.
   if (entraCompleto && !order.invoiceId) {
     try {
-      await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, res.locals.user?.name || 'Admin');
+      await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, actor);
     } catch (e) {
       console.error('Auto-facturación proforma falló:', e.message);
     }

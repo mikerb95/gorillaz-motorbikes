@@ -21,7 +21,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 13;
+const SCHEMA_VERSION = 14;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -427,6 +427,7 @@ async function initDb() {
 
   await ensureNewsletterTokens();
   await reconcileAnnulledInvoices();
+  await reconcileOrderInvoiceLinks();
 
   // Marca el esquema como migrado para que los próximos cold starts salgan
   // temprano en la comprobación de versión de arriba.
@@ -1495,6 +1496,58 @@ async function reconcileAnnulledInvoices() {
   if (n) console.log(`✅ Reconciliadas ${n} orden(es) atadas a facturas anuladas`);
 }
 
+// Reconciliación (v14): repara las órdenes que quedaron inconsistentes por
+// (a) auto-facturaciones interrumpidas en serverless —orden 'facturado' con
+// invoice_id apuntando a una factura que nunca se insertó— y (b) devoluciones
+// de estado hechas sin desligar la proforma —orden en estado editable con
+// proforma viva, imposible de entregar—. Idempotente: una vez reparadas, las
+// consultas no vuelven a seleccionarlas.
+async function reconcileOrderInvoiceLinks() {
+  // (a) Vínculos rotos: se limpia el id y, si la orden quedó 'facturado', se
+  // devuelve a 'trabajo_completo' para que el flujo normal re-facture.
+  const dangling = await db.execute(`
+    SELECT so.id, so.status FROM service_orders so
+    LEFT JOIN invoices i ON i.id = so.invoice_id
+    WHERE so.invoice_id IS NOT NULL AND i.id IS NULL
+  `);
+  for (const row of dangling.rows) {
+    const backTo = row.status === 'facturado' ? 'trabajo_completo' : row.status;
+    await db.execute({
+      sql: 'UPDATE service_orders SET invoice_id = NULL, status = ?, updated_at = ? WHERE id = ?',
+      args: [backTo, new Date().toISOString(), row.id],
+    });
+    await addServiceOrderEvent(row.id, 'editado', 'Sistema', 'Vínculo a factura inexistente eliminado');
+    if (backTo !== row.status) await addServiceOrderEvent(row.id, 'trabajo_completo', 'Sistema');
+  }
+  // (b) Proforma viva con la orden devuelta: si los totales siguen cuadrando,
+  // se restaura 'facturado' (la proforma sigue válida y no se quema un
+  // consecutivo); si divergieron, se anula la proforma y se desliga.
+  const stuck = await db.execute(`
+    SELECT so.id AS order_id, so.total, i.id AS invoice_id, i.label, i.subtotal
+    FROM service_orders so JOIN invoices i ON i.id = so.invoice_id
+    WHERE i.status = 'proforma' AND so.status NOT IN ('facturado','entregado')
+  `);
+  for (const row of stuck.rows) {
+    if (Number(row.total) === Number(row.subtotal)) {
+      await db.execute({
+        sql: `UPDATE service_orders SET status = 'facturado', updated_at = ? WHERE id = ? AND invoice_id = ?`,
+        args: [new Date().toISOString(), row.order_id, row.invoice_id],
+      });
+      await addServiceOrderEvent(row.order_id, 'facturado', 'Sistema', `Estado restaurado (proforma ${row.label} vigente)`);
+    } else {
+      await db.execute({
+        sql: `UPDATE invoices SET status = 'anulada', paid_at = NULL WHERE id = ? AND status = 'proforma'`,
+        args: [row.invoice_id],
+      });
+      await detachOrderFromInvoice(row.order_id, row.invoice_id);
+      await addServiceOrderEvent(row.order_id, 'factura_anulada', 'Sistema', row.label);
+      await addServiceOrderEvent(row.order_id, 'trabajo_completo', 'Sistema');
+    }
+  }
+  const n = dangling.rows.length + stuck.rows.length;
+  if (n) console.log(`✅ Reconciliadas ${n} orden(es) con vínculos de factura inconsistentes`);
+}
+
 // Borrado permanente de una orden de servicio y su historial de eventos.
 // No toca facturas: la ruta bloquea el borrado de órdenes ya facturadas para
 // no dejar facturas huérfanas (la contabilidad es el registro legal).
@@ -1678,37 +1731,49 @@ function rowToInvoice(row) {
   };
 }
 
-async function createInvoice(data) {
-  const id       = data.id || uuidv4();
-  const now      = new Date().toISOString();
-  const subtotal = data.subtotal || data.total || 0;
-  // El IVA nunca puede ser negativo: dejaría el total por debajo del subtotal.
-  const tax           = Math.max(0, Math.round(Number(data.tax) || 0));
-  const parkingAmount = Math.max(0, Math.round(Number(data.parkingAmount) || 0));
-  const total    = subtotal + tax + parkingAmount;
-  const status   = data.status || 'pendiente';
-  // El ingreso se reconoce por fecha de pago: si nace pagada, se sella ahora.
-  const paidAt   = status === 'pagada' ? now : null;
-  let consecutive, label;
+// Convierte una orden 'trabajo_completo' en factura PROFORMA. El claim de la
+// orden y la emisión de la factura van en UNA sola transacción: si el proceso
+// muere a mitad de camino (p. ej. función serverless congelada tras responder)
+// no puede quedar la orden 'facturado' apuntando a una factura que nunca se
+// insertó, ni consumirse un consecutivo en vano (debe quedar contiguo para la
+// DIAN). Ante dos requests concurrentes (admin y KDS, o doble clic) solo una
+// gana el UPDATE condicional. La factura definitiva (IVA, método de pago,
+// parqueadero y estado de pago) solo se conoce al entregar la moto — ver
+// deliverServiceOrder. Se dispara automáticamente al pasar una orden a
+// 'trabajo_completo' (routes/kds.js, routes/taller.js, routes/admin.js) y como
+// recuperación manual si la proforma se anuló.
+async function convertServiceOrderToInvoice(order, { notes = null } = {}, actor) {
+  if (order.invoiceId || order.status !== 'trabajo_completo') {
+    throw new Error('La orden no está lista para facturar o ya tiene factura.');
+  }
+  const invoiceId = uuidv4();
+  const now = new Date().toISOString();
+  let invoiceLabel;
   const tx = await db.transaction('write');
   try {
+    const claim = await tx.execute({
+      sql: `UPDATE service_orders
+            SET invoice_id = ?, status = 'facturado', pending_review = 0, updated_at = ?
+            WHERE id = ? AND invoice_id IS NULL AND status = 'trabajo_completo'`,
+      args: [invoiceId, now, order.id],
+    });
+    if ((claim.rowsAffected ?? claim.changes ?? 0) === 0) {
+      throw new Error('La orden ya fue facturada por otra operación.');
+    }
     const r = await tx.execute('SELECT COALESCE(MAX(consecutive), 0) + 1 AS next FROM invoices');
-    consecutive = Number(r.rows[0].next);
-    label = fmtLabel('F-', consecutive, now);
+    const consecutive = Number(r.rows[0].next);
+    invoiceLabel = fmtLabel('F-', consecutive, now);
+    const subtotal = order.total || 0;
     await tx.execute({
       sql: `INSERT INTO invoices
             (id, consecutive, label, service_order_id, quotation_id, items, subtotal, tax, parking_amount, total, payment_method, status, notes, paid_at)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [
-        id, consecutive, label,
-        data.serviceOrderId,
-        data.quotationId || null,
-        JSON.stringify(data.items || []),
-        subtotal, tax, parkingAmount, total,
-        data.paymentMethod || 'efectivo',
-        status,
-        data.notes || null,
-        paidAt,
+        invoiceId, consecutive, invoiceLabel,
+        order.id, order.quotationId || null,
+        JSON.stringify(order.items || []),
+        subtotal, 0, 0, subtotal,
+        'efectivo', 'proforma', notes || null, null,
       ],
     });
     await tx.commit();
@@ -1716,52 +1781,80 @@ async function createInvoice(data) {
     await tx.rollback();
     throw e;
   }
-  return { id, consecutive, label };
-}
-
-// Claim atómico: ata la orden a la factura SOLO si sigue sin facturar y en
-// 'trabajo_completo'. Devuelve true si esta llamada fue la que la facturó. Ante
-// dos requests concurrentes (admin y KDS, o doble clic) solo una gana, evitando
-// dos facturas para la misma orden. Mismo patrón que detachOrderFromInvoice.
-async function claimServiceOrderInvoice(orderId, invoiceId) {
-  const r = await db.execute({
-    sql: `UPDATE service_orders
-          SET invoice_id = ?, status = 'facturado', pending_review = 0, updated_at = ?
-          WHERE id = ? AND invoice_id IS NULL AND status = 'trabajo_completo'`,
-    args: [invoiceId, new Date().toISOString(), orderId],
-  });
-  return (r.rowsAffected ?? r.changes ?? 0) > 0;
-}
-
-// Convierte una orden 'trabajo_completo' en factura PROFORMA: reclama la orden
-// de forma atómica, crea la factura con ese id (para no dejar huecos en el
-// consecutivo si hay carrera) y deja los hitos en la trazabilidad. La factura
-// definitiva (IVA, método de pago, parqueadero y estado de pago) solo se conoce
-// al entregar la moto — ver deliverServiceOrder. Se dispara automáticamente al
-// pasar una orden a 'trabajo_completo' (routes/kds.js, routes/taller.js,
-// routes/admin.js) y como recuperación manual si la proforma se anuló.
-async function convertServiceOrderToInvoice(order, { notes = null } = {}, actor) {
-  if (order.invoiceId || order.status !== 'trabajo_completo') {
-    throw new Error('La orden no está lista para facturar o ya tiene factura.');
-  }
-  // Reclamar antes de emitir: si otra operación ya la facturó, no se consume un
-  // consecutivo (el número de factura debe quedar contiguo para la DIAN).
-  const invoiceId = uuidv4();
-  if (!(await claimServiceOrderInvoice(order.id, invoiceId))) {
-    throw new Error('La orden ya fue facturada por otra operación.');
-  }
-  const { label: invoiceLabel } = await createInvoice({
-    id:             invoiceId,
-    serviceOrderId: order.id,
-    quotationId:    order.quotationId,
-    items:          order.items,
-    subtotal:       order.total,
-    status:         'proforma',
-    notes,
-  });
   await addServiceOrderEvent(order.id, 'facturado', actor);          // cambio de estado
   await addServiceOrderEvent(order.id, 'factura_generada', actor, invoiceLabel);
   return { invoiceId, invoiceLabel };
+}
+
+// Devuelve una orden facturada a un estado editable: anula su proforma y la
+// desliga (la orden vuelve a poder editarse y, al re-completarla, se emite una
+// proforma nueva). Solo aplica a proformas o vínculos rotos; una factura ya
+// cerrada al entregar (pendiente/pagada) no se toca — devolver esa orden
+// duplicaría el ingreso. Devuelve { ok, reason }.
+async function revertServiceOrderInvoice(order, actor) {
+  if (!order.invoiceId) return { ok: true, reason: 'sin-factura' };
+  const invoice = await getInvoiceById(order.invoiceId);
+  // Vínculo roto (la factura nunca llegó a insertarse): basta limpiar el id.
+  if (!invoice) {
+    await db.execute({
+      sql: 'UPDATE service_orders SET invoice_id = NULL, updated_at = ? WHERE id = ? AND invoice_id = ?',
+      args: [new Date().toISOString(), order.id, order.invoiceId],
+    });
+    await addServiceOrderEvent(order.id, 'editado', actor, 'Vínculo a factura inexistente eliminado');
+    return { ok: true, reason: 'colgante' };
+  }
+  if (invoice.status === 'proforma') {
+    // Claim atómico sobre la factura: si dos requests devuelven el estado a la
+    // vez, solo la que realmente anula registra los hitos.
+    const r = await db.execute({
+      sql: `UPDATE invoices SET status = 'anulada', paid_at = NULL WHERE id = ? AND status = 'proforma'`,
+      args: [invoice.id],
+    });
+    if ((r.rowsAffected ?? r.changes ?? 0) > 0) {
+      await detachOrderFromInvoice(order.id, invoice.id);
+      await addServiceOrderEvent(order.id, 'factura_anulada', actor, invoice.label);
+    }
+    return { ok: true, reason: 'proforma-anulada' };
+  }
+  if (invoice.status === 'anulada') {
+    await detachOrderFromInvoice(order.id, invoice.id);
+    return { ok: true, reason: 'ya-anulada' };
+  }
+  return { ok: false, reason: 'factura-cerrada' };
+}
+
+// Política única de cambio de estado frente a la factura de la orden, usada
+// por los tres portales (admin, KDS y taller):
+// - 'entregado' es terminal.
+// - Repetir el estado actual o cambiar sin factura de por medio pasa directo.
+// - Devolver a un estado previo con proforma viva la ANULA y desliga la orden.
+// - Pedir 'trabajo_completo' con proforma vigente equivale a 'facturado' (la
+//   proforma sigue siendo válida: los ítems no pueden cambiar mientras exista).
+// - Una factura cerrada (pendiente/pagada) bloquea cualquier devolución.
+// Devuelve { allowed, status?, invoiceDetached, msg? }; `status` ausente
+// significa «no cambiar el estado, solo los demás campos».
+async function applyStatusPolicy(order, newStatus, actor) {
+  if (order.status === 'entregado') {
+    return { allowed: false, invoiceDetached: false, msg: 'La orden ya fue entregada; su estado no puede cambiar.' };
+  }
+  if (newStatus === order.status || !order.invoiceId) {
+    return { allowed: true, status: newStatus, invoiceDetached: false };
+  }
+  if (newStatus === 'trabajo_completo') {
+    const invoice = await getInvoiceById(order.invoiceId);
+    if (invoice && invoice.status === 'proforma') {
+      // Ya hay proforma vigente: 'trabajo_completo' equivale a 'facturado'.
+      return { allowed: true, status: order.status === 'facturado' ? undefined : 'facturado', invoiceDetached: false };
+    }
+    // Factura anulada o vínculo roto: desligar y dejar que el flujo re-facture.
+    const r = await revertServiceOrderInvoice(order, actor);
+    if (!r.ok) return { allowed: false, invoiceDetached: false, msg: 'La factura de esta orden ya está cerrada; no se puede cambiar su estado.' };
+    return { allowed: true, status: newStatus, invoiceDetached: true };
+  }
+  // Estado previo al trabajo completo: anular la proforma y desligar.
+  const r = await revertServiceOrderInvoice(order, actor);
+  if (!r.ok) return { allowed: false, invoiceDetached: false, msg: 'La factura de esta orden ya está cerrada; no se puede devolver el estado.' };
+  return { allowed: true, status: newStatus, invoiceDetached: true };
 }
 
 // Cierra la factura proforma al momento de entregar la moto: es el único
@@ -2374,7 +2467,7 @@ module.exports = {
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   isThrottleLocked, recordThrottleFailure,
   getAllSettings, setSetting,
-  createInvoice, convertServiceOrderToInvoice, deliverServiceOrder, getInvoiceById, getAllInvoices, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
+  convertServiceOrderToInvoice, revertServiceOrderInvoice, applyStatusPolicy, deliverServiceOrder, getInvoiceById, getAllInvoices, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
   getServiceOrdersByPlate,
