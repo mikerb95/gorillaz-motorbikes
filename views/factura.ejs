@@ -323,6 +323,7 @@
     total:         invoice.total,
     paymentMethod: invoice.paymentMethod,
     notes:         invoice.notes,
+    isProforma:    invoice.status === 'proforma',
   }) %>;
   const ORDER = <%- JSON.stringify(order ? { motorcycle: order.motorcycle, clientPhone: order.clientPhone, clientPhoneCountry: order.clientPhoneCountry } : null) %>;
 
