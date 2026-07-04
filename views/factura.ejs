@@ -230,6 +230,14 @@
       </div>
     </div>
 
+    <% if (invoice.status === 'proforma') { %>
+    <div class="cot-card" style="background:#fffbeb;border:1px solid #fde68a">
+      <p style="margin:0;font-size:13px;color:#92400e;font-weight:700">
+        🧾 Documento preliminar: el total puede variar por cobro de parqueadero al entregar la moto.
+      </p>
+    </div>
+    <% } %>
+
     <!-- Items -->
     <div class="cot-card">
       <p class="cot-card-title">Detalle</p>

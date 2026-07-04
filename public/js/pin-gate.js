@@ -66,9 +66,11 @@
   var errEl    = wrap.querySelector('.pin-gate-err');
   var okBtn    = wrap.querySelector('.pin-gate-ok');
   var pending  = null;   // formulario a enviar tras verificar
+  var submitter = null;  // botón que disparó el envío (conserva su name/value)
 
-  function open(form) {
+  function open(form, btn) {
     pending = form;
+    submitter = btn || null;
     titleEl.textContent = form.dataset.pinTitle || 'Autoriza con tu PIN';
     msgEl.textContent   = form.dataset.pinMsg || 'Ingresa el PIN de tu empleado para registrar y confirmar esta acción.';
     inputEl.value = '';
