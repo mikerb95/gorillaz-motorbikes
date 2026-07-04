@@ -359,9 +359,7 @@ router.get('/cotizacion/:id', async (req, res) => {
 router.get('/factura/:id', async (req, res) => {
   try {
     const invoice = await getInvoiceById(req.params.id);
-    // La proforma aún no tiene total definitivo (falta el parqueadero, que se
-    // conoce al entregar la moto): no se expone públicamente, igual que anulada.
-    if (!invoice || invoice.status === 'anulada' || invoice.status === 'proforma') return res.status(404).render('404');
+    if (!invoice || invoice.status === 'anulada') return res.status(404).render('404');
     const order = invoice.serviceOrderId ? await getServiceOrderById(invoice.serviceOrderId) : null;
     res.render('factura', {
       title: `Factura ${invoice.label} — Gorillaz Motorbikes`,
