@@ -74,7 +74,7 @@
 
     <div class="card">
       <h2>Actualizar estado</h2>
-      <form method="post" action="/taller/orden/<%= order.id %>/estado">
+      <form method="post" action="/taller/orden/<%= order.id %>/estado" data-require-pin data-pin-title="Autoriza con tu PIN" data-pin-msg="Ingresa tu PIN para registrar y confirmar el cambio de estado.">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <select name="status">
           <% EMP_STATUS.forEach(s => { %>
@@ -87,5 +87,7 @@
     </div>
 
   </div>
+<script>window.PIN_VERIFY_URL = '/taller/verificar-pin';</script>
+<script src="/static/js/pin-gate.js"></script>
 </body>
 </html>
