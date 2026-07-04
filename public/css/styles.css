@@ -6079,6 +6079,64 @@ body.is-presentation .site-header.is-expanded .sub-embed {
   margin: 0 auto
 }
 
+.ev-sponsor-banner {
+  display: block;
+  max-width: 900px;
+  margin: 0 auto 28px;
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--deep), var(--ink));
+  border: 1px solid rgba(242, 92, 5, .35);
+  text-decoration: none;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.ev-sponsor-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(242, 92, 5, .25);
+}
+
+.ev-sponsor-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ev-sponsor-tag {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--brand);
+  color: var(--white);
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 4px;
+}
+
+.ev-sponsor-title {
+  color: var(--white);
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.ev-sponsor-desc {
+  color: #d4d4d8;
+  font-size: .9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ev-sponsor-cta {
+  color: var(--brand);
+  font-weight: 700;
+  font-size: .85rem;
+  margin-top: 4px;
+}
+
 .ev-card {
   position: relative;
   border-radius: 16px;
