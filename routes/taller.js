@@ -147,7 +147,7 @@ router.get('/checkin/:id/orden', requireEmployee, async (req, res) => {
   res.render('taller/service-order-new', { checkin, error: null });
 });
 
-router.post('/checkin/:id/orden', requireEmployee, requirePin('/taller/checkin'), async (req, res) => {
+router.post('/checkin/:id/orden', requireEmployee, async (req, res) => {
   const checkin = await getCheckinById(req.params.id);
   if (!checkin || checkin.status !== 'pendiente') return res.redirect('/taller/checkin');
 
@@ -181,7 +181,7 @@ router.post('/checkin/:id/orden', requireEmployee, requirePin('/taller/checkin')
     notes:              `Cliente: ${checkin.clientName}`,
     employeeId:         req.employee.id,
     status:             'ingreso_taller',
-    actor:              req.pinActor,
+    actor:              req.employee.name,
   });
 
   await markCheckinAttended(checkin.id, id);
@@ -197,7 +197,7 @@ router.get('/orden/:id', requireEmployee, async (req, res) => {
 });
 
 // ── Actualizar estado (limitado) ───────────────────────────────────────────
-router.post('/orden/:id/estado', requireEmployee, requirePin('/taller'), async (req, res) => {
+router.post('/orden/:id/estado', requireEmployee, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order || order.employeeId !== req.employee.id) return res.redirect('/taller');
 
@@ -211,14 +211,14 @@ router.post('/orden/:id/estado', requireEmployee, requirePin('/taller'), async (
     if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
     updates.pendingReview = true;
   }
-  await updateServiceOrder(order.id, updates, req.pinActor);
+  await updateServiceOrder(order.id, updates, req.employee.name);
 
   if (finaliza) {
     notifyAdmin(order, req.employee).catch(() => {});
     // Al quedar lista la moto se emite la factura proforma automáticamente: es
     // el único momento en que se sabe con certeza si aplica parqueadero, así
     // que el total definitivo se cierra recién al entregar la moto.
-    convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.pinActor)
+    convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.employee.name)
       .catch(e => console.error('Auto-facturación proforma falló:', e.message));
   }
 

@@ -254,21 +254,21 @@ router.get('/egresos', requireAuth, requireAdmin, async (req, res) => {
   });
 });
 
-router.post('/egresos/crear', requireAuth, requireAdmin, requirePin('/admin/finanzas/egresos'), async (req, res) => {
+router.post('/egresos/crear', requireAuth, requireAdmin, async (req, res) => {
   const { category, description, amount, date, paymentMethod, notes, period } = req.body;
   if (!description || !amount || !date) return res.redirect(`/admin/finanzas/egresos?flash=error&period=${period || ''}`);
   await createGasto({ category: category || 'otros', description: description.trim(), amount: Math.round(Number(amount.replace(/\D/g, '')) || 0), date, paymentMethod: paymentMethod || 'efectivo', notes: (notes || '').trim() || null });
   res.redirect(`/admin/finanzas/egresos?flash=created&period=${period || ''}`);
 });
 
-router.post('/egresos/:id/actualizar', requireAuth, requireAdmin, requirePin('/admin/finanzas/egresos'), async (req, res) => {
+router.post('/egresos/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { category, description, amount, date, paymentMethod, notes, period } = req.body;
   if (!description || !amount || !date) return res.redirect(`/admin/finanzas/egresos?flash=error&period=${period || ''}`);
   await updateGasto(req.params.id, { category: category || 'otros', description: description.trim(), amount: Math.round(Number(String(amount).replace(/\D/g, '')) || 0), date, paymentMethod: paymentMethod || 'efectivo', notes: (notes || '').trim() || null });
   res.redirect(`/admin/finanzas/egresos?flash=updated&period=${period || ''}`);
 });
 
-router.post('/egresos/:id/eliminar', requireAuth, requireAdmin, requirePin('/admin/finanzas/egresos'), async (req, res) => {
+router.post('/egresos/:id/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const { period } = req.body;
   await deleteGasto(req.params.id);
   res.redirect(`/admin/finanzas/egresos?flash=deleted&period=${period || ''}`);

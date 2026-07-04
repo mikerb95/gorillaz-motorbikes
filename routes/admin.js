@@ -1115,7 +1115,7 @@ async function resolveMechanicName(employeeId) {
   return emp ? emp.name : null;
 }
 
-router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, requirePin('/admin/cotizaciones'), async (req, res) => {
+router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, async (req, res) => {
   const quotation = await getQuotationById(req.params.id);
   if (!quotation) return res.redirect('/admin/cotizaciones');
   const employeeId = req.body.employeeId || null;
@@ -1131,7 +1131,7 @@ router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, requ
     notes:              (req.body.notes || '').trim() || null,
     estimatedDate:      req.body.estimatedDate || null,
     status:             'ingreso_taller',
-    actor:              req.pinActor,
+    actor:              res.locals.user?.name || 'Admin',
   });
   res.redirect('/admin/ordenes-servicio/' + id);
 });
@@ -1154,7 +1154,7 @@ router.get('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, res
   res.render('admin/service-order-new', { error: null, empleados: await getActiveEmployees() });
 });
 
-router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio/nueva'), async (req, res) => {
+router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, async (req, res) => {
   let items;
   try {
     items = JSON.parse(req.body.items || '[]');
@@ -1195,7 +1195,7 @@ router.post('/ordenes-servicio/nueva', requireAuth, requireAdmin, requirePin('/a
     estimatedDate:      req.body.estimatedDate || null,
     employeeId,
     status:             'ingreso_taller',
-    actor:              req.pinActor,
+    actor:              res.locals.user?.name || 'Admin',
   });
   res.redirect('/admin/ordenes-servicio/' + id);
 });
@@ -1239,7 +1239,7 @@ router.get('/ordenes-servicio/:id', requireAuth, requireAdmin, async (req, res) 
   res.render('admin/service-order-detail', { order, quotation, invoice, parqueaderoConfig, parking, empleados, empleadoAsignado, events });
 });
 
-router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
+router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { status, notes, estimatedDate, employeeId } = req.body;
   const order = await getServiceOrderById(req.params.id);
   // 'entregado' solo se marca desde el flujo dedicado de entrega (que cierra la
@@ -1262,14 +1262,14 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, requi
   }
   // El admin que toca la orden la da por revisada: limpia el aviso del taller.
   if (order && order.pendingReview) updates.pendingReview = false;
-  await updateServiceOrder(req.params.id, updates, req.pinActor);
+  await updateServiceOrder(req.params.id, updates, res.locals.user?.name || 'Admin');
 
   // Al quedar lista la moto se emite la factura proforma automáticamente: es
   // el único momento en que se sabe con certeza si aplica parqueadero, así que
   // el total definitivo se cierra recién al entregar la moto.
   if (entraCompleto && !order.invoiceId) {
     try {
-      await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.pinActor);
+      await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, res.locals.user?.name || 'Admin');
     } catch (e) {
       console.error('Auto-facturación proforma falló:', e.message);
     }
@@ -1278,7 +1278,7 @@ router.post('/ordenes-servicio/:id/actualizar', requireAuth, requireAdmin, requi
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
 });
 
-router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
+router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/admin/ordenes-servicio');
   const plate = (req.body.plate || '').toUpperCase().trim();
@@ -1327,7 +1327,7 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, req
     (updates.total !== undefined && updates.total !== order.total) ||
     (updates.items !== undefined && JSON.stringify(updates.items) !== JSON.stringify(order.items));
   if (changed) {
-    await addServiceOrderEvent(req.params.id, 'editado', req.pinActor);
+    await addServiceOrderEvent(req.params.id, 'editado', res.locals.user?.name || 'Admin');
   }
 
   res.redirect('/admin/ordenes-servicio/' + req.params.id);
@@ -1337,12 +1337,12 @@ router.post('/ordenes-servicio/:id/editar-datos', requireAuth, requireAdmin, req
 // factura (p. ej. su proforma se anuló). En el flujo normal la proforma se
 // genera sola al pasar a 'trabajo_completo' — ver los handlers de /estado y
 // /actualizar.
-router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
+router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order || order.invoiceId || order.status !== 'trabajo_completo') return res.redirect('/admin/ordenes-servicio/' + req.params.id);
   const { invoiceId } = await convertServiceOrderToInvoice(order, {
     notes: (req.body.notes || '').trim() || null,
-  }, req.pinActor);
+  }, res.locals.user?.name || 'Admin');
   res.redirect('/admin/ordenes-servicio/' + req.params.id + '?flash=proforma#' + invoiceId);
 });
 
@@ -1350,7 +1350,7 @@ router.post('/ordenes-servicio/:id/convertir-factura', requireAuth, requireAdmin
 // parqueadero, así que aquí se cierra definitivamente la factura proforma
 // (IVA, parqueadero, método de pago y si ya se pagó) y la orden pasa a
 // 'entregado'.
-router.post('/ordenes-servicio/:id/entregar', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
+router.post('/ordenes-servicio/:id/entregar', requireAuth, requireAdmin, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/admin/ordenes-servicio');
   const invoice = order.invoiceId ? await getInvoiceById(order.invoiceId) : null;
@@ -1366,7 +1366,7 @@ router.post('/ordenes-servicio/:id/entregar', requireAuth, requireAdmin, require
       paidNow:       req.body.paidNow === '1',
       notes:         (req.body.notes || '').trim() || null,
       deliveredAt:   nowCOT(),
-    }, req.pinActor);
+    }, res.locals.user?.name || 'Admin');
   } catch (e) {
     setFlash(res, 'error', e.message);
     return res.redirect('/admin/ordenes-servicio/' + req.params.id);
@@ -1377,7 +1377,7 @@ router.post('/ordenes-servicio/:id/entregar', requireAuth, requireAdmin, require
 
 // Borrado permanente de una orden. Se bloquea si ya tiene factura: anular esa
 // factura es el paso previo, para no dejar registros contables huérfanos.
-router.post('/ordenes-servicio/:id/borrar', requireAuth, requireAdmin, requirePin('/admin/ordenes-servicio'), async (req, res) => {
+router.post('/ordenes-servicio/:id/borrar', requireAuth, requireAdmin, async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/admin/ordenes-servicio');
   if (order.invoiceId) return res.redirect('/admin/ordenes-servicio/' + order.id + '?error=facturada');
@@ -1432,7 +1432,7 @@ router.post('/facturas/:id/telefono', requireAuth, requireAdmin, async (req, res
 
 const INVOICE_STATUSES = ['pendiente', 'pagada', 'anulada'];
 
-router.post('/facturas/:id/estado', requireAuth, requireAdmin, requirePin('/admin/facturas'), async (req, res) => {
+router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) => {
   const invoice = await getInvoiceById(req.params.id);
   if (!invoice) return res.redirect('/admin/facturas');
 
@@ -1466,7 +1466,7 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, requirePin('/admi
   if (newStatus === 'anulada' && invoice.serviceOrderId) {
     const order = await getServiceOrderById(invoice.serviceOrderId);
     if (order && order.invoiceId === invoice.id) {
-      await detachAnnulledInvoice(order, invoice, req.pinActor);
+      await detachAnnulledInvoice(order, invoice, res.locals.user?.name || 'Admin');
     }
   }
 
