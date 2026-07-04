@@ -138,7 +138,7 @@
       // Si ya inyectamos el PIN (reenvío tras verificar), dejar pasar.
       if (form.querySelector('input[name="pin"].pin-gate-field')) return;
       e.preventDefault();
-      open(form);
+      open(form, e.submitter);
     });
   });
 
