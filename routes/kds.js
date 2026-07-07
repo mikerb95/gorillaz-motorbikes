@@ -103,8 +103,9 @@ router.post('/logout', (req, res) => {
   res.redirect('/kds/login');
 });
 
-// ── Tablero (visible sin sesión; las acciones se ocultan sin empleado) ────
+// ── Tablero (solo con sesión de mecánico activa; sin sesión, modo kiosco) ──
 router.get('/', async (req, res) => {
+  if (!req.employee) return res.render('kds/kiosk');
   const orders = await getActiveServiceOrders();
   res.render('kds/board', { orders, EMP_STATUS, flash: req.query.flash || null });
 });
