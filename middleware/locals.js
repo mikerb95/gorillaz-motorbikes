@@ -5,6 +5,7 @@ const { getUserById, getAllEvents } = require('../db');
 const catalog = require('../data/catalog');
 const { readFlash } = require('../helpers/flash');
 const { fechaCO, horaCO, fechaHoraCO } = require('../helpers/datetime');
+const { assetVersion } = require('../helpers/assets');
 
 const jwtCart = (req, res, next) => {
   const token = req.cookies.jwt;
