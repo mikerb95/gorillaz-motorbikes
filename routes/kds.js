@@ -130,6 +130,58 @@ router.get('/citas-hoy.json', async (req, res) => {
   }
 });
 
+// ── Check-in de clientes desde la tablet (mismo formulario público de
+// /checkin, pero en formato KDS: sin navbar/footer del sitio) ─────────────
+const kdsCheckinLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.' },
+});
+
+router.get('/checkin', (req, res) => {
+  res.render('kds/checkin', { error: null, ok: false, values: {} });
+});
+
+router.post('/checkin', kdsCheckinLimiter, async (req, res) => {
+  const clientName = String(req.body.clientName || '').trim();
+  const clientPhone = String(req.body.clientPhone || '').replace(/\D/g, '');
+  const clientPhoneCountry = String(req.body.clientPhoneCountry || '+57').trim();
+  const plate = String(req.body.plate || '').trim().toUpperCase().replace(/\s/g, '');
+  const brand = String(req.body.brand || '').trim();
+  const reference = String(req.body.reference || '').trim();
+
+  const values = { clientName, clientPhone, clientPhoneCountry, plate, brand, reference };
+
+  if (!clientName || clientName.length < 3) {
+    return res.status(400).render('kds/checkin', { error: 'Ingresa tu nombre completo.', ok: false, values });
+  }
+  if (!clientPhone || clientPhone.length < 7) {
+    return res.status(400).render('kds/checkin', { error: 'Ingresa un número de WhatsApp válido.', ok: false, values });
+  }
+  if (!plate || plate.length < 4) {
+    return res.status(400).render('kds/checkin', { error: 'Ingresa la placa de tu moto.', ok: false, values });
+  }
+  if (!brand) {
+    return res.status(400).render('kds/checkin', { error: 'Ingresa la marca de tu moto.', ok: false, values });
+  }
+  if (!reference) {
+    return res.status(400).render('kds/checkin', { error: 'Ingresa la referencia de tu moto.', ok: false, values });
+  }
+
+  await createCheckin({
+    clientName: clientName.slice(0, 120),
+    clientPhone: clientPhone.slice(0, 15),
+    clientPhoneCountry,
+    plate: plate.slice(0, 20),
+    brand: brand.slice(0, 60),
+    reference: reference.slice(0, 60),
+  });
+
+  res.render('kds/checkin', { error: null, ok: true, values: {} });
+});
+
 // ── Buscar por placa ────────────────────────────────────────────────────
 router.get('/placa', (req, res) => {
   res.render('kds/placa', { error: null });
