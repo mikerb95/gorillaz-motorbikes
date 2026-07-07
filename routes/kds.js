@@ -56,6 +56,7 @@ async function loadKdsEmployee(req, res, next) {
   res.locals.employee = req.employee;
   next();
 }
+router.use((req, res, next) => { console.log('KDS ROUTER HIT', req.method, req.path); next(); });
 router.use(loadKdsEmployee);
 
 // Verifica el PIN para el modal de acciones sensibles (facturar, cambiar estado…).
