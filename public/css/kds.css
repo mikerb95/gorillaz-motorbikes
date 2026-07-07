@@ -264,3 +264,50 @@ body.kds-login {
 .plate-actions button { padding: 18px 0; font-size: 16px; font-weight: 800; border: none; border-radius: 14px; cursor: pointer; font-family: inherit; }
 .plate-clear { background: var(--kds-paper-2); color: #374151; }
 .plate-go { background: var(--kds-brand); color: #fff; }
+
+/* ── Protector de pantalla (idle) ────────────────────────────────────────*/
+
+.kds-screensaver {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+  background: var(--kds-bg); color: #fff;
+  opacity: 0; pointer-events: none; transition: opacity .5s ease;
+}
+.kds-screensaver.visible { opacity: 1; pointer-events: auto; }
+.kds-ss-logo { height: 110px; width: auto; opacity: .95; filter: drop-shadow(0 10px 30px rgba(242,92,5,.3)); }
+.kds-ss-clock {
+  font-family: var(--kds-mono); font-size: 76px; font-weight: 800; letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
+}
+.kds-ss-hint { font-size: 12px; color: var(--kds-muted); text-transform: uppercase; letter-spacing: .1em; }
+.kds-ss-badge {
+  position: absolute; top: 28px; right: 28px;
+  background: var(--kds-brand); color: #fff; font-weight: 800; font-size: 14px;
+  padding: 8px 18px; border-radius: 999px; letter-spacing: .02em;
+}
+
+/* ── Modo kiosco: check-in / acceso admin (al despertar sin operación) ───*/
+
+.kds-home-split { position: fixed; inset: 0; z-index: 9998; display: none; }
+.kds-home-split.visible { display: block; }
+.kds-home-grid { display: grid; grid-template-columns: 1fr 1fr; height: 100%; }
+.kds-home-half {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  text-decoration: none; color: #fff; padding: 40px; text-align: center;
+}
+.kds-home-checkin { background: var(--kds-brand); }
+.kds-home-admin   { background: var(--kds-bg-2); }
+.kds-home-icon  { font-size: 60px; line-height: 1; }
+.kds-home-title { font-size: 23px; font-weight: 900; }
+.kds-home-sub   { font-size: 14px; opacity: .85; max-width: 320px; }
+.kds-home-back {
+  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,.3); color: rgba(255,255,255,.65); border: none; border-radius: 999px;
+  font-size: 12px; font-family: inherit; padding: 8px 16px; cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .kds-home-grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  .kds-ss-clock { font-size: 52px; }
+  .kds-ss-logo { height: 80px; }
+}
