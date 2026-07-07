@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Panel de Producción — Gorillaz</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/kds.css">
+  <link rel="manifest" href="/manifest-kds.webmanifest">
+  <meta name="theme-color" content="#15181d">
+  <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="/static/js/kds-pwa.js" defer></script>
+</head>
+<body>
+  <div class="kds-home-split visible">
+    <div class="kds-home-grid">
+      <a class="kds-home-half kds-home-checkin" href="/kds/checkin">
+        <div class="kds-home-icon">🛵</div>
+        <div class="kds-home-title">Check-in de clientes</div>
+        <div class="kds-home-sub">Toca aquí para registrar tu ingreso al taller</div>
+      </a>
+      <a class="kds-home-half kds-home-admin" href="/kds/login">
+        <div class="kds-home-icon">🔐</div>
+        <div class="kds-home-title">Panel de producción</div>
+        <div class="kds-home-sub">Inicia sesión con tu PIN de mecánico</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+  // Esta pantalla es el reposo por defecto de la tablet sin sesión: intenta
+  // impedir que se bloquee sola, igual que el resto del KDS.
+  (function () {
+    async function requestWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      try { await navigator.wakeLock.request('screen'); }
+      catch { /* algunos navegadores exigen un gesto del usuario antes de concederlo */ }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    });
+    requestWakeLock();
+  })();
+  </script>
+</body>
+</html>
