@@ -114,6 +114,10 @@ body {
 
 /* ── Placa / matrícula (mismo lenguaje que el resto del sitio) ──────────── */
 
+.plate-input {
+  font-family: var(--kds-mono); font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+}
+
 .plate-badge {
   font-family: var(--kds-mono); font-weight: 900; letter-spacing: .12em; color: var(--kds-ink);
   background: #fff; border: 2px solid var(--kds-ink); border-radius: 7px;
