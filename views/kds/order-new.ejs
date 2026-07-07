@@ -6,43 +6,14 @@
   <title>Nueva orden — Panel de Producción</title>
   <link rel="icon" href="/favicons/favicon.ico" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; font-family: Montserrat, system-ui, sans-serif; background: #f3f4f6; color: #111; }
-    .kds-top { background: #0f1115; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 10; }
-    .kds-back { color: #fff; text-decoration: none; font-weight: 800; font-size: 16px; }
-    .kds-top .label { font-weight: 900; font-size: 17px; }
-    .kds-wrap { max-width: 720px; margin: 0 auto; padding: 18px 16px 60px; }
-    .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); border: 1px solid #eef0f2; }
-    .card h2 { font-size: 12px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 12px; }
-    .kds-error { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 700; margin-bottom: 14px; }
-    input[type=text], input[type=tel], input[type=number], textarea {
-      width: 100%; padding: 13px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 15px;
-      font-family: inherit; outline: none; box-sizing: border-box; margin-bottom: 12px;
-    }
-    input:focus, textarea:focus { border-color: #F25C05; }
-    label.k { display: block; font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
-    .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
-    .cat-btn { padding: 16px 10px; font-size: 13px; font-weight: 800; background: #f3f4f6; color: #111; border: none; border-radius: 12px; cursor: pointer; font-family: inherit; text-align: center; }
-    .cat-btn:active { background: #e5e7eb; }
-    .cat-btn.other { background: #fff7ed; color: #9a3412; border: 1.5px dashed #fdba74; }
-    .item-list { margin-top: 14px; }
-    .item-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
-    .item-row .del { background: none; border: none; color: #dc2626; font-size: 16px; cursor: pointer; padding: 4px 8px; }
-    .total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; margin-top: 8px; border-top: 2px solid #111; font-weight: 900; font-size: 17px; }
-    .total-row span:last-child { color: #F25C05; }
-    .quick-add { display: none; margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed #e5e7eb; }
-    .qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .qty-btn { width: 48px; height: 48px; font-size: 22px; font-weight: 900; background: #f3f4f6; border: none; border-radius: 10px; cursor: pointer; }
-    .qty-row input { margin: 0; text-align: center; font-size: 18px; font-weight: 800; }
-    .save { width: 100%; margin-top: 6px; padding: 16px; font-size: 16px; font-weight: 800; background: #F25C05; color: #fff; border: none; border-radius: 12px; cursor: pointer; }
-  </style>
+  <link rel="stylesheet" href="/static/css/kds.css">
 </head>
 <body>
   <div class="kds-top">
     <a class="kds-back" href="/kds/placa">←</a>
     <span class="label">Nueva orden de servicio</span>
   </div>
+  <div class="kds-hazard"></div>
 
   <div class="kds-wrap">
     <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
