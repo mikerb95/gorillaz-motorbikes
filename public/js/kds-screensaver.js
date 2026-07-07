@@ -22,7 +22,7 @@
     overlay.className = 'kds-screensaver';
     overlay.innerHTML =
       '<div class="kds-ss-badge" id="kdsSsBadge" hidden></div>' +
-      '<img class="kds-ss-logo" src="' + LOGO_URL + '" alt="Gorillaz Motorbikes" />' +
+      '<div class="kds-ss-logo" style="-webkit-mask-image:url(' + LOGO_URL + ');mask-image:url(' + LOGO_URL + ')" role="img" aria-label="Gorillaz Motorbikes"></div>' +
       '<div class="kds-ss-clock" id="kdsSsClock"></div>' +
       '<div class="kds-ss-hint">Toca la pantalla para continuar</div>';
     document.body.appendChild(overlay);
