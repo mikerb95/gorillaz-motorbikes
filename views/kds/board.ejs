@@ -43,6 +43,9 @@
     id: o.id, label: o.label, motorcycle: o.motorcycle, mechanic: o.mechanic,
     status: o.status, total: o.total, itemCount: o.items.length, createdAt: o.createdAt,
   }))) %>;
+  // El tablero es la pantalla "de reposo" del KDS: nunca hay una operación
+  // puntual en curso aquí, así que al despertar cae en modo kiosco.
+  window.KDS_SCREENSAVER = { hasActiveOperation: false };
 
   const board = document.getElementById('board');
 
