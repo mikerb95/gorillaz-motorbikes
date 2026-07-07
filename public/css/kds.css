@@ -311,3 +311,22 @@ body.kds-login {
   .kds-ss-clock { font-size: 52px; }
   .kds-ss-logo { height: 80px; }
 }
+
+/* ── Check-in de clientes (kiosco, misma lógica que /checkin) ───────────*/
+
+.kds-checkin-wrap { max-width: 560px; }
+.kds-checkin-phone { display: flex; gap: 8px; }
+.kds-checkin-phone input:first-child { width: 76px; text-align: center; flex: none; }
+.kds-checkin-success { text-align: center; padding: 40px 24px; display: grid; gap: 10px; }
+.kds-checkin-success .icon { font-size: 44px; }
+.kds-checkin-success h2 { margin: 0; font-size: 21px; font-weight: 900; }
+.kds-checkin-success p { margin: 0; color: var(--kds-muted-2); font-size: 14px; }
+
+.brand-suggest { position: relative; }
+.brand-suggest-list {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; margin: 0 0 12px; padding: 6px;
+  list-style: none; background: #fff; border: 1.5px solid var(--kds-hair); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 20; max-height: 220px; overflow-y: auto;
+}
+.brand-suggest-list li { padding: 11px 10px; border-radius: 7px; font-size: 15px; cursor: pointer; }
+.brand-suggest-list li:hover, .brand-suggest-list li:active { background: var(--kds-paper-2); }
