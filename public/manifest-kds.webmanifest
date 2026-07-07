@@ -18,6 +18,6 @@
   "background_color": "#15181d",
   "display": "standalone",
   "orientation": "any",
-  "start_url": "/kds/board",
+  "start_url": "/kds",
   "scope": "/kds/"
 }
