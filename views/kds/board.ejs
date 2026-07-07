@@ -6,49 +6,7 @@
   <title>Panel de Producción — Gorillaz</title>
   <link rel="icon" href="/favicons/favicon.ico" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; font-family: Montserrat, system-ui, sans-serif; background: #f3f4f6; color: #111; }
-    .kds-top {
-      background: #0f1115; color: #fff; padding: 16px 20px; display: flex; align-items: center;
-      justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 10;
-    }
-    .kds-top .brand { font-weight: 900; font-size: 17px; }
-    .kds-top .who { font-size: 12px; color: #9ca3af; }
-    .kds-top .actions { display: flex; align-items: center; gap: 10px; }
-    .kds-btn {
-      border: none; border-radius: 10px; padding: 10px 16px; font-weight: 800; font-size: 13px;
-      cursor: pointer; font-family: inherit; text-decoration: none; display: inline-block;
-    }
-    .kds-btn.orange { background: #F25C05; color: #fff; }
-    .kds-btn.dark   { background: rgba(255,255,255,.12); color: #fff; }
-    .kds-flash {
-      background: #f0fdf4; border-bottom: 1px solid #bbf7d0; color: #166534; text-align: center;
-      font-weight: 700; font-size: 13px; padding: 10px;
-    }
-    .kds-board { display: grid; grid-template-columns: repeat(4, minmax(240px,1fr)); gap: 14px; padding: 16px; overflow-x: auto; }
-    .kds-col { background: #fff; border-radius: 14px; padding: 12px; min-height: 200px; border: 1px solid #eef0f2; }
-    .kds-col h2 { font-size: 12px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin: 4px 4px 12px; display: flex; justify-content: space-between; }
-    .kds-card {
-      display: block; text-decoration: none; color: inherit; background: #f9fafb; border-radius: 12px;
-      padding: 12px 14px; margin-bottom: 10px; border: 1px solid #eef0f2;
-    }
-    .kds-card:active { background: #f3f4f6; }
-    .kds-card .label { font-weight: 900; font-size: 14px; }
-    .kds-card .moto { font-size: 13px; color: #374151; font-weight: 700; margin-top: 2px; }
-    .kds-card .meta { font-size: 11px; color: #9ca3af; margin-top: 6px; }
-    .kds-empty { text-align: center; color: #9ca3af; font-size: 12px; padding: 20px 8px; }
-    .badge { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
-    .b-ingreso_taller   { background: #fef3c7; color: #92400e; }
-    .b-trabajo_en_curso { background: #dbeafe; color: #1e40af; }
-    .b-en_pausa         { background: #f3f4f6; color: #4b5563; }
-    .b-trabajo_completo { background: #dcfce7; color: #166534; }
-    .kds-fab {
-      position: fixed; right: 20px; bottom: 20px; background: #F25C05; color: #fff; text-decoration: none;
-      font-weight: 800; font-size: 16px; padding: 18px 26px; border-radius: 999px; box-shadow: 0 8px 24px rgba(242,92,5,.4);
-    }
-    @media (max-width: 900px) { .kds-board { grid-template-columns: repeat(2, minmax(220px,1fr)); } }
-  </style>
+  <link rel="stylesheet" href="/static/css/kds.css">
 </head>
 <body>
   <div class="kds-top">
@@ -69,6 +27,7 @@
       <% } %>
     </div>
   </div>
+  <div class="kds-hazard"></div>
 
   <% if (flash === 'facturada') { %>
     <div class="kds-flash">✓ Orden facturada correctamente.</div>
@@ -106,7 +65,7 @@
       } else {
         inCol.forEach(o => {
           const a = document.createElement('a');
-          a.className = 'kds-card';
+          a.className = 'kds-card st-' + o.status;
           a.href = '/kds/orden/' + o.id;
           a.innerHTML =
             '<div class="label">' + o.label + '</div>' +

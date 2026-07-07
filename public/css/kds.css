@@ -1,0 +1,262 @@
+/* ==========================================================================
+   Panel de Producción (KDS) — Gorillaz Motorbikes
+   Identidad: tablero de taller. Fichas de trabajo tipo "orden colgada",
+   franja de peligro (cinta de taller) como único acento decorativo,
+   placas en monoespaciado como en el resto del sitio (cp-plate-badge).
+   ========================================================================== */
+
+:root {
+  --kds-ink:        #0d0d0d;
+  --kds-bg:         #15181d;   /* fondo de cromo / chasis */
+  --kds-bg-2:       #1b1f26;   /* barra superior, paneles hundidos */
+  --kds-line:       #2a2f38;   /* líneas sobre fondo oscuro */
+  --kds-paper:      #f7f5f0;   /* superficie tipo papel de orden */
+  --kds-paper-2:    #efece3;   /* inset sobre papel */
+  --kds-hair:        #e7e1d2;   /* líneas finas sobre papel */
+  --kds-muted:      #8f97a3;   /* texto secundario sobre oscuro */
+  --kds-muted-2:    #6b7280;   /* texto secundario sobre papel */
+  --kds-brand:      #F25C05;
+  --kds-brand-deep: #401309;
+  --kds-radius:     14px;
+  --kds-radius-lg:  18px;
+  --kds-radius-pill:999px;
+  --kds-mono:       'Courier New', monospace;
+
+  --kds-s-wait-bg:  #fef3c7; --kds-s-wait-fg:  #92400e; --kds-s-wait-edge:  #d97706;
+  --kds-s-prog-bg:  #dbeafe; --kds-s-prog-fg:  #1e40af; --kds-s-prog-edge:  #2563eb;
+  --kds-s-pause-bg: #e9eaec; --kds-s-pause-fg: #4b5563; --kds-s-pause-edge: #9ca3af;
+  --kds-s-done-bg:  #dcfce7; --kds-s-done-fg:  #166534; --kds-s-done-edge:  #16a34a;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  font-family: Montserrat, system-ui, sans-serif;
+  background: var(--kds-bg);
+  color: var(--kds-ink);
+}
+
+/* ── Barra superior + cinta de taller ───────────────────────────────────── */
+
+.kds-top {
+  background: var(--kds-bg-2);
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--kds-line);
+}
+.kds-top .brand { font-weight: 900; font-size: 17px; letter-spacing: .2px; }
+.kds-top .who { font-size: 12px; color: var(--kds-muted); margin-top: 2px; }
+.kds-top .label { font-weight: 900; font-size: 16px; }
+.kds-top .actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.kds-back {
+  color: #fff; text-decoration: none; font-weight: 900; font-size: 18px; line-height: 1;
+  width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.08);
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.kds-hazard {
+  height: 5px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--kds-brand) 0 10px,
+    var(--kds-ink) 10px 20px
+  );
+}
+
+/* ── Contenedores ───────────────────────────────────────────────────────── */
+
+.kds-wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 60px; }
+
+.card {
+  background: var(--kds-paper);
+  border-radius: var(--kds-radius-lg);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 20px rgba(0,0,0,.05);
+  border: 1px solid rgba(0,0,0,.05);
+}
+.card h2, .kds-col h2 {
+  font-size: 11px; font-weight: 800; color: var(--kds-muted-2); text-transform: uppercase;
+  letter-spacing: .8px; margin: 0 0 12px; padding-bottom: 8px;
+  border-bottom: 1.5px dashed var(--kds-hair);
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+
+/* ── Botones ─────────────────────────────────────────────────────────────*/
+
+.kds-btn {
+  border: none; border-radius: 10px; padding: 10px 16px; font-weight: 800; font-size: 13px;
+  cursor: pointer; font-family: inherit; text-decoration: none; display: inline-block;
+}
+.kds-btn.orange { background: var(--kds-brand); color: #fff; }
+.kds-btn.dark   { background: rgba(255,255,255,.1); color: #fff; }
+.kds-btn.dark:active { background: rgba(255,255,255,.18); }
+
+.save {
+  width: 100%; margin-top: 6px; padding: 16px; font-size: 16px; font-weight: 800;
+  background: var(--kds-brand); color: #fff; border: none; border-radius: 12px; cursor: pointer;
+  font-family: inherit;
+}
+.save:active { background: var(--kds-brand-deep); }
+
+.invoice-cta {
+  width: 100%; margin-top: 4px; padding: 18px; font-size: 17px; font-weight: 900;
+  background: var(--kds-s-done-edge); color: #fff; text-decoration: none; text-align: center;
+  display: block; border-radius: 14px;
+}
+
+/* ── Placa / matrícula (mismo lenguaje que el resto del sitio) ──────────── */
+
+.plate-badge {
+  font-family: var(--kds-mono); font-weight: 900; letter-spacing: .12em; color: var(--kds-ink);
+  background: #fff; border: 2px solid var(--kds-ink); border-radius: 7px;
+  padding: 3px 10px; display: inline-block;
+}
+
+/* ── Tablero (board.ejs) ─────────────────────────────────────────────────*/
+
+.kds-board { display: grid; grid-template-columns: repeat(4, minmax(240px,1fr)); gap: 14px; padding: 16px; overflow-x: auto; }
+.kds-col {
+  background: var(--kds-paper); border-radius: var(--kds-radius-lg); padding: 12px 12px 6px;
+  min-height: 200px; border: 1px solid rgba(0,0,0,.05);
+}
+.kds-col h2 span:last-child {
+  font-family: var(--kds-mono); background: var(--kds-ink); color: #fff; border-radius: 999px;
+  padding: 1px 8px; font-size: 11px;
+}
+
+.kds-card {
+  position: relative;
+  display: block; text-decoration: none; color: inherit; background: var(--kds-paper-2);
+  border-radius: 12px; padding: 12px 14px 12px 18px; margin-bottom: 10px; border: 1px solid rgba(0,0,0,.05);
+  overflow: hidden;
+}
+.kds-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  background: var(--kds-s-wait-edge);
+}
+.kds-card.st-trabajo_en_curso::before { background: var(--kds-s-prog-edge); }
+.kds-card.st-en_pausa::before         { background: var(--kds-s-pause-edge); }
+.kds-card.st-trabajo_completo::before { background: var(--kds-s-done-edge); }
+.kds-card:active { background: #e7e4da; }
+.kds-card .label { font-weight: 900; font-size: 14px; }
+.kds-card .moto { font-family: var(--kds-mono); font-size: 13px; color: #374151; font-weight: 700; margin-top: 3px; letter-spacing: .04em; }
+.kds-card .meta { font-size: 11px; color: var(--kds-muted-2); margin-top: 6px; }
+.kds-empty { text-align: center; color: #b4ad9c; font-size: 12px; padding: 20px 8px; }
+
+.kds-fab {
+  position: fixed; right: 20px; bottom: 20px; background: var(--kds-brand); color: #fff; text-decoration: none;
+  font-weight: 800; font-size: 16px; padding: 18px 26px; border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(242,92,5,.45);
+}
+
+.kds-flash {
+  background: #f0fdf4; border-bottom: 1px solid #bbf7d0; color: #166534; text-align: center;
+  font-weight: 700; font-size: 13px; padding: 10px;
+}
+
+@media (max-width: 900px) { .kds-board { grid-template-columns: repeat(2, minmax(220px,1fr)); } }
+
+/* ── Insignias de estado ─────────────────────────────────────────────────*/
+
+.badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.b-ingreso_taller   { background: var(--kds-s-wait-bg);  color: var(--kds-s-wait-fg); }
+.b-trabajo_en_curso { background: var(--kds-s-prog-bg);  color: var(--kds-s-prog-fg); }
+.b-en_pausa         { background: var(--kds-s-pause-bg); color: var(--kds-s-pause-fg); }
+.b-trabajo_completo { background: var(--kds-s-done-bg);  color: var(--kds-s-done-fg); }
+
+/* ── Filas de datos / ítems ──────────────────────────────────────────────*/
+
+.row { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 14px; }
+.k { font-size: 11px; font-weight: 700; color: #a8a190; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+label.k { display: block; margin-bottom: 4px; }
+.v { font-weight: 800; font-size: 14px; }
+.item, .item-row { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--kds-hair); font-size: 14px; }
+.item:last-child, .item-row:last-child { border-bottom: none; }
+.item .q { color: var(--kds-muted-2); font-weight: 700; }
+.item-row .del { background: none; border: none; color: #dc2626; font-size: 16px; cursor: pointer; padding: 4px 8px; }
+.total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; margin-top: 8px; border-top: 2px solid var(--kds-ink); font-weight: 900; font-size: 17px; }
+.total-row span:last-child { font-family: var(--kds-mono); color: var(--kds-brand); }
+
+/* ── Estado / catálogo (order-detail, order-new) ─────────────────────────*/
+
+.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.status-btn {
+  padding: 18px 10px; font-size: 14px; font-weight: 800; background: var(--kds-paper-2); color: var(--kds-ink);
+  border: 2px solid transparent; border-radius: 12px; cursor: pointer; font-family: inherit;
+}
+.status-btn.active { background: var(--kds-ink); color: #fff; }
+
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
+.cat-btn { padding: 16px 10px; font-size: 13px; font-weight: 800; background: var(--kds-paper-2); color: var(--kds-ink); border: none; border-radius: 12px; cursor: pointer; font-family: inherit; text-align: center; }
+.cat-btn:active { background: #e2ded2; }
+.cat-btn.other { background: #fff7ed; color: #9a3412; border: 1.5px dashed #fdba74; }
+
+.quick-add { display: none; margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed var(--kds-hair); }
+.qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.qty-btn { width: 48px; height: 48px; font-size: 22px; font-weight: 900; background: var(--kds-paper-2); border: none; border-radius: 10px; cursor: pointer; font-family: inherit; }
+.qty-row input { margin: 0; text-align: center; font-size: 18px; font-weight: 800; }
+
+/* ── Campos ───────────────────────────────────────────────────────────── */
+
+input[type=text], input[type=tel], input[type=number], textarea {
+  width: 100%; padding: 13px; border: 1.5px solid var(--kds-hair); border-radius: 10px; font-size: 15px;
+  font-family: inherit; outline: none; box-sizing: border-box; margin-bottom: 12px; background: #fff;
+}
+input:focus, textarea:focus { border-color: var(--kds-brand); }
+
+.kds-error {
+  background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b;
+  border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 700; margin-bottom: 14px;
+}
+
+.login-note { text-align: center; color: var(--kds-muted); font-size: 13px; padding: 20px; }
+.login-note a { color: var(--kds-brand); font-weight: 800; text-decoration: none; }
+
+/* ── Login (PIN) ─────────────────────────────────────────────────────────*/
+
+body.kds-login {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.kds-login-card {
+  width: 100%; max-width: 420px; background: var(--kds-paper); border-radius: 22px;
+  padding: 30px 26px; box-shadow: 0 24px 70px rgba(0,0,0,.5); border-top: 5px solid var(--kds-brand);
+}
+.kds-logo { text-align: center; margin-bottom: 14px; }
+.kds-logo img { height: 56px; }
+.kds-title { text-align: center; font-size: 19px; font-weight: 900; margin: 0 0 4px; color: var(--kds-ink); }
+.kds-sub { text-align: center; font-size: 13px; color: var(--kds-muted-2); margin: 0 0 20px; }
+.kds-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 22px; }
+.kds-dot { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #d8d2c3; }
+.kds-dot.filled { background: var(--kds-brand); border-color: var(--kds-brand); }
+.kds-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.kds-key {
+  padding: 22px 0; font-size: 26px; font-weight: 800; background: var(--kds-paper-2); color: var(--kds-ink);
+  border: none; border-radius: 16px; cursor: pointer; font-family: inherit;
+}
+.kds-key:active { background: #e2ded2; }
+.kds-key.action { background: var(--kds-ink); color: #fff; font-size: 16px; }
+.kds-key.enter { background: var(--kds-brand); color: #fff; }
+
+/* ── Placa (búsqueda) ────────────────────────────────────────────────────*/
+
+.plate-display {
+  background: #fff; border: 3px solid var(--kds-ink); border-radius: 14px; padding: 22px;
+  text-align: center; font-size: 38px; font-weight: 900; letter-spacing: 6px; margin-bottom: 20px; min-height: 84px;
+  display: flex; align-items: center; justify-content: center; font-family: var(--kds-mono);
+}
+.plate-display.empty { color: #b4ad9c; font-size: 18px; letter-spacing: normal; font-weight: 700; font-family: Montserrat, sans-serif; }
+.plate-keypad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }
+.plate-key { padding: 16px 0; font-size: 18px; font-weight: 800; background: var(--kds-paper); color: var(--kds-ink); border: 1.5px solid var(--kds-hair); border-radius: 12px; cursor: pointer; font-family: inherit; }
+.plate-key:active { background: var(--kds-paper-2); }
+.plate-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.plate-actions button { padding: 18px 0; font-size: 16px; font-weight: 800; border: none; border-radius: 14px; cursor: pointer; font-family: inherit; }
+.plate-clear { background: var(--kds-paper-2); color: #374151; }
+.plate-go { background: var(--kds-brand); color: #fff; }

@@ -6,39 +6,10 @@
   <title>Panel de Producción — Gorillaz</title>
   <link rel="icon" href="/favicons/favicon.ico" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      font-family: Montserrat, system-ui, sans-serif; background: #0f1115; padding: 20px;
-    }
-    .kds-card {
-      width: 100%; max-width: 420px; background: #fff; border-radius: 20px;
-      padding: 30px 26px; box-shadow: 0 20px 60px rgba(0,0,0,.4);
-    }
-    .kds-logo { text-align: center; margin-bottom: 14px; }
-    .kds-logo img { height: 56px; }
-    .kds-title { text-align: center; font-size: 19px; font-weight: 900; margin: 0 0 4px; color: #111; }
-    .kds-sub { text-align: center; font-size: 13px; color: #6b7280; margin: 0 0 20px; }
-    .kds-error {
-      background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
-      border-radius: 12px; padding: 12px 14px; font-size: 13px; font-weight: 700; margin-bottom: 16px; text-align: center;
-    }
-    .kds-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 22px; }
-    .kds-dot { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #d1d5db; }
-    .kds-dot.filled { background: #F25C05; border-color: #F25C05; }
-    .kds-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .kds-key {
-      padding: 22px 0; font-size: 26px; font-weight: 800; background: #f3f4f6; color: #111;
-      border: none; border-radius: 16px; cursor: pointer; font-family: inherit;
-    }
-    .kds-key:active { background: #e5e7eb; }
-    .kds-key.action { background: #0f1115; color: #fff; font-size: 16px; }
-    .kds-key.enter { background: #F25C05; color: #fff; }
-  </style>
+  <link rel="stylesheet" href="/static/css/kds.css">
 </head>
-<body>
-  <div class="kds-card">
+<body class="kds-login">
+  <div class="kds-login-card">
     <div class="kds-logo"><img src="/images/nobg_logo/logo_transp.png" alt="Gorillaz" /></div>
     <h1 class="kds-title">Panel de Producción</h1>
     <p class="kds-sub">Ingresa tu PIN para gestionar órdenes</p>
