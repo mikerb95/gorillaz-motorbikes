@@ -9,6 +9,7 @@ const { JWT_SECRET } = require('../config');
 const { requireKdsEmployee, authLimiter } = require('../middleware/auth');
 const { requirePin, verifyPinHandler } = require('../middleware/employeePin');
 const settings = require('../helpers/settings');
+const { hoyCO } = require('../helpers/datetime');
 const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
 const {
   getActiveEmployees, getEmployeeById,
@@ -16,6 +17,7 @@ const {
   getActiveServiceOrders, getServiceOrdersByPlate, getServiceOrderById,
   createServiceOrder, updateServiceOrder, addServiceOrderEvent,
   convertServiceOrderToInvoice, applyStatusPolicy,
+  getAllAppointments,
 } = require('../db');
 
 const router = express.Router();
