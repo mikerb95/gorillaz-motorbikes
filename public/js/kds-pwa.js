@@ -22,8 +22,8 @@
     el.innerHTML =
       '<span class="kds-pwa-banner-text">' +
       (isIOS
-        ? 'Instala el KDS: toca compartir <strong>⬆︎</strong> y luego «Agregar a inicio».'
-        : 'Instala el KDS en esta tablet para abrirlo como app.') +
+        ? 'Instala el Panel de Taller: toca compartir <strong>⬆︎</strong> y luego «Agregar a inicio».'
+        : 'Instala el Panel de Taller en esta tablet para abrirlo como app.') +
       '</span>' +
       (isIOS ? '' : '<button type="button" class="kds-pwa-banner-btn">Instalar</button>') +
       '<button type="button" class="kds-pwa-banner-close" aria-label="Cerrar">✕</button>';
