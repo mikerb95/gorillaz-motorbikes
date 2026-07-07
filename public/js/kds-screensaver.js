@@ -43,8 +43,8 @@
         '</a>' +
         '<a class="kds-home-half kds-home-admin" href="' + ADMIN_URL + '">' +
           '<div class="kds-home-icon">🔐</div>' +
-          '<div class="kds-home-title">Panel administrativo</div>' +
-          '<div class="kds-home-sub">Acceso solo para personal autorizado</div>' +
+          '<div class="kds-home-title">Panel de producción</div>' +
+          '<div class="kds-home-sub">Inicia sesión con tu PIN de mecánico</div>' +
         '</a>' +
       '</div>' +
       '<button type="button" class="kds-home-back" id="kdsHomeBack">Volver al tablero (personal del taller)</button>';
