@@ -8,7 +8,7 @@
   const IDLE_MS = cfg.idleMs || 30000;
   const hasActiveOperation = !!cfg.hasActiveOperation;
   const CITAS_URL   = cfg.citasUrl   || '/kds/citas-hoy.json';
-  const CHECKIN_URL = cfg.checkinUrl || '/checkin';
+  const CHECKIN_URL = cfg.checkinUrl || '/kds/checkin';
   const ADMIN_URL   = cfg.adminUrl   || '/club/login?returnTo=%2Fadmin';
   const LOGO_URL    = cfg.logoUrl    || '/images/nobg_logo/logo_transp.png';
 
