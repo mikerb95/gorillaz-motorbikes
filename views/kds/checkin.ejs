@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Check-in de taller — Gorillaz</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/kds.css">
+</head>
+<body class="kds-checkin-body">
+  <div class="kds-top">
+    <a class="kds-back" href="/kds">←</a>
+    <span class="label">Check-in de taller</span>
+  </div>
+  <div class="kds-hazard"></div>
+
+  <div class="kds-wrap kds-checkin-wrap">
+
+    <% if (ok) { %>
+      <div class="card kds-checkin-success">
+        <div class="icon">✅</div>
+        <h2>¡Listo, quedaste registrado!</h2>
+        <p>Un mecánico tomará tus datos en unos minutos. Puedes esperar en el taller.</p>
+      </div>
+    <% } else { %>
+
+      <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
+
+      <form class="card" method="post" action="/kds/checkin">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+        <label class="k" for="clientName">Nombre completo</label>
+        <input id="clientName" name="clientName" type="text" required maxlength="120"
+          placeholder="Juan Pérez" value="<%= values.clientName || '' %>" />
+
+        <label class="k">Número de WhatsApp</label>
+        <div class="kds-checkin-phone">
+          <input name="clientPhoneCountry" type="text" maxlength="4" value="<%= values.clientPhoneCountry || '+57' %>" />
+          <input id="clientPhone" name="clientPhone" type="text" required inputmode="numeric"
+            placeholder="3001234567" value="<%= values.clientPhone || '' %>" />
+        </div>
+
+        <label class="k" for="plate">Placa de la moto</label>
+        <input id="plate" name="plate" type="text" required maxlength="10" class="plate-input"
+          placeholder="ABC123" oninput="this.value=this.value.toUpperCase()"
+          value="<%= values.plate || '' %>" />
+
+        <div class="row">
+          <div>
+            <label class="k" for="brand">Marca</label>
+            <input id="brand" name="brand" type="text" required maxlength="60"
+              placeholder="Yamaha" value="<%= values.brand || '' %>" data-brand-suggest />
+          </div>
+          <div>
+            <label class="k" for="reference">Referencia</label>
+            <input id="reference" name="reference" type="text" required maxlength="60"
+              placeholder="MT-03" value="<%= values.reference || '' %>" data-model-suggest />
+          </div>
+        </div>
+
+        <button class="save" type="submit">Registrar ingreso →</button>
+      </form>
+
+    <% } %>
+  </div>
+
+  <script src="/static/js/motorcycle-brands.js"></script>
+</body>
+</html>
