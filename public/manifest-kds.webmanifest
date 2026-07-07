@@ -1,7 +1,7 @@
 {
-  "name": "Gorillaz KDS — Panel de Producción",
+  "name": "Gorillaz KDS — Panel de Taller",
   "short_name": "Gorillaz KDS",
-  "description": "Panel de producción del taller Gorillaz Motorbikes",
+  "description": "Panel de taller del taller Gorillaz Motorbikes",
   "icons": [
     {
       "src": "/favicons/android-chrome-192x192.png",
