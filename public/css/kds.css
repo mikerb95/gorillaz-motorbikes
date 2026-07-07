@@ -274,7 +274,14 @@ body.kds-login {
   opacity: 0; pointer-events: none; transition: opacity .5s ease;
 }
 .kds-screensaver.visible { opacity: 1; pointer-events: auto; }
-.kds-ss-logo { height: 110px; width: auto; opacity: .95; filter: drop-shadow(0 10px 30px rgba(242,92,5,.3)); }
+.kds-ss-logo {
+  height: 110px; width: 220px; opacity: .95;
+  background: var(--kds-brand);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-size: contain; mask-size: contain;
+  filter: drop-shadow(0 10px 30px rgba(242,92,5,.3));
+}
 .kds-ss-clock {
   font-family: var(--kds-mono); font-size: 76px; font-weight: 800; letter-spacing: .04em;
   font-variant-numeric: tabular-nums;
