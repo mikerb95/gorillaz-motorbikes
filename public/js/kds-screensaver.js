@@ -9,7 +9,7 @@
   const hasActiveOperation = !!cfg.hasActiveOperation;
   const CITAS_URL   = cfg.citasUrl   || '/kds/citas-hoy.json';
   const CHECKIN_URL = cfg.checkinUrl || '/kds/checkin';
-  const ADMIN_URL   = cfg.adminUrl   || '/club/login?returnTo=%2Fadmin';
+  const ADMIN_URL   = cfg.adminUrl   || '/kds/login';
   const LOGO_URL    = cfg.logoUrl    || '/images/nobg_logo/logo_transp.png';
 
   let idleTimer, clockTimer, citasTimer;
