@@ -57,6 +57,9 @@ const templateLocals = async (req, res, next) => {
   // Disponible para todas las plantillas; el widget solo se pinta si hay clave.
   res.locals.recaptchaSiteKey = RECAPTCHA_SITE_KEY;
 
+  // Cache-busting para /static/* (servido con cache-control immutable de 1 año).
+  res.locals.assetV = assetVersion;
+
   // Formateadores de fecha/hora en hora Colombia para todas las vistas EJS.
   // Convierten los timestamps UTC de la BD a America/Bogota (UTC−5).
   res.locals.fechaCO     = fechaCO;
