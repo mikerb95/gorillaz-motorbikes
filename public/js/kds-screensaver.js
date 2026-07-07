@@ -24,10 +24,21 @@
       '<div class="kds-ss-badge" id="kdsSsBadge" hidden></div>' +
       '<div class="kds-ss-logo" style="-webkit-mask-image:url(' + LOGO_URL + ');mask-image:url(' + LOGO_URL + ')" role="img" aria-label="Gorillaz Motorbikes"></div>' +
       '<div class="kds-ss-clock" id="kdsSsClock"></div>' +
-      '<div class="kds-ss-hint">Toca la pantalla para continuar</div>';
+      '<div class="kds-ss-hint">Toca la pantalla para continuar</div>' +
+      '<button type="button" class="kds-ss-fullscreen-btn" id="kdsSsFullscreenBtn" aria-label="Pantalla completa">⛶</button>';
     document.body.appendChild(overlay);
     overlay.addEventListener('click', dismissScreensaver);
     overlay.addEventListener('touchstart', dismissScreensaver, { passive: false });
+    const fsBtn = document.getElementById('kdsSsFullscreenBtn');
+    fsBtn.addEventListener('click', toggleFullscreen);
+    fsBtn.addEventListener('touchstart', toggleFullscreen, { passive: false });
+  }
+
+  function toggleFullscreen(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen().catch(() => {});
   }
 
   function buildHomeOverlay() {
