@@ -316,7 +316,7 @@ body.kds-login {
 @media (max-width: 700px) {
   .kds-home-grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
   .kds-ss-clock { font-size: 52px; }
-  .kds-ss-logo { height: 80px; }
+  .kds-ss-logo { height: 80px; width: 160px; }
 }
 
 /* ── Check-in de clientes (kiosco, misma lógica que /checkin) ───────────*/
