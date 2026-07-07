@@ -14,6 +14,7 @@ const { csrfToken, validateCsrf }   = require('./middleware/csrf');
 const { jwtCart, templateLocals }   = require('./middleware/locals');
 
 const app = express();
+app.use((req, res, next) => { console.log('APP TOP HIT', req.method, req.originalUrl); next(); });
 
 // En serverless (Vercel) la instancia puede congelarse antes de que un
 // initDb() "fire-and-forget" termine, dejando migraciones sin aplicar. Por eso
