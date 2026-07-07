@@ -1,0 +1,23 @@
+{
+  "name": "Gorillaz KDS — Panel de Producción",
+  "short_name": "Gorillaz KDS",
+  "description": "Panel de producción del taller Gorillaz Motorbikes",
+  "icons": [
+    {
+      "src": "/favicons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#15181d",
+  "background_color": "#15181d",
+  "display": "standalone",
+  "orientation": "any",
+  "start_url": "/kds/board",
+  "scope": "/kds/"
+}
