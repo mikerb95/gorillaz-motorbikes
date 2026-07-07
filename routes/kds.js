@@ -116,6 +116,19 @@ router.get('/orders.json', async (req, res) => {
   })));
 });
 
+// Conteo de citas del día para el badge del protector de pantalla.
+router.get('/citas-hoy.json', async (req, res) => {
+  try {
+    const today = hoyCO();
+    const appointments = await getAllAppointments();
+    const count = appointments.filter(a => a.date === today && a.status !== 'cancelada').length;
+    res.json({ count });
+  } catch (e) {
+    console.error('GET /kds/citas-hoy.json error:', e.message);
+    res.status(500).json({ count: 0 });
+  }
+});
+
 // ── Buscar por placa ────────────────────────────────────────────────────
 router.get('/placa', (req, res) => {
   res.render('kds/placa', { error: null });
