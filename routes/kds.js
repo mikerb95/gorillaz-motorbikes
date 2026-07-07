@@ -1,9 +1,10 @@
 'use strict';
-const express = require('express');
-const path    = require('path');
-const fs      = require('fs');
-const jwt     = require('jsonwebtoken');
-const bcrypt  = require('bcryptjs');
+const express   = require('express');
+const path      = require('path');
+const fs        = require('fs');
+const jwt       = require('jsonwebtoken');
+const bcrypt    = require('bcryptjs');
+const rateLimit = require('express-rate-limit');
 
 const { JWT_SECRET } = require('../config');
 const { requireKdsEmployee, authLimiter } = require('../middleware/auth');
@@ -17,7 +18,7 @@ const {
   getActiveServiceOrders, getServiceOrdersByPlate, getServiceOrderById,
   createServiceOrder, updateServiceOrder, addServiceOrderEvent,
   convertServiceOrderToInvoice, applyStatusPolicy,
-  getAllAppointments,
+  getAllAppointments, createCheckin,
 } = require('../db');
 
 const router = express.Router();
