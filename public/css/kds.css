@@ -330,13 +330,23 @@ body.kds-login {
 
 /* ── Check-in de clientes (kiosco, misma lógica que /checkin) ───────────*/
 
-.kds-checkin-wrap { max-width: 560px; }
-.kds-checkin-phone { display: flex; gap: 8px; }
-.kds-checkin-phone input:first-child { width: 76px; text-align: center; flex: none; }
-.kds-checkin-success { text-align: center; padding: 40px 24px; display: grid; gap: 10px; }
-.kds-checkin-success .icon { font-size: 44px; }
-.kds-checkin-success h2 { margin: 0; font-size: 21px; font-weight: 900; }
-.kds-checkin-success p { margin: 0; color: var(--kds-muted-2); font-size: 14px; }
+body.kds-checkin-body { min-height: 100vh; display: flex; flex-direction: column; }
+body.kds-checkin-body .kds-wrap { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+.kds-checkin-wrap { max-width: 1120px; width: 100%; margin-left: auto; margin-right: auto; }
+.kds-checkin-wrap .card { padding: 36px; }
+.kds-checkin-wrap label.k { font-size: 22px; margin-bottom: 8px; }
+.kds-checkin-wrap input[type=text], .kds-checkin-wrap input[type=tel] {
+  font-size: 30px; padding: 26px; margin-bottom: 24px; border-radius: 20px;
+}
+.kds-checkin-wrap .row { gap: 28px; }
+.kds-checkin-phone { display: flex; gap: 16px; }
+.kds-checkin-phone input:first-child { width: 152px; text-align: center; flex: none; }
+.kds-checkin-wrap .save { padding: 32px; font-size: 32px; border-radius: 24px; margin-top: 12px; }
+.kds-checkin-success { text-align: center; padding: 80px 48px; display: grid; gap: 20px; }
+.kds-checkin-success .icon { font-size: 88px; }
+.kds-checkin-success h2 { margin: 0; font-size: 42px; font-weight: 900; }
+.kds-checkin-success p { margin: 0; color: var(--kds-muted-2); font-size: 28px; }
 
 /* ── Banner de instalación PWA ──────────────────────────────────────────*/
 
