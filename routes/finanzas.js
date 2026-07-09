@@ -148,7 +148,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
 
   const byMethod = {};
   paidInvoices.filter(i => inPeriod(invIncomeDate(i), year, month)).forEach(i => {
-    byMethod[i.paymentMethod || 'efectivo'] = (byMethod[i.paymentMethod || 'efectivo'] || 0) + i.subtotal;
+    byMethod[i.paymentMethod || 'efectivo'] = (byMethod[i.paymentMethod || 'efectivo'] || 0) + invIncome(i);
   });
 
   const recentMovements = [
