@@ -43,7 +43,9 @@
     '.pin-gate-key{padding:16px 0;font-size:20px;font-weight:800;background:#f3f4f6;color:#111;border:none;border-radius:12px;cursor:pointer;font-family:inherit}' +
     '.pin-gate-key:active{background:#e5e7eb}' +
     '.pin-gate-key.wide{background:#111;color:#fff;font-size:13px}' +
-    '.pin-gate-key.wide:active{background:#333}';
+    '.pin-gate-key.wide:active{background:#333}' +
+    '.pin-gate-key.enter{background:#F25C05;color:#fff}' +
+    '.pin-gate-key.enter:active{background:#c94904}';
   document.head.appendChild(style);
 
   var wrap = document.createElement('div');
