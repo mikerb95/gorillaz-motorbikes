@@ -80,5 +80,9 @@
 
   <script src="/static/js/motorcycle-brands.js?v=<%= assetV('js/motorcycle-brands.js') %>"></script>
   <script src="/static/js/kds-keyboard.js?v=<%= assetV('js/kds-keyboard.js') %>"></script>
+  <script>
+    var plateEl = document.getElementById('plate');
+    if (plateEl) plateEl.addEventListener('input', function () { plateEl.value = plateEl.value.toUpperCase(); });
+  </script>
 </body>
 </html>
