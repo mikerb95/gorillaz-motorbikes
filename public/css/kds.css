@@ -283,7 +283,7 @@ body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand);
 
 @media (max-width: 700px) {
   .kds-topbar img { height: 34px; }
-  .kds-topbar .kds-clock { font-size: 22px; }
+  .kds-topbar .kds-clock { font-size: 66px; }
 }
 
 /* ── Menú flotante del panel de taller ───────────────────────────────────*/
