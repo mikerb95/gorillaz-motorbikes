@@ -221,7 +221,7 @@ function kdsCitaDateLabel(date) {
 }
 
 // Lookup de cita por placa (mismo contrato que /checkin/lookup del sitio).
-router.get('/checkin/lookup', async (req, res) => {
+router.get('/checkin/lookup', kdsLookupLimiter, async (req, res) => {
   const plate = normalizeKdsPlate(req.query.placa);
   if (plate.length < 4) return res.json({ ok: false, hasAppointment: false });
 
@@ -237,8 +237,9 @@ router.get('/checkin/lookup', async (req, res) => {
     ok: true,
     hasAppointment: true,
     alreadyCheckedIn,
+    // No se expone el nombre del titular: la UI solo muestra servicio y fecha, y
+    // devolverlo convertía el lookup en un oráculo placa→nombre del cliente.
     appointment: {
-      name: appointment.name || '',
       service: appointment.service || '',
       dateLabel: kdsCitaDateLabel(appointment.date),
     },
