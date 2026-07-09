@@ -67,13 +67,16 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <input type="hidden" name="type" id="qaType" />
           <label class="k">Ítem</label>
-          <input type="text" name="name" id="qaName" style="margin-bottom:12px" />
+          <input type="text" name="name" id="qaName" style="margin-bottom:12px"
+            readonly data-kds-kbd="qwerty" data-kds-label="Nombre del ítem" />
           <div class="qty-row">
             <button type="button" class="qty-btn" id="qtyMinus">−</button>
-            <input type="number" name="qty" id="qaQty" value="1" min="1" style="width:70px" />
+            <input type="text" name="qty" id="qaQty" value="1" style="width:70px"
+              readonly data-kds-kbd="qwerty" data-kds-label="Cantidad" />
             <button type="button" class="qty-btn" id="qtyPlus">+</button>
           </div>
-          <input type="number" name="price" id="qaPrice" min="0" step="1" placeholder="Precio unitario" />
+          <input type="text" name="price" id="qaPrice" placeholder="Precio unitario"
+            readonly data-kds-kbd="qwerty" data-kds-label="Precio unitario" />
           <button type="submit" class="save">+ Agregar a la orden</button>
         </form>
       </div>
