@@ -137,7 +137,9 @@ router.get('/board', requireKdsEmployee, async (req, res) => {
   res.render('kds/board', { orders, EMP_STATUS, flash: req.query.flash || null });
 });
 
-router.get('/orders.json', async (req, res) => {
+// Solo el board (que ya exige sesión) consume este feed. Sin el gate, exponía
+// placas, mecánicos, totales y los UUID de todas las órdenes activas a internet.
+router.get('/orders.json', requireKdsEmployee, async (req, res) => {
   const orders = await getActiveServiceOrders();
   res.json(orders.map(o => ({
     id: o.id, label: o.label, motorcycle: o.motorcycle, mechanic: o.mechanic,
