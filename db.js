@@ -2224,6 +2224,84 @@ async function setPresentationSlideIndex(code, index) {
   return r.rows[0] ? { slideIndex: Number(r.rows[0].slide_index), slideCount: Number(r.rows[0].slide_count) } : null;
 }
 
+// ── Estado del único TV del taller ──────────────────────────────────────
+// Fila fija (id=1): el remoto del KDS (POST) y la pantalla del TV (GET en
+// polling) pueden caer en instancias serverless distintas, así que se lee y
+// escribe directo en BD (nunca vía la caché de helpers/settings.js).
+
+function rowToTvState(row) {
+  return {
+    mode: row.mode,
+    playing: !!row.playing,
+    cmdSeq: Number(row.cmd_seq) || 0,
+    cmdAction: row.cmd_action,
+    course: row.course,
+    topic: row.topic,
+    slideIndex: Number(row.slide_index) || 0,
+    slideCount: Number(row.slide_count) || 1,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getTvState() {
+  await db.execute(`INSERT OR IGNORE INTO tv_state (id) VALUES (1)`);
+  const r = await db.execute('SELECT * FROM tv_state WHERE id = 1');
+  return rowToTvState(r.rows[0]);
+}
+
+// Cambia de modo (playlist ↔ presentación). Al entrar en modo presentación se
+// fija el curso/tema a proyectar; al volver a playlist se limpian.
+async function setTvMode(mode, { course = null, topic = null } = {}) {
+  await db.execute(`INSERT OR IGNORE INTO tv_state (id) VALUES (1)`);
+  const r = await db.execute({
+    sql: `UPDATE tv_state
+            SET mode = ?, course = ?, topic = ?, slide_index = 0,
+                cmd_seq = cmd_seq + 1, cmd_action = 'mode_changed',
+                updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')
+          WHERE id = 1
+          RETURNING *`,
+    args: [mode, mode === 'presentacion' ? course : null, mode === 'presentacion' ? topic : null],
+  });
+  return rowToTvState(r.rows[0]);
+}
+
+// Comando de reproducción del playlist (play/pause/skip_next/skip_prev). Cada
+// llamada sube cmd_seq: la pantalla del TV detecta el cambio en su próximo
+// polling y ejecuta la acción una sola vez (edge-triggered).
+async function sendTvPlaylistCommand(action) {
+  const playingUpdate = action === 'play' ? 1 : action === 'pause' ? 0 : null;
+  const r = await db.execute({
+    sql: `UPDATE tv_state
+            SET playing = COALESCE(?, playing),
+                cmd_seq = cmd_seq + 1, cmd_action = ?,
+                updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')
+          WHERE id = 1
+          RETURNING *`,
+    args: [playingUpdate, action],
+  });
+  return r.rows[0] ? rowToTvState(r.rows[0]) : null;
+}
+
+async function setTvSlideIndex(index) {
+  const r = await db.execute({
+    sql: `UPDATE tv_state
+            SET slide_index = MAX(0, MIN(?, slide_count - 1)),
+                cmd_seq = cmd_seq + 1, cmd_action = 'slide_changed',
+                updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')
+          WHERE id = 1
+          RETURNING slide_index, slide_count`,
+    args: [index],
+  });
+  return r.rows[0] ? { slideIndex: Number(r.rows[0].slide_index), slideCount: Number(r.rows[0].slide_count) } : null;
+}
+
+async function setTvSlideCount(count) {
+  await db.execute({
+    sql: `UPDATE tv_state SET slide_count = ? WHERE id = 1`,
+    args: [Math.max(1, count)],
+  });
+}
+
 // ── Clasificados ────────────────────────────────────────────────────────────
 
 function rowToClassified(row) {
@@ -2490,6 +2568,7 @@ module.exports = {
   getServiceOrdersByPlate,
   createCheckin, getCheckinById, getPendingCheckins, getPendingCheckinsByPlate, markCheckinAttended,
   createPresentationSession, getPresentationSession, setPresentationSlideIndex,
+  getTvState, setTvMode, sendTvPlaylistCommand, setTvSlideIndex, setTvSlideCount,
   createClassified, updateClassified, setClassifiedStatus, getClassifiedById,
   getActiveClassifieds, getClassifiedsByUser, getAllClassifieds, countClassifiedsByStatus, deleteClassified,
   createPlateRequest, getPlateRequestById, getAllPlateRequests, updatePlateRequestStatus,
