@@ -37,6 +37,20 @@
     <iframe id="kdsLiqFrame" src="about:blank" title="Liquidador"></iframe>
   </div>
 
+  <div class="kds-modal" id="kdsTvModal">
+    <div class="kds-modal-bar">
+      <span>Control remoto TV</span>
+      <button type="button" class="kds-modal-close" id="kdsTvClose" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="kds-tv-remote">
+      <button type="button" class="kds-btn dark" data-tv-cmd="skip_prev">⏮ Anterior</button>
+      <button type="button" class="kds-btn orange" data-tv-cmd="pause">⏸ Pausar</button>
+      <button type="button" class="kds-btn orange" data-tv-cmd="play">▶ Reproducir</button>
+      <button type="button" class="kds-btn dark" data-tv-cmd="skip_next">Siguiente ⏭</button>
+      <button type="button" class="kds-btn dark" data-tv-cmd="to_playlist">Volver al playlist</button>
+    </div>
+  </div>
+
   <script src="/static/js/kds-fab-menu.js?v=<%= assetV('js/kds-fab-menu.js') %>" defer></script>
 
   <script>
@@ -110,6 +124,33 @@
 
     window.KdsFab = window.KdsFab || {};
     window.KdsFab.cotizacion = function () { form.requestSubmit(); };
+  })();
+
+  // ── Control remoto del TV (sin PIN, solo requiere sesión de mecánico) ────
+  (function () {
+    var modal = document.getElementById('kdsTvModal');
+    document.getElementById('kdsTvClose').addEventListener('click', function () {
+      modal.classList.remove('open');
+    });
+
+    document.querySelectorAll('#kdsTvModal [data-tv-cmd]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        try {
+          var resp = await fetch('/kds/tv/comando', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '<%= csrfToken %>' },
+            body: JSON.stringify({ action: btn.dataset.tvCmd }),
+          });
+          var data = await resp.json().catch(function () { return null; });
+          if (!resp.ok || !data) throw new Error('bad response');
+        } catch (e) {
+          if (window.KdsFabToast) window.KdsFabToast('Inicia sesión como mecánico para usar el control remoto.');
+        }
+      });
+    });
+
+    window.KdsFab = window.KdsFab || {};
+    window.KdsFab.tv = function () { modal.classList.add('open'); };
   })();
   </script>
 
