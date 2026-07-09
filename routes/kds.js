@@ -30,6 +30,19 @@ const PIN_THROTTLE_KEY = 'kds_pin';
 const PIN_WINDOW_MS    = 15 * 60 * 1000;
 const PIN_MAX_FAILURES = 20;
 
+// Topes de saneamiento para los ítems (un dedazo en la tablet no debe crear un
+// total absurdo que arrastre a la proforma y obligue al admin a anularla).
+const MAX_ITEM_PRICE = 100_000_000; // 100M COP por ítem
+const MAX_ITEM_QTY   = 999;
+// Placa: mayúsculas, sin espacios, alfanumérica con guion, 4–10 caracteres.
+const KDS_PLATE_RE = /^[A-Z0-9-]{4,10}$/;
+
+function validLineItem(name, price, qty) {
+  return name
+    && Number.isInteger(price) && price >= 1 && price <= MAX_ITEM_PRICE
+    && Number.isInteger(qty) && qty >= 1 && qty <= MAX_ITEM_QTY;
+}
+
 function readDataJson(file, fallback) {
   try { return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', file), 'utf8')); }
   catch { return fallback; }
