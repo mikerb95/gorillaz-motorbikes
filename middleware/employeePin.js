@@ -73,6 +73,7 @@ async function verifyPinHandler(req, res) {
     await recordThrottleFailure(PIN_THROTTLE_KEY, PIN_WINDOW_MS);
     return res.status(401).json({ ok: false, error: 'PIN incorrecto.' });
   }
+  setPinSessionCookies(res, emp);
   res.json({ ok: true, name: emp.name });
 }
 
