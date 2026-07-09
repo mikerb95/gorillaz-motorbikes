@@ -206,7 +206,7 @@ router.get('/ingresos', requireAuth, requireAdmin, async (req, res) => {
   periodoInv.forEach(i => { const m = i.paymentMethod || 'efectivo'; byMethod[m] = (byMethod[m] || 0) + invIncome(i); });
   const methodMax = Math.max(...Object.values(byMethod), 1);
 
-  const allTimeInv   = paidInvoices.reduce((s, i) => s + i.subtotal, 0);
+  const allTimeInv   = paidInvoices.reduce((s, i) => s + invIncome(i), 0);
   const allTimeOrd   = paidOrders.reduce((s, o) => s + o.total, 0);
 
   res.render('admin/finanzas/ingresos', {
