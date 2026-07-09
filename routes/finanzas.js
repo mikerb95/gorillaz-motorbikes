@@ -106,7 +106,7 @@ function getAvailablePeriods(n = 13) {
 function buildMonthlyChart(paidInvoices, paidOrders, gastos, n = 12) {
   return monthsBack(n).map(({ y, m }) => {
     const key = `${y}-${String(m).padStart(2, '0')}`;
-    const inv = paidInvoices.filter(x => inPeriod(invIncomeDate(x), y, m)).reduce((s, x) => s + x.subtotal, 0);
+    const inv = paidInvoices.filter(x => inPeriod(invIncomeDate(x), y, m)).reduce((s, x) => s + invIncome(x), 0);
     const ord = paidOrders.filter(x => inPeriod(x.createdAt, y, m)).reduce((s, x) => s + x.total, 0);
     const gas = gastos.filter(x => inPeriod(x.date, y, m)).reduce((s, x) => s + x.amount, 0);
     return { key, label: `${MONTH_SHORT[m - 1]} ${y}`, fullLabel: `${MONTH_NAMES[m - 1]} ${y}`, shortLabel: MONTH_SHORT[m - 1], inv, ord, gas, ing: inv + ord, net: inv + ord - gas };
