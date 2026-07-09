@@ -1,6 +1,8 @@
 'use strict';
 const bcrypt = require('bcryptjs');
-const { getActiveEmployees, isThrottleLocked, recordThrottleFailure } = require('../db');
+const jwt    = require('jsonwebtoken');
+const { JWT_SECRET } = require('../config');
+const { getActiveEmployees, getEmployeeById, isThrottleLocked, recordThrottleFailure } = require('../db');
 
 // Gate de PIN para acciones sensibles (financieras + cambios de estado de orden).
 // El empleado teclea su PIN justo al ejecutar la acción: identifica al AUTOR real
@@ -13,6 +15,40 @@ const { getActiveEmployees, isThrottleLocked, recordThrottleFailure } = require(
 const PIN_THROTTLE_KEY = 'action_pin';
 const PIN_WINDOW_MS    = 15 * 60 * 1000;
 const PIN_MAX_FAILURES = 20;
+
+// Sesión corta de PIN: una vez tecleado, no se vuelve a pedir mientras el
+// empleado siga interactuando con el panel (cada acción/petición desliza la
+// ventana hacia adelante). Tras 1 minuto sin ninguna interacción, expira y la
+// siguiente acción sensible vuelve a exigir el PIN. Cookie httpOnly firmada
+// (autoridad real, verificada server-side); una segunda cookie no-httpOnly y
+// sin datos sensibles solo le indica al cliente si puede saltarse el modal.
+const PIN_SESSION_COOKIE      = 'kds_pin_session';
+const PIN_SESSION_HINT_COOKIE = 'kds_pin_active';
+const PIN_SESSION_MS          = 60 * 1000;
+
+function setPinSessionCookies(res, emp) {
+  const token = jwt.sign({ eid: emp.id }, JWT_SECRET, { expiresIn: Math.floor(PIN_SESSION_MS / 1000) });
+  const base = { sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: PIN_SESSION_MS };
+  res.cookie(PIN_SESSION_COOKIE, token, { ...base, httpOnly: true });
+  res.cookie(PIN_SESSION_HINT_COOKIE, '1', { ...base, httpOnly: false });
+}
+
+function clearPinSessionCookies(res) {
+  res.clearCookie(PIN_SESSION_COOKIE);
+  res.clearCookie(PIN_SESSION_HINT_COOKIE);
+}
+
+async function getPinSessionEmployee(req) {
+  const token = req.cookies && req.cookies[PIN_SESSION_COOKIE];
+  if (!token) return null;
+  try {
+    const { eid } = jwt.verify(token, JWT_SECRET);
+    const emp = await getEmployeeById(eid);
+    return (emp && emp.active) ? emp : null;
+  } catch {
+    return null;
+  }
+}
 
 async function matchEmployeePin(pin) {
   if (!/^\d{4,6}$/.test(pin || '')) return null;
