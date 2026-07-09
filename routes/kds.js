@@ -18,7 +18,7 @@ const {
   getActiveServiceOrders, getServiceOrdersByPlate, getServiceOrderById,
   createServiceOrder, updateServiceOrder, addServiceOrderEvent,
   convertServiceOrderToInvoice, applyStatusPolicy,
-  createCheckin,
+  createCheckin, getPendingAppointmentByPlate, getPendingCheckinsByPlate, updateAppointment,
   getTvState, setTvMode, sendTvPlaylistCommand, setTvSlideCount, stepTvSlide,
 } = require('../db');
 
