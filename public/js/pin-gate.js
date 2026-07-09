@@ -154,8 +154,16 @@
     });
   });
 
-  okBtn.addEventListener('click', confirm);
-  inputEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); confirm(); } });
+  keyBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var k = btn.dataset.pinKey;
+      if (k === 'Entrar') { confirm(); return; }
+      if (k === 'Borrar') { inputEl.value = inputEl.value.slice(0, -1); return; }
+      if (inputEl.value.length >= 6) return;
+      inputEl.value += k;
+      errEl.textContent = '';
+    });
+  });
   Array.prototype.forEach.call(wrap.querySelectorAll('[data-pin-cancel]'), function (el) {
     el.addEventListener('click', close);
   });
