@@ -21,7 +21,8 @@
     <a class="kds-back" href="<%= employee ? '/kds/board' : '/kds' %>">←</a>
     <span class="label"><%= order.label %></span>
     <% const st = EMP_STATUS.find(s => s.v === order.status) || { l: order.status }; %>
-    <span class="badge b-<%= order.status %>" style="margin-left:auto"><%= st.l %></span>
+    <span class="badge b-<%= order.status %>" style="<%= employee ? '' : 'margin-left:auto' %>"><%= st.l %></span>
+    <% if (employee) { %><a class="kds-back" href="/kds" title="Inicio" aria-label="Inicio" style="margin-left:auto">⌂</a><% } %>
   </div>
   <div class="kds-hazard"></div>
 
