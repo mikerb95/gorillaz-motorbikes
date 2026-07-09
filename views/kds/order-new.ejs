@@ -177,7 +177,7 @@
     document.getElementById('soForm').addEventListener('submit', e => {
       if (items.length === 0) {
         e.preventDefault();
-        alert('Agrega al menos un ítem del catálogo o "Otro".');
+        toast('Agrega al menos un ítem del catálogo o "Otro".');
       }
     });
 
