@@ -19,7 +19,7 @@ const {
   createServiceOrder, updateServiceOrder, addServiceOrderEvent,
   convertServiceOrderToInvoice, applyStatusPolicy,
   createCheckin,
-  getTvState, setTvMode, sendTvPlaylistCommand,
+  getTvState, setTvMode, sendTvPlaylistCommand, setTvSlideCount, stepTvSlide,
 } = require('../db');
 
 const router = express.Router();
