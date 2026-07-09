@@ -141,8 +141,20 @@
         total += it.price * it.qty;
         const row = document.createElement('div');
         row.className = 'item-row';
-        row.innerHTML = '<span>' + it.name + ' ×' + it.qty + '</span><span>' + fmt(it.price * it.qty) +
-          ' <button type="button" class="del" data-idx="' + idx + '">✕</button></span>';
+        // textContent para el nombre (dato del empleado): con innerHTML, escribir
+        // markup en "Otro ítem" inyectaría HTML en la lista.
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = it.name + ' ×' + it.qty;
+        const priceSpan = document.createElement('span');
+        priceSpan.textContent = fmt(it.price * it.qty) + ' ';
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'del';
+        del.dataset.idx = idx;
+        del.textContent = '✕';
+        priceSpan.appendChild(del);
+        row.appendChild(nameSpan);
+        row.appendChild(priceSpan);
         itemList.appendChild(row);
       });
       itemList.querySelectorAll('.del').forEach(b => {
@@ -156,7 +168,7 @@
       const name  = qaName.value.trim();
       const qty   = Math.round(Number(qaQty.value));
       const price = Math.round(Number(qaPrice.value));
-      if (!name || !(qty >= 1) || !(price >= 1)) { alert('Completa nombre, cantidad y precio.'); return; }
+      if (!name || !(qty >= 1) || !(price >= 1)) { toast('Completa nombre, cantidad y precio.'); return; }
       items.push({ name, type: qaType, qty, price });
       quickAdd.style.display = 'none';
       renderItems();
