@@ -40,6 +40,12 @@
           <td style="padding:7px 0;color:#52525b">(+) Servicios (subtotal sin IVA)</td>
           <td style="text-align:right;font-weight:600"><%= fmt(ingServicios) %></td>
         </tr>
+        <% if (ingParqueadero > 0) { %>
+        <tr style="border-bottom:1px solid #f4f4f5">
+          <td style="padding:7px 0;color:#52525b">(+) Parqueadero</td>
+          <td style="text-align:right;font-weight:600"><%= fmt(ingParqueadero) %></td>
+        </tr>
+        <% } %>
         <tr style="border-bottom:1px solid #f4f4f5">
           <td style="padding:7px 0;color:#52525b">(+) Ventas online (pedidos)</td>
           <td style="text-align:right;font-weight:600"><%= fmt(ingVentas) %></td>
