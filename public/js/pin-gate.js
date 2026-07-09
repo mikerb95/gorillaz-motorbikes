@@ -84,6 +84,13 @@
     keyBtns.forEach(function (b) { b.disabled = busy; });
   }
 
+  // Foco previo, para devolverlo al cerrar (accesibilidad: el foco no debe
+  // quedar perdido tras un modal).
+  var prevFocus = null;
+  function focusable() {
+    return Array.prototype.slice.call(wrap.querySelectorAll('button:not([disabled])'));
+  }
+
   function open(form, btn) {
     pending = form;
     submitter = btn || null;
@@ -92,13 +99,28 @@
     inputEl.value = '';
     errEl.textContent = '';
     setBusy(false);
+    prevFocus = document.activeElement;
     wrap.classList.add('open');
+    var f = focusable();
+    if (f.length) f[0].focus();
   }
 
   function close() {
     wrap.classList.remove('open');
     pending = null;
+    if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus();
+    prevFocus = null;
   }
+
+  // Atrapa el Tab dentro del modal mientras está abierto.
+  wrap.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab' || !wrap.classList.contains('open')) return;
+    var f = focusable();
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 
   async function confirm() {
     if (!pending) return;
