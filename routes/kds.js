@@ -57,6 +57,7 @@ async function loadKdsEmployee(req, res, next) {
   next();
 }
 router.use(loadKdsEmployee);
+router.use(touchPinSession());
 
 // Verifica el PIN para el modal de acciones sensibles (facturar, cambiar estado…).
 router.post('/verificar-pin', requireKdsEmployee, verifyPinHandler);
