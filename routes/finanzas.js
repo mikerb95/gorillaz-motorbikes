@@ -203,7 +203,7 @@ router.get('/ingresos', requireAuth, requireAdmin, async (req, res) => {
   const totalTax     = movements.reduce((s, m) => s + m.tax, 0);
 
   const byMethod = {};
-  periodoInv.forEach(i => { const m = i.paymentMethod || 'efectivo'; byMethod[m] = (byMethod[m] || 0) + i.subtotal; });
+  periodoInv.forEach(i => { const m = i.paymentMethod || 'efectivo'; byMethod[m] = (byMethod[m] || 0) + invIncome(i); });
   const methodMax = Math.max(...Object.values(byMethod), 1);
 
   const allTimeInv   = paidInvoices.reduce((s, i) => s + i.subtotal, 0);
