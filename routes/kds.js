@@ -101,6 +101,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
 router.post('/logout', (req, res) => {
   res.clearCookie('kds_jwt');
+  clearPinSessionCookies(res);
   res.redirect('/kds/login');
 });
 
