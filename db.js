@@ -548,6 +548,7 @@ function rowToAppointment(row) {
     service: row.service,
     date: row.date,
     time: row.time,
+    plate: row.plate || null,
     status: row.status,
     customer: row.customer || row.name,
     notes: row.notes,
