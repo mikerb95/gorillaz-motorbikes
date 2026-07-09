@@ -26,6 +26,8 @@
     if (!el) {
       el = document.createElement('div');
       el.className = 'kds-fab-toast';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
       document.body.appendChild(el);
     }
     el.textContent = msg;
