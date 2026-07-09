@@ -73,9 +73,13 @@
   var msgEl    = wrap.querySelector('.pin-gate-msg');
   var inputEl  = wrap.querySelector('.pin-gate-input');
   var errEl    = wrap.querySelector('.pin-gate-err');
-  var okBtn    = wrap.querySelector('.pin-gate-ok');
+  var keyBtns  = Array.prototype.slice.call(wrap.querySelectorAll('[data-pin-key]'));
   var pending  = null;   // formulario a enviar tras verificar
   var submitter = null;  // botón que disparó el envío (conserva su name/value)
+
+  function setBusy(busy) {
+    keyBtns.forEach(function (b) { b.disabled = busy; });
+  }
 
   function open(form, btn) {
     pending = form;
@@ -84,9 +88,8 @@
     msgEl.textContent   = form.dataset.pinMsg || 'Ingresa el PIN de tu empleado para registrar y confirmar esta acción.';
     inputEl.value = '';
     errEl.textContent = '';
-    okBtn.disabled = false;
+    setBusy(false);
     wrap.classList.add('open');
-    setTimeout(function () { inputEl.focus(); }, 60);
   }
 
   function close() {
