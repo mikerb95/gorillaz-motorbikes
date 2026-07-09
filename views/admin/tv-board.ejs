@@ -73,7 +73,66 @@
     <div class="clock" id="tv-clock"></div>
   </div>
 
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
+    // ── Reproductor de playlist con la IFrame API (permite play/pause/skip
+    // reales desde el control remoto del KDS, no solo el embed estático) ────
+    var ytPlayer = null;
+    var ytReady = false;
+    window.onYouTubeIframeAPIReady = function () {
+      ytPlayer = new YT.Player('tvPlayer', {
+        playerVars: {
+          listType: 'playlist', list: '<%= playlistId %>',
+          autoplay: 1, mute: 1, loop: 1, controls: 0, rel: 0, modestbranding: 1,
+        },
+        events: {
+          onReady: function (e) { ytReady = true; e.target.playVideo(); },
+        },
+      });
+    };
+
+    // ── Conmutación de modo (playlist ↔ presentación) y comandos del remoto
+    // del KDS. Estado leído por polling desde /kds/tv/estado (ver Fase 4). ──
+    (function () {
+      var presoFrame = document.getElementById('tvPresoFrame');
+      var playerWrap = document.getElementById('tvPlayer');
+      var lastSeq = null;
+
+      function showPlaylist() {
+        playerWrap.style.display = 'block';
+        presoFrame.style.display = 'none';
+        presoFrame.src = 'about:blank';
+      }
+      function showPresentacion(st) {
+        playerWrap.style.display = 'none';
+        presoFrame.style.display = 'block';
+        presoFrame.src = '/clases/' + encodeURIComponent(st.course) + '/' + encodeURIComponent(st.topic);
+      }
+      function applyMode(st) {
+        if (st.mode === 'presentacion' && st.course && st.topic) showPresentacion(st);
+        else showPlaylist();
+      }
+      function handleCommand(st) {
+        if (st.cmdAction === 'mode_changed') { applyMode(st); return; }
+        if (st.mode !== 'playlist' || !ytReady || !ytPlayer) return;
+        if (st.cmdAction === 'play') ytPlayer.playVideo();
+        else if (st.cmdAction === 'pause') ytPlayer.pauseVideo();
+        else if (st.cmdAction === 'skip_next') ytPlayer.nextVideo();
+        else if (st.cmdAction === 'skip_prev') ytPlayer.previousVideo();
+      }
+
+      async function pollTvState() {
+        try {
+          const res = await fetch('/kds/tv/estado', { cache: 'no-store' });
+          const st = await res.json();
+          if (lastSeq === null) { lastSeq = st.cmdSeq; applyMode(st); return; }
+          if (st.cmdSeq !== lastSeq) { lastSeq = st.cmdSeq; handleCommand(st); }
+        } catch (e) { /* siguiente intento en el próximo ciclo */ }
+      }
+      pollTvState();
+      setInterval(pollTvState, 1500);
+    })();
+
     (function () {
       const listEl = document.getElementById('tv-list');
       const clockEl = document.getElementById('tv-clock');
