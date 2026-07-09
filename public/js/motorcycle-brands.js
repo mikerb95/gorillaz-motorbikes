@@ -188,7 +188,9 @@ const MOTORCYCLE_MODELS = {
     });
 
     document.addEventListener('click', function (e) {
-      if (!wrap.contains(e.target)) closeDropdown(list);
+      if (wrap.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('.kds-vkb-wrap')) return;
+      closeDropdown(list);
     });
 
     return list;
