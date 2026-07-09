@@ -39,10 +39,10 @@
     '.pin-gate-cancel{background:#f3f4f6;color:#111}' +
     '.pin-gate-ok{background:#F25C05;color:#fff}' +
     '.pin-gate-ok:disabled{opacity:.6;cursor:default}' +
-    '.pin-gate-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}' +
-    '.pin-gate-key{padding:16px 0;font-size:20px;font-weight:800;background:#f3f4f6;color:#111;border:none;border-radius:12px;cursor:pointer;font-family:inherit}' +
+    '.pin-gate-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}' +
+    '.pin-gate-key{padding:11px 0;font-size:14px;font-weight:800;background:#f3f4f6;color:#111;border:none;border-radius:8px;cursor:pointer;font-family:inherit}' +
     '.pin-gate-key:active{background:#e5e7eb}' +
-    '.pin-gate-key.wide{background:#111;color:#fff;font-size:13px}' +
+    '.pin-gate-key.wide{background:#111;color:#fff;font-size:9px}' +
     '.pin-gate-key.wide:active{background:#333}' +
     '.pin-gate-key.enter{background:#F25C05;color:#fff}' +
     '.pin-gate-key.enter:active{background:#c94904}';
