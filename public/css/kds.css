@@ -240,13 +240,13 @@ body.kds-login {
 .kds-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 22px; }
 .kds-dot { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #d8d2c3; }
 .kds-dot.filled { background: var(--kds-brand); border-color: var(--kds-brand); }
-.kds-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.kds-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .kds-key {
-  padding: 22px 0; font-size: 26px; font-weight: 800; background: var(--kds-paper-2); color: var(--kds-ink);
-  border: none; border-radius: 16px; cursor: pointer; font-family: inherit;
+  padding: 15px 0; font-size: 18px; font-weight: 800; background: var(--kds-paper-2); color: var(--kds-ink);
+  border: none; border-radius: 11px; cursor: pointer; font-family: inherit;
 }
 .kds-key:active { background: #e2ded2; }
-.kds-key.action { background: var(--kds-ink); color: #fff; font-size: 16px; }
+.kds-key.action { background: var(--kds-ink); color: #fff; font-size: 11px; }
 .kds-key.enter { background: var(--kds-brand); color: #fff; }
 
 /* ── Placa (búsqueda) ────────────────────────────────────────────────────*/
