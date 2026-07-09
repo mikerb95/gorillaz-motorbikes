@@ -403,6 +403,10 @@ async function initDb() {
     // Fecha real de entrega de la moto (distinta de estimated_date, que es solo
     // la fecha estimada). Se sella al cerrar la factura proforma.
     `ALTER TABLE service_orders ADD COLUMN delivered_at TEXT`,
+    // Placa de la moto en la cita: permite que el check-in reconozca al cliente
+    // con solo la placa y ofrezca "confirmar asistencia" sin volver a pedir sus
+    // datos. Las citas antiguas quedan con plate NULL (simplemente no matchean).
+    `ALTER TABLE appointments ADD COLUMN plate TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
