@@ -97,7 +97,7 @@
   (function () {
     const clock = document.getElementById('kdsClock');
     function tick() {
-      clock.textContent = new Date().toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour12: false });
+      clock.textContent = new Date().toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour12: true });
     }
     tick();
     setInterval(tick, 1000);
