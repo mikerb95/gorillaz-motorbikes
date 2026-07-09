@@ -979,8 +979,12 @@ async function createOrder(data) {
 }
 
 async function updateOrderStatus(id, status, boldPaymentId) {
+  // Una orden 'paid' es terminal: ya se descontó stock y se enviaron correos.
+  // Un webhook/return tardío o duplicado con 'failed'/'pending_confirmation' no
+  // debe degradarla. Solo un nuevo 'paid' (idempotente) puede tocarla.
+  const guard = status === 'paid' ? '' : " AND status != 'paid'";
   await db.execute({
-    sql: 'UPDATE orders SET status = ?, bold_payment_id = ? WHERE id = ?',
+    sql: `UPDATE orders SET status = ?, bold_payment_id = ? WHERE id = ?${guard}`,
     args: [status, boldPaymentId || null, id],
   });
 }
