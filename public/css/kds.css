@@ -341,6 +341,25 @@ body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand);
   .kds-fab-item { padding: 6px; border-radius: 50%; }
 }
 
+/* ── Modal genérico a pantalla completa (iframe: cotización, TV, clases) ──*/
+
+.kds-modal {
+  position: fixed; inset: 0; z-index: 400;
+  display: none; flex-direction: column;
+  background: var(--kds-bg);
+}
+.kds-modal.open { display: flex; }
+.kds-modal-bar {
+  flex: none; display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; background: var(--kds-bg-2); color: #fff;
+  font-weight: 800; font-size: 15px; border-bottom: 1px solid var(--kds-line);
+}
+.kds-modal-close {
+  border: none; background: rgba(255,255,255,.1); color: #fff; width: 34px; height: 34px;
+  border-radius: 10px; font-size: 16px; cursor: pointer; line-height: 1;
+}
+.kds-modal iframe { flex: 1; border: none; width: 100%; }
+
 /* ── Check-in de clientes (kiosco, misma lógica que /checkin) ───────────*/
 
 body.kds-checkin-body { min-height: 100vh; display: flex; flex-direction: column; }

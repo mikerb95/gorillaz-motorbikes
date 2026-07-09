@@ -3,11 +3,20 @@
 // al cliente. El menú se abre libremente; cada acción gatea su propio acceso
 // (PIN o sesión de empleado) igual que el resto del KDS — no aquí.
 (function () {
+  // Páginas que embeben el FAB pueden registrar handlers reales antes de que
+  // este script corra (window.KdsFab.cotizacion = fn, .tv = fn, .capacitaciones
+  // = fn); sin handler registrado, la acción muestra "Próximamente".
+  function runHook(name) {
+    const hooks = window.KdsFab || {};
+    if (typeof hooks[name] === 'function') return hooks[name]();
+    toast('Próximamente');
+  }
+
   const ACTIONS = [
     { icon: '🔎', label: 'Buscar Placa', run: () => { window.location.href = '/kds/placa'; } },
-    { icon: '🧾', label: 'Crear Cotización', run: () => toast('Próximamente') },
-    { icon: '📺', label: 'Control remoto TV', run: () => toast('Próximamente') },
-    { icon: '🎓', label: 'Capacitaciones', run: () => toast('Próximamente') },
+    { icon: '🧾', label: 'Crear Cotización', run: () => runHook('cotizacion') },
+    { icon: '📺', label: 'Control remoto TV', run: () => runHook('tv') },
+    { icon: '🎓', label: 'Capacitaciones', run: () => runHook('capacitaciones') },
     { icon: '⛶', label: 'Pantalla completa', run: () => { if (window.KdsFullscreen) window.KdsFullscreen.toggle(); } },
   ];
 
@@ -24,6 +33,7 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove('visible'), 1800);
   }
+  window.KdsFabToast = toast;
 
   function build() {
     const wrap = document.createElement('div');

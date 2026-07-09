@@ -21,6 +21,21 @@
     <span class="kds-clock" id="kdsClock">--:--:--</span>
   </header>
 
+  <!-- Puente de sesión hacia el liquidador: gatea con el PIN del empleado y,
+       al validarlo, emite la cookie liq_jwt para poder embeber /liquidador. -->
+  <form id="kdsLiqBridgeForm" method="post" action="/kds/liquidador/bridge" style="display:none"
+        data-require-pin data-pin-title="Autoriza con tu PIN" data-pin-msg="Ingresa tu PIN para crear una cotización.">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  </form>
+
+  <div class="kds-modal" id="kdsLiqModal">
+    <div class="kds-modal-bar">
+      <span>Crear Cotización</span>
+      <button type="button" class="kds-modal-close" id="kdsLiqClose" aria-label="Cerrar">✕</button>
+    </div>
+    <iframe id="kdsLiqFrame" src="about:blank" title="Liquidador"></iframe>
+  </div>
+
   <script src="/static/js/kds-fab-menu.js?v=<%= assetV('js/kds-fab-menu.js') %>" defer></script>
 
   <script>
@@ -45,6 +60,59 @@
     });
     requestWakeLock();
   })();
+
+  // ── Puente hacia el liquidador (Crear Cotización del menú flotante) ──────
+  (function () {
+    var form  = document.getElementById('kdsLiqBridgeForm');
+    var modal = document.getElementById('kdsLiqModal');
+    var frame = document.getElementById('kdsLiqFrame');
+
+    function hasActivePinSession() {
+      return (' ' + document.cookie + ';').indexOf(' kds_pin_active=1;') !== -1;
+    }
+
+    function openModal() {
+      frame.src = '/liquidador';
+      modal.classList.add('open');
+    }
+    function closeModal() {
+      modal.classList.remove('open');
+      frame.src = 'about:blank';
+    }
+    document.getElementById('kdsLiqClose').addEventListener('click', closeModal);
+
+    async function bridge() {
+      var csrf = form.querySelector('input[name="_csrf"]').value;
+      var pinField = form.querySelector('input[name="pin"].pin-gate-field');
+      var payload = pinField ? { pin: pinField.value } : {};
+      try {
+        var resp = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+          body: JSON.stringify(payload),
+        });
+        var data = await resp.json().catch(function () { return null; });
+        if (resp.ok && data && data.ok) { openModal(); return; }
+      } catch (e) { /* red intermitente: se muestra el error genérico abajo */ }
+      if (window.KdsFabToast) window.KdsFabToast('No se pudo abrir el liquidador. Inténtalo de nuevo.');
+    }
+
+    form.addEventListener('submit', function (e) {
+      var pinField = form.querySelector('input[name="pin"].pin-gate-field');
+      if (pinField || hasActivePinSession()) {
+        e.preventDefault();
+        bridge();
+      }
+      // Si no hay PIN inyectado ni sesión activa, se deja pasar: pin-gate.js
+      // intercepta este mismo evento y abre su modal de PIN.
+    });
+
+    window.KdsFab = window.KdsFab || {};
+    window.KdsFab.cotizacion = function () { form.requestSubmit(); };
+  })();
   </script>
+
+  <script>window.PIN_VERIFY_URL = '/kds/verificar-pin';</script>
+  <script src="/static/js/pin-gate.js"></script>
 </body>
 </html>
