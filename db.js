@@ -315,6 +315,23 @@ async function initDb() {
     // fabricante. La solicitud entra 'pendiente' y un admin la mueve por el
     // trámite (en_tramite → listo → entregado) o la cancela. Contacto directo
     // por WhatsApp/teléfono, sin pago online (igual que classifieds).
+    // Estado del único TV del taller (fila fija id=1). Se lee/escribe directo en
+    // BD, sin pasar por la caché en memoria de helpers/settings.js: el remoto
+    // (POST) y la pantalla (GET en polling) pueden caer en instancias
+    // serverless distintas, y esa caché solo se sincroniza entre ellas en el
+    // siguiente cold start — inservible para un control remoto en vivo.
+    `CREATE TABLE IF NOT EXISTS tv_state (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      mode TEXT NOT NULL DEFAULT 'playlist',
+      playing INTEGER NOT NULL DEFAULT 1,
+      cmd_seq INTEGER NOT NULL DEFAULT 0,
+      cmd_action TEXT,
+      course TEXT,
+      topic TEXT,
+      slide_index INTEGER NOT NULL DEFAULT 0,
+      slide_count INTEGER NOT NULL DEFAULT 1,
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
     `CREATE TABLE IF NOT EXISTS plate_duplicate_requests (
       id TEXT PRIMARY KEY,
       type TEXT NOT NULL,
