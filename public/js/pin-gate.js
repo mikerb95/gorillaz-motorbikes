@@ -101,7 +101,7 @@
     if (!pending) return;
     var pin = (inputEl.value || '').trim();
     if (!/^\d{4,6}$/.test(pin)) { errEl.textContent = 'El PIN son 4 a 6 dígitos.'; return; }
-    okBtn.disabled = true;
+    setBusy(true);
     errEl.textContent = '';
     try {
       var resp = await fetch(VERIFY_URL, {
