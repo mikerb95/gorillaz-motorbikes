@@ -95,11 +95,8 @@
   <script>
   (function () {
     const clock = document.getElementById('kdsClock');
-    const clock2 = document.getElementById('kdsClock2');
     function tick() {
-      const time = new Date().toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit' });
-      clock.textContent = time;
-      clock2.textContent = time;
+      clock.textContent = new Date().toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit' });
     }
     tick();
     setInterval(tick, 1000);
