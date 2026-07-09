@@ -334,7 +334,7 @@ router.get('/tv/estado', async (req, res) => {
   }
 });
 
-const ALLOWED_TV_ACTIONS = ['play', 'pause', 'skip_next', 'skip_prev'];
+const ALLOWED_TV_PLAYLIST_ACTIONS = ['play', 'pause', 'skip_next', 'skip_prev'];
 
 router.post('/tv/comando', requireKdsEmployee, async (req, res) => {
   try {
@@ -342,7 +342,9 @@ router.post('/tv/comando', requireKdsEmployee, async (req, res) => {
     if (action === 'to_playlist') {
       return res.json(await setTvMode('playlist'));
     }
-    if (!ALLOWED_TV_ACTIONS.includes(action)) {
+    if (action === 'slide_next') return res.json(await stepTvSlide(1));
+    if (action === 'slide_prev') return res.json(await stepTvSlide(-1));
+    if (!ALLOWED_TV_PLAYLIST_ACTIONS.includes(action)) {
       return res.status(400).json({ error: 'Comando inválido.' });
     }
     const state = await sendTvPlaylistCommand(action);
@@ -350,6 +352,25 @@ router.post('/tv/comando', requireKdsEmployee, async (req, res) => {
   } catch (e) {
     console.error('POST /kds/tv/comando error:', e.message);
     res.status(500).json({ error: 'No se pudo enviar el comando.' });
+  }
+});
+
+// ── Panel de capacitaciones: proyecta un tema (con diapositivas) de los
+// cursos ya creados en /admin/clases. Reutiliza el mismo TV único.
+router.post('/tv/capacitacion/iniciar', requireKdsEmployee, async (req, res) => {
+  try {
+    const course = String(req.body.course || '');
+    const topic  = String(req.body.topic || '');
+    const courseObj = classesData[course];
+    const topicObj  = courseObj && (courseObj.topics || {})[topic];
+    if (!topicObj) return res.status(404).json({ error: 'Tema no encontrado.' });
+
+    await setTvMode('presentacion', { course, topic });
+    await setTvSlideCount((topicObj.slides || []).length || 1);
+    res.json(await getTvState());
+  } catch (e) {
+    console.error('POST /kds/tv/capacitacion/iniciar error:', e.message);
+    res.status(500).json({ error: 'No se pudo iniciar la capacitación.' });
   }
 });
 
