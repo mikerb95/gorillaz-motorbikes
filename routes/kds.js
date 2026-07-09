@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 
 const { JWT_SECRET } = require('../config');
 const { requireKdsEmployee, authLimiter } = require('../middleware/auth');
-const { requirePin, verifyPinHandler } = require('../middleware/employeePin');
+const { requirePin, verifyPinHandler, touchPinSession, clearPinSessionCookies } = require('../middleware/employeePin');
 const settings = require('../helpers/settings');
 const { hoyCO } = require('../helpers/datetime');
 const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
