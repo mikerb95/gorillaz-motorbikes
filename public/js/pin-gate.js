@@ -42,7 +42,8 @@
     '.pin-gate-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}' +
     '.pin-gate-key{padding:16px 0;font-size:20px;font-weight:800;background:#f3f4f6;color:#111;border:none;border-radius:12px;cursor:pointer;font-family:inherit}' +
     '.pin-gate-key:active{background:#e5e7eb}' +
-    '.pin-gate-key.wide{grid-column:span 1}';
+    '.pin-gate-key.wide{background:#111;color:#fff;font-size:13px}' +
+    '.pin-gate-key.wide:active{background:#333}';
   document.head.appendChild(style);
 
   var wrap = document.createElement('div');
