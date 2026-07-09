@@ -742,8 +742,8 @@ async function countAppointments() {
 async function createAppointment(data) {
   const id = data.id || uuidv4();
   await db.execute({
-    sql: `INSERT INTO appointments (id, name, email, phone, service, date, time, status, customer)
-          VALUES (?,?,?,?,?,?,?,?,?)`,
+    sql: `INSERT INTO appointments (id, name, email, phone, service, date, time, plate, status, customer)
+          VALUES (?,?,?,?,?,?,?,?,?,?)`,
     args: [
       id,
       data.name || '',
@@ -752,6 +752,7 @@ async function createAppointment(data) {
       data.service || '',
       data.date || '',
       data.time || null,
+      data.plate || null,
       data.status || 'pendiente',
       data.customer || data.name || null,
     ],
