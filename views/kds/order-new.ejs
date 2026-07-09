@@ -32,11 +32,14 @@
       <div class="card">
         <h2>Datos de ingreso</h2>
         <label class="k">Placa</label>
-        <input type="text" name="placa" value="<%= placa %>" required class="plate-input" />
+        <input type="text" name="placa" value="<%= placa %>" required class="plate-input"
+          readonly data-kds-kbd="qwerty" data-kds-label="Placa" />
         <label class="k">Teléfono del cliente (opcional)</label>
-        <input type="tel" name="clientPhone" placeholder="3001234567" />
+        <input type="tel" name="clientPhone" placeholder="3001234567"
+          readonly data-kds-kbd="qwerty" data-kds-label="Teléfono del cliente" />
         <label class="k">Notas (opcional)</label>
-        <textarea name="notes" rows="2" placeholder="Detalles del ingreso..."></textarea>
+        <textarea name="notes" rows="2" placeholder="Detalles del ingreso..."
+          readonly data-kds-kbd="qwerty" data-kds-label="Notas"></textarea>
       </div>
 
       <div class="card">
