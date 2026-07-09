@@ -405,7 +405,7 @@ router.post('/orden/:id/items', requireKdsEmployee, requirePin('/kds'), async (r
   const name  = String(req.body.name || '').trim();
   const price = Math.round(Number(req.body.price));
   const qty   = Math.round(Number(req.body.qty));
-  if (name && Number.isInteger(price) && price >= 1 && Number.isInteger(qty) && qty >= 1) {
+  if (validLineItem(name, price, qty)) {
     const items = [...order.items, { name: name.slice(0, 200), type: req.body.type || 'custom', price, qty }];
     const total = items.reduce((s, it) => s + it.price * it.qty, 0);
     await updateServiceOrder(order.id, { items, total }, req.pinActor);
