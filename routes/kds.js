@@ -319,4 +319,37 @@ router.post('/orden/:id/items', requireKdsEmployee, requirePin('/kds'), async (r
   res.redirect('/kds/orden/' + order.id);
 });
 
+// ── Control remoto del único TV del taller ──────────────────────────────
+// Estado leído directo de BD (ver getTvState en db.js) para que la pantalla
+// del TV vea los comandos del remoto sin depender de que ambas peticiones
+// caigan en la misma instancia serverless. El polling de la pantalla no
+// expone nada sensible, así que queda público (igual que /kds/orders.json).
+router.get('/tv/estado', async (req, res) => {
+  try {
+    res.json(await getTvState());
+  } catch (e) {
+    console.error('GET /kds/tv/estado error:', e.message);
+    res.status(500).json({ error: 'No se pudo leer el estado del TV.' });
+  }
+});
+
+const ALLOWED_TV_ACTIONS = ['play', 'pause', 'skip_next', 'skip_prev'];
+
+router.post('/tv/comando', requireKdsEmployee, async (req, res) => {
+  try {
+    const action = String(req.body.action || '');
+    if (action === 'to_playlist') {
+      return res.json(await setTvMode('playlist'));
+    }
+    if (!ALLOWED_TV_ACTIONS.includes(action)) {
+      return res.status(400).json({ error: 'Comando inválido.' });
+    }
+    const state = await sendTvPlaylistCommand(action);
+    res.json(state);
+  } catch (e) {
+    console.error('POST /kds/tv/comando error:', e.message);
+    res.status(500).json({ error: 'No se pudo enviar el comando.' });
+  }
+});
+
 module.exports = router;
