@@ -72,6 +72,12 @@ function monthsBack(count) {
 // la de emisión por si faltara (dato antiguo sin sellar).
 function invIncomeDate(i) { return i.paidAt || i.createdAt; }
 
+// El ingreso operacional de una factura excluye el IVA (que se transfiere a la
+// DIAN, no es ingreso del negocio) pero incluye el parqueadero cobrado, que sí
+// es ingreso real. total = subtotal + IVA + parqueadero, por lo que
+// invIncome + tax = total y las tablas de detalle cuadran exactamente.
+function invIncome(i) { return (i.subtotal || 0) + (i.parkingAmount || 0); }
+
 function parsePeriod(query) {
   const { y, m } = nowParts();
   const p = query.period || `${y}-${String(m).padStart(2, '0')}`;
