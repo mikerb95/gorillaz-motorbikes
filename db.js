@@ -2302,6 +2302,21 @@ async function setTvSlideCount(count) {
   });
 }
 
+// Avanza/retrocede una diapositiva de forma atómica (evita leer-y-escribir
+// por separado, que con dos remotos tocando el TV a la vez podría pisarse).
+async function stepTvSlide(delta) {
+  const r = await db.execute({
+    sql: `UPDATE tv_state
+            SET slide_index = MAX(0, MIN(slide_index + ?, slide_count - 1)),
+                cmd_seq = cmd_seq + 1, cmd_action = 'slide_changed',
+                updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now')
+          WHERE id = 1
+          RETURNING *`,
+    args: [delta],
+  });
+  return r.rows[0] ? rowToTvState(r.rows[0]) : null;
+}
+
 // ── Clasificados ────────────────────────────────────────────────────────────
 
 function rowToClassified(row) {
@@ -2568,7 +2583,7 @@ module.exports = {
   getServiceOrdersByPlate,
   createCheckin, getCheckinById, getPendingCheckins, getPendingCheckinsByPlate, markCheckinAttended,
   createPresentationSession, getPresentationSession, setPresentationSlideIndex,
-  getTvState, setTvMode, sendTvPlaylistCommand, setTvSlideIndex, setTvSlideCount,
+  getTvState, setTvMode, sendTvPlaylistCommand, setTvSlideIndex, setTvSlideCount, stepTvSlide,
   createClassified, updateClassified, setClassifiedStatus, getClassifiedById,
   getActiveClassifieds, getClassifiedsByUser, getAllClassifieds, countClassifiedsByStatus, deleteClassified,
   createPlateRequest, getPlateRequestById, getAllPlateRequests, updatePlateRequestStatus,
