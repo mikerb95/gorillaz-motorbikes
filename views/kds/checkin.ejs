@@ -170,6 +170,26 @@
     var idx = 0;
     var lookupDone = false;
 
+    // Toast propio (esta vista no carga el FAB): evita el alert() nativo, que en
+    // PWA fullscreen delata el origen web y rompe la estética del kiosco.
+    var toastEl = null, toastTimer = null;
+    function toast(msg) {
+      if (!toastEl) {
+        toastEl = document.createElement('div');
+        toastEl.setAttribute('role', 'status');
+        toastEl.setAttribute('aria-live', 'polite');
+        toastEl.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:100001;' +
+          'background:#15181d;color:#fff;font-family:Montserrat,system-ui,sans-serif;font-weight:800;font-size:14px;' +
+          'padding:13px 20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.4);max-width:90vw;text-align:center;' +
+          'opacity:0;transition:opacity .18s ease;pointer-events:none';
+        document.body.appendChild(toastEl);
+      }
+      toastEl.textContent = msg;
+      toastEl.style.opacity = '1';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.style.opacity = '0'; }, 2600);
+    }
+
     progress.style.display = '';
     countEl.style.display = '';
 
