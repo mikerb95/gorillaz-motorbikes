@@ -30,6 +30,7 @@
     '.kds-vkb-row:last-child{margin-bottom:0}' +
     '.kds-vkb-row:nth-child(2){margin-left:5%;width:95%}' +
     '.kds-vkb-row:nth-child(3){margin-left:7.5%;width:92.5%}' +
+    '.kds-vkb-row:nth-child(4){margin-left:10%;width:90%}' +
     '.kds-vkb-key{flex:1;padding:15px 0;font-size:16px;font-weight:800;background:var(--kds-paper-2,#efece3);color:var(--kds-ink,#0d0d0d);border:none;border-radius:10px;cursor:pointer;font-family:inherit;text-transform:none}' +
     '.kds-vkb-key:active{background:#e2ded2}' +
     '.kds-vkb-key.wide{flex:3}' +
