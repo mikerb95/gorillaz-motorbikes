@@ -25,8 +25,6 @@
     border: 1.5px solid #e5e7eb;
     border-radius: 16px;
     padding: 28px 24px;
-    display: grid;
-    gap: 16px;
   }
   .checkin-field label {
     display: block;
@@ -39,10 +37,10 @@
   }
   .checkin-field input {
     width: 100%;
-    padding: 11px 14px;
+    padding: 13px 14px;
     border: 1.5px solid #e5e7eb;
     border-radius: 10px;
-    font-size: 15px;
+    font-size: 16px;
     font-family: inherit;
     outline: none;
     box-sizing: border-box;
@@ -53,12 +51,10 @@
   }
   .checkin-field.plate input {
     text-transform: uppercase;
-    letter-spacing: .5px;
-  }
-  .checkin-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-align: center;
+    font-size: 22px;
   }
   .checkin-phone {
     display: flex;
@@ -69,10 +65,7 @@
     text-align: center;
     flex: none;
   }
-  .checkin-btn {
-    width: 100%;
-    margin-top: 4px;
-  }
+  .checkin-btn { width: 100%; margin-top: 4px; }
   .checkin-error {
     background: #fef2f2;
     border: 1px solid #fca5a5;
@@ -91,30 +84,75 @@
     display: grid;
     gap: 10px;
   }
-  .checkin-success .icon {
-    font-size: 40px;
+  .checkin-success .icon { font-size: 40px; }
+  .checkin-success h2 { margin: 0; font-size: 20px; font-weight: 900; }
+  .checkin-success p { margin: 0; color: #6b7280; font-size: 14px; }
+
+  /* ── Wizard por pasos ─────────────────────────────────────────────── */
+  .cw-progress {
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 18px;
   }
-  .checkin-success h2 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 900;
+  .cw-progress__bar {
+    height: 100%;
+    width: 20%;
+    background: #111;
+    border-radius: 999px;
+    transition: width .25s ease;
   }
-  .checkin-success p {
-    margin: 0;
+  /* Con JS activo, solo se muestra un paso a la vez. */
+  .js .cw-step { display: none; }
+  .js .cw-step.is-active { display: grid; gap: 16px; }
+  .cw-step { display: grid; gap: 16px; }
+  .cw-step__hint {
+    font-size: 13px;
     color: #6b7280;
+    margin: -6px 0 0;
+  }
+  .cw-nav { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+  .cw-nav .cw-back {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-weight: 700;
     font-size: 14px;
+    cursor: pointer;
+    padding: 8px 4px;
+  }
+  .cw-nav .cw-next { flex: 1; }
+  .cw-count { text-align: center; font-size: 12px; color: #9ca3af; margin-top: 12px; }
+
+  /* Aviso de cita encontrada */
+  .cw-appointment {
+    display: none;
+    gap: 14px;
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 14px;
+    padding: 22px 20px;
+    text-align: center;
+  }
+  .cw-appointment.is-active { display: grid; }
+  .cw-appointment .icon { font-size: 34px; }
+  .cw-appointment h2 { margin: 0; font-size: 19px; font-weight: 900; }
+  .cw-appointment .cw-appt-detail { margin: 0; color: #166534; font-size: 15px; }
+  .cw-appointment .cw-appt-detail strong { text-transform: capitalize; }
+  .cw-appointment .cw-appt-sub { margin: 0; color: #6b7280; font-size: 13px; }
+  .cw-link {
+    background: none; border: none; color: #6b7280;
+    font-weight: 700; font-size: 13px; cursor: pointer;
+    text-decoration: underline; padding: 6px;
   }
 
-  .brand-suggest {
-    position: relative;
-  }
+  .brand-suggest { position: relative; }
   .brand-suggest-list {
     position: absolute;
     top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    margin: 0;
-    padding: 6px;
+    left: 0; right: 0;
+    margin: 0; padding: 6px;
     list-style: none;
     background: #fff;
     border: 1.5px solid #e5e7eb;
@@ -124,20 +162,12 @@
     max-height: 220px;
     overflow-y: auto;
   }
-  .brand-suggest-list li {
-    padding: 9px 10px;
-    border-radius: 7px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .brand-suggest-list li:hover {
-    background: #f3f4f6;
-  }
+  .brand-suggest-list li { padding: 9px 10px; border-radius: 7px; font-size: 14px; cursor: pointer; }
+  .brand-suggest-list li:hover { background: #f3f4f6; }
 
   @media (max-width: 540px) {
     .checkin-wrap { margin-top: 36px; }
     .checkin-card { padding: 20px 16px; }
-    .checkin-row { grid-template-columns: 1fr; }
   }
 </style>
 
@@ -145,7 +175,7 @@
   <div class="checkin-wrap">
     <div class="checkin-header">
       <h1>Check-in de taller</h1>
-      <p>Regístrate al llegar para que un mecánico continúe con tu servicio más rápido.</p>
+      <p>Registra tu ingreso para que un mecánico continúe con tu servicio más rápido.</p>
     </div>
 
     <% if (ok) { %>
@@ -157,53 +187,276 @@
     <% } else { %>
 
       <% if (error) { %>
-        <div class="checkin-error"><%= error %></div>
-        <br>
+        <div class="checkin-error" style="margin-bottom:16px"><%= error %></div>
       <% } %>
 
-      <form class="checkin-card" method="post" action="/checkin">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <!-- Pantalla de éxito para el flujo por pasos (JS) -->
+      <div class="checkin-success" id="cwSuccess" style="display:none">
+        <div class="icon">✅</div>
+        <h2 id="cwSuccessTitle">¡Listo, quedaste registrado!</h2>
+        <p id="cwSuccessText">Un mecánico tomará tus datos en unos minutos. Puedes esperar en el taller.</p>
+      </div>
 
-        <div class="checkin-field">
-          <label for="clientName">Nombre completo</label>
-          <input id="clientName" name="clientName" type="text" required maxlength="120"
-            placeholder="Juan Pérez" value="<%= values.clientName || '' %>" />
+      <div class="checkin-card" id="cwCard" data-csrf="<%= csrfToken %>">
+        <div class="cw-progress" id="cwProgress" style="display:none">
+          <div class="cw-progress__bar" id="cwProgressBar"></div>
         </div>
 
-        <div class="checkin-field">
-          <label for="clientPhone">Número de WhatsApp</label>
-          <div class="checkin-phone">
-            <input name="clientPhoneCountry" type="text" maxlength="4" value="<%= values.clientPhoneCountry || '+57' %>" />
-            <input id="clientPhone" name="clientPhone" type="text" required inputmode="numeric"
-              placeholder="3001234567" value="<%= values.clientPhone || '' %>" />
-          </div>
+        <!-- Aviso de cita encontrada -->
+        <div class="cw-appointment" id="cwAppointment">
+          <div class="icon">📅</div>
+          <h2>¡Tienes una cita agendada!</h2>
+          <p class="cw-appt-detail" id="cwApptDetail"></p>
+          <p class="cw-appt-sub">Confirma tu asistencia y pasa al taller.</p>
+          <button type="button" class="btn btn-primary" id="cwConfirmBtn">Confirmar asistencia →</button>
+          <button type="button" class="cw-link" id="cwNotMine">No es mi cita, continuar sin cita</button>
         </div>
 
-        <div class="checkin-field plate">
-          <label for="plate">Placa de la moto</label>
-          <input id="plate" name="plate" type="text" required maxlength="10"
-            placeholder="ABC123" oninput="this.value=this.value.toUpperCase()"
-            value="<%= values.plate || '' %>" />
-        </div>
+        <form id="checkinForm" method="post" action="/checkin">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
-        <div class="checkin-row">
-          <div class="checkin-field">
-            <label for="brand">Marca</label>
-            <input id="brand" name="brand" type="text" required maxlength="60"
-              placeholder="Yamaha" value="<%= values.brand || '' %>" data-brand-suggest />
-          </div>
-          <div class="checkin-field">
-            <label for="reference">Referencia</label>
-            <input id="reference" name="reference" type="text" required maxlength="60"
-              placeholder="MT-03" value="<%= values.reference || '' %>" data-model-suggest />
-          </div>
-        </div>
+          <!-- Paso 1: Placa -->
+          <section class="cw-step is-active" data-step="1">
+            <div class="checkin-field plate">
+              <label for="plate">Placa de tu moto</label>
+              <input id="plate" name="plate" type="text" required maxlength="10"
+                autocomplete="off" placeholder="ABC123"
+                oninput="this.value=this.value.toUpperCase()"
+                value="<%= values.plate || '' %>" />
+            </div>
+            <p class="cw-step__hint">Con tu placa verificamos si ya tenías una cita agendada.</p>
+            <div class="cw-nav">
+              <button type="button" class="btn btn-primary cw-next checkin-btn" data-next>Continuar →</button>
+            </div>
+          </section>
 
-        <button class="btn btn-primary checkin-btn" type="submit">Registrar ingreso →</button>
-      </form>
+          <!-- Paso 2: Nombre -->
+          <section class="cw-step" data-step="2">
+            <div class="checkin-field">
+              <label for="clientName">¿Cuál es tu nombre?</label>
+              <input id="clientName" name="clientName" type="text" required maxlength="120"
+                autocomplete="name" placeholder="Juan Pérez" value="<%= values.clientName || '' %>" />
+            </div>
+            <div class="cw-nav">
+              <button type="button" class="cw-back" data-back>← Atrás</button>
+              <button type="button" class="btn btn-primary cw-next" data-next>Continuar →</button>
+            </div>
+          </section>
+
+          <!-- Paso 3: WhatsApp -->
+          <section class="cw-step" data-step="3">
+            <div class="checkin-field">
+              <label for="clientPhone">Tu número de WhatsApp</label>
+              <div class="checkin-phone">
+                <input name="clientPhoneCountry" type="text" maxlength="4"
+                  value="<%= values.clientPhoneCountry || '+57' %>" />
+                <input id="clientPhone" name="clientPhone" type="text" required inputmode="numeric"
+                  autocomplete="tel" placeholder="3001234567" value="<%= values.clientPhone || '' %>" />
+              </div>
+            </div>
+            <div class="cw-nav">
+              <button type="button" class="cw-back" data-back>← Atrás</button>
+              <button type="button" class="btn btn-primary cw-next" data-next>Continuar →</button>
+            </div>
+          </section>
+
+          <!-- Paso 4: Marca -->
+          <section class="cw-step" data-step="4">
+            <div class="checkin-field">
+              <label for="brand">Marca de tu moto</label>
+              <input id="brand" name="brand" type="text" required maxlength="60"
+                autocomplete="off" placeholder="Yamaha" value="<%= values.brand || '' %>" data-brand-suggest />
+            </div>
+            <div class="cw-nav">
+              <button type="button" class="cw-back" data-back>← Atrás</button>
+              <button type="button" class="btn btn-primary cw-next" data-next>Continuar →</button>
+            </div>
+          </section>
+
+          <!-- Paso 5: Referencia -->
+          <section class="cw-step" data-step="5">
+            <div class="checkin-field">
+              <label for="reference">Referencia / modelo</label>
+              <input id="reference" name="reference" type="text" required maxlength="60"
+                autocomplete="off" placeholder="MT-03" value="<%= values.reference || '' %>" data-model-suggest />
+            </div>
+            <div class="cw-nav">
+              <button type="button" class="cw-back" data-back>← Atrás</button>
+              <button type="submit" class="btn btn-primary cw-next">Registrar ingreso →</button>
+            </div>
+          </section>
+        </form>
+
+        <div class="cw-count" id="cwCount" style="display:none"></div>
+      </div>
 
     <% } %>
   </div>
 </main>
+
+<% if (!ok) { %>
+<script>
+(function () {
+  var card = document.getElementById('cwCard');
+  if (!card) return;
+  var wrap = document.querySelector('.checkin-wrap');
+  wrap.classList.add('js'); // activa el modo "un paso a la vez"
+
+  var form      = document.getElementById('checkinForm');
+  var steps     = Array.prototype.slice.call(form.querySelectorAll('.cw-step'));
+  var total     = steps.length;
+  var progress  = document.getElementById('cwProgress');
+  var bar        = document.getElementById('cwProgressBar');
+  var countEl    = document.getElementById('cwCount');
+  var apptPanel  = document.getElementById('cwAppointment');
+  var apptDetail = document.getElementById('cwApptDetail');
+  var confirmBtn = document.getElementById('cwConfirmBtn');
+  var notMineBtn = document.getElementById('cwNotMine');
+  var successBox = document.getElementById('cwSuccess');
+  var csrf       = card.getAttribute('data-csrf');
+
+  var idx = 0;
+  var lookupDone = false; // ¿ya consultamos la cita para la placa actual?
+
+  progress.style.display = '';
+  countEl.style.display = '';
+
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('is-active', i === idx); });
+    bar.style.width = Math.round(((idx + 1) / total) * 100) + '%';
+    countEl.textContent = 'Paso ' + (idx + 1) + ' de ' + total;
+    var active = steps[idx];
+    var input = active.querySelector('input:not([type=hidden])');
+    if (input) setTimeout(function () { input.focus(); }, 60);
+  }
+
+  function stepValid(i) {
+    var s = steps[i];
+    if (i === 0) return normPlate().length >= 4;
+    var input = s.querySelector('input[required]');
+    if (!input) return true;
+    var v = String(input.value || '').trim();
+    if (input.id === 'clientName') return v.length >= 3;
+    if (input.id === 'clientPhone') return v.replace(/\D/g, '').length >= 7;
+    return v.length >= 1;
+  }
+
+  function normPlate() {
+    var p = form.querySelector('#plate');
+    return String(p.value || '').trim().toUpperCase().replace(/\s/g, '');
+  }
+
+  function goNext() {
+    if (!stepValid(idx)) {
+      var input = steps[idx].querySelector('input');
+      if (input) { input.focus(); input.style.borderColor = '#dc2626'; }
+      return;
+    }
+    // Al salir del paso de la placa, consultar si hay cita (una sola vez).
+    if (idx === 0 && !lookupDone) {
+      lookupPlate();
+      return;
+    }
+    if (idx < total - 1) { idx++; render(); }
+  }
+
+  function goBack() {
+    if (idx > 0) { idx--; render(); }
+  }
+
+  function showAppointment(appt) {
+    var detail = '';
+    if (appt.service) detail += 'Servicio: <strong>' + escapeHtml(appt.service) + '</strong>';
+    if (appt.dateLabel) detail += (detail ? '<br>' : '') + 'Fecha: <strong>' + escapeHtml(appt.dateLabel) + '</strong>';
+    apptDetail.innerHTML = detail || 'Cita registrada a tu nombre.';
+    form.style.display = 'none';
+    progress.style.display = 'none';
+    countEl.style.display = 'none';
+    apptPanel.classList.add('is-active');
+  }
+
+  function hideAppointment() {
+    apptPanel.classList.remove('is-active');
+    form.style.display = '';
+    progress.style.display = '';
+    countEl.style.display = '';
+  }
+
+  function lookupPlate() {
+    var placa = normPlate();
+    confirmBtnBusy(false);
+    fetch('/checkin/lookup?placa=' + encodeURIComponent(placa), { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        lookupDone = true;
+        if (data && data.hasAppointment && data.appointment) {
+          showAppointment(data.appointment);
+        } else {
+          idx = 1; render();
+        }
+      })
+      .catch(function () { lookupDone = true; idx = 1; render(); });
+  }
+
+  function confirmBtnBusy(busy) {
+    confirmBtn.disabled = busy;
+    confirmBtn.textContent = busy ? 'Confirmando…' : 'Confirmar asistencia →';
+  }
+
+  function confirmAttendance() {
+    confirmBtnBusy(true);
+    fetch('/checkin/confirmar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
+      body: JSON.stringify({ plate: normPlate() }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.ok) {
+          showSuccess('¡Te esperábamos! 🏍️', 'Confirmamos tu asistencia. Pasa al taller, un mecánico te atenderá enseguida.');
+        } else {
+          confirmBtnBusy(false);
+          alert((data && data.error) || 'No pudimos confirmar. Intenta de nuevo.');
+        }
+      })
+      .catch(function () { confirmBtnBusy(false); alert('No pudimos confirmar. Intenta de nuevo.'); });
+  }
+
+  function showSuccess(title, text) {
+    card.style.display = 'none';
+    document.getElementById('cwSuccessTitle').textContent = title;
+    document.getElementById('cwSuccessText').textContent = text;
+    successBox.style.display = 'grid';
+    successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // Eventos
+  form.addEventListener('click', function (e) {
+    if (e.target.matches('[data-next]')) { e.preventDefault(); goNext(); }
+    else if (e.target.matches('[data-back]')) { e.preventDefault(); goBack(); }
+  });
+  form.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var active = steps[idx];
+    if (!active.contains(e.target)) return;
+    // En el último paso, Enter envía el formulario normalmente.
+    if (idx < total - 1) { e.preventDefault(); goNext(); }
+  });
+  // Si el usuario edita la placa después de una consulta, volver a consultar.
+  form.querySelector('#plate').addEventListener('input', function () { lookupDone = false; });
+
+  confirmBtn.addEventListener('click', confirmAttendance);
+  notMineBtn.addEventListener('click', function () { hideAppointment(); idx = 1; render(); });
+
+  render();
+})();
+</script>
+<% } %>
 
 <%- include('partials/footer') %>
