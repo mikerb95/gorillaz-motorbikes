@@ -60,15 +60,15 @@
           <% }) %>
         </select>
       </div>
-      <div>
-        <label>Fecha de la cita</label>
-        <input id="date" name="date" type="hidden" required />
-        <div id="calendar"
-          data-calendar
-          data-demand='<%- JSON.stringify(typeof demandMap !== "undefined" ? demandMap : {}) %>'
-          aria-label="Calendario para seleccionar fecha"></div>
-        <div class="muted" id="selectedDateText" style="margin-top:6px">Selecciona una fecha disponible</div>
-      </div>
+    </div>
+    <div style="margin-top:16px">
+      <label>Fecha de la cita</label>
+      <input id="date" name="date" type="hidden" required />
+      <div id="calendar"
+        data-calendar
+        data-demand='<%- JSON.stringify(typeof demandMap !== "undefined" ? demandMap : {}) %>'
+        aria-label="Calendario para seleccionar fecha"></div>
+      <div class="muted" id="selectedDateText" style="margin-top:6px">Selecciona una fecha disponible</div>
     </div>
     <button class="btn btn-primary" type="submit" style="margin-top:20px">Solicitar cita</button>
   </form>
