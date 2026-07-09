@@ -351,9 +351,19 @@ router.get('/payment/return', (req, res) => {
   res.clearCookie('bold_pending');
 
   if (status === 'APPROVED') {
-    if (sigHash && pending && !verifyBoldSignature(boldId, status, pending.total, sigHash)) {
-      console.warn('[Bold] Firma inválida en retorno de pago');
-      return res.status(400).render('payment/failed', { reason: 'No se pudo verificar el pago. Contacta soporte.' });
+    // El return es un simple redirect del browser: es falsificable (un atacante
+    // puede visitar /payment/return?bold-tx-status=APPROVED a mano). Solo
+    // confirmamos el pago si Bold firmó la respuesta. Sin firma válida dejamos la
+    // orden en 'pending_confirmation' y que el webhook firmado server-to-server
+    // sea quien confirme. Si no hay secreto configurado (entorno sin verificación)
+    // se conserva el comportamiento anterior de confiar en el return.
+    const trusted = !BOLD_SECRET_KEY || (sigHash && pending && verifyBoldSignature(boldId, status, pending.total, sigHash));
+    if (!trusted) {
+      console.warn('[Bold] Retorno APPROVED sin firma válida — se deja pendiente de confirmación por webhook');
+      if (pending?.orderId) {
+        updateOrderStatus(pending.orderId, 'pending_confirmation', boldId).catch(e => console.error('[Orders] updateOrderStatus pending:', e.message));
+      }
+      return res.render('payment/failed', { reason: 'Estamos verificando tu pago. Te confirmaremos por correo en cuanto Bold lo procese.' });
     }
     if (pending?.orderId) {
       updateOrderStatus(pending.orderId, 'paid', boldId)
