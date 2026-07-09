@@ -276,12 +276,12 @@ body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand);
   background: var(--kds-brand);
 }
 .kds-topbar .kds-clock {
-  font-family: var(--kds-mono); font-size: 90px; font-weight: 900; letter-spacing: .04em;
+  font-family: var(--kds-mono); font-size: 180px; font-weight: 900; letter-spacing: .04em;
   color: var(--kds-ink); font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 700px) {
-  .kds-topbar .kds-clock { font-size: 66px; }
+  .kds-topbar .kds-clock { font-size: 132px; }
 }
 
 /* ── CTA de check-in del cliente en la pantalla principal ────────────────*/
