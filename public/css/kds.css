@@ -265,67 +265,80 @@ body.kds-login {
 .plate-clear { background: var(--kds-paper-2); color: #374151; }
 .plate-go { background: var(--kds-brand); color: #fff; }
 
-/* ── Protector de pantalla (idle) ────────────────────────────────────────*/
+/* ── Pantalla principal (cara al cliente, reposo permanente) ─────────────*/
 
-.kds-screensaver {
-  position: fixed; inset: 0; z-index: 9999;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
-  background: var(--kds-bg); color: #fff;
-  opacity: 0; pointer-events: none; transition: opacity .5s ease;
-}
-.kds-screensaver.visible { opacity: 1; pointer-events: auto; }
-.kds-ss-logo {
-  height: 110px; width: 220px; opacity: .95;
+body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand); }
+
+.kds-topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  padding: 18px 20px;
   background: var(--kds-brand);
-  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-  -webkit-mask-position: center; mask-position: center;
-  -webkit-mask-size: contain; mask-size: contain;
-  filter: drop-shadow(0 10px 30px rgba(242,92,5,.3));
 }
-.kds-ss-clock {
-  font-family: var(--kds-mono); font-size: 152px; font-weight: 900; letter-spacing: .04em;
-  color: var(--kds-brand);
-  font-variant-numeric: tabular-nums;
-}
-.kds-ss-hint { font-size: 12px; color: var(--kds-muted); text-transform: uppercase; letter-spacing: .1em; }
-.kds-ss-fullscreen-btn {
-  position: absolute; bottom: 28px; right: 28px;
-  width: 52px; height: 52px; border-radius: 12px; border: none;
-  background: rgba(255,255,255,.08); color: #fff; font-size: 24px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-}
-.kds-ss-fullscreen-btn:hover { background: rgba(255,255,255,.16); }
-.kds-ss-badge {
-  position: absolute; top: 28px; right: 28px;
-  background: var(--kds-brand); color: #fff; font-weight: 800; font-size: 14px;
-  padding: 8px 18px; border-radius: 999px; letter-spacing: .02em;
-}
-
-/* ── Modo kiosco: check-in / acceso admin (al despertar sin operación) ───*/
-
-.kds-home-split { position: fixed; inset: 0; z-index: 9998; display: none; }
-.kds-home-split.visible { display: block; }
-.kds-home-grid { display: grid; grid-template-columns: 1fr 1fr; height: 100%; }
-.kds-home-half {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
-  text-decoration: none; color: #fff; padding: 40px; text-align: center;
-}
-.kds-home-checkin { background: var(--kds-brand); }
-.kds-home-admin   { background: var(--kds-bg-2); }
-.kds-home-icon  { font-size: 60px; line-height: 1; }
-.kds-home-title { font-size: 23px; font-weight: 900; }
-.kds-home-sub   { font-size: 14px; opacity: .85; max-width: 320px; }
-.kds-home-back {
-  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,.3); color: rgba(255,255,255,.65); border: none; border-radius: 999px;
-  font-size: 12px; font-family: inherit; padding: 8px 16px; cursor: pointer;
+.kds-topbar img { height: 44px; display: block; }
+.kds-topbar .kds-clock {
+  font-family: var(--kds-mono); font-size: 30px; font-weight: 900; letter-spacing: .04em;
+  color: var(--kds-ink); font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 700px) {
-  .kds-home-grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-  .kds-ss-clock { font-size: 104px; }
-  .kds-ss-logo { height: 80px; width: 160px; }
+  .kds-topbar img { height: 34px; }
+  .kds-topbar .kds-clock { font-size: 22px; }
+}
+
+/* ── Menú flotante del panel de taller ───────────────────────────────────*/
+
+.kds-fab-wrap { position: fixed; right: 24px; bottom: 24px; z-index: 200; }
+
+.kds-fab-backdrop {
+  position: fixed; inset: 0; background: rgba(13,13,13,.35);
+  opacity: 0; pointer-events: none; transition: opacity .2s ease;
+}
+.kds-fab-wrap.open .kds-fab-backdrop { opacity: 1; pointer-events: auto; }
+
+.kds-fab-main {
+  position: relative; width: 64px; height: 64px; border-radius: 50%; border: none;
+  background: var(--kds-bg-2); color: #fff; cursor: pointer;
+  box-shadow: 0 10px 26px rgba(13,13,13,.45);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .25s ease;
+}
+.kds-fab-main-icon { font-size: 26px; line-height: 1; transition: transform .25s ease; }
+.kds-fab-wrap.open .kds-fab-main-icon { transform: rotate(75deg); }
+
+.kds-fab-menu {
+  position: absolute; right: 4px; bottom: 78px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+}
+
+.kds-fab-item {
+  display: flex; align-items: center; gap: 10px;
+  border: none; border-radius: 999px; background: var(--kds-bg-2); color: #fff;
+  padding: 10px 18px 10px 10px; cursor: pointer; font-family: inherit;
+  opacity: 0; transform: translateY(12px) scale(.9); pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.kds-fab-wrap.open .kds-fab-item { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+.kds-fab-icon {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--kds-brand);
+  display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
+}
+.kds-fab-label { font-size: 14px; font-weight: 800; white-space: nowrap; }
+
+.kds-fab-toast {
+  position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%) translateY(10px);
+  background: var(--kds-ink); color: #fff; font-weight: 800; font-size: 14px;
+  padding: 12px 22px; border-radius: 999px; z-index: 300;
+  opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+}
+.kds-fab-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 700px) {
+  .kds-fab-main { width: 56px; height: 56px; }
+  .kds-fab-label { display: none; }
+  .kds-fab-icon { width: 44px; height: 44px; }
+  .kds-fab-item { padding: 6px; border-radius: 50%; }
 }
 
 /* ── Check-in de clientes (kiosco, misma lógica que /checkin) ───────────*/

@@ -10,7 +10,6 @@ const { JWT_SECRET } = require('../config');
 const { requireKdsEmployee, authLimiter } = require('../middleware/auth');
 const { requirePin, verifyPinHandler, touchPinSession, clearPinSessionCookies } = require('../middleware/employeePin');
 const settings = require('../helpers/settings');
-const { hoyCO } = require('../helpers/datetime');
 const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
 const {
   getActiveEmployees, getEmployeeById,
@@ -18,7 +17,7 @@ const {
   getActiveServiceOrders, getServiceOrdersByPlate, getServiceOrderById,
   createServiceOrder, updateServiceOrder, addServiceOrderEvent,
   convertServiceOrderToInvoice, applyStatusPolicy,
-  getAllAppointments, createCheckin,
+  createCheckin,
 } = require('../db');
 
 const router = express.Router();
@@ -96,7 +95,7 @@ router.post('/login', authLimiter, async (req, res) => {
     await recordThrottleFailure(PIN_THROTTLE_KEY, PIN_WINDOW_MS);
     return res.status(401).render('kds/login', { error: 'PIN incorrecto.', next });
   }
-  return startKdsSession(res, matched, next && next.startsWith('/kds') ? next : '/kds');
+  return startKdsSession(res, matched, next && next.startsWith('/kds') ? next : '/kds/board');
 });
 
 router.post('/logout', (req, res) => {
@@ -105,9 +104,14 @@ router.post('/logout', (req, res) => {
   res.redirect('/kds/login');
 });
 
-// ── Tablero (solo con sesión de mecánico activa; sin sesión, modo kiosco) ──
-router.get('/', async (req, res) => {
-  if (!req.employee) return res.render('kds/kiosk');
+// ── Pantalla principal: siempre la cara al cliente (naranja + logo + reloj).
+// El panel de taller ya no vive aquí, se accede aparte vía /kds/board.
+router.get('/', (req, res) => {
+  res.render('kds/kiosk');
+});
+
+// ── Tablero de órdenes (solo con sesión de mecánico activa) ────────────────
+router.get('/board', requireKdsEmployee, async (req, res) => {
   const orders = await getActiveServiceOrders();
   res.render('kds/board', { orders, EMP_STATUS, flash: req.query.flash || null });
 });
@@ -118,19 +122,6 @@ router.get('/orders.json', async (req, res) => {
     id: o.id, label: o.label, motorcycle: o.motorcycle, mechanic: o.mechanic,
     status: o.status, total: o.total, itemCount: o.items.length, createdAt: o.createdAt,
   })));
-});
-
-// Conteo de citas del día para el badge del protector de pantalla.
-router.get('/citas-hoy.json', async (req, res) => {
-  try {
-    const today = hoyCO();
-    const appointments = await getAllAppointments();
-    const count = appointments.filter(a => a.date === today && a.status !== 'cancelada').length;
-    res.json({ count });
-  } catch (e) {
-    console.error('GET /kds/citas-hoy.json error:', e.message);
-    res.status(500).json({ count: 0 });
-  }
 });
 
 // ── Check-in de clientes desde la tablet (mismo formulario público de

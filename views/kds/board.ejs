@@ -19,19 +19,14 @@
   <div class="kds-top">
     <div>
       <div class="brand">Panel de Taller</div>
-      <div class="who">
-        <% if (employee) { %>Sesión: <%= employee.name %><% } else { %>Sin sesión activa<% } %>
-      </div>
+      <div class="who">Sesión: <%= employee.name %></div>
     </div>
     <div class="actions">
-      <% if (employee) { %>
-        <form method="post" action="/kds/logout" style="margin:0">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button type="submit" class="kds-btn dark">Cambiar de mecánico</button>
-        </form>
-      <% } else { %>
-        <a class="kds-btn dark" href="/kds/login">Iniciar sesión</a>
-      <% } %>
+      <a class="kds-btn dark" href="/kds">Pantalla principal</a>
+      <form method="post" action="/kds/logout" style="margin:0">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button type="submit" class="kds-btn dark">Cambiar de mecánico</button>
+      </form>
     </div>
   </div>
   <div class="kds-hazard"></div>
@@ -50,9 +45,6 @@
     id: o.id, label: o.label, motorcycle: o.motorcycle, mechanic: o.mechanic,
     status: o.status, total: o.total, itemCount: o.items.length, createdAt: o.createdAt,
   }))) %>;
-  // El tablero es la pantalla "de reposo" del KDS: nunca hay una operación
-  // puntual en curso aquí, así que al despertar cae en modo kiosco.
-  window.KDS_SCREENSAVER = { hasActiveOperation: false };
 
   const board = document.getElementById('board');
 
@@ -98,6 +90,5 @@
     } catch { /* red intermitente: se reintenta en el próximo ciclo */ }
   }, 8000);
   </script>
-  <script src="/static/js/kds-screensaver.js?v=<%= assetV('js/kds-screensaver.js') %>"></script>
 </body>
 </html>

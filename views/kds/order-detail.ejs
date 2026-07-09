@@ -17,7 +17,7 @@
 </head>
 <body>
   <div class="kds-top">
-    <a class="kds-back" href="/kds">←</a>
+    <a class="kds-back" href="<%= employee ? '/kds/board' : '/kds' %>">←</a>
     <span class="label"><%= order.label %></span>
     <% const st = EMP_STATUS.find(s => s.v === order.status) || { l: order.status }; %>
     <span class="badge b-<%= order.status %>" style="margin-left:auto"><%= st.l %></span>
@@ -142,12 +142,8 @@
   <% } %>
 <script>
   window.PIN_VERIFY_URL = '/kds/verificar-pin';
-  // Con sesión de mecánico abierta esta orden es una operación en curso: el
-  // protector de pantalla solo se retoma aquí, sin caer a modo kiosco.
-  window.KDS_SCREENSAVER = { hasActiveOperation: <%- JSON.stringify(!!employee) %> };
 </script>
 <script src="/static/js/kds-keyboard.js?v=<%= assetV('js/kds-keyboard.js') %>"></script>
 <script src="/static/js/pin-gate.js"></script>
-<script src="/static/js/kds-screensaver.js?v=<%= assetV('js/kds-screensaver.js') %>"></script>
 </body>
 </html>
