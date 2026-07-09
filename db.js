@@ -1152,7 +1152,9 @@ async function confirmEventAttendance(attendanceId) {
 }
 
 async function getUpcomingEvents(limit = 6) {
-  const today = new Date().toISOString().slice(0, 10);
+  // Hora Colombia: con toISOString() (UTC) los eventos de «hoy» desaparecen de la
+  // lista entre las 7 pm y medianoche, cuando UTC ya está en el día siguiente.
+  const today = hoyCO();
   const r = await db.execute({
     sql: 'SELECT * FROM events WHERE date >= ? AND deleted_at IS NULL ORDER BY date ASC LIMIT ?',
     args: [today, limit],
