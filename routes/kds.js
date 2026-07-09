@@ -58,7 +58,9 @@ async function loadKdsEmployee(req, res, next) {
   next();
 }
 router.use(loadKdsEmployee);
-router.use(touchPinSession());
+// El polling automático (board → /orders.json, TV → /tv/estado) no debe contar
+// como interacción: si deslizara la ventana de PIN, la sesión nunca expiraría.
+router.use(touchPinSession(['/orders.json', '/tv/estado']));
 
 // Verifica el PIN para el modal de acciones sensibles (facturar, cambiar estado…).
 router.post('/verificar-pin', requireKdsEmployee, verifyPinHandler);
