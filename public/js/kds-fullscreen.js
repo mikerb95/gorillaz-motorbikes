@@ -16,9 +16,17 @@
     try { localStorage.setItem(KEY, v ? '1' : '0'); } catch (e) {}
   }
 
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+  }
+
   function enterFullscreen() {
     var el = document.documentElement;
-    if (document.fullscreenElement || !el.requestFullscreen) return;
+    // Pedir fullscreen sobre una PWA ya instalada (standalone) es redundante
+    // -- el navegador ya está oculto -- y en algunos WebViews (p. ej. EMUI de
+    // Huawei) esa combinación provoca que la app parpadee y se cierre.
+    if (isStandalone() || document.fullscreenElement || !el.requestFullscreen) return;
     el.requestFullscreen().catch(function () {});
   }
 
