@@ -48,6 +48,11 @@
     </div>
     <div class="grid two" style="margin-top:16px">
       <div>
+        <label for="plate">Placa de la moto</label>
+        <input id="plate" name="plate" placeholder="ABC123" required maxlength="10"
+          style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" />
+      </div>
+      <div>
         <label for="service">Servicio</label>
         <select id="service" name="service" required>
           <% services.forEach(s => { %>
