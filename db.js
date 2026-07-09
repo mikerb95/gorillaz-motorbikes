@@ -777,6 +777,22 @@ async function deleteAppointment(id) {
   await db.execute({ sql: 'DELETE FROM appointments WHERE id = ?', args: [id] });
 }
 
+// Busca la cita aún vigente (pendiente) que corresponda a una placa. La usa el
+// check-in por pasos: si el cliente ya había agendado, con solo la placa se le
+// ofrece "confirmar asistencia" sin volver a pedir sus datos. Se compara la
+// placa normalizada (mayúsculas, sin espacios) y se toma la más reciente.
+async function getPendingAppointmentByPlate(plate) {
+  const norm = String(plate || '').toUpperCase().replace(/\s/g, '');
+  if (!norm) return null;
+  const r = await db.execute({
+    sql: `SELECT * FROM appointments
+          WHERE status = 'pendiente' AND UPPER(REPLACE(plate, ' ', '')) = ?
+          ORDER BY created_at DESC LIMIT 1`,
+    args: [norm],
+  });
+  return rowToAppointment(r.rows[0] || null);
+}
+
 // ── Events ────────────────────────────────────────────────────────────────
 
 async function getAllEvents() {
