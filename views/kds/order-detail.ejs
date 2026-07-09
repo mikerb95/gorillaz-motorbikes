@@ -116,12 +116,18 @@
 
     function openQuickAdd(name, type, editableName) {
       qaName.value = name;
-      qaName.readOnly = !editableName;
+      if (editableName) qaName.removeAttribute('data-kds-locked');
+      else qaName.setAttribute('data-kds-locked', '');
       qaType.value = type;
       qaQty.value = 1;
       qaPrice.value = '';
       quickAdd.style.display = 'block';
-      qaPrice.focus();
+      if (window.KDSKeyboard) {
+        window.KDSKeyboard.open(editableName ? qaName : qaPrice, {
+          type: 'qwerty',
+          label: editableName ? 'Nombre del ítem' : 'Precio unitario'
+        });
+      }
     }
 
     document.querySelectorAll('.cat-btn[data-name]').forEach(btn => {
