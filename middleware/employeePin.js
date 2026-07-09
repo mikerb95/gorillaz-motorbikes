@@ -109,11 +109,15 @@ function requirePin(fallback = '/') {
   };
 }
 
-// Refresca la ventana de sesión de PIN en cualquier petición al panel (p. ej.
-// navegar entre órdenes) para que "interactuar con el panel" no se limite a
-// las acciones gated; cualquier request cuenta como actividad del empleado.
-function touchPinSession() {
+// Refresca la ventana de sesión de PIN cuando el empleado interactúa con el
+// panel (p. ej. navegar entre órdenes) para que "interactuar" no se limite a
+// las acciones gated. OJO: se excluye el polling automático (el board consulta
+// /orders.json cada 8s, la pantalla del TV /tv/estado en bucle); si esos GET
+// deslizaran la ventana, la sesión de PIN nunca expiraría y la tablet quedaría
+// permanentemente autorizada sin que nadie teclee un PIN.
+function touchPinSession(exemptPaths = []) {
   return async (req, res, next) => {
+    if (exemptPaths.some(p => req.path.endsWith(p))) return next();
     const emp = await getPinSessionEmployee(req);
     if (emp) setPinSessionCookies(res, emp);
     next();
