@@ -355,26 +355,33 @@ router.get('/orden/:id', async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/kds');
   const catalog = loadServicesCatalog();
-  res.render('kds/order-detail', { order, EMP_STATUS, catalog });
+  res.render('kds/order-detail', { order, EMP_STATUS, catalog, flash: req.query.flash || null });
 });
 
 router.post('/orden/:id/estado', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
   const order = await getServiceOrderById(req.params.id);
   if (!order) return res.redirect('/kds');
+  const back = (flash) => res.redirect('/kds/orden/' + order.id + (flash ? '?flash=' + flash : ''));
 
   const status = req.body.status;
-  if (!ALLOWED_STATUS.includes(status)) return res.redirect('/kds/orden/' + order.id);
+  if (!ALLOWED_STATUS.includes(status)) return back();
 
   // La política central decide qué pasa con la factura: devolver el estado de
   // una orden con proforma viva la anula y la desliga; una factura cerrada o
-  // una orden entregada bloquean el cambio.
+  // una orden entregada bloquean el cambio. Si bloquea, se avisa (antes se
+  // redirigía en silencio y el mecánico no sabía por qué no cambiaba nada).
   const policy = await applyStatusPolicy(order, status, req.pinActor);
-  if (!policy.allowed) return res.redirect('/kds/orden/' + order.id);
+  if (!policy.allowed) return back('bloqueado');
   if (policy.invoiceDetached) order.invoiceId = null;
+
+  // Se considera "finalizada" también si ya estaba en trabajo_completo pero sin
+  // proforma (p. ej. la auto-facturación falló antes): así volver a tocar el
+  // botón reintenta la emisión, en vez de quedar atascada sin factura.
+  const finaliza = policy.status === 'trabajo_completo' &&
+    (order.status !== 'trabajo_completo' || !order.invoiceId);
 
   const updates = {};
   if (policy.status) updates.status = policy.status;
-  const finaliza = policy.status === 'trabajo_completo' && order.status !== 'trabajo_completo';
   if (finaliza) {
     if (!order.trabajoCompletoAt) updates.trabajoCompletoAt = nowCOT();
     updates.pendingReview = true;
@@ -389,10 +396,11 @@ router.post('/orden/:id/estado', requireKdsEmployee, requirePin('/kds'), async (
       await convertServiceOrderToInvoice({ ...order, status: 'trabajo_completo', invoiceId: null }, {}, req.pinActor);
     } catch (e) {
       console.error('Auto-facturación proforma falló:', e.message);
+      return back('factura_error');
     }
   }
 
-  res.redirect('/kds/orden/' + order.id);
+  return back();
 });
 
 router.post('/orden/:id/items', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
