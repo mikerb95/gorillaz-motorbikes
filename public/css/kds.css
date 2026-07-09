@@ -290,6 +290,7 @@ body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand);
 .kds-kiosk-main {
   min-height: calc(100vh - 96px);
   display: flex; align-items: center; justify-content: center;
+  gap: 40px;
   padding: 32px 20px;
 }
 .kds-checkin-cta {
