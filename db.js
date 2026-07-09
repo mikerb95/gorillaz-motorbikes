@@ -2583,7 +2583,7 @@ module.exports = {
   getAllUsers, countUsers, createUser, updateUser, deleteUser, deleteUserAccount, incrementTokenVersion,
   addUserScore, getLeaderboard, getUserRank,
   getAllAppointments, getAppointmentDates, countAppointments,
-  createAppointment, updateAppointment, deleteAppointment,
+  createAppointment, updateAppointment, deleteAppointment, getPendingAppointmentByPlate,
   getAllEvents, countEvents, createEvent, getEventById, updateEvent, deleteEvent,
   getUpcomingEvents,
   registerEventAttendance, hasUserAttendedEvent, getEventAttendances,

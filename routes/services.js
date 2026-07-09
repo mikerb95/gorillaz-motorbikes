@@ -113,12 +113,13 @@ router.get('/servicios/agendar', async (req, res) => {
 router.post('/servicios/agendar', async (req, res) => {
   try {
     const { name, email, phone, service, date } = req.body;
+    const plate = String(req.body.plate || '').trim().toUpperCase().replace(/\s/g, '');
     const demandMap = await computeDemandMap();
-    if (!name || !service || !date || !email) {
+    if (!name || !service || !date || !email || !plate) {
       return res.render('services_schedule', { services: SERVICES, bookingMessage: 'Por favor completa todos los campos.', demandMap });
     }
     const formattedDate = new Date(date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
-    await createAppointment({ id: uuidv4(), name, email, phone, service, date, status: 'pendiente' });
+    await createAppointment({ id: uuidv4(), name, email, phone, service, date, plate: plate.slice(0, 20), status: 'pendiente' });
     try {
       if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_TU_API_KEY_AQUI') {
         const clientHtml = `<p>Hola <strong>${name}</strong>,</p><p>Hemos recibido tu solicitud de cita para <strong>${service}</strong> el <strong>${formattedDate}</strong>.</p><p>Nuestro equipo te contactará al número <strong>${phone}</strong> para confirmar la cita.</p><p>Gracias por confiar en Gorillaz Motorbikes.</p>`;
