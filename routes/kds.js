@@ -123,7 +123,7 @@ router.post('/logout', (req, res) => {
 // ── Pantalla principal: siempre la cara al cliente (naranja + logo + reloj).
 // El panel de taller ya no vive aquí, se accede aparte vía /kds/board.
 router.get('/', (req, res) => {
-  res.render('kds/kiosk');
+  res.render('kds/kiosk', { classesData });
 });
 
 // ── Tablero de órdenes (solo con sesión de mecánico activa) ────────────────
