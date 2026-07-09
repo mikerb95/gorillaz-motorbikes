@@ -61,6 +61,20 @@ router.use(touchPinSession());
 // Verifica el PIN para el modal de acciones sensibles (facturar, cambiar estado…).
 router.post('/verificar-pin', requireKdsEmployee, verifyPinHandler);
 
+// Puente de sesión hacia el liquidador: con sesión de mecánico + PIN emite la
+// misma cookie liq_jwt que /liquidador/acceso, para poder embeberlo en un
+// iframe sin volver a pedir el PIN del liquidador por separado.
+router.post('/liquidador/bridge', requireKdsEmployee, requirePin('/kds'), (req, res) => {
+  const token = jwt.sign({ liq: true }, JWT_SECRET, { expiresIn: '12h' });
+  res.cookie('liq_jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 12,
+  });
+  res.json({ ok: true });
+});
+
 function startKdsSession(res, emp, redirectTo) {
   const token = jwt.sign({ eid: emp.id }, JWT_SECRET, { expiresIn: '4h' });
   res.cookie('kds_jwt', token, {
