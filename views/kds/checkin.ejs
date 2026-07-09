@@ -268,9 +268,9 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data && data.ok) showSuccess('¡Te esperábamos! 🏍️', 'Confirmamos tu asistencia. Pasa al taller, un mecánico te atenderá enseguida.');
-          else { confirmBusy(false); alert((data && data.error) || 'No pudimos confirmar. Intenta de nuevo.'); }
+          else { confirmBusy(false); toast((data && data.error) || 'No pudimos confirmar. Intenta de nuevo.'); }
         })
-        .catch(function () { confirmBusy(false); alert('No pudimos confirmar. Intenta de nuevo.'); });
+        .catch(function () { confirmBusy(false); toast('No pudimos confirmar. Intenta de nuevo.'); });
     }
 
     function showSuccess(title, text) {
