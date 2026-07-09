@@ -286,6 +286,32 @@ body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand);
   .kds-topbar .kds-clock { font-size: 66px; }
 }
 
+/* ── CTA de check-in del cliente en la pantalla principal ────────────────*/
+
+.kds-kiosk-main {
+  min-height: calc(100vh - 96px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px 20px;
+}
+.kds-checkin-cta {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  background: #fff; color: var(--kds-brand-deep); text-decoration: none;
+  border-radius: 28px; padding: 56px 64px;
+  box-shadow: 0 10px 0 var(--kds-brand-deep), 0 20px 40px rgba(0,0,0,.25);
+  transition: transform .1s ease;
+}
+.kds-checkin-cta:active { transform: translateY(6px); box-shadow: 0 4px 0 var(--kds-brand-deep), 0 10px 20px rgba(0,0,0,.2); }
+.kds-checkin-cta-icon { font-size: 72px; line-height: 1; }
+.kds-checkin-cta-text { font-size: 34px; font-weight: 900; letter-spacing: .01em; }
+.kds-checkin-cta-sub { font-size: 16px; font-weight: 700; color: var(--kds-muted-2); }
+
+@media (max-width: 700px) {
+  .kds-checkin-cta { padding: 40px 36px; }
+  .kds-checkin-cta-icon { font-size: 56px; }
+  .kds-checkin-cta-text { font-size: 26px; }
+  .kds-checkin-cta-sub { font-size: 14px; }
+}
+
 /* ── Menú flotante del panel de taller ───────────────────────────────────*/
 
 .kds-fab-wrap { position: fixed; right: 24px; bottom: 24px; z-index: 200; }
