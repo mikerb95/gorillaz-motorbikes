@@ -389,7 +389,7 @@ router.get('/estado-resultados', requireAuth, requireAdmin, async (req, res) => 
     availablePeriods: getAvailablePeriods(),
     MONTH_NAMES, GASTO_CATS,
     invCount: invPeriod.length, ordCount: ordPeriod.length,
-    ingServicios, ingIVA, ingVentas, totalIngresos,
+    ingServicios, ingParqueadero, ingIVA, ingVentas, totalIngresos,
     gastosPorCat, totalEgresos,
     utilidadBruta, margen,
     prevIng, prevGas, prevUtil,
