@@ -69,12 +69,14 @@ router.post('/verificar-pin', requireKdsEmployee, verifyPinHandler);
 // misma cookie liq_jwt que /liquidador/acceso, para poder embeberlo en un
 // iframe sin volver a pedir el PIN del liquidador por separado.
 router.post('/liquidador/bridge', requireKdsEmployee, requirePin('/kds'), (req, res) => {
-  const token = jwt.sign({ liq: true }, JWT_SECRET, { expiresIn: '12h' });
+  // Vida ligada a la sesión KDS (4h), no 12h: en una tablet compartida el
+  // liquidador no debe quedar accesible horas después de cambiar de mecánico.
+  const token = jwt.sign({ liq: true }, JWT_SECRET, { expiresIn: '4h' });
   res.cookie('liq_jwt', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 12,
+    maxAge: 1000 * 60 * 60 * 4,
   });
   res.json({ ok: true });
 });
