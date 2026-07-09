@@ -51,6 +51,38 @@
     </div>
   </div>
 
+  <div class="kds-modal" id="kdsCapModal">
+    <div class="kds-modal-bar">
+      <span>Panel de capacitaciones</span>
+      <button type="button" class="kds-modal-close" id="kdsCapClose" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="kdsCapPicker" class="kds-cap-picker">
+      <% var courseKeys = Object.keys(classesData || {}); %>
+      <% if (!courseKeys.length) { %>
+        <p class="kds-cap-empty">No hay cursos con clases creadas todavía. Créalos en /admin/clases.</p>
+      <% } %>
+      <% courseKeys.forEach(function (courseKey) { %>
+        <% var courseObj = classesData[courseKey]; %>
+        <% var topicKeys = Object.keys(courseObj.topics || {}); %>
+        <% if (topicKeys.length) { %>
+          <div class="kds-cap-course">
+            <h3><%= courseObj.title %></h3>
+            <div class="kds-cap-topics">
+              <% topicKeys.forEach(function (topicKey) { %>
+                <button type="button" class="kds-btn dark kds-cap-topic-btn" data-course="<%= courseKey %>" data-topic="<%= topicKey %>"><%= courseObj.topics[topicKey].title %></button>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+      <% }) %>
+    </div>
+    <div id="kdsCapNav" class="kds-tv-remote" style="display:none">
+      <button type="button" class="kds-btn dark" data-tv-cmd="slide_prev">⏮ Diapositiva anterior</button>
+      <button type="button" class="kds-btn dark" data-tv-cmd="slide_next">Siguiente diapositiva ⏭</button>
+      <button type="button" class="kds-btn orange" data-tv-cmd="to_playlist">Terminar capacitación</button>
+    </div>
+  </div>
+
   <script src="/static/js/kds-fab-menu.js?v=<%= assetV('js/kds-fab-menu.js') %>" defer></script>
 
   <script>
@@ -151,6 +183,58 @@
 
     window.KdsFab = window.KdsFab || {};
     window.KdsFab.tv = function () { modal.classList.add('open'); };
+  })();
+
+  // ── Panel de capacitaciones: elegir curso/tema ya creado y proyectarlo ───
+  (function () {
+    var modal  = document.getElementById('kdsCapModal');
+    var picker = document.getElementById('kdsCapPicker');
+    var nav    = document.getElementById('kdsCapNav');
+
+    document.getElementById('kdsCapClose').addEventListener('click', function () {
+      modal.classList.remove('open');
+    });
+
+    async function postJson(url, body) {
+      var resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '<%= csrfToken %>' },
+        body: JSON.stringify(body || {}),
+      });
+      var data = await resp.json().catch(function () { return null; });
+      if (!resp.ok || !data) throw new Error('bad response');
+      return data;
+    }
+
+    picker.querySelectorAll('.kds-cap-topic-btn').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        try {
+          await postJson('/kds/tv/capacitacion/iniciar', { course: btn.dataset.course, topic: btn.dataset.topic });
+          picker.style.display = 'none';
+          nav.style.display = 'flex';
+        } catch (e) {
+          if (window.KdsFabToast) window.KdsFabToast('Inicia sesión como mecánico para dar la clase.');
+        }
+      });
+    });
+
+    nav.querySelectorAll('[data-tv-cmd]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        try {
+          await postJson('/kds/tv/comando', { action: btn.dataset.tvCmd });
+          if (btn.dataset.tvCmd === 'to_playlist') {
+            nav.style.display = 'none';
+            picker.style.display = 'block';
+            modal.classList.remove('open');
+          }
+        } catch (e) {
+          if (window.KdsFabToast) window.KdsFabToast('No se pudo enviar el comando.');
+        }
+      });
+    });
+
+    window.KdsFab = window.KdsFab || {};
+    window.KdsFab.capacitaciones = function () { modal.classList.add('open'); };
   })();
   </script>
 

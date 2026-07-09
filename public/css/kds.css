@@ -366,6 +366,13 @@ body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand);
 }
 .kds-tv-remote .kds-btn { width: 100%; max-width: 320px; padding: 18px; font-size: 16px; }
 
+.kds-cap-picker { flex: 1; overflow-y: auto; padding: 20px; }
+.kds-cap-course { margin-bottom: 22px; }
+.kds-cap-course h3 { color: #fff; font-size: 15px; font-weight: 900; margin: 0 0 10px; }
+.kds-cap-topics { display: flex; flex-wrap: wrap; gap: 10px; }
+.kds-cap-topic-btn { padding: 14px 18px; }
+.kds-cap-empty { color: var(--kds-muted); text-align: center; padding: 40px 20px; }
+
 /* ── Check-in de clientes (kiosco, misma lógica que /checkin) ───────────*/
 
 body.kds-checkin-body { min-height: 100vh; display: flex; flex-direction: column; }
