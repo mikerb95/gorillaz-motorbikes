@@ -35,8 +35,11 @@
     '.kds-vkb-key.wide{flex:3}' +
     '.kds-vkb-key.action{background:rgba(255,255,255,.12);color:#fff;flex:1.5}' +
     '.kds-vkb-key.action.on{background:var(--kds-brand,#F25C05);color:#fff}' +
+    '.kds-vkb-row:nth-child(1) .kds-vkb-key{background:var(--kds-brand,#F25C05);color:#0d0d0d}' +
+    '.kds-vkb-row:nth-child(1) .kds-vkb-key:active{background:#d65004}' +
     '.kds-vkb-numgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}' +
-    '.kds-vkb-numgrid .kds-vkb-key{padding:20px 0;font-size:22px}';
+    '.kds-vkb-numgrid .kds-vkb-key{padding:20px 0;font-size:22px;background:var(--kds-brand,#F25C05);color:#0d0d0d}' +
+    '.kds-vkb-numgrid .kds-vkb-key:active{background:#d65004}';
   document.head.appendChild(style);
 
   var wrap = document.createElement('div');
