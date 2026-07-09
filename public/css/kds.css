@@ -276,7 +276,7 @@ body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand);
   background: var(--kds-brand);
 }
 .kds-topbar .kds-clock {
-  font-family: var(--kds-mono); font-size: 180px; font-weight: 900; letter-spacing: .04em;
+  font-family: var(--kds-mono); font-size: 180px; font-weight: 900; letter-spacing: -.06em;
   color: var(--kds-ink); font-variant-numeric: tabular-nums;
   -webkit-text-stroke: 4px var(--kds-ink); text-stroke: 4px var(--kds-ink);
 }
