@@ -27,6 +27,13 @@
       <span class="kds-checkin-cta-text">Registrar mi llegada</span>
       <span class="kds-checkin-cta-sub">Toca aquí para hacer check-in de tu moto</span>
     </a>
+
+    <% if ((rollProducts || []).length) { %>
+      <aside class="kds-product-roll" id="kdsProductRoll" data-products='<%- JSON.stringify(rollProducts) %>'>
+        <div class="kds-product-roll-title">🛒 Visita nuestra tienda</div>
+        <div class="kds-product-roll-items" id="kdsProductRollItems"></div>
+      </aside>
+    <% } %>
   </main>
 
   <!-- Puente de sesión hacia el liquidador: gatea con el PIN del empleado y,
