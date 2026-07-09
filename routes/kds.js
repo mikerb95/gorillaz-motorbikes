@@ -76,8 +76,19 @@ router.use(loadKdsEmployee);
 // como interacción: si deslizara la ventana de PIN, la sesión nunca expiraría.
 router.use(touchPinSession(['/orders.json', '/tv/estado']));
 
+// Throttle por IP además del global de 'action_pin': así una IP que aporree el
+// PIN no puede, por sí sola, agotar el contador global y bloquear las acciones
+// del resto de empleados durante 15 min (DoS barato).
+const pinVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: 'Demasiados intentos desde este dispositivo. Espera unos minutos.' },
+});
+
 // Verifica el PIN para el modal de acciones sensibles (facturar, cambiar estado…).
-router.post('/verificar-pin', requireKdsEmployee, verifyPinHandler);
+router.post('/verificar-pin', requireKdsEmployee, pinVerifyLimiter, verifyPinHandler);
 
 // Puente de sesión hacia el liquidador: con sesión de mecánico + PIN emite la
 // misma cookie liq_jwt que /liquidador/acceso, para poder embeberlo en un
