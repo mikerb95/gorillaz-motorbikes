@@ -130,7 +130,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   const totalIngresosAllTime = paidInvoices.reduce((s, i) => s + invIncome(i), 0) + paidOrders.reduce((s, o) => s + o.total, 0);
   const totalEgresosAllTime  = gastos.reduce((s, g) => s + g.amount, 0);
 
-  const periodoInv  = paidInvoices.filter(i => inPeriod(invIncomeDate(i), year, month)).reduce((s, i) => s + i.subtotal, 0);
+  const periodoInv  = paidInvoices.filter(i => inPeriod(invIncomeDate(i), year, month)).reduce((s, i) => s + invIncome(i), 0);
   const periodoOrd  = paidOrders.filter(o => inPeriod(o.createdAt, year, month)).reduce((s, o) => s + o.total, 0);
   const periodoGas  = gastos.filter(g => inPeriod(g.date, year, month)).reduce((s, g) => s + g.amount, 0);
   const periodoIng  = periodoInv + periodoOrd;
