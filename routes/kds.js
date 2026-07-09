@@ -120,6 +120,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
 router.post('/logout', (req, res) => {
   res.clearCookie('kds_jwt');
+  res.clearCookie('liq_jwt'); // el puente al liquidador muere con la sesión del mecánico
   clearPinSessionCookies(res);
   res.redirect('/kds/login');
 });
