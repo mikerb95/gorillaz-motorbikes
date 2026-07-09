@@ -144,6 +144,14 @@
     setBusy(false);
   }
 
+  // Hint (no-httpOnly, sin datos sensibles) de que hay una sesión de PIN activa:
+  // el servidor la desliza en cada request mientras el empleado siga
+  // interactuando con el panel y expira tras 1 min de inactividad. Es solo UX;
+  // el servidor vuelve a exigir el PIN si esta cookie no refleja una sesión real.
+  function hasActivePinSession() {
+    return (' ' + document.cookie + ';').indexOf(' kds_pin_active=1;') !== -1;
+  }
+
   forms.forEach(function (form) {
     form.addEventListener('submit', function (e) {
       // Otro handler ya bloqueó el envío (p. ej. validación de ítems vacíos):
@@ -152,6 +160,8 @@
       if (e.defaultPrevented) return;
       // Si ya inyectamos el PIN (reenvío tras verificar), dejar pasar.
       if (form.querySelector('input[name="pin"].pin-gate-field')) return;
+      // Sesión de PIN activa: dejar pasar sin modal, el servidor autoriza por cookie.
+      if (hasActivePinSession()) return;
       e.preventDefault();
       open(form, e.submitter);
     });
