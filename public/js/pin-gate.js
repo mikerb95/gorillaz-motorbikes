@@ -62,8 +62,8 @@
       '<p class="pin-gate-err" role="alert"></p>' +
       '<div class="pin-gate-keypad">' +
         '1,2,3,4,5,6,7,8,9,Borrar,0,Entrar'.split(',').map(function (d) {
-          var isAction = d === 'Borrar' || d === 'Entrar';
-          return '<button type="button" class="pin-gate-key' + (isAction ? ' wide' : '') + '" data-pin-key="' + d + '">' + d + '</button>';
+          var cls = d === 'Borrar' ? ' wide' : d === 'Entrar' ? ' wide enter' : '';
+          return '<button type="button" class="pin-gate-key' + cls + '" data-pin-key="' + d + '">' + d + '</button>';
         }).join('') +
       '</div>' +
       '<div class="pin-gate-actions">' +
