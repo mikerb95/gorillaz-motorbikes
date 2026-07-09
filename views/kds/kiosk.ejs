@@ -22,6 +22,14 @@
     <span class="kds-clock" id="kdsClock">--:--:--</span>
   </header>
 
+  <main class="kds-kiosk-main">
+    <a class="kds-checkin-cta" href="/kds/checkin">
+      <span class="kds-checkin-cta-icon">🏍️</span>
+      <span class="kds-checkin-cta-text">Registrar mi llegada</span>
+      <span class="kds-checkin-cta-sub">Toca aquí para hacer check-in de tu moto</span>
+    </a>
+  </main>
+
   <!-- Puente de sesión hacia el liquidador: gatea con el PIN del empleado y,
        al validarlo, emite la cookie liq_jwt para poder embeber /liquidador. -->
   <form id="kdsLiqBridgeForm" method="post" action="/kds/liquidador/bridge" style="display:none"
