@@ -2116,9 +2116,12 @@ async function getAdminAuditLog(limit = 100) {
 }
 
 async function getServiceOrdersByPlate(plate) {
+  // Escapamos los comodines de LIKE (% y _) para que una placa como "%" o "A_C"
+  // no se convierta en un patrón que devuelva órdenes ajenas (oráculo de placas).
+  const needle = plate.toUpperCase().replace(/\s/g, '').replace(/[\\%_]/g, s => '\\' + s);
   const r = await db.execute({
-    sql: `SELECT * FROM service_orders WHERE UPPER(REPLACE(motorcycle, ' ', '')) LIKE ? ORDER BY created_at DESC`,
-    args: [`%${plate.toUpperCase().replace(/\s/g, '')}%`],
+    sql: `SELECT * FROM service_orders WHERE UPPER(REPLACE(motorcycle, ' ', '')) LIKE ? ESCAPE '\\' ORDER BY created_at DESC`,
+    args: [`%${needle}%`],
   });
   return r.rows.map(rowToServiceOrder);
 }
