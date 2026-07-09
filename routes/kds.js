@@ -278,8 +278,10 @@ router.get('/placa', (req, res) => {
 });
 
 router.get('/placa/buscar', async (req, res) => {
-  const placa = String(req.query.placa || '').trim();
-  if (!placa) return res.redirect('/kds/placa');
+  const placa = normalizeKdsPlate(req.query.placa);
+  // Mínimo 4 caracteres: evita que una placa corta (o un comodín) devuelva por
+  // coincidencia parcial la orden de otro cliente.
+  if (placa.length < 4) return res.redirect('/kds/placa');
   const matches = await getServiceOrdersByPlate(placa);
   const active  = matches.find(o => !['facturado', 'entregado'].includes(o.status));
   if (active) return res.redirect('/kds/orden/' + active.id);
