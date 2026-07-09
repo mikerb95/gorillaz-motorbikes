@@ -69,6 +69,7 @@ async function initDb() {
       service TEXT NOT NULL DEFAULT '',
       date TEXT NOT NULL DEFAULT '',
       time TEXT,
+      plate TEXT,
       status TEXT NOT NULL DEFAULT 'pendiente',
       customer TEXT,
       notes TEXT,
