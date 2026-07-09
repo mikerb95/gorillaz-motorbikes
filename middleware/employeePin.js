@@ -84,6 +84,14 @@ async function verifyPinHandler(req, res) {
 // un usuario normal nunca llega aquí con un PIN inválido.
 function requirePin(fallback = '/') {
   return async (req, res, next) => {
+    const sessionEmp = await getPinSessionEmployee(req);
+    if (sessionEmp) {
+      setPinSessionCookies(res, sessionEmp); // desliza la ventana: la acción cuenta como interacción
+      req.pinEmployee = sessionEmp;
+      req.pinActor    = sessionEmp.name;
+      return next();
+    }
+
     const pin  = String(req.body.pin || '').trim();
     const back = req.get('Referer') || fallback;
     if (!/^\d{4,6}$/.test(pin) || await isThrottleLocked(PIN_THROTTLE_KEY, PIN_MAX_FAILURES, PIN_WINDOW_MS)) {
@@ -94,10 +102,25 @@ function requirePin(fallback = '/') {
       await recordThrottleFailure(PIN_THROTTLE_KEY, PIN_WINDOW_MS);
       return res.redirect(back);
     }
+    setPinSessionCookies(res, emp);
     req.pinEmployee = emp;
     req.pinActor    = emp.name;
     next();
   };
 }
 
-module.exports = { matchEmployeePin, verifyPinHandler, requirePin };
+// Refresca la ventana de sesión de PIN en cualquier petición al panel (p. ej.
+// navegar entre órdenes) para que "interactuar con el panel" no se limite a
+// las acciones gated; cualquier request cuenta como actividad del empleado.
+function touchPinSession() {
+  return async (req, res, next) => {
+    const emp = await getPinSessionEmployee(req);
+    if (emp) setPinSessionCookies(res, emp);
+    next();
+  };
+}
+
+module.exports = {
+  matchEmployeePin, verifyPinHandler, requirePin, touchPinSession,
+  clearPinSessionCookies,
+};
