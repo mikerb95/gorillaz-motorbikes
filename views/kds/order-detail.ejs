@@ -28,6 +28,12 @@
 
   <div class="kds-wrap">
 
+    <% if (typeof flash !== 'undefined' && flash === 'bloqueado') { %>
+      <div class="kds-error">No se pudo cambiar el estado: la factura de esta orden ya está cerrada o la orden fue entregada.</div>
+    <% } else if (typeof flash !== 'undefined' && flash === 'factura_error') { %>
+      <div class="kds-error">El estado se guardó, pero la factura proforma no se pudo generar. Vuelve a tocar «Trabajo completo» para reintentar.</div>
+    <% } %>
+
     <div class="card">
       <h2>Información</h2>
       <div class="row">
