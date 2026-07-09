@@ -35,10 +35,7 @@
   }
 
   function toggleFullscreen(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (document.fullscreenElement) document.exitFullscreen();
-    else document.documentElement.requestFullscreen().catch(() => {});
+    if (window.KdsFullscreen) window.KdsFullscreen.toggle(e);
   }
 
   function buildHomeOverlay() {
