@@ -1917,10 +1917,18 @@ async function deliverServiceOrder(order, invoice, { tax = 0, parkingAmount = 0,
   const status = paidNow ? 'pagada' : 'pendiente';
   const now    = new Date().toISOString();
   const paidAt = status === 'pagada' ? now : null;
-  await db.execute({
-    sql: `UPDATE invoices SET tax=?, parking_amount=?, total=?, payment_method=?, notes=?, status=?, paid_at=? WHERE id=?`,
+  // Claim atómico: el UPDATE condicionado a status='proforma' es lo que gana la
+  // carrera ante un doble clic concurrente en /entregar. Ambos requests pueden
+  // pasar la validación JS de arriba (los dos leyeron 'proforma'), pero solo uno
+  // muta la fila; el perdedor (rowsAffected=0) se corta aquí sin duplicar los
+  // hitos factura_cerrada/entregado.
+  const claim = await db.execute({
+    sql: `UPDATE invoices SET tax=?, parking_amount=?, total=?, payment_method=?, notes=?, status=?, paid_at=? WHERE id=? AND status='proforma'`,
     args: [cleanTax, cleanParking, total, paymentMethod || 'efectivo', notes || null, status, paidAt, invoice.id],
   });
+  if ((claim.rowsAffected ?? claim.changes ?? 0) === 0) {
+    throw new Error('La orden ya fue entregada.');
+  }
   await updateServiceOrder(order.id, { status: 'entregado', deliveredAt: deliveredAt || now }, actor);
   await addServiceOrderEvent(order.id, 'factura_cerrada', actor, invoice.label);
   return { total };
