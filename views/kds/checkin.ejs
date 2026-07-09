@@ -15,6 +15,25 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="/static/js/kds-pwa.js?v=<%= assetV('js/kds-pwa.js') %>" defer></script>
   <script src="/static/js/kds-fullscreen.js?v=<%= assetV('js/kds-fullscreen.js') %>"></script>
+  <style>
+    .cw-progress{height:6px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;margin-bottom:18px}
+    .cw-progress__bar{height:100%;width:20%;background:var(--kds-brand,#F25C05);border-radius:999px;transition:width .25s ease}
+    .js .cw-step{display:none}
+    .js .cw-step.is-active{display:block}
+    .cw-step__hint{font-size:13px;color:var(--kds-muted-2,#9aa0aa);margin:8px 0 0}
+    .cw-nav{display:flex;gap:10px;align-items:center;margin-top:16px}
+    .cw-nav .cw-back{background:none;border:none;color:var(--kds-muted-2,#9aa0aa);font-weight:800;font-size:15px;cursor:pointer;padding:12px 8px;font-family:inherit}
+    .cw-nav .cw-next{flex:1}
+    .cw-count{text-align:center;font-size:12px;color:var(--kds-muted-2,#9aa0aa);margin-top:14px}
+    .cw-appointment{display:none;text-align:center}
+    .cw-appointment.is-active{display:block}
+    .cw-appointment .icon{font-size:40px;margin-bottom:8px}
+    .cw-appointment h2{margin:0 0 12px;font-size:22px;font-weight:900}
+    .cw-appt-detail{margin:0 0 6px;font-size:16px}
+    .cw-appt-detail strong{text-transform:capitalize}
+    .cw-appt-sub{margin:0 0 18px;color:var(--kds-muted-2,#9aa0aa);font-size:14px}
+    .cw-link{background:none;border:none;color:var(--kds-muted-2,#9aa0aa);font-weight:800;font-size:13px;cursor:pointer;text-decoration:underline;padding:12px;font-family:inherit;margin-top:12px}
+  </style>
 </head>
 <body class="kds-checkin-body">
   <div class="kds-top">
@@ -35,55 +54,228 @@
 
       <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
 
-      <form class="card" method="post" action="/kds/checkin">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <div class="card kds-checkin-success" id="cwSuccess" style="display:none">
+        <div class="icon">✅</div>
+        <h2 id="cwSuccessTitle">¡Listo, quedaste registrado!</h2>
+        <p id="cwSuccessText">Un mecánico tomará tus datos en unos minutos. Puedes esperar en el taller.</p>
+      </div>
 
-        <label class="k" for="clientName">Nombre completo</label>
-        <input id="clientName" name="clientName" type="text" required maxlength="120"
-          placeholder="Juan Pérez" value="<%= values.clientName || '' %>"
-          readonly data-kds-kbd="qwerty" data-kds-label="Nombre completo" />
-
-        <label class="k">Número de WhatsApp</label>
-        <div class="kds-checkin-phone">
-          <input name="clientPhoneCountry" type="text" maxlength="4" value="<%= values.clientPhoneCountry || '+57' %>"
-            readonly data-kds-kbd="qwerty" data-kds-label="Código de país" />
-          <input id="clientPhone" name="clientPhone" type="text" required
-            placeholder="3001234567" value="<%= values.clientPhone || '' %>"
-            readonly data-kds-kbd="qwerty" data-kds-label="Número de WhatsApp" />
+      <div class="card" id="cwCard" data-csrf="<%= csrfToken %>">
+        <div class="cw-progress" id="cwProgress" style="display:none">
+          <div class="cw-progress__bar" id="cwProgressBar"></div>
         </div>
 
-        <label class="k" for="plate">Placa de la moto</label>
-        <input id="plate" name="plate" type="text" required maxlength="10" class="plate-input"
-          placeholder="ABC123"
-          value="<%= values.plate || '' %>"
-          readonly data-kds-kbd="qwerty" data-kds-label="Placa de la moto" />
+        <div class="cw-appointment" id="cwAppointment">
+          <div class="icon">📅</div>
+          <h2>¡Tienes una cita agendada!</h2>
+          <p class="cw-appt-detail" id="cwApptDetail"></p>
+          <p class="cw-appt-sub">Confirma tu asistencia y pasa al taller.</p>
+          <button type="button" class="save" id="cwConfirmBtn">Confirmar asistencia →</button>
+          <br>
+          <button type="button" class="cw-link" id="cwNotMine">No es mi cita, continuar sin cita</button>
+        </div>
 
-        <div class="row">
-          <div>
-            <label class="k" for="brand">Marca</label>
+        <form method="post" action="/kds/checkin" id="checkinForm">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+          <section class="cw-step is-active" data-step="1">
+            <label class="k" for="plate">Placa de tu moto</label>
+            <input id="plate" name="plate" type="text" required maxlength="10" class="plate-input"
+              placeholder="ABC123" value="<%= values.plate || '' %>"
+              readonly data-kds-kbd="qwerty" data-kds-label="Placa de la moto" />
+            <p class="cw-step__hint">Con tu placa verificamos si ya tenías una cita agendada.</p>
+            <div class="cw-nav">
+              <button type="button" class="save cw-next" data-next>Continuar →</button>
+            </div>
+          </section>
+
+          <section class="cw-step" data-step="2">
+            <label class="k" for="clientName">¿Cuál es tu nombre?</label>
+            <input id="clientName" name="clientName" type="text" required maxlength="120"
+              placeholder="Juan Pérez" value="<%= values.clientName || '' %>"
+              readonly data-kds-kbd="qwerty" data-kds-label="Nombre completo" />
+            <div class="cw-nav">
+              <button type="button" class="cw-back" data-back>← Atrás</button>
+              <button type="button" class="save cw-next" data-next>Continuar →</button>
+            </div>
+          </section>
+
+          <section class="cw-step" data-step="3">
+            <label class="k">Tu número de WhatsApp</label>
+            <div class="kds-checkin-phone">
+              <input name="clientPhoneCountry" type="text" maxlength="4" value="<%= values.clientPhoneCountry || '+57' %>"
+                readonly data-kds-kbd="qwerty" data-kds-label="Código de país" />
+              <input id="clientPhone" name="clientPhone" type="text" required
+                placeholder="3001234567" value="<%= values.clientPhone || '' %>"
+                readonly data-kds-kbd="qwerty" data-kds-label="Número de WhatsApp" />
+            </div>
+            <div class="cw-nav">
+              <button type="button" class="cw-back" data-back>← Atrás</button>
+              <button type="button" class="save cw-next" data-next>Continuar →</button>
+            </div>
+          </section>
+
+          <section class="cw-step" data-step="4">
+            <label class="k" for="brand">Marca de tu moto</label>
             <input id="brand" name="brand" type="text" required maxlength="60"
               placeholder="Yamaha" value="<%= values.brand || '' %>" data-brand-suggest
               readonly data-kds-kbd="qwerty" data-kds-label="Marca" />
-          </div>
-          <div>
-            <label class="k" for="reference">Referencia</label>
+            <div class="cw-nav">
+              <button type="button" class="cw-back" data-back>← Atrás</button>
+              <button type="button" class="save cw-next" data-next>Continuar →</button>
+            </div>
+          </section>
+
+          <section class="cw-step" data-step="5">
+            <label class="k" for="reference">Referencia / modelo</label>
             <input id="reference" name="reference" type="text" required maxlength="60"
               placeholder="MT-03" value="<%= values.reference || '' %>" data-model-suggest
               readonly data-kds-kbd="qwerty" data-kds-label="Referencia" />
-          </div>
-        </div>
+            <div class="cw-nav">
+              <button type="button" class="cw-back" data-back>← Atrás</button>
+              <button type="submit" class="save cw-next">Registrar ingreso →</button>
+            </div>
+          </section>
+        </form>
 
-        <button class="save" type="submit">Registrar ingreso →</button>
-      </form>
+        <div class="cw-count" id="cwCount" style="display:none"></div>
+      </div>
 
     <% } %>
   </div>
 
   <script src="/static/js/motorcycle-brands.js?v=<%= assetV('js/motorcycle-brands.js') %>"></script>
   <script src="/static/js/kds-keyboard.js?v=<%= assetV('js/kds-keyboard.js') %>"></script>
+  <% if (!ok) { %>
   <script>
-    var plateEl = document.getElementById('plate');
-    if (plateEl) plateEl.addEventListener('input', function () { plateEl.value = plateEl.value.toUpperCase(); });
+  (function () {
+    var card = document.getElementById('cwCard');
+    if (!card) return;
+    document.body.classList.add('js');
+
+    var form      = document.getElementById('checkinForm');
+    var steps     = Array.prototype.slice.call(form.querySelectorAll('.cw-step'));
+    var total     = steps.length;
+    var progress  = document.getElementById('cwProgress');
+    var bar        = document.getElementById('cwProgressBar');
+    var countEl    = document.getElementById('cwCount');
+    var apptPanel  = document.getElementById('cwAppointment');
+    var apptDetail = document.getElementById('cwApptDetail');
+    var confirmBtn = document.getElementById('cwConfirmBtn');
+    var notMineBtn = document.getElementById('cwNotMine');
+    var successBox = document.getElementById('cwSuccess');
+    var csrf       = card.getAttribute('data-csrf');
+    var plateEl    = document.getElementById('plate');
+
+    var idx = 0;
+    var lookupDone = false;
+
+    progress.style.display = '';
+    countEl.style.display = '';
+
+    plateEl.addEventListener('input', function () {
+      plateEl.value = plateEl.value.toUpperCase();
+      lookupDone = false;
+    });
+
+    function render() {
+      steps.forEach(function (s, i) { s.classList.toggle('is-active', i === idx); });
+      bar.style.width = Math.round(((idx + 1) / total) * 100) + '%';
+      countEl.textContent = 'Paso ' + (idx + 1) + ' de ' + total;
+    }
+
+    function normPlate() {
+      return String(plateEl.value || '').trim().toUpperCase().replace(/\s/g, '');
+    }
+
+    function stepValid(i) {
+      if (i === 0) return normPlate().length >= 4;
+      var input = steps[i].querySelector('input[required]');
+      if (!input) return true;
+      var v = String(input.value || '').trim();
+      if (input.id === 'clientName') return v.length >= 3;
+      if (input.id === 'clientPhone') return v.replace(/\D/g, '').length >= 7;
+      return v.length >= 1;
+    }
+
+    function goNext() {
+      if (!stepValid(idx)) return;
+      if (idx === 0 && !lookupDone) { lookupPlate(); return; }
+      if (idx < total - 1) { idx++; render(); }
+    }
+    function goBack() { if (idx > 0) { idx--; render(); } }
+
+    function showAppointment(appt) {
+      var detail = '';
+      if (appt.service) detail += 'Servicio: <strong>' + escapeHtml(appt.service) + '</strong>';
+      if (appt.dateLabel) detail += (detail ? '<br>' : '') + 'Fecha: <strong>' + escapeHtml(appt.dateLabel) + '</strong>';
+      apptDetail.innerHTML = detail || 'Cita registrada a tu nombre.';
+      form.style.display = 'none';
+      progress.style.display = 'none';
+      countEl.style.display = 'none';
+      apptPanel.classList.add('is-active');
+    }
+    function hideAppointment() {
+      apptPanel.classList.remove('is-active');
+      form.style.display = '';
+      progress.style.display = '';
+      countEl.style.display = '';
+    }
+
+    function lookupPlate() {
+      fetch('/kds/checkin/lookup?placa=' + encodeURIComponent(normPlate()), { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          lookupDone = true;
+          if (data && data.hasAppointment && data.appointment) showAppointment(data.appointment);
+          else { idx = 1; render(); }
+        })
+        .catch(function () { lookupDone = true; idx = 1; render(); });
+    }
+
+    function confirmBusy(b) {
+      confirmBtn.disabled = b;
+      confirmBtn.textContent = b ? 'Confirmando…' : 'Confirmar asistencia →';
+    }
+
+    function confirmAttendance() {
+      confirmBusy(true);
+      fetch('/kds/checkin/confirmar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
+        body: JSON.stringify({ plate: normPlate() }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.ok) showSuccess('¡Te esperábamos! 🏍️', 'Confirmamos tu asistencia. Pasa al taller, un mecánico te atenderá enseguida.');
+          else { confirmBusy(false); alert((data && data.error) || 'No pudimos confirmar. Intenta de nuevo.'); }
+        })
+        .catch(function () { confirmBusy(false); alert('No pudimos confirmar. Intenta de nuevo.'); });
+    }
+
+    function showSuccess(title, text) {
+      card.style.display = 'none';
+      document.getElementById('cwSuccessTitle').textContent = title;
+      document.getElementById('cwSuccessText').textContent = text;
+      successBox.style.display = '';
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    form.addEventListener('click', function (e) {
+      if (e.target.matches('[data-next]')) { e.preventDefault(); goNext(); }
+      else if (e.target.matches('[data-back]')) { e.preventDefault(); goBack(); }
+    });
+    confirmBtn.addEventListener('click', confirmAttendance);
+    notMineBtn.addEventListener('click', function () { hideAppointment(); idx = 1; render(); });
+
+    render();
+  })();
   </script>
+  <% } %>
 </body>
 </html>
