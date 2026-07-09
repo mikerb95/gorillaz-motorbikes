@@ -310,10 +310,10 @@ router.get('/orden/nueva', requireKdsEmployee, (req, res) => {
 });
 
 router.post('/orden/nueva', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
-  const placa = String(req.body.placa || '').trim();
+  const placa = normalizeKdsPlate(req.body.placa);
   const catalog = loadServicesCatalog();
-  if (!placa) {
-    return res.status(400).render('kds/order-new', { placa, catalog, error: 'La placa es obligatoria.' });
+  if (!KDS_PLATE_RE.test(placa)) {
+    return res.status(400).render('kds/order-new', { placa, catalog, error: 'Placa inválida. Usa entre 4 y 10 caracteres (letras, números o guion).' });
   }
 
   let items;
@@ -322,7 +322,7 @@ router.post('/orden/nueva', requireKdsEmployee, requirePin('/kds'), async (req, 
     const name  = String(it.name || '').trim();
     const price = Math.round(Number(it.price));
     const qty   = Math.round(Number(it.qty));
-    if (name && Number.isInteger(price) && price >= 1 && Number.isInteger(qty) && qty >= 1) {
+    if (validLineItem(name, price, qty)) {
       acc.push({ name: name.slice(0, 200), type: it.type || 'custom', price, qty });
     }
     return acc;
