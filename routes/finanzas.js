@@ -357,10 +357,11 @@ router.get('/estado-resultados', requireAuth, requireAdmin, async (req, res) => 
   const ordPeriod = filter(paidOrders, 'createdAt');
   const gasPeriod = filter(gastos, 'date');
 
-  const ingServicios = invPeriod.reduce((s, i) => s + i.subtotal, 0);
-  const ingIVA       = invPeriod.reduce((s, i) => s + i.tax, 0);
-  const ingVentas    = ordPeriod.reduce((s, o) => s + o.total, 0);
-  const totalIngresos = ingServicios + ingVentas;
+  const ingServicios   = invPeriod.reduce((s, i) => s + i.subtotal, 0);
+  const ingParqueadero = invPeriod.reduce((s, i) => s + (i.parkingAmount || 0), 0);
+  const ingIVA         = invPeriod.reduce((s, i) => s + i.tax, 0);
+  const ingVentas      = ordPeriod.reduce((s, o) => s + o.total, 0);
+  const totalIngresos  = ingServicios + ingParqueadero + ingVentas;
 
   const gastosPorCat = {};
   gasPeriod.forEach(g => { gastosPorCat[g.category] = (gastosPorCat[g.category] || 0) + g.amount; });
