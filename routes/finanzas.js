@@ -152,7 +152,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   });
 
   const recentMovements = [
-    ...paidInvoices.map(i => ({ type: 'ingreso', icon: 'factura', ref: i.label, date: invIncomeDate(i), amount: i.subtotal, link: `/admin/facturas/${i.id}` })),
+    ...paidInvoices.map(i => ({ type: 'ingreso', icon: 'factura', ref: i.label, date: invIncomeDate(i), amount: invIncome(i), link: `/admin/facturas/${i.id}` })),
     ...paidOrders.map(o => ({ type: 'ingreso', icon: 'pedido', ref: `Pedido ${o.id.slice(0, 8)}`, date: o.createdAt, amount: o.total, link: null })),
     ...gastos.map(g => ({ type: 'egreso', icon: 'gasto', ref: g.description, date: g.date, amount: g.amount, cat: GASTO_CATS[g.category] || g.category, link: null })),
   ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
