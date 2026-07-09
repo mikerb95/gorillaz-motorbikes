@@ -157,6 +157,17 @@ const kdsCheckinLimiter = rateLimit({
   message: { error: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.' },
 });
 
+// El lookup por placa es GET (fuera del limiter de POST) y consultable en bucle;
+// sin freno sería un oráculo de enumeración placa→cita. Ventana generosa porque
+// un check-in legítimo solo lo dispara una vez.
+const kdsLookupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, hasAppointment: false, error: 'Demasiadas consultas. Espera unos minutos.' },
+});
+
 router.get('/checkin', (req, res) => {
   res.render('kds/checkin', { error: null, ok: false, values: {} });
 });
