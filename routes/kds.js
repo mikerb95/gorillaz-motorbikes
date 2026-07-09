@@ -10,6 +10,7 @@ const { JWT_SECRET } = require('../config');
 const { requireKdsEmployee, authLimiter } = require('../middleware/auth');
 const { requirePin, verifyPinHandler, touchPinSession, clearPinSessionCookies } = require('../middleware/employeePin');
 const settings = require('../helpers/settings');
+const { catalog } = require('../helpers/catalog');
 const { classes: classesData } = require('../helpers/content');
 const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
 const {
