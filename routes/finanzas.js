@@ -194,7 +194,7 @@ router.get('/ingresos', requireAuth, requireAdmin, async (req, res) => {
   const periodoOrd = paidOrders.filter(o => inPeriod(o.createdAt, year, month));
 
   let movements = [];
-  if (source !== 'pedidos') movements.push(...periodoInv.map(i => ({ type: 'factura', ref: i.label, date: invIncomeDate(i), method: i.paymentMethod, subtotal: i.subtotal, tax: i.tax, total: i.total, link: `/admin/facturas/${i.id}` })));
+  if (source !== 'pedidos') movements.push(...periodoInv.map(i => ({ type: 'factura', ref: i.label, date: invIncomeDate(i), method: i.paymentMethod, subtotal: invIncome(i), tax: i.tax, total: i.total, link: `/admin/facturas/${i.id}` })));
   if (source !== 'facturas') movements.push(...periodoOrd.map(o => ({ type: 'pedido', ref: o.id.slice(0, 8).toUpperCase(), date: o.createdAt, method: 'bold', subtotal: o.total, tax: 0, total: o.total, link: null })));
   movements.sort((a, b) => new Date(b.date) - new Date(a.date));
 
