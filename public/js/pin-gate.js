@@ -55,11 +55,16 @@
       '<div class="pin-gate-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>' +
       '<h2 class="pin-gate-title"></h2>' +
       '<p class="pin-gate-msg"></p>' +
-      '<input class="pin-gate-input" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••" aria-label="PIN" />' +
+      '<input class="pin-gate-input" type="password" inputmode="none" readonly autocomplete="off" maxlength="6" placeholder="••••" aria-label="PIN" />' +
       '<p class="pin-gate-err" role="alert"></p>' +
+      '<div class="pin-gate-keypad">' +
+        '1,2,3,4,5,6,7,8,9,Borrar,0,Entrar'.split(',').map(function (d) {
+          var isAction = d === 'Borrar' || d === 'Entrar';
+          return '<button type="button" class="pin-gate-key' + (isAction ? ' wide' : '') + '" data-pin-key="' + d + '">' + d + '</button>';
+        }).join('') +
+      '</div>' +
       '<div class="pin-gate-actions">' +
         '<button type="button" class="pin-gate-btn pin-gate-cancel" data-pin-cancel>Cancelar</button>' +
-        '<button type="button" class="pin-gate-btn pin-gate-ok">Autorizar</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(wrap);
