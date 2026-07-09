@@ -90,11 +90,29 @@
 
   renderBoard(initialOrders);
 
+  // Firma de los datos que afectan al DOM (el "elapsed" cambia solo/minuto, así
+  // que no lo incluimos: no queremos repintar todo el tablero cada 8s por eso).
+  function signature(orders) {
+    return orders.map(o => [o.id, o.label, o.motorcycle, o.mechanic, o.status, o.itemCount].join('')).join('');
+  }
+  let lastSig = signature(initialOrders);
+
+  // Pausa breve tras un toque: si el refresh cae justo cuando el mecánico va a
+  // tocar una tarjeta, repintar el tablero se la movería bajo el dedo.
+  let lastTouch = 0;
+  board.addEventListener('pointerdown', () => { lastTouch = Date.now(); });
+
   setInterval(async () => {
     try {
       const res = await fetch('/kds/orders.json');
-      initialOrders = await res.json();
-      renderBoard(initialOrders);
+      const fresh = await res.json();
+      initialOrders = fresh;
+      const sig = signature(fresh);
+      // Solo repintamos si algo relevante cambió y no se acaba de tocar el board.
+      if (sig === lastSig) return;
+      if (Date.now() - lastTouch < 2500) return;
+      lastSig = sig;
+      renderBoard(fresh);
     } catch { /* red intermitente: se reintenta en el próximo ciclo */ }
   }, 8000);
   </script>
