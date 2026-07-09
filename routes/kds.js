@@ -153,7 +153,12 @@ router.post('/logout', (req, res) => {
 // ── Pantalla principal: siempre la cara al cliente (naranja + logo + reloj).
 // El panel de taller ya no vive aquí, se accede aparte vía /kds/board.
 router.get('/', (req, res) => {
-  res.render('kds/kiosk', { classesData });
+  // Solo lo que el roll necesita mostrar: sin sku/tags/descripcion, que no
+  // aportan nada a un cliente mirando la tablet desde lejos.
+  const rollProducts = catalog.products
+    .filter(p => p.stock > 0)
+    .map(p => ({ name: p.name, price: p.price, image: p.image, discount: p.discount || 0 }));
+  res.render('kds/kiosk', { classesData, rollProducts });
 });
 
 // ── Tablero de órdenes (solo con sesión de mecánico activa) ────────────────
