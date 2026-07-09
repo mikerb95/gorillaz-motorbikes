@@ -138,7 +138,7 @@
     } catch (e) {
       errEl.textContent = 'Error de red. Inténtalo de nuevo.';
     }
-    okBtn.disabled = false;
+    setBusy(false);
   }
 
   forms.forEach(function (form) {
