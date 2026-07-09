@@ -53,14 +53,16 @@
 
         <div class="quick-add" id="quickAdd">
           <label class="k">Ítem</label>
-          <input type="text" id="qaName" readonly />
+          <input type="text" id="qaName" readonly data-kds-kbd="qwerty" data-kds-label="Nombre del ítem" data-kds-locked />
           <div class="qty-row">
             <button type="button" class="qty-btn" id="qtyMinus">−</button>
-            <input type="number" id="qaQty" value="1" min="1" style="width:70px" />
+            <input type="text" id="qaQty" value="1" style="width:70px"
+              readonly data-kds-kbd="qwerty" data-kds-label="Cantidad" />
             <button type="button" class="qty-btn" id="qtyPlus">+</button>
           </div>
           <label class="k">Precio unitario</label>
-          <input type="number" id="qaPrice" min="0" step="1" placeholder="0" />
+          <input type="text" id="qaPrice" placeholder="0"
+            readonly data-kds-kbd="qwerty" data-kds-label="Precio unitario" />
           <button type="button" class="save" id="qaAdd">+ Agregar a la orden</button>
         </div>
 
