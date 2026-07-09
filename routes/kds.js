@@ -192,6 +192,67 @@ router.post('/checkin', kdsCheckinLimiter, async (req, res) => {
   res.render('kds/checkin', { error: null, ok: true, values: {} });
 });
 
+// Normaliza la placa igual que el agendar/check-in público.
+const normalizeKdsPlate = (v) => String(v || '').trim().toUpperCase().replace(/\s/g, '');
+
+function kdsCitaDateLabel(date) {
+  if (!date) return '';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return String(date);
+  return d.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+}
+
+// Lookup de cita por placa (mismo contrato que /checkin/lookup del sitio).
+router.get('/checkin/lookup', async (req, res) => {
+  const plate = normalizeKdsPlate(req.query.placa);
+  if (plate.length < 4) return res.json({ ok: false, hasAppointment: false });
+
+  const [appointment, pendingCheckins] = await Promise.all([
+    getPendingAppointmentByPlate(plate),
+    getPendingCheckinsByPlate(plate),
+  ]);
+  const alreadyCheckedIn = pendingCheckins.some(c => normalizeKdsPlate(c.plate) === plate);
+
+  if (!appointment) return res.json({ ok: true, hasAppointment: false, alreadyCheckedIn });
+
+  return res.json({
+    ok: true,
+    hasAppointment: true,
+    alreadyCheckedIn,
+    appointment: {
+      name: appointment.name || '',
+      service: appointment.service || '',
+      dateLabel: kdsCitaDateLabel(appointment.date),
+    },
+  });
+});
+
+// Confirmar asistencia desde la tablet (misma lógica que /checkin/confirmar).
+router.post('/checkin/confirmar', kdsCheckinLimiter, async (req, res) => {
+  const plate = normalizeKdsPlate(req.body.plate);
+  if (plate.length < 4) return res.status(400).json({ ok: false, error: 'Placa inválida.' });
+
+  const appointment = await getPendingAppointmentByPlate(plate);
+  if (!appointment) return res.json({ ok: true, already: true });
+
+  const existing = await getPendingCheckinsByPlate(plate);
+  const alreadyQueued = existing.some(c => normalizeKdsPlate(c.plate) === plate);
+  if (!alreadyQueued) {
+    const phone = String(appointment.phone || '').replace(/\D/g, '');
+    await createCheckin({
+      clientName: (appointment.name || 'Cliente con cita').slice(0, 120),
+      clientPhone: phone.slice(0, 15) || '0000000',
+      clientPhoneCountry: '+57',
+      plate: plate.slice(0, 20),
+      brand: null,
+      reference: appointment.service ? `Cita: ${appointment.service}`.slice(0, 60) : null,
+    });
+  }
+
+  await updateAppointment(appointment.id, { status: 'confirmada' });
+  return res.json({ ok: true });
+});
+
 // ── Buscar por placa ────────────────────────────────────────────────────
 router.get('/placa', (req, res) => {
   res.render('kds/placa', { error: null });
