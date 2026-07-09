@@ -69,11 +69,18 @@
         inCol.forEach(o => {
           const a = document.createElement('a');
           a.className = 'kds-card st-' + o.status;
-          a.href = '/kds/orden/' + o.id;
-          a.innerHTML =
-            '<div class="label">' + o.label + '</div>' +
-            '<div class="moto">' + (o.motorcycle || 'Sin placa') + '</div>' +
-            '<div class="meta">' + o.itemCount + ' ítem(s) · ' + (o.mechanic || 'Sin asignar') + ' · ' + elapsed(o.createdAt) + '</div>';
+          a.href = '/kds/orden/' + encodeURIComponent(o.id);
+          // textContent (no innerHTML): placa y mecánico son datos de usuario;
+          // interpolarlos como HTML permitiría inyectar markup en el tablero.
+          const mk = (cls, text) => {
+            const d = document.createElement('div');
+            d.className = cls;
+            d.textContent = text;
+            return d;
+          };
+          a.appendChild(mk('label', o.label));
+          a.appendChild(mk('moto', o.motorcycle || 'Sin placa'));
+          a.appendChild(mk('meta', o.itemCount + ' ítem(s) · ' + (o.mechanic || 'Sin asignar') + ' · ' + elapsed(o.createdAt)));
           col.appendChild(a);
         });
       }
