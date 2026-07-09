@@ -312,6 +312,53 @@ body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand);
   .kds-checkin-cta-sub { font-size: 14px; }
 }
 
+/* ── Roll de productos de la tienda (costado de la pantalla principal) ───*/
+
+.kds-product-roll {
+  width: 300px; flex: 0 0 300px;
+  background: var(--kds-paper);
+  border-radius: var(--kds-radius-lg);
+  padding: 20px;
+  box-shadow: 0 10px 0 var(--kds-brand-deep), 0 20px 40px rgba(0,0,0,.25);
+}
+.kds-product-roll-title {
+  font-size: 15px; font-weight: 900; color: var(--kds-brand-deep);
+  text-transform: uppercase; letter-spacing: .04em;
+  padding-bottom: 12px; margin-bottom: 12px;
+  border-bottom: 1.5px dashed var(--kds-hair);
+}
+.kds-product-roll-items {
+  display: flex; flex-direction: column; gap: 14px;
+  opacity: 0; transition: opacity .25s ease;
+}
+.kds-product-roll-items.is-visible { opacity: 1; }
+.kds-product-roll-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--kds-paper-2); border-radius: 14px; padding: 10px;
+}
+.kds-product-roll-img {
+  width: 56px; height: 56px; object-fit: cover; border-radius: 10px; flex: 0 0 56px;
+  background: #fff;
+}
+.kds-product-roll-info { min-width: 0; }
+.kds-product-roll-name {
+  font-size: 14px; font-weight: 800; color: var(--kds-ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.kds-product-roll-price {
+  font-family: var(--kds-mono); font-weight: 900; font-size: 13px; color: var(--kds-brand);
+  margin-top: 2px; display: flex; align-items: center; gap: 6px;
+}
+.kds-product-roll-discount {
+  font-family: inherit; font-size: 11px; font-weight: 800; color: #fff;
+  background: var(--kds-brand-deep); border-radius: 999px; padding: 1px 7px;
+}
+
+@media (max-width: 1000px) {
+  .kds-kiosk-main { flex-direction: column; }
+  .kds-product-roll { width: 100%; max-width: 420px; }
+}
+
 /* ── Menú flotante del panel de taller ───────────────────────────────────*/
 
 .kds-fab-wrap { position: fixed; right: 24px; bottom: 24px; z-index: 200; }
