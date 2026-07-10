@@ -184,8 +184,10 @@
         ].forEach(([t,d], i) => { %>
           <div class="clp-how-step">
             <div class="clp-how-num"><%= i+1 %></div>
-            <h3><%= t %></h3>
-            <p><%= d %></p>
+            <div class="clp-how-text">
+              <h3><%= t %></h3>
+              <p><%= d %></p>
+            </div>
           </div>
         <% }) %>
       </div>

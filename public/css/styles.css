@@ -9291,6 +9291,7 @@ main:has(.club-panel) { padding-top: 0 !important; }
   }
   .clp-how-step { display: flex; align-items: flex-start; gap: 16px; text-align: left; padding: 0 8px }
   .clp-how-num { margin: 0; flex-shrink: 0 }
+  .clp-how-text { flex: 1 1 auto; min-width: 0 }
 
   .clp-cta { padding: 48px 12px }
 }
