@@ -291,6 +291,14 @@ const isProforma = invoice.status === 'proforma';
 
       const url = 'https://wa.me/' + country.replace('+', '') + digits + '?text=' + encodeURIComponent(lines.join('\n'));
       window.open(url, '_blank', 'noopener,noreferrer');
+
+      try {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        fetch('/admin/facturas/' + INV.id + '/wa-enviada', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        });
+      } catch {}
     });
 
     // Al llegar recién cerrada la orden (?wa=1), resalta el botón para que

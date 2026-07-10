@@ -1373,6 +1373,18 @@ router.post('/ordenes-servicio/:id/entregar', requireAuth, requireAdmin, async (
     setFlash(res, 'error', 'Esta orden no tiene una factura proforma pendiente de entrega.');
     return res.redirect('/admin/ordenes-servicio/' + req.params.id);
   }
+  // Si la orden no tenía teléfono, el formulario de entrega lo exige para
+  // poder enviar la factura por WhatsApp justo después de cerrar.
+  if (!order.clientPhone) {
+    const digits = (req.body.clientPhone || '').replace(/\D/g, '');
+    if (digits.length < 7) {
+      setFlash(res, 'error', 'Falta el WhatsApp del cliente para poder enviarle la factura.');
+      return res.redirect('/admin/ordenes-servicio/' + req.params.id);
+    }
+    await updateServiceOrderPhone(order.id, digits, req.body.clientPhoneCountry || '+57');
+    order.clientPhone = digits;
+    order.clientPhoneCountry = req.body.clientPhoneCountry || '+57';
+  }
   try {
     await deliverServiceOrder(order, invoice, {
       tax:           Math.max(0, Math.round(Number(req.body.tax) || 0)),
@@ -1448,6 +1460,21 @@ router.post('/facturas/:id/telefono', requireAuth, requireAdmin, async (req, res
   } catch (err) {
     console.error('POST /admin/facturas/:id/telefono error:', err.message);
     res.status(500).json({ error: 'Error al guardar el teléfono.' });
+  }
+});
+
+// Deja rastro en la orden de que el admin efectivamente hizo clic en "Enviar
+// por WhatsApp" (el envío en sí ocurre client-side vía wa.me, no hay forma
+// de confirmar que el mensaje llegó, solo que se abrió el link).
+router.post('/facturas/:id/wa-enviada', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const invoice = await getInvoiceById(req.params.id);
+    if (!invoice || !invoice.serviceOrderId) return res.status(404).json({ error: 'Factura no encontrada.' });
+    await addServiceOrderEvent(invoice.serviceOrderId, 'factura_enviada_wa', res.locals.user?.name || 'Admin', invoice.label);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('POST /admin/facturas/:id/wa-enviada error:', err.message);
+    res.status(500).json({ error: 'Error al registrar el envío.' });
   }
 });
 

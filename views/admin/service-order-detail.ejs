@@ -96,14 +96,15 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
     pendiente:'Pendiente', ingreso_taller:'Ingreso a taller', trabajo_en_curso:'Trabajo en curso',
     en_pausa:'En pausa', trabajo_completo:'Trabajo completo', entregado:'Entregado', facturado:'Facturado (proforma)',
     editado:'Orden editada', factura_generada:'Factura proforma generada', factura_anulada:'Factura anulada',
-    factura_cerrada:'Factura cerrada al entregar'
+    factura_cerrada:'Factura cerrada al entregar', factura_enviada_wa:'Factura enviada por WhatsApp'
   };
   const STATUS_COLOR = {
     pendiente:'#9ca3af', ingreso_taller:'#f59e0b', trabajo_en_curso:'#3b82f6',
     en_pausa:'#f59e0b', trabajo_completo:'#22c55e', entregado:'#16a34a', facturado:'#16a34a',
-    editado:'#8b5cf6', factura_generada:'#16a34a', factura_anulada:'#dc2626', factura_cerrada:'#16a34a'
+    editado:'#8b5cf6', factura_generada:'#16a34a', factura_anulada:'#dc2626', factura_cerrada:'#16a34a',
+    factura_enviada_wa:'#25D366'
   };
-  const STATUS_ICON = { editado:'✏️', factura_generada:'🧾', factura_anulada:'🚫', factura_cerrada:'🔒' };
+  const STATUS_ICON = { editado:'✏️', factura_generada:'🧾', factura_anulada:'🚫', factura_cerrada:'🔒', factura_enviada_wa:'📲' };
   // Título de un evento: los hitos de factura anteponen su etiqueta (guardada
   // en detail) para que el historial siga leyéndose aunque la orden ya no esté
   // vinculada a esa factura.
@@ -111,6 +112,7 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
     if (e.status === 'factura_generada') return e.detail ? 'Factura ' + e.detail + ' generada (proforma)' : 'Factura proforma generada';
     if (e.status === 'factura_anulada')  return e.detail ? 'Factura ' + e.detail + ' anulada'  : 'Factura anulada';
     if (e.status === 'factura_cerrada')  return e.detail ? 'Factura ' + e.detail + ' cerrada al entregar' : 'Factura cerrada al entregar';
+    if (e.status === 'factura_enviada_wa') return e.detail ? 'Factura ' + e.detail + ' enviada por WhatsApp' : 'Factura enviada por WhatsApp';
     return STATUS_LABEL[e.status] || e.status;
   };
   const evs = typeof events !== 'undefined' ? events : [];
@@ -304,6 +306,15 @@ const STATUS_CLS = { ingreso_taller:'badge-warning', trabajo_en_curso:'badge-inf
     <form method="post" action="/admin/ordenes-servicio/<%= order.id %>/entregar" id="deliverForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <input type="hidden" name="paidNow" id="paidNowField" value="" />
+      <% if (!order.clientPhone) { %>
+      <div style="margin-bottom:12px;padding:12px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px">
+        <label style="display:block;font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">WhatsApp del cliente (falta, requerido para enviar la factura)</label>
+        <div style="display:flex;gap:6px">
+          <input type="text" name="clientPhoneCountry" value="+57" style="width:62px;padding:9px 8px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;text-align:center" />
+          <input type="text" name="clientPhone" inputmode="numeric" placeholder="3001234567" required minlength="7" style="flex:1;min-width:0;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" />
+        </div>
+      </div>
+      <% } %>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px">
         <div>
           <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Parqueadero (COP)</label>
