@@ -27,8 +27,6 @@ async function main(url, outfile, width) {
   await new Promise((r) => setTimeout(r, 2500));
   const metrics = await send('Page.getLayoutMetrics');
   const height = Math.ceil(metrics.cssContentSize.height);
-  await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 500 });
-  await new Promise((r) => setTimeout(r, 800));
   const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { x: 0, y: 0, width, height, scale: 1 } });
   require('fs').writeFileSync(outfile, Buffer.from(shot.data, 'base64'));
   console.log('saved', outfile, width, 'x', height);
