@@ -8959,6 +8959,7 @@ main:has(.club-panel) { padding-top: 0 !important; }
 }
 
 .clp-hero .hero-content h1 {
+  display: block;
   margin: 0 0 18px;
   max-width: 820px;
   font-size: clamp(2.1rem, 5.6vw, 4.2rem);
@@ -8973,6 +8974,7 @@ main:has(.club-panel) { padding-top: 0 !important; }
 }
 
 .clp-hero .hero-content p {
+  display: block;
   max-width: 620px;
   font-size: 1.05rem;
   color: #f1f1f1;
