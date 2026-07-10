@@ -8006,6 +8006,34 @@ main:has(.club-panel) { padding-top: 0 !important; }
   border-left: 4px solid var(--brand)
 }
 
+@media (max-width:640px) {
+  .club-section .grid.four {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px
+  }
+
+  .club-section .grid.four .card {
+    padding: 12px;
+    border-left-width: 3px
+  }
+
+  .club-section .grid.four .card h3 {
+    font-size: .92rem;
+    line-height: 1.25
+  }
+
+  .club-section .grid.four .card p {
+    font-size: .8rem;
+    line-height: 1.3
+  }
+}
+
+@media (max-width:380px) {
+  .club-section .grid.four {
+    grid-template-columns: 1fr
+  }
+}
+
 .club-member-count {
   font-size: .9rem;
   color: var(--muted);
