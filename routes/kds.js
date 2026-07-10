@@ -373,7 +373,7 @@ router.post('/orden/nueva', requireKdsEmployee, requirePin('/kds'), async (req, 
   }, []) : [];
 
   if (clean.length === 0) {
-    return res.status(400).render('kds/order-new', { placa, catalog, error: 'Agrega al menos un ítem válido (nombre, cantidad y precio).' });
+    return res.status(400).render('kds/order-new', { placa, catalog, returning: null, prefill, error: 'Agrega al menos un ítem válido (nombre, cantidad y precio).' });
   }
 
   const total = clean.reduce((s, it) => s + it.price * it.qty, 0);

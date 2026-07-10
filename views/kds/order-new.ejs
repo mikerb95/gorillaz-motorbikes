@@ -33,15 +33,21 @@
 
       <div class="card">
         <h2>Datos de ingreso</h2>
+        <% if (returning) { %>
+          <div class="returning-note" style="background:rgba(242,92,5,.12);border:1px solid rgba(242,92,5,.45);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:700;margin-bottom:12px">
+            ↻ Esta placa ya visitó el taller<%= returning.clientName ? ' — ' + returning.clientName : '' %>.
+            <%= returning.clientPhone ? 'Teléfono precargado de la última visita.' : '' %>
+          </div>
+        <% } %>
         <label class="k">Placa</label>
         <input type="text" name="placa" value="<%= placa %>" required class="plate-input"
           readonly data-kds-kbd="qwerty" data-kds-label="Placa" />
         <label class="k">Teléfono del cliente (opcional)</label>
-        <input type="tel" name="clientPhone" placeholder="3001234567"
+        <input type="tel" name="clientPhone" placeholder="3001234567" value="<%= prefill.clientPhone %>"
           readonly data-kds-kbd="qwerty" data-kds-label="Teléfono del cliente" />
         <label class="k">Notas (opcional)</label>
         <textarea name="notes" rows="2" placeholder="Detalles del ingreso..."
-          readonly data-kds-kbd="qwerty" data-kds-label="Notas"></textarea>
+          readonly data-kds-kbd="qwerty" data-kds-label="Notas"><%= prefill.notes %></textarea>
       </div>
 
       <div class="card">
