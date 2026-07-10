@@ -9257,6 +9257,7 @@ main:has(.club-panel) { padding-top: 0 !important; }
 .clp-cta .btn:hover { background: #f2f2f2 }
 
 .clp-cta .btn-outline {
+  background: transparent;
   border-color: rgba(255,255,255,.7);
   color: #fff
 }
