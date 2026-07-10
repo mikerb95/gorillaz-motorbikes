@@ -1429,7 +1429,11 @@ router.get('/facturas/:id', requireAuth, requireAdmin, async (req, res) => {
       order.clientPhoneCountry = quotation.clientPhoneCountry || '+57';
     }
   }
-  res.render('admin/invoice-detail', { invoice, order });
+  res.render('admin/invoice-detail', {
+    invoice, order,
+    googleReviewUrl: GOOGLE_REVIEW_URL,
+    autoWa: req.query.wa === '1',
+  });
 });
 
 // Guarda el número de WhatsApp del cliente en la orden de la factura (igual que el liquidador con la cotización).
