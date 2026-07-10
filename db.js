@@ -2198,6 +2198,18 @@ async function getPendingCheckinsByPlate(plate) {
   return r.rows.map(rowToCheckin);
 }
 
+// Último check-in de una placa sin importar estado: sirve para precargar los
+// datos del cliente cuando la moto ya visitó el taller antes. Escapa los
+// comodines de LIKE igual que getServiceOrdersByPlate.
+async function getLastCheckinByPlate(plate) {
+  const needle = plate.toUpperCase().replace(/\s/g, '').replace(/[\\%_]/g, s => '\\' + s);
+  const r = await db.execute({
+    sql: `SELECT * FROM checkins WHERE UPPER(REPLACE(plate, ' ', '')) LIKE ? ESCAPE '\\' ORDER BY created_at DESC LIMIT 1`,
+    args: [`%${needle}%`],
+  });
+  return rowToCheckin(r.rows[0]);
+}
+
 async function markCheckinAttended(id, serviceOrderId) {
   await db.execute({
     sql: `UPDATE checkins SET status = 'atendido', service_order_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?`,
@@ -2623,7 +2635,7 @@ module.exports = {
   createGasto, getAllGastos, getGastoById, updateGasto, deleteGasto,
   logAdminAction, getAdminAuditLog,
   getServiceOrdersByPlate,
-  createCheckin, getCheckinById, getPendingCheckins, getPendingCheckinsByPlate, markCheckinAttended,
+  createCheckin, getCheckinById, getPendingCheckins, getPendingCheckinsByPlate, getLastCheckinByPlate, markCheckinAttended,
   createPresentationSession, getPresentationSession, setPresentationSlideIndex,
   getTvState, setTvMode, sendTvPlaylistCommand, setTvSlideIndex, setTvSlideCount, stepTvSlide,
   createClassified, updateClassified, setClassifiedStatus, getClassifiedById,
