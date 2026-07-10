@@ -7930,8 +7930,13 @@ main:has(.club-panel) { padding-top: 0 !important; }
   text-align: center
 }
 
+.stats-inner.cols-3 {
+  grid-template-columns: repeat(3, 1fr)
+}
+
 @media (max-width: 640px) {
-  .stats-inner {
+  .stats-inner,
+  .stats-inner.cols-3 {
     grid-template-columns: repeat(2, 1fr);
     gap: 1px
   }
