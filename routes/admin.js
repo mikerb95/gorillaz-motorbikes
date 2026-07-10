@@ -71,7 +71,7 @@ function loadServicesCatalog() {
   return settings.get('services_catalog') ?? readDataJson('services-catalog.json', []);
 }
 const saveServicesCatalog = (list) => settings.set('services_catalog', list);
-const { resendClient } = require('../config');
+const { resendClient, GOOGLE_REVIEW_URL } = require('../config');
 const { invalidateCatalogCache } = require('./liquidador');
 const { calcParking } = require('./services');
 
@@ -1387,7 +1387,9 @@ router.post('/ordenes-servicio/:id/entregar', requireAuth, requireAdmin, async (
     return res.redirect('/admin/ordenes-servicio/' + req.params.id);
   }
   setFlash(res, 'success', 'Moto entregada y factura cerrada.');
-  res.redirect('/admin/facturas/' + invoice.id);
+  // ?wa=1 le indica a la vista de la factura que resalte el botón de WhatsApp
+  // para que el admin la envíe al cliente en el acto.
+  res.redirect('/admin/facturas/' + invoice.id + '?wa=1');
 });
 
 // Borrado permanente de una orden. Se bloquea si ya tiene factura: anular esa
