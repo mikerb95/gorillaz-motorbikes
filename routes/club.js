@@ -35,11 +35,12 @@ const QRCode = require('qrcode');
 const { JWT_SECRET, resendClient, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL, APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY } = require('../config');
 const { requireAuth }               = require('../middleware/auth');
 const { authLimiter }               = require('../middleware/auth');
-const { getScoreLevel, SCORE_POINTS } = require('../helpers/score');
+const { getScoreLevel, SCORE_POINTS, loadPuntosConfig } = require('../helpers/score');
 const {
   getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId, getUserByAppleId,
   getPasskeysByUserId, getPasskeyByCredentialId, createPasskey, updatePasskeyCounter, deletePasskey,
   updateUser, createUser, deleteUserAccount, deleteNewsletterByEmail, incrementTokenVersion,
+  countUsers,
   getAllEvents, getUpcomingEvents,
   registerEventAttendance, getUserEventRegistrations,
   getLeaderboard,
@@ -68,10 +69,14 @@ router.get('/', async (req, res) => {
       .sort()
       .map(f => `/images/slideshow/club/${encodeURIComponent(f)}`);
   } catch { }
-  if (!slidesClub.length) slidesClub = ['/images/download.png'];
+  if (!slidesClub.length) slidesClub = ['/images/slideshow/club.png'];
   let events = [];
   try { events = await getAllEvents(); } catch { }
-  res.render('club/landing', { events, slidesClub });
+  let memberCount = 0;
+  try { memberCount = await countUsers(); } catch { }
+  const ridesCount = events.filter(ev => ev.type === 'rodada').length;
+  const puntos = loadPuntosConfig();
+  res.render('club/landing', { events, slidesClub, memberCount, ridesCount, puntos });
 });
 
 router.get('/login', (req, res) => {
