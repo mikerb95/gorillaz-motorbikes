@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 
 async function main(url, outfile, width) {
-  const vRes = await fetch('http://localhost:9333/json/new?' + encodeURIComponent(url));
+  const vRes = await fetch('http://localhost:9333/json/new?about:blank', { method: 'PUT' });
   const target = await vRes.json();
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   let id = 0;
@@ -23,7 +23,8 @@ async function main(url, outfile, width) {
   await new Promise((r) => ws.on('open', r));
   await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride', { width, height: 1000, deviceScaleFactor: 1, mobile: width < 500 });
-  await new Promise((r) => setTimeout(r, 1500));
+  await send('Page.navigate', { url });
+  await new Promise((r) => setTimeout(r, 2500));
   const metrics = await send('Page.getLayoutMetrics');
   const height = Math.ceil(metrics.cssContentSize.height);
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 500 });
