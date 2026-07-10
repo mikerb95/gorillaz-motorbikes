@@ -351,8 +351,13 @@ router.get('/orden/nueva', requireKdsEmployee, async (req, res) => {
 router.post('/orden/nueva', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
   const placa = normalizeKdsPlate(req.body.placa);
   const catalog = loadServicesCatalog();
+  // Al re-renderizar por error se conserva lo que el empleado ya escribió.
+  const prefill = {
+    clientPhone: String(req.body.clientPhone || '').trim(),
+    notes:       String(req.body.notes || '').trim(),
+  };
   if (!KDS_PLATE_RE.test(placa)) {
-    return res.status(400).render('kds/order-new', { placa, catalog, error: 'Placa inválida. Usa entre 4 y 10 caracteres (letras, números o guion).' });
+    return res.status(400).render('kds/order-new', { placa, catalog, returning: null, prefill, error: 'Placa inválida. Usa entre 4 y 10 caracteres (letras, números o guion).' });
   }
 
   let items;
