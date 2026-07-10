@@ -9129,7 +9129,7 @@ main:has(.club-panel) { padding-top: 0 !important; }
 .clp-points-cta { text-align: center; margin-top: 40px }
 
 /* ─── Próximos eventos (preview) ─────────────────────────────────────── */
-.clp-events-grid { grid-template-columns: repeat(3, 1fr) }
+.clp-events-grid { grid-template-columns: repeat(3, 1fr); max-width: 1100px }
 
 /* ─── Cómo funciona (timeline) ───────────────────────────────────────── */
 .clp-how-track {
