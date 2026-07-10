@@ -319,11 +319,33 @@ router.get('/placa/buscar', async (req, res) => {
   return res.redirect('/kds/orden/nueva?placa=' + encodeURIComponent(placa));
 });
 
+// Si la placa ya visitó el taller, precarga los datos del cliente para que el
+// empleado no vuelva a teclearlos: primero la orden más reciente y, si no tiene
+// teléfono, el último check-in (que además trae el nombre).
+async function getReturningClient(placa) {
+  const plate = normalizeKdsPlate(placa);
+  if (plate.length < 4) return null;
+  const [orders, checkin] = await Promise.all([
+    getServiceOrdersByPlate(plate),
+    getLastCheckinByPlate(plate),
+  ]);
+  const lastOrder = orders[0] || null;
+  // '0000000' es el relleno de los check-ins creados desde una cita sin
+  // teléfono: no sirve para contactar al cliente, así que no se precarga.
+  const checkinPhone = checkin && checkin.clientPhone !== '0000000' ? checkin.clientPhone : null;
+  const clientPhone  = (lastOrder && lastOrder.clientPhone) || checkinPhone || null;
+  const clientName   = (checkin && checkin.clientName) || null;
+  if (!clientPhone && !clientName) return null;
+  return { clientPhone, clientName };
+}
+
 // ── Crear orden nueva desde placa ──────────────────────────────────────
-router.get('/orden/nueva', requireKdsEmployee, (req, res) => {
+router.get('/orden/nueva', requireKdsEmployee, async (req, res) => {
   const placa   = String(req.query.placa || '').trim();
   const catalog = loadServicesCatalog();
-  res.render('kds/order-new', { placa, catalog, error: null });
+  const returning = await getReturningClient(placa);
+  const prefill = { clientPhone: (returning && returning.clientPhone) || '', notes: '' };
+  res.render('kds/order-new', { placa, catalog, returning, prefill, error: null });
 });
 
 router.post('/orden/nueva', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
