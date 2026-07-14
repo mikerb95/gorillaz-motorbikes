@@ -5359,6 +5359,124 @@ body.is-presentation .site-header.is-expanded .sub-embed {
   letter-spacing: .04em
 }
 
+/* ── Dashboard: estado "todo al día" (sin pendientes que atender) ── */
+.crm-allclear {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  color: #15803d;
+  font-size: .85rem;
+  font-weight: 700;
+  margin-bottom: 24px
+}
+
+.crm-allclear svg { flex: 0 0 auto; stroke: #22c55e }
+
+/* Cards de "Resumen": misma familia visual que .crm-kpi-card pero con menos
+   peso, para que no compitan con las secciones accionables de arriba. */
+.crm-kpi-row.is-compact { gap: 10px }
+
+.crm-kpi-row.is-compact .crm-kpi-card {
+  padding: 13px 14px;
+  gap: 3px
+}
+
+.crm-kpi-row.is-compact .crm-kpi-card:hover {
+  box-shadow: none;
+  border-color: #d4d4d8
+}
+
+.crm-kpi-row.is-compact .crm-kpi-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  margin-bottom: 0
+}
+
+.crm-kpi-row.is-compact .crm-kpi-icon svg { width: 13px; height: 13px }
+
+.crm-kpi-row.is-compact .crm-kpi-value { font-size: 1.3rem }
+
+.crm-kpi-row.is-compact .crm-kpi-label { font-size: .68rem }
+
+/* ── Dashboard: agenda de hoy (citas + entregas) ── */
+.crm-agenda-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px
+}
+
+.crm-agenda-card {
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.crm-agenda-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .78rem;
+  font-weight: 800;
+  color: #3f3f46;
+  margin-bottom: 10px
+}
+
+.crm-agenda-card-title .badge { font-size: .68rem }
+
+.crm-agenda-empty {
+  font-size: .8rem;
+  color: #a1a1aa;
+  padding: 6px 0
+}
+
+.crm-agenda-list { display: flex; flex-direction: column; gap: 2px }
+
+.crm-agenda-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background .12s
+}
+
+.crm-agenda-item:hover { background: #fafafa }
+
+.crm-agenda-time {
+  flex: 0 0 auto;
+  font-size: .74rem;
+  font-weight: 800;
+  color: #71717a;
+  min-width: 46px
+}
+
+.crm-agenda-time.is-late { color: #dc2626 }
+
+.crm-agenda-main { flex: 1; min-width: 0 }
+
+.crm-agenda-name {
+  font-size: .84rem;
+  font-weight: 700;
+  color: #18181b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis
+}
+
+.crm-agenda-sub {
+  font-size: .74rem;
+  color: #a1a1aa
+}
+
 /* ── Resumen inteligente de cotizaciones ── */
 .qsum-kpis { grid-template-columns: repeat(4, 1fr) }
 .qsum-foot { min-height: 16px; display: flex; align-items: center; gap: 6px; margin-top: 2px }
