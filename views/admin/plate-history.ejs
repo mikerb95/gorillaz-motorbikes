@@ -51,7 +51,7 @@ invoices.forEach(inv => { invoiceByOrderId[inv.serviceOrderId] = inv; });
       </div>
       <% if (vehicle) { %>
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6;font-size:13px;color:#374151">
-          Vehículo registrado: <strong><%= [vehicle.brand, vehicle.model || vehicle.reference].filter(Boolean).join(' ') || 'Sin marca/modelo' %></strong>
+          Vehículo registrado: <strong><%= [vehicle.brand, vehicle.model].filter(Boolean).join(' ') || 'Sin marca/modelo' %></strong>
         </div>
       <% } %>
     <% } else { %>
