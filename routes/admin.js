@@ -1532,6 +1532,67 @@ router.post('/facturas/:id/estado', requireAuth, requireAdmin, async (req, res) 
   res.redirect('/admin/facturas/' + req.params.id);
 });
 
+// ── Buscador de placa (sidebar) ─────────────────────────────────────────────
+
+// Placa "parece válida" si tiene al menos 3 caracteres alfanuméricos tras
+// normalizar. No exige el formato exacto colombiano (AAA123 / AAA12A) porque
+// también deben matchear placas de otros países o motos sin placa oficial
+// (temporal, importada, etc.) que igual quedaron registradas en el sistema.
+function normalizePlateQuery(raw) {
+  return String(raw || '').trim().toUpperCase().replace(/\s/g, '').replace(/[^A-Z0-9]/g, '');
+}
+
+router.get('/api/buscar-placa', requireAuth, requireAdmin, async (req, res) => {
+  const plate = normalizePlateQuery(req.query.q);
+  if (plate.length < 3) return res.json({ ok: true, plate, member: null, orders: [], quotations: [], counts: { orders: 0, quotations: 0 } });
+
+  const [memberHit, orders, quotations] = await Promise.all([
+    getUserByVehiclePlate(plate),
+    getServiceOrdersByPlate(plate),
+    getQuotationsByMotorcyclePlates([plate]),
+  ]);
+
+  res.json({
+    ok: true,
+    plate,
+    member: memberHit ? {
+      id: memberHit.user.id,
+      name: memberHit.user.name,
+      nickname: memberHit.user.nickname,
+      level: memberHit.user.membership && memberHit.user.membership.level,
+      score: memberHit.user.score,
+    } : null,
+    orders: orders.slice(0, 5).map(o => ({ id: o.id, label: o.label, status: o.status, createdAt: o.createdAt })),
+    quotations: quotations.slice(0, 5).map(q => ({ id: q.id, label: q.label, total: q.total, createdAt: q.createdAt })),
+    counts: { orders: orders.length, quotations: quotations.length },
+  });
+});
+
+router.get('/placa/:placa', requireAuth, requireAdmin, async (req, res) => {
+  const plate = normalizePlateQuery(req.params.placa);
+  if (plate.length < 3) return res.redirect('/admin');
+
+  const [memberHit, orders, quotations, appointments, pendingCheckins] = await Promise.all([
+    getUserByVehiclePlate(plate),
+    getServiceOrdersByPlate(plate),
+    getQuotationsByMotorcyclePlates([plate]),
+    getAppointmentsByPlate(plate),
+    getPendingCheckinsByPlate(plate),
+  ]);
+
+  const invoices = (await Promise.all(
+    orders.filter(o => o.invoiceId).map(o => getInvoiceById(o.invoiceId))
+  )).filter(Boolean);
+
+  res.render('admin/plate-history', {
+    title: 'Placa ' + plate,
+    plate,
+    member: memberHit ? memberHit.user : null,
+    vehicle: memberHit ? memberHit.vehicle : null,
+    orders, quotations, appointments, pendingCheckins, invoices,
+  });
+});
+
 // ── Contabilidad → redirige al módulo de finanzas ─────────────────────────
 
 router.get('/contabilidad', (req, res) => res.redirect(301, '/admin/finanzas'));
