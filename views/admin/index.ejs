@@ -75,7 +75,7 @@ const ATTENTION = [
   <div class="crm-agenda-card">
     <div class="crm-agenda-card-title">
       <span>Entregas de hoy o vencidas</span>
-      <span class="badge badge-info"><%= ordenesVencen.length %></span>
+      <span class="badge badge-info"><%= ordenesVencen.length %><%= ordenesVencen.length >= 15 ? '+' : '' %></span>
     </div>
     <% if (ordenesVencen.length === 0) { %>
       <div class="crm-agenda-empty">Ninguna orden con entrega vencida.</div>
@@ -93,6 +93,9 @@ const ATTENTION = [
           </a>
         <% }) %>
       </div>
+      <% if (ordenesVencen.length >= 15) { %>
+        <a href="/admin/ordenes-servicio" style="display:block;margin-top:8px;font-size:.78rem;font-weight:700;color:var(--brand)">Ver todas las órdenes →</a>
+      <% } %>
     <% } %>
   </div>
 </div>
