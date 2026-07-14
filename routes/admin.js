@@ -36,6 +36,7 @@ const {
 } = require('../db');
 const bcrypt = require('bcryptjs');
 const { ALLOWED_STATUS } = require('../helpers/service-order-status');
+const { hoyCO } = require('../helpers/datetime');
 
 // La config editable del admin vive en la tabla app_settings (vía
 // helpers/settings). Los archivos JSON en /data se mantienen solo como fallback
