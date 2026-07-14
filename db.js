@@ -1665,22 +1665,26 @@ async function countServiceOrders() {
   return Number(r.rows[0].n);
 }
 
-// Órdenes asignadas a un empleado (excluye las ya facturadas/entregadas para el portal del taller).
 // Órdenes con fecha estimada de entrega hoy o ya vencida (y aún no entregadas
 // ni facturadas): son las que el taller debería estar cerrando hoy. `today` es
 // hoyCO() (YYYY-MM-DD, hora Colombia); estimated_date se guarda en el mismo
 // formato desde el <input type="date">, así que la comparación es directa.
+// Con LIMIT: es un widget del dashboard, no un listado — sin tope, las
+// órdenes vencidas que nunca se cierran se acumulan indefinidamente y ahogan
+// las entregas del día real.
 async function getDueServiceOrders(today) {
   const r = await db.execute({
     sql: `SELECT * FROM service_orders
           WHERE estimated_date IS NOT NULL AND estimated_date != '' AND estimated_date <= ?
             AND status NOT IN ('entregado', 'facturado')
-          ORDER BY estimated_date ASC`,
+          ORDER BY estimated_date ASC
+          LIMIT 15`,
     args: [today],
   });
   return r.rows.map(rowToServiceOrder);
 }
 
+// Órdenes asignadas a un empleado (excluye las ya facturadas/entregadas para el portal del taller).
 async function getServiceOrdersByEmployee(employeeId) {
   const r = await db.execute({
     sql: `SELECT * FROM service_orders
