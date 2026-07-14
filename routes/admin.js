@@ -303,8 +303,9 @@ router.get('/citas', requireAuth, requireAdmin, async (req, res) => {
 
 router.post('/citas/crear', requireAuth, requireAdmin, async (req, res) => {
   const { customer, date, time, service } = req.body;
-  if (customer && date && time && service) {
-    await createAppointment({ id: uuidv4(), customer, name: customer, email: '', date, time, service, status: 'pendiente' });
+  const plate = String(req.body.plate || '').trim().toUpperCase().replace(/\s/g, '');
+  if (customer && date && time && service && plate) {
+    await createAppointment({ id: uuidv4(), customer, name: customer, email: '', date, time, service, plate: plate.slice(0, 20), status: 'pendiente' });
   }
   res.redirect('/admin/citas');
 });

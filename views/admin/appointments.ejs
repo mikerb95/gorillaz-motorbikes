@@ -29,6 +29,10 @@ const STATUS_MAP = {
         <input name="customer" required placeholder="Nombre del cliente" />
       </div>
       <div class="crm-form-group">
+        <label>Placa <span class="required">*</span></label>
+        <input name="plate" required placeholder="ABC123" style="text-transform:uppercase" />
+      </div>
+      <div class="crm-form-group">
         <label>Fecha <span class="required">*</span></label>
         <input type="date" name="date" required />
       </div>
@@ -91,6 +95,7 @@ const STATUS_MAP = {
       <thead>
         <tr>
           <th>Cliente</th>
+          <th>Placa</th>
           <th>Servicio</th>
           <th>Fecha</th>
           <th>Hora</th>
