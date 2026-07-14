@@ -24,11 +24,14 @@ const {
   deleteNewsletterByEmail,
   createNewsletterCampaign, getAllNewsletterCampaigns,
   getAllQuotations, getConvertedQuotationIds, getDraftQuotations, getQuotationById, countQuotations, deleteQuotation,
+  getQuotationsByMotorcyclePlates,
   createServiceOrder, getServiceOrderById, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders, getServiceOrderEvents, addServiceOrderEvent, detachOrderFromInvoice, deleteServiceOrder,
+  getServiceOrdersByPlate,
   convertServiceOrderToInvoice, applyStatusPolicy, deliverServiceOrder, getInvoiceById, getInvoicesPage, getInvoiceStats, updateInvoiceStatus, countInvoices,
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
   getAllPlateRequests, getPlateRequestById, updatePlateRequestStatus, deletePlateRequest, countPlateRequestsByStatus,
+  getUserByVehiclePlate, getAppointmentsByPlate, getPendingCheckinsByPlate,
   backupAllTables,
 } = require('../db');
 const bcrypt = require('bcryptjs');
