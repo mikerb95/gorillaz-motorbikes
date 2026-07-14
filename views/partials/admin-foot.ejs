@@ -163,7 +163,7 @@
     let plateResults = [];
 
     function looksLikePlate(raw) {
-      const compact = raw.replace(/\s/g, '');
+      const compact = raw.replace(/[\s-]/g, '');
       return /^[a-z0-9]{3,7}$/i.test(compact) && /\d/.test(compact);
     }
 
