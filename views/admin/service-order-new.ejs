@@ -22,7 +22,7 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px">
       <div>
         <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Placa</label>
-        <input type="text" name="plate" maxlength="20" placeholder="ABC123" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;text-transform:uppercase" />
+        <input type="text" name="plate" maxlength="20" placeholder="ABC123" value="<%= typeof prefillPlate !== 'undefined' ? prefillPlate : '' %>" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;text-transform:uppercase" />
       </div>
       <div>
         <label style="display:block;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Moto (marca/modelo)</label>
