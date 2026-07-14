@@ -2645,23 +2645,29 @@ async function deletePlateRequest(id) {
 
 // ── Backup ────────────────────────────────────────────────────────────────
 
+// Exporta TODAS las tablas de la base (enumeradas desde sqlite_master, no una
+// lista fija que se desactualiza al agregar tablas). El JSON resultante es
+// suficiente para reconstruir la base desde cero con restore-backup.js:
+// initDb() recrea el esquema y el script reinserta todas las filas.
 async function backupAllTables() {
-  const tableNames = [
-    'users', 'appointments', 'events', 'event_attendances',
-    'admin_audit_log', 'newsletter', 'newsletter_campaigns',
-    'enrollments', 'job_applications', 'orders', 'quotations',
-    'service_orders', 'invoices', 'passkeys', 'gastos',
-  ];
+  const master = await db.execute(
+    `SELECT name FROM sqlite_master
+     WHERE type = 'table'
+       AND name NOT LIKE 'sqlite_%'
+       AND name NOT LIKE '_litestream%'
+       AND name NOT LIKE 'libsql_%'
+     ORDER BY name`
+  );
   const snapshot = {};
-  for (const table of tableNames) {
-    try {
-      const r = await db.execute(`SELECT * FROM ${table}`);
-      snapshot[table] = r.rows.map(row => Object.fromEntries(Object.entries(row)));
-    } catch {
-      snapshot[table] = [];
-    }
+  for (const { name } of master.rows) {
+    const r = await db.execute(`SELECT * FROM "${String(name).replace(/"/g, '""')}"`);
+    snapshot[name] = r.rows.map(row => Object.fromEntries(Object.entries(row)));
   }
-  return { timestamp: new Date().toISOString(), tables: snapshot };
+  return {
+    timestamp: new Date().toISOString(),
+    schemaVersion: SCHEMA_VERSION,
+    tables: snapshot,
+  };
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────
