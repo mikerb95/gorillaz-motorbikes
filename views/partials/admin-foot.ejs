@@ -301,7 +301,12 @@
         dividers.forEach(d => d.classList.remove('is-hidden'));
         extraBox.hidden = true;
         extraBox.innerHTML = '';
+        clearTimeout(plateTimer);
+        if (plateAbort) plateAbort.abort();
+        plateTimer = null;
+        clearPlatePanel();
         emptyEl.hidden = true;
+        textResults = [];
         results = [];
         activeIdx = -1;
         return;
@@ -320,9 +325,8 @@
       dividers.forEach(d => d.classList.add('is-hidden'));
 
       const extraEls = renderExtra(q);
-      results = visibleLinks.concat(extraEls);
-      activeIdx = -1;
-      emptyEl.hidden = results.length > 0;
+      textResults = visibleLinks.concat(extraEls);
+      schedulePlateSearch(raw);
     }
 
     input.addEventListener('input', apply);
