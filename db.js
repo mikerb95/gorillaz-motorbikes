@@ -798,6 +798,17 @@ async function deleteAppointment(id) {
   await db.execute({ sql: 'DELETE FROM appointments WHERE id = ?', args: [id] });
 }
 
+// Citas de un día calendario específico (YYYY-MM-DD, hora Colombia — ver
+// helpers/datetime.hoyCO). `date` se guarda tal cual desde el formulario, sin
+// componente de hora, así que no requiere conversión de zona horaria.
+async function getAppointmentsByDate(date) {
+  const r = await db.execute({
+    sql: `SELECT * FROM appointments WHERE date = ? AND status != 'cancelada' ORDER BY time ASC`,
+    args: [date],
+  });
+  return r.rows.map(rowToAppointment);
+}
+
 async function getAppointmentsByPlate(plate) {
   const norm = String(plate || '').toUpperCase().replace(/\s/g, '');
   if (!norm) return [];
