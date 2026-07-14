@@ -48,6 +48,11 @@ app.use(helmet({
     directives: {
       'default-src': ["'self'"],
       'script-src': ["'self'", "'unsafe-inline'", 'https://www.google.com', 'https://www.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net', 'https://www.youtube.com'],
+      // Helmet's defaults split script-src into script-src-attr (defaults to
+      // 'none') as of CSP3. useDefaults:true pulls that in even though it's
+      // not listed here, silently blocking every onclick="" in the templates
+      // (17 views use them). Mirror script-src's 'unsafe-inline' explicitly.
+      'script-src-attr': ["'unsafe-inline'"],
       'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
       'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
       'img-src': ["'self'", 'data:', 'blob:', 'https:'],
