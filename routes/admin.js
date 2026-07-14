@@ -31,7 +31,8 @@ const {
   createEmployee, getAllEmployees, getActiveEmployees, getEmployeeById, getEmployeeByUserId, updateEmployee, deleteEmployee,
   getAllClassifieds, getClassifiedById, setClassifiedStatus, deleteClassified, countClassifiedsByStatus,
   getAllPlateRequests, getPlateRequestById, updatePlateRequestStatus, deletePlateRequest, countPlateRequestsByStatus,
-  getUserByVehiclePlate, getAppointmentsByPlate, getPendingCheckinsByPlate,
+  getUserByVehiclePlate, getAppointmentsByPlate, getAppointmentsByDate, getPendingCheckinsByPlate,
+  getDueServiceOrders,
   backupAllTables,
 } = require('../db');
 const bcrypt = require('bcryptjs');
