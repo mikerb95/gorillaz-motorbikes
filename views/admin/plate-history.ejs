@@ -1,0 +1,188 @@
+<%- include('../partials/admin-head', { title: 'Placa ' + plate }) %>
+
+<%
+const ORDER_STATUS = {
+  ingreso_taller:   { label: 'Ingreso a taller',  cls: 'badge-warning' },
+  trabajo_en_curso: { label: 'Trabajo en curso',  cls: 'badge-info'    },
+  en_pausa:         { label: 'En pausa',           cls: 'badge-warning' },
+  trabajo_completo: { label: 'Trabajo completo',  cls: 'badge-success' },
+  entregado:        { label: 'Entregado',          cls: 'badge-success' },
+  facturado:        { label: 'Facturado',          cls: 'badge-success' },
+};
+const INVOICE_STATUS = {
+  pendiente: { label: 'Pendiente', cls: 'badge-warning' },
+  pagada:    { label: 'Pagada',    cls: 'badge-success' },
+  anulada:   { label: 'Anulada',   cls: 'badge-danger'  },
+  proforma:  { label: 'Proforma',  cls: 'badge-warning' },
+};
+const APPT_STATUS = {
+  pendiente:  { label: 'Pendiente',  cls: 'badge-warning' },
+  confirmada: { label: 'Confirmada', cls: 'badge-info' },
+  completada: { label: 'Completada', cls: 'badge-success' },
+  cancelada:  { label: 'Cancelada',  cls: 'badge-danger' },
+};
+const invoiceByOrderId = {};
+invoices.forEach(inv => { invoiceByOrderId[inv.serviceOrderId] = inv; });
+%>
+
+<div class="crm-page-header">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span class="badge badge-info" style="font-size:1rem;font-weight:900;letter-spacing:1px;padding:6px 12px"><%= plate %></span>
+  </div>
+  <a class="btn btn-primary btn-sm" href="/admin/ordenes-servicio/nueva?placa=<%= plate %>">+ Nueva orden con esta placa</a>
+</div>
+
+<div style="display:grid;gap:16px;grid-template-columns:1fr;max-width:1000px">
+
+  <!-- Club -->
+  <div class="crm-card" style="padding:20px 24px" id="club">
+    <h2 style="font-size:14px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px">Miembro del club</h2>
+    <% if (member) { %>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div class="crm-user-circle" style="width:44px;height:44px;font-size:18px"><%= member.name.charAt(0).toUpperCase() %></div>
+        <div style="flex:1;min-width:180px">
+          <div style="font-weight:800;font-size:16px"><%= member.name %><% if (member.nickname) { %> <span style="font-weight:600;color:#9ca3af;font-size:13px">@<%= member.nickname %></span><% } %></div>
+          <div style="font-size:13px;color:#6b7280"><%= member.email %><% if (member.phone) { %> · <%= member.phone %><% } %></div>
+        </div>
+        <% const lvl = member.membership && member.membership.level; %>
+        <% if (lvl) { %><span class="badge badge-info"><%= lvl %></span><% } %>
+        <span class="badge badge-muted"><%= member.score || 0 %> pts</span>
+        <a class="btn btn-ghost btn-sm" href="/admin/usuarios#<%= member.id %>">Ver ficha →</a>
+      </div>
+      <% if (vehicle) { %>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6;font-size:13px;color:#374151">
+          Vehículo registrado: <strong><%= [vehicle.brand, vehicle.model || vehicle.reference].filter(Boolean).join(' ') || 'Sin marca/modelo' %></strong>
+        </div>
+      <% } %>
+    <% } else { %>
+      <p class="muted" style="margin:0">No hay ningún miembro del club con esta placa registrada.</p>
+    <% } %>
+  </div>
+
+  <!-- Órdenes de servicio -->
+  <div class="crm-card" style="padding:20px 24px" id="ordenes">
+    <h2 style="font-size:14px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px">
+      Órdenes de servicio (<%= orders.length %>)
+    </h2>
+    <% if (orders.length === 0) { %>
+      <p class="muted" style="margin:0">Sin órdenes de servicio para esta placa.</p>
+    <% } else { %>
+    <div class="crm-table-wrap">
+      <table class="crm-table">
+        <thead>
+          <tr>
+            <th>N° Orden</th>
+            <th>Fecha</th>
+            <th>Mecánico</th>
+            <th>Total</th>
+            <th>Factura</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(o => {
+            const st = ORDER_STATUS[o.status] || { label: o.status, cls: 'badge-warning' };
+            const inv = invoiceByOrderId[o.id];
+            const invSt = inv ? (INVOICE_STATUS[inv.status] || { label: inv.status, cls: 'badge-warning' }) : null;
+          %>
+          <tr>
+            <td><span class="badge badge-info" style="font-weight:900;font-size:.8rem"><%= o.label %></span></td>
+            <td class="muted" style="font-size:.82rem;white-space:nowrap"><%= fechaCO(o.createdAt, { day:'2-digit', month:'short', year:'numeric' }) %></td>
+            <td style="font-size:.85rem"><% if (o.mechanic) { %><%= o.mechanic %><% } else { %><span class="muted">Sin asignar</span><% } %></td>
+            <td><strong>$<%= o.total.toLocaleString('es-CO') %></strong></td>
+            <td>
+              <% if (inv) { %>
+                <a href="/admin/facturas/<%= inv.id %>" class="badge <%= invSt.cls %>" style="text-decoration:none"><%= inv.label %></a>
+              <% } else { %>
+                <span class="muted" style="font-size:.8rem">—</span>
+              <% } %>
+            </td>
+            <td><span class="badge <%= st.cls %>"><%= st.label %></span></td>
+            <td><a class="btn btn-ghost btn-sm" href="/admin/ordenes-servicio/<%= o.id %>">Ver</a></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Cotizaciones -->
+  <div class="crm-card" style="padding:20px 24px" id="cotizaciones">
+    <h2 style="font-size:14px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px">
+      Cotizaciones (<%= quotations.length %>)
+    </h2>
+    <% if (quotations.length === 0) { %>
+      <p class="muted" style="margin:0">Sin cotizaciones para esta placa.</p>
+    <% } else { %>
+    <div class="crm-table-wrap">
+      <table class="crm-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Ítems</th>
+            <th>Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% quotations.forEach(q => { %>
+          <tr>
+            <td><span class="badge badge-info" style="font-size:.8rem;font-weight:900">#<%= q.label %></span></td>
+            <td class="muted" style="font-size:.82rem;white-space:nowrap"><%= fechaCO(q.createdAt, { day:'2-digit', month:'short', year:'numeric' }) %></td>
+            <td style="font-size:.85rem"><%= q.items.length %> ítem<%= q.items.length === 1 ? '' : 's' %></td>
+            <td><strong>$<%= q.total.toLocaleString('es-CO') %></strong></td>
+            <td><a class="btn btn-ghost btn-sm" href="/admin/cotizaciones/<%= q.id %>">Ver detalle</a></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Citas y check-ins -->
+  <% if (appointments.length > 0 || pendingCheckins.length > 0) { %>
+  <div class="crm-card" style="padding:20px 24px">
+    <h2 style="font-size:14px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px">
+      Citas y check-ins
+    </h2>
+    <% if (pendingCheckins.length > 0) { %>
+      <div style="margin-bottom:12px">
+        <% pendingCheckins.forEach(c => { %>
+          <span class="badge badge-warning" style="margin-right:6px">Check-in en cola desde <%= horaCO(c.createdAt, { hour:'2-digit', minute:'2-digit' }) %></span>
+        <% }) %>
+      </div>
+    <% } %>
+    <% if (appointments.length > 0) { %>
+    <div class="crm-table-wrap">
+      <table class="crm-table">
+        <thead>
+          <tr>
+            <th>Fecha cita</th>
+            <th>Servicio</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% appointments.forEach(a => {
+            const st = APPT_STATUS[a.status] || { label: a.status || 'pendiente', cls: 'badge-muted' };
+          %>
+          <tr>
+            <td style="font-size:.85rem"><%= a.date %><% if (a.time) { %> · <%= a.time %><% } %></td>
+            <td style="font-size:.85rem"><%= a.service || '—' %></td>
+            <td><span class="badge <%= st.cls %>"><%= st.label %></span></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+  <% } %>
+
+</div>
+
+<%- include('../partials/admin-foot') %>
