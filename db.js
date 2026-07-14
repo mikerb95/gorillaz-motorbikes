@@ -798,6 +798,16 @@ async function deleteAppointment(id) {
   await db.execute({ sql: 'DELETE FROM appointments WHERE id = ?', args: [id] });
 }
 
+async function getAppointmentsByPlate(plate) {
+  const norm = String(plate || '').toUpperCase().replace(/\s/g, '');
+  if (!norm) return [];
+  const r = await db.execute({
+    sql: `SELECT * FROM appointments WHERE UPPER(REPLACE(plate, ' ', '')) = ? ORDER BY created_at DESC`,
+    args: [norm],
+  });
+  return r.rows.map(rowToAppointment);
+}
+
 // Busca la cita aún vigente (pendiente) que corresponda a una placa. La usa el
 // check-in por pasos: si el cliente ya había agendado, con solo la placa se le
 // ofrece "confirmar asistencia" sin volver a pedir sus datos. Se compara la
