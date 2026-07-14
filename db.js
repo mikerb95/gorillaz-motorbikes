@@ -789,6 +789,7 @@ async function updateAppointment(id, fields) {
   if (fields.time !== undefined)     { set.push('time = ?');     args.push(fields.time); }
   if (fields.service !== undefined)  { set.push('service = ?');  args.push(fields.service); }
   if (fields.status !== undefined)   { set.push('status = ?');   args.push(fields.status); }
+  if (fields.plate !== undefined)    { set.push('plate = ?');    args.push(fields.plate); }
   if (set.length === 0) return;
   args.push(id);
   await db.execute({ sql: `UPDATE appointments SET ${set.join(', ')} WHERE id = ?`, args });

@@ -312,7 +312,10 @@ router.post('/citas/crear', requireAuth, requireAdmin, async (req, res) => {
 
 router.post('/citas/actualizar', requireAuth, requireAdmin, async (req, res) => {
   const { id, customer, date, time, service, status } = req.body;
-  await updateAppointment(id, { customer, date, time, service, status });
+  const plate = req.body.plate !== undefined
+    ? String(req.body.plate || '').trim().toUpperCase().replace(/\s/g, '').slice(0, 20)
+    : undefined;
+  await updateAppointment(id, { customer, date, time, service, status, plate });
   res.redirect('/admin/citas');
 });
 
