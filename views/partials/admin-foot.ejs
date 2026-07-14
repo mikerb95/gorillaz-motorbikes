@@ -142,8 +142,100 @@
     const ICON = {
       cfg:    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
       plus:   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
-      backup: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+      backup: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      user:   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+      wrench: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>',
+      doc:    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+      arrow:  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>'
     };
+
+    // ── Búsqueda de placa (typeahead) ─────────────────────────────────────
+    // Se dispara solo cuando el texto "parece placa" (alfanumérico corto con al
+    // menos un dígito) para no golpear el backend en cada búsqueda de sección.
+    const plateBox = document.createElement('div');
+    plateBox.className = 'crm-nav-extra';
+    plateBox.hidden = true;
+    extraBox.parentNode.insertBefore(plateBox, extraBox);
+
+    let plateTimer = null;
+    let plateAbort = null;
+    let textResults = [];
+    let plateResults = [];
+
+    function looksLikePlate(raw) {
+      const compact = raw.replace(/\s/g, '');
+      return /^[a-z0-9]{3,7}$/i.test(compact) && /\d/.test(compact);
+    }
+
+    function recomputeResults() {
+      results = plateResults.concat(textResults);
+      activeIdx = -1;
+      emptyEl.hidden = results.length > 0 || !!plateTimer;
+    }
+
+    function clearPlatePanel() {
+      plateBox.hidden = true;
+      plateBox.innerHTML = '';
+      plateResults = [];
+    }
+
+    function plateItem(href, icon, label) {
+      const a = document.createElement('a');
+      a.className = 'crm-nav-extra-item';
+      a.href = href;
+      a.innerHTML = icon + '<span>' + label + '</span>';
+      plateBox.appendChild(a);
+      return a;
+    }
+
+    function renderPlatePanel(data) {
+      plateBox.innerHTML = '';
+      const header = document.createElement('div');
+      header.className = 'crm-nav-extra-group';
+      header.textContent = 'Placa ' + data.plate;
+      plateBox.appendChild(header);
+
+      const created = [];
+      if (data.member) {
+        const lbl = data.member.name + (data.member.level ? ' · ' + data.member.level : '');
+        created.push(plateItem('/admin/placa/' + data.plate + '#club', ICON.user, lbl));
+      }
+      if (data.counts.orders > 0) {
+        const lbl = data.counts.orders + (data.counts.orders === 1 ? ' orden de servicio' : ' órdenes de servicio');
+        created.push(plateItem('/admin/placa/' + data.plate + '#ordenes', ICON.wrench, lbl));
+      }
+      if (data.counts.quotations > 0) {
+        const lbl = data.counts.quotations + (data.counts.quotations === 1 ? ' cotización' : ' cotizaciones');
+        created.push(plateItem('/admin/placa/' + data.plate + '#cotizaciones', ICON.doc, lbl));
+      }
+      created.push(plateItem('/admin/placa/' + data.plate, ICON.arrow, 'Ver historial completo'));
+
+      plateBox.hidden = false;
+      plateResults = created;
+      recomputeResults();
+    }
+
+    function schedulePlateSearch(raw) {
+      clearTimeout(plateTimer);
+      if (plateAbort) plateAbort.abort();
+      plateBox.hidden = true;
+      plateResults = [];
+
+      if (!looksLikePlate(raw)) { plateTimer = null; recomputeResults(); return; }
+
+      plateTimer = setTimeout(() => {
+        plateAbort = new AbortController();
+        fetch('/admin/api/buscar-placa?q=' + encodeURIComponent(raw), { signal: plateAbort.signal })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            plateTimer = null;
+            if (!data || !data.ok || input.value.trim() !== raw) { recomputeResults(); return; }
+            renderPlatePanel(data);
+          })
+          .catch(() => { plateTimer = null; recomputeResults(); });
+      }, 300);
+      recomputeResults();
+    }
 
     // Static index of things NOT in the sidebar: config tabs + quick actions
     const EXTRA = [
