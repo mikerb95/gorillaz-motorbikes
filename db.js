@@ -591,6 +591,27 @@ async function getUserByAppleId(appleId) {
   return rowToUser(r.rows[0] || null);
 }
 
+// La placa vive dentro del JSON `vehicles` (un array de { plate, ... } por
+// usuario), así que el LIKE es solo un pre-filtro barato: la confirmación real
+// se hace en JS comparando la placa normalizada de cada vehículo.
+async function getUserByVehiclePlate(plate) {
+  const needle = String(plate || '').toUpperCase().replace(/\s/g, '');
+  if (!needle) return null;
+  const escaped = needle.replace(/[\\%_]/g, s => '\\' + s);
+  const r = await db.execute({
+    sql: `SELECT * FROM users WHERE deleted_at IS NULL AND UPPER(REPLACE(vehicles, ' ', '')) LIKE ? ESCAPE '\\'`,
+    args: [`%${escaped}%`],
+  });
+  for (const row of r.rows) {
+    const user = rowToUser(row);
+    const match = (user.vehicles || []).find(
+      v => String(v.plate || '').toUpperCase().replace(/\s/g, '') === needle
+    );
+    if (match) return { user, vehicle: match };
+  }
+  return null;
+}
+
 async function getAllUsers() {
   const r = await db.execute('SELECT * FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC');
   return r.rows.map(rowToUser);
