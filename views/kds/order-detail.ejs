@@ -166,6 +166,30 @@
 <script>
   window.PIN_VERIFY_URL = '/kds/verificar-pin';
 </script>
+<script src="/static/js/item-reorder.js?v=<%= assetV('js/item-reorder.js') %>"></script>
+<script>
+  (function () {
+    var list = document.getElementById('itemsList');
+    var form = document.getElementById('reorderForm');
+    var field = document.getElementById('reorderField');
+    var hint = document.getElementById('reorderHint');
+    if (!list || !form || !field || !window.ItemReorder) return;
+
+    window.ItemReorder(list, {
+      item: '.reorderable',
+      handle: '.item-drag',
+      onChange: function () {
+        // Índices originales en el nuevo orden del DOM → el servidor reordena
+        // sus propios ítems con esta permutación (no confía en el cliente).
+        var idx = Array.prototype.slice.call(list.querySelectorAll('.reorderable'))
+          .map(function (el) { return Number(el.getAttribute('data-idx')); });
+        field.value = JSON.stringify(idx);
+        form.style.display = 'block';
+        if (hint) hint.textContent = 'Orden cambiado. Guarda para confirmarlo.';
+      }
+    });
+  })();
+</script>
 <script src="/static/js/kds-keyboard.js?v=<%= assetV('js/kds-keyboard.js') %>"></script>
 <script src="/static/js/pin-gate.js"></script>
 </body>
