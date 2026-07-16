@@ -613,6 +613,7 @@ document.querySelectorAll('[data-modal-close]').forEach(btn => {
   function addRow(data = {}) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
+      <td class="it-drag" title="Arrastra para reordenar" style="cursor:grab;text-align:center;color:#9ca3af;font-size:16px;line-height:1;user-select:none;touch-action:none">⠿</td>
       <td><input class="it-name" list="editCatalogList" autocomplete="off" placeholder="Nombre del ítem" style="width:100%;padding:7px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" value="${esc(data.name)}"></td>
       <td><select class="it-type" style="width:100%;padding:7px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box">
         <option value="service">Servicio</option>
