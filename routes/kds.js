@@ -467,6 +467,36 @@ router.post('/orden/:id/items', requireKdsEmployee, requirePin('/kds'), async (r
   res.redirect('/kds/orden/' + order.id);
 });
 
+// Reordenar los ítems de la orden (arrastrar, estilo playlist). Recibe 'order':
+// una permutación de los índices actuales. Reordenamos SIEMPRE a partir de los
+// ítems ya guardados —nunca de datos del cliente— para que arrastrar no pueda
+// alterar nombres, precios ni cantidades (el total no cambia).
+router.post('/orden/:id/items/reorden', requireKdsEmployee, requirePin('/kds'), async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order) return res.redirect('/kds');
+  // Con factura emitida los ítems quedan congelados (misma regla que agregar).
+  if (order.invoiceId) return res.redirect('/kds/orden/' + order.id);
+
+  let idx;
+  try { idx = JSON.parse(req.body.order || '[]'); } catch { idx = null; }
+  const n = order.items.length;
+  const isValidPermutation = Array.isArray(idx)
+    && idx.length === n
+    && idx.every(i => Number.isInteger(i) && i >= 0 && i < n)
+    && new Set(idx).size === n;
+
+  if (isValidPermutation) {
+    const reordered = idx.map(i => order.items[i]);
+    // Si el orden no cambió, no ensuciamos la trazabilidad.
+    if (JSON.stringify(reordered) !== JSON.stringify(order.items)) {
+      await updateServiceOrder(order.id, { items: reordered }, req.pinActor);
+      await addServiceOrderEvent(order.id, 'editado', req.pinActor, 'Reordenó los ítems');
+    }
+  }
+
+  res.redirect('/kds/orden/' + order.id);
+});
+
 // ── Control remoto del único TV del taller ──────────────────────────────
 // Estado leído directo de BD (ver getTvState en db.js) para que la pantalla
 // del TV vea los comandos del remoto sin depender de que ambas peticiones
