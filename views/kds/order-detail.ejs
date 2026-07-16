@@ -63,7 +63,6 @@
         <% if (!order.items.length) { %><div class="item">Sin ítems todavía.</div><% } %>
       </div>
       <% if (canReorder) { %>
-        <p id="reorderHint" style="margin:12px 0 0;font-size:12px;color:var(--kds-muted-2)">Arrastra ⠿ para cambiar el orden de los ítems.</p>
         <form method="post" action="/kds/orden/<%= order.id %>/items/reorden" id="reorderForm"
               data-require-pin data-pin-title="Autoriza con tu PIN"
               data-pin-msg="Ingresa tu PIN para guardar el nuevo orden de los ítems."
@@ -172,7 +171,6 @@
     var list = document.getElementById('itemsList');
     var form = document.getElementById('reorderForm');
     var field = document.getElementById('reorderField');
-    var hint = document.getElementById('reorderHint');
     if (!list || !form || !field || !window.ItemReorder) return;
 
     window.ItemReorder(list, {
@@ -185,7 +183,6 @@
           .map(function (el) { return Number(el.getAttribute('data-idx')); });
         field.value = JSON.stringify(idx);
         form.style.display = 'block';
-        if (hint) hint.textContent = 'Orden cambiado. Guarda para confirmarlo.';
       }
     });
   })();
