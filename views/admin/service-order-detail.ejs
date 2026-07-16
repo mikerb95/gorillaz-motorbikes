@@ -657,61 +657,10 @@ document.querySelectorAll('[data-modal-close]').forEach(btn => {
   addBtn.addEventListener('click', () => addRow());
   if (initial.length) initial.forEach(it => addRow(it)); else addRow();
 
-  // ── Reordenar ítems arrastrando (mouse + táctil), estilo playlist ──
-  // Las filas se serializan en el orden del DOM al guardar (ver submit),
-  // así que reordenar el DOM basta para persistir el nuevo orden.
-  (function () {
-    let dragRow = null;
-
-    function rowFromPoint(y) {
-      // Fila cuyo punto medio queda por debajo del cursor → insertar antes.
-      const rows = [...body.querySelectorAll('tr')].filter(r => r !== dragRow);
-      return rows.find(r => {
-        const box = r.getBoundingClientRect();
-        return y < box.top + box.height / 2;
-      }) || null;
-    }
-
-    function onMove(e) {
-      if (!dragRow) return;
-      const y = e.touches ? e.touches[0].clientY : e.clientY;
-      const before = rowFromPoint(y);
-      if (before) body.insertBefore(dragRow, before);
-      else body.appendChild(dragRow);
-      e.preventDefault();
-    }
-
-    function onUp() {
-      if (dragRow) { dragRow.style.opacity = ''; dragRow.style.background = ''; }
-      dragRow = null;
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onUp);
-    }
-
-    function startDrag(handle, e) {
-      dragRow = handle.closest('tr');
-      if (!dragRow) return;
-      dragRow.style.opacity = '0.55';
-      dragRow.style.background = '#f9fafb';
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
-      document.addEventListener('touchmove', onMove, { passive: false });
-      document.addEventListener('touchend', onUp);
-      e.preventDefault();
-    }
-
-    // Delegación: las filas se crean/eliminan dinámicamente.
-    body.addEventListener('mousedown', e => {
-      const h = e.target.closest('.it-drag');
-      if (h) startDrag(h, e);
-    });
-    body.addEventListener('touchstart', e => {
-      const h = e.target.closest('.it-drag');
-      if (h) startDrag(h, e);
-    }, { passive: false });
-  })();
+  // Reordenar ítems arrastrando (mouse + táctil), estilo playlist. Las filas se
+  // serializan en el orden del DOM al guardar (ver submit), así que reordenar el
+  // DOM basta para persistir el nuevo orden al pulsar «Guardar cambios».
+  if (window.ItemReorder) window.ItemReorder(body, { item: 'tr', handle: '.it-drag' });
 
   form.addEventListener('submit', e => {
     const items = [];
