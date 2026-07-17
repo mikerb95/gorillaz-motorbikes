@@ -272,6 +272,13 @@
       <div class="result-moto">Moto: <strong><%= order.motorcycle %></strong></div>
       <% } %>
 
+      <% if (order.notes) { %>
+      <div class="result-notes">
+        <div class="k">Comentarios del taller</div>
+        <div class="v"><%= order.notes %></div>
+      </div>
+      <% } %>
+
       <% if (order.items && order.items.length > 0) { %>
       <ul class="result-items">
         <% order.items.forEach(item => { %>
