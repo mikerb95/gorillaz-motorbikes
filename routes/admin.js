@@ -1150,6 +1150,33 @@ router.post('/cotizaciones/:id/convertir-orden', requireAuth, requireAdmin, asyn
   res.redirect('/admin/ordenes-servicio/' + id);
 });
 
+// Reordenar los ítems de una orden (arrastrar en la tabla, estilo playlist).
+// Recibe 'order': una permutación de los índices actuales. Reordenamos SIEMPRE
+// a partir de los ítems ya guardados —nunca de datos del cliente— así arrastrar
+// no puede alterar nombres, precios ni cantidades (el total no cambia).
+router.post('/ordenes-servicio/:id/items/reorden', requireAuth, requireAdmin, async (req, res) => {
+  const order = await getServiceOrderById(req.params.id);
+  if (!order) return res.status(404).json({ error: 'Orden no encontrada.' });
+  // Misma regla que la edición de ítems: factura emitida = ítems congelados.
+  if (order.invoiceId) return res.status(409).json({ error: 'Orden facturada: los ítems no se pueden reordenar.' });
+
+  let idx;
+  try { idx = JSON.parse(req.body.order || '[]'); } catch { idx = null; }
+  const n = order.items.length;
+  const isValidPermutation = Array.isArray(idx)
+    && idx.length === n
+    && idx.every(i => Number.isInteger(i) && i >= 0 && i < n)
+    && new Set(idx).size === n;
+  if (!isValidPermutation) return res.status(400).json({ error: 'Orden inválido.' });
+
+  const reordered = idx.map(i => order.items[i]);
+  if (JSON.stringify(reordered) !== JSON.stringify(order.items)) {
+    await updateServiceOrder(order.id, { items: reordered });
+    await addServiceOrderEvent(order.id, 'editado', res.locals.user?.name || 'Admin', 'Reordenó los ítems');
+  }
+  res.json({ ok: true });
+});
+
 router.get('/ordenes-servicio', requireAuth, requireAdmin, async (req, res) => {
   const status = req.query.status || '';
   const page   = Number(req.query.page) || 1;
