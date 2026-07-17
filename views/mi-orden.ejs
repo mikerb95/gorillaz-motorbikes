@@ -258,7 +258,10 @@
         en_proceso: 'En proceso',
         trabajo_completo: 'Listo para recoger',
         entregado: 'Entregado',
-        facturado: 'Entregado',
+        // 'facturado' es solo la proforma emitida al terminar el trabajo: la
+        // moto sigue en el taller hasta que el admin la entregue. No es lo
+        // mismo que 'entregado' (ver applyStatusPolicy en db.js).
+        facturado: 'Listo para recoger',
       };
       const statusLabel = statusLabels[order.status] || order.status;
     %>
