@@ -1,50 +1,45 @@
 <%#
   Moto ilustrada de la landing (vista lateral, naked), dibujada a mano en SVG.
 
-  Se define UNA sola vez aquí, dentro de <defs>, y todas las vistas la usan con
-  <use href="#lp-bike-art">: el escenario grande de escritorio, las lupas de
-  cada tarjeta en móvil y el reflejo en el piso. Así no se duplica el marcado.
+  Se define UNA sola vez aquí, dentro de <defs>, y las vistas estáticas la
+  usan con <use href="#lp-bike-art">: las lupas de cada servicio (móvil y sin
+  JS). El escenario animado de escritorio clona este grupo una vez con JS para
+  poder moverle piezas sin tocar las lupas (ver service-bike.mjs).
 
-  Cada pieza lleva la clase del sistema al que pertenece (s-engine, s-oil,
-  s-electric…). El color de resaltado NO se escribe aquí: cada pieza mezcla su
-  color base con el naranja según una propiedad CSS heredable (--on-engine,
-  --on-oil…). Como las propiedades personalizadas SÍ se heredan dentro del
-  árbol de un <use>, cada lupa enciende su propio sistema con un simple
-  style="--on-engine:1", sin JavaScript. Ver landing.css (sección "Moto").
+  Cada pieza lleva la clase del sistema al que pertenece (s-engine, s-oil…).
+  El resaltado NO se escribe aquí: cada pieza mezcla su color base con el
+  naranja según una propiedad CSS heredable (--on-engine, --on-oil…). Como las
+  propiedades personalizadas SÍ se heredan dentro del árbol de un <use>, cada
+  lupa enciende su propio sistema con style="--on-engine:1", sin JavaScript.
 
-  Las piezas que normalmente no se ven (batería, cableado, casco, conector de
-  diagnóstico) usan --show-* como opacidad.
+  Los grupos fx-* son la "prueba" visual de cada servicio (el pistón en corte,
+  la gota de aceite, la espuma…). Tienen opacidad var(--on-*): en una lupa
+  estática se ven quietos; en escritorio el JS los anima.
 %>
 <svg class="lp-bike-defs" width="0" height="0" aria-hidden="true" focusable="false">
   <defs>
-    <linearGradient id="lp-g-body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#6a707a"/>
-      <stop offset=".45" stop-color="#454a52"/>
-      <stop offset="1" stop-color="#2a2d33"/>
-    </linearGradient>
     <linearGradient id="lp-g-chrome" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#eef0f2"/>
       <stop offset=".5" stop-color="#9ea3aa"/>
       <stop offset="1" stop-color="#5d6168"/>
     </linearGradient>
-    <linearGradient id="lp-g-engine" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8a9099"/>
-      <stop offset="1" stop-color="#4a4f57"/>
+    <linearGradient id="lp-g-beam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff6d6" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#fff6d6" stop-opacity="0"/>
     </linearGradient>
-    <radialGradient id="lp-g-lens" cx=".35" cy=".35" r=".8">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset=".35" stop-color="#dfe6ee"/>
-      <stop offset="1" stop-color="#8795a5"/>
+    <radialGradient id="lp-g-mist" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#F25C05" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#F25C05" stop-opacity="0"/>
     </radialGradient>
 
     <g id="lp-bike-art">
       <!-- ── Elevador del taller (naranja, como en las fotos reales) ── -->
       <g class="lp-lift">
-        <path d="M322 624 L878 690 M878 624 L322 690" stroke="#15161a" stroke-width="16" stroke-linecap="round"/>
+        <path d="M322 624 L878 690 M878 624 L322 690" stroke="#121316" stroke-width="16" stroke-linecap="round"/>
         <circle cx="600" cy="657" r="11" fill="#2a2c31"/>
         <rect x="140" y="600" width="920" height="24" rx="4" fill="#F25C05"/>
         <rect x="140" y="600" width="920" height="5" rx="2" fill="#ff8a3d"/>
-        <path d="M986 600 L996 546 L1034 546 L1046 600 Z" fill="#c4470a"/>
+        <path d="M1008 600 L1016 552 L1048 552 L1058 600 Z" fill="#c4470a"/>
       </g>
 
       <!-- ── Rueda trasera ── -->
@@ -53,49 +48,66 @@
         <circle cx="300" cy="482" r="106" fill="none" stroke="#2b2e33" stroke-width="3"/>
         <circle class="s-rim" cx="300" cy="482" r="90"/>
         <circle cx="300" cy="482" r="82" fill="#0d0e10"/>
-        <g class="s-spoke" stroke-width="9" stroke-linecap="round">
+        <g class="lp-spokes s-spoke" stroke-width="9" stroke-linecap="round">
           <path d="M300 482 L300 402 M300 482 L376 457 M300 482 L347 547 M300 482 L253 547 M300 482 L224 457"/>
         </g>
-        <circle class="s-disc" cx="300" cy="482" r="52" fill="none" stroke-width="9"/>
-        <circle class="s-axle" cx="300" cy="482" r="22"/>
-        <circle cx="300" cy="482" r="8" fill="#1a1b1e"/>
-        <path class="s-caliper" d="M246 440 q-10 18 -2 36 l14 -4 q-6 -14 2 -28 z"/>
+        <circle class="s-disc" cx="300" cy="482" r="44" fill="none" stroke-width="7" stroke-dasharray="7 4"/>
+        <circle class="s-axle" cx="300" cy="482" r="20"/>
+        <circle cx="300" cy="482" r="7" fill="#1a1b1e"/>
+        <path class="s-caliper" d="M256 446 q-8 16 -2 32 l12 -3 q-5 -12 1 -25 z"/>
       </g>
 
       <!-- ── Basculante, cadena y piñones ── -->
-      <path class="s-chain" d="M300 441 L600 452 M300 523 L600 484" fill="none" stroke-width="7" stroke-dasharray="6 3"/>
+      <path class="s-chain" d="M300 443 L600 452 M300 521 L600 484" fill="none" stroke-width="7" stroke-dasharray="6 3"/>
       <circle class="s-sprocket" cx="600" cy="468" r="17"/>
       <path class="s-frame" d="M612 428 L300 468 Q288 482 300 496 L612 466 Q624 447 612 428 Z"/>
       <path d="M600 434 L312 471" stroke="#5a6068" stroke-width="3" stroke-linecap="round"/>
 
-      <!-- ── Escape (headers bajo el motor + silenciador lateral) ── -->
-      <g class="s-exhaust">
-        <path d="M800 336 C822 382 816 452 778 494 C746 526 664 524 604 514 L482 494" fill="none" stroke="url(#lp-g-chrome)" stroke-width="16" stroke-linecap="round"/>
-        <path d="M790 340 C808 384 800 446 766 484" fill="none" stroke="#6d7178" stroke-width="3"/>
-        <path class="s-muffler" d="M488 470 L352 436 Q338 434 334 448 L330 470 Q330 484 344 488 L486 512 Z"/>
-        <ellipse cx="334" cy="459" rx="9" ry="21" fill="#1b1c1f"/>
-        <path d="M468 478 L380 457" stroke="#ffffff" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
-      </g>
-
       <!-- ── Motor (tetracilíndrico en línea, inclinado hacia adelante) ── -->
       <g class="lp-engine">
-        <path class="s-engine s-engine-case" d="M600 410 L772 402 Q796 440 776 488 L702 504 L614 498 Q590 470 600 410 Z"/>
-        <path class="s-engine s-engine-block" d="M652 408 L770 402 L794 314 L676 320 Z"/>
-        <path class="s-engine s-engine-head" d="M676 320 L794 314 L802 290 L682 296 Z"/>
-        <path class="s-engine s-engine-cam" d="M682 296 L802 290 L796 274 L690 280 Z"/>
+        <path class="s-engine-case" d="M600 410 L772 402 Q796 440 776 488 L702 504 L614 498 Q590 470 600 410 Z"/>
+        <path class="s-engine-block" d="M652 408 L770 402 L794 314 L676 320 Z"/>
+        <path class="s-engine-head" d="M676 320 L794 314 L802 290 L682 296 Z"/>
+        <path class="s-engine-cam" d="M682 296 L802 290 L796 274 L690 280 Z"/>
         <g stroke="#2a2d32" stroke-width="3" stroke-linecap="round">
-          <path d="M662 390 L774 384 M668 372 L779 366 M672 354 L784 348 M676 336 L789 331"/>
+          <path d="M660 390 L773 384 M665 372 L778 366 M670 354 L783 348 M674 336 L788 331"/>
         </g>
-        <circle class="s-engine s-engine-cover" cx="642" cy="452" r="34"/>
+        <circle class="s-engine-cover" cx="642" cy="452" r="34"/>
         <circle cx="642" cy="452" r="22" fill="none" stroke="#2a2d32" stroke-width="3"/>
         <g fill="#2a2d32"><circle cx="642" cy="420" r="3"/><circle cx="674" cy="452" r="3"/><circle cx="642" cy="484" r="3"/><circle cx="610" cy="452" r="3"/></g>
         <!-- aceite: tapa de llenado, filtro y cárter -->
-        <circle class="s-oil s-oil-cap" cx="700" cy="410" r="9"/>
-        <rect class="s-oil s-oil-filter" x="744" y="452" width="30" height="40" rx="6" transform="rotate(-12 759 472)"/>
-        <path class="s-oil s-oil-sump" d="M650 500 L740 502 L732 520 L660 518 Z"/>
+        <circle class="s-oil-cap" cx="704" cy="414" r="7"/>
+        <rect class="s-oil-filter" x="744" y="452" width="30" height="40" rx="6" transform="rotate(-12 759 472)"/>
+        <path class="s-oil-sump" d="M650 500 L740 502 L732 520 L660 518 Z"/>
       </g>
 
-      <!-- ── Radiador (detrás de las tapas laterales) ── -->
+      <!-- fx Mecánica: ventana en corte del cilindro con pistón y biela -->
+      <g class="fx fx-piston" transform="translate(713 362) rotate(15)">
+        <rect x="-24" y="-40" width="48" height="80" rx="6" fill="#0b0c0e" stroke="#F25C05" stroke-width="3"/>
+        <g class="fx-piston-slide">
+          <rect x="-19" y="-30" width="38" height="24" rx="3" fill="#d9dde2"/>
+          <path d="M-19 -24 H19 M-19 -19 H19" stroke="#8b9199" stroke-width="2"/>
+          <path class="fx-rod" d="M0 -14 L0 24" stroke="#aeb4bc" stroke-width="7" stroke-linecap="round"/>
+        </g>
+        <circle cx="0" cy="28" r="9" fill="none" stroke="#6b7079" stroke-width="3"/>
+      </g>
+
+      <!-- fx Mecánica rápida: gota de aceite cayendo en la tapa de llenado -->
+      <g class="fx fx-oil">
+        <path class="fx-drop" d="M704 350 C710 360 716 368 716 375 A12 12 0 0 1 692 375 C692 368 698 360 704 350 Z" fill="#e0a526"/>
+        <path d="M698 370 q2 -6 5 -9" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-linecap="round"/>
+      </g>
+
+      <!-- ── Escape: headers bajo el motor y silenciador bajo el colín ── -->
+      <g class="s-exhaust">
+        <path d="M800 336 C822 382 816 452 778 494 C746 524 664 520 600 506 L528 478" fill="none" stroke="url(#lp-g-chrome)" stroke-width="16" stroke-linecap="round"/>
+        <path d="M790 340 C808 384 800 446 766 484" fill="none" stroke="#6d7178" stroke-width="3"/>
+        <path class="s-muffler" d="M540 462 L402 398 Q388 394 382 406 L374 428 Q372 440 384 446 L524 500 Z"/>
+        <ellipse cx="379" cy="417" rx="8" ry="20" transform="rotate(22 379 417)" fill="#1b1c1f"/>
+        <path d="M516 468 L420 424" stroke="#ffffff" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
+      </g>
+
+      <!-- ── Radiador (detrás de la tapa lateral) ── -->
       <path class="s-radiator" d="M804 298 L846 294 L850 404 L808 408 Z"/>
       <g stroke="#1b1d21" stroke-width="2"><path d="M810 318 L848 315 M810 338 L848 335 M810 358 L849 355 M811 378 L849 375 M811 398 L849 395"/></g>
 
@@ -109,30 +121,26 @@
       <rect x="452" y="398" width="40" height="9" rx="4" fill="#1a1b1e"/>
       <rect x="578" y="436" width="44" height="10" rx="5" fill="#1a1b1e"/>
 
-      <!-- ── Batería y cableado (solo se ven en Electricidad / Escaneo) ── -->
+      <!-- ── Batería, cableado y conector (Electricidad / Escaneo) ── -->
       <g class="s-electric s-battery">
         <rect x="498" y="296" width="58" height="40" rx="4"/>
         <rect x="506" y="288" width="10" height="9" rx="2"/>
         <rect x="538" y="288" width="10" height="9" rx="2"/>
       </g>
-      <path class="s-electric s-wiring" d="M526 300 C560 282 610 290 660 280 C720 268 780 256 848 252 M526 300 C470 290 400 276 340 262 C300 252 276 240 262 232" fill="none" stroke-width="4" stroke-linecap="round"/>
-      <g class="s-scan s-connector">
-        <rect x="584" y="330" width="26" height="16" rx="3"/>
-        <path d="M610 338 C640 338 648 360 676 360" fill="none" stroke-width="4"/>
-      </g>
+      <path class="s-electric s-wiring" d="M526 300 C560 282 610 290 660 280 C720 268 780 256 856 252 M526 300 C470 290 400 276 340 262 C300 252 276 240 262 232" fill="none" stroke-width="4" stroke-linecap="round"/>
 
       <!-- ── Tapa lateral (se vuelve translúcida para ver la batería) ── -->
       <path class="s-body s-sidepanel" d="M568 292 L472 318 L500 362 L596 352 Z"/>
 
-      <!-- ── Colín, piloto trasero y placa ── -->
-      <path class="s-body s-tail" d="M572 292 L446 282 L352 258 L248 220 L262 240 L352 292 L472 320 L566 318 Z"/>
-      <path class="s-electric-lamp s-taillight" d="M248 220 L270 226 L266 238 L256 236 Z"/>
-      <path class="s-frame" d="M332 290 L286 316 L292 326 L338 300 Z"/>
+      <!-- ── Colín, piloto trasero, portaplaca y placa ── -->
+      <path class="s-frame" d="M318 262 L276 292 L284 302 L328 272 Z"/>
       <g class="s-plate">
-        <rect x="208" y="310" width="84" height="54" rx="5"/>
-        <rect x="213" y="315" width="74" height="44" rx="3" fill="none" stroke="#1a1a1a" stroke-width="2"/>
-        <text x="250" y="344" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-weight="800" font-size="19" fill="#141414">ABC 12D</text>
+        <rect x="228" y="280" width="66" height="48" rx="4"/>
+        <rect x="232" y="284" width="58" height="40" rx="3" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>
+        <text x="261" y="310" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-weight="800" font-size="15" fill="#141414">ABC 12D</text>
       </g>
+      <path class="s-body s-tail" d="M572 292 L446 282 L352 258 L248 220 L262 240 L352 292 L472 320 L566 318 Z"/>
+      <path class="s-taillight" d="M248 220 L270 226 L266 238 L256 236 Z"/>
 
       <!-- ── Asiento ── -->
       <path class="s-seat" d="M570 254 C528 244 478 248 442 262 L446 280 C486 272 534 274 572 288 Z"/>
@@ -141,12 +149,13 @@
 
       <!-- ── Tanque ── -->
       <path class="s-body s-tank" d="M810 238 C784 196 676 180 598 210 C574 220 560 236 556 254 L566 300 C630 314 716 312 780 292 Z"/>
+      <path d="M566 300 C630 314 716 312 780 292 L796 268 C730 286 640 290 562 278 Z" fill="#000" fill-opacity=".22"/>
       <path d="M786 222 C740 202 660 198 604 222" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="5" stroke-linecap="round"/>
-      <path d="M640 300 C660 272 700 262 744 266" fill="none" stroke="#1d2024" stroke-width="3" stroke-linecap="round"/>
+      <path d="M640 296 C660 272 700 262 744 266" fill="none" stroke="#1d2024" stroke-width="3" stroke-linecap="round"/>
 
-      <!-- ── Tapas laterales del radiador (el "carenado" de una naked) ── -->
-      <path class="s-body s-shroud" d="M780 244 L850 268 L838 322 L770 386 L724 360 L738 302 Z"/>
-      <path d="M780 256 L832 276 L820 318" fill="none" stroke="#ffffff" stroke-opacity=".22" stroke-width="3"/>
+      <!-- ── Tapa lateral del radiador (el "carenado" de una naked) ── -->
+      <path class="s-body s-shroud" d="M794 246 L852 270 L844 318 L806 352 L770 338 L776 290 Z"/>
+      <path d="M796 258 L836 276 L830 314" fill="none" stroke="#ffffff" stroke-opacity=".22" stroke-width="3"/>
 
       <!-- ── Rueda delantera ── -->
       <g class="lp-wheel lp-wheel-front">
@@ -154,17 +163,17 @@
         <circle cx="905" cy="482" r="106" fill="none" stroke="#2b2e33" stroke-width="3"/>
         <circle class="s-rim" cx="905" cy="482" r="90"/>
         <circle cx="905" cy="482" r="82" fill="#0d0e10"/>
-        <g class="s-spoke" stroke-width="9" stroke-linecap="round">
+        <g class="lp-spokes s-spoke" stroke-width="9" stroke-linecap="round">
           <path d="M905 482 L905 402 M905 482 L981 457 M905 482 L952 547 M905 482 L858 547 M905 482 L829 457"/>
         </g>
-        <circle class="s-disc" cx="905" cy="482" r="72" fill="none" stroke-width="12" stroke-dasharray="9 5"/>
+        <circle class="s-disc" cx="905" cy="482" r="70" fill="none" stroke-width="12" stroke-dasharray="9 5"/>
         <circle class="s-hub" cx="905" cy="482" r="24"/>
         <circle cx="905" cy="482" r="9" fill="#1a1b1e"/>
-        <path class="s-caliper" d="M842 420 q-18 10 -22 30 l16 6 q4 -14 16 -22 z"/>
+        <path class="s-caliper" d="M844 422 q-18 10 -22 30 l16 6 q4 -14 16 -22 z"/>
       </g>
 
       <!-- ── Guardabarros delantero ── -->
-      <path class="s-body s-fender" d="M806 405 A128 128 0 0 1 1000 396" fill="none" stroke-width="14" stroke-linecap="round"/>
+      <path class="s-body s-fender" d="M806 405 A128 128 0 0 1 1000 396" stroke-width="14" stroke-linecap="round"/>
 
       <!-- ── Horquilla invertida ── -->
       <path class="s-fork-low" d="M915 478 L873 354 L853 361 L895 485 Z"/>
@@ -183,13 +192,93 @@
 
       <!-- ── Farola ── -->
       <path class="s-body s-headlight-case" d="M846 226 L896 220 L926 252 L908 296 L862 298 L848 264 Z"/>
-      <path class="s-electric-lamp s-headlight" d="M872 238 L904 236 L918 256 L906 282 L874 282 L866 262 Z"/>
+      <path class="s-headlight" d="M872 238 L904 236 L918 256 L906 282 L874 282 L866 262 Z"/>
+
+      <!-- fx Electricidad: haz de la farola -->
+      <path class="fx fx-beam" d="M918 244 L1200 196 L1200 340 L912 280 Z" fill="url(#lp-g-beam)"/>
+
+      <!-- fx Escaneo: conector de diagnóstico y escáner de mano -->
+      <g class="fx fx-scanner">
+        <path d="M598 334 C586 280 610 214 606 176" fill="none" stroke="#F25C05" stroke-width="4" stroke-linecap="round"/>
+        <rect x="584" y="326" width="26" height="16" rx="3" fill="#F25C05"/>
+        <g transform="rotate(-8 606 120)">
+          <rect x="566" y="62" width="82" height="118" rx="12" fill="#1b1d21" stroke="#F25C05" stroke-width="3"/>
+          <rect x="576" y="74" width="62" height="58" rx="4" fill="#0b0c0e"/>
+          <path class="fx-scan-bars" d="M584 122 V108 M594 122 V96 M604 122 V112 M614 122 V90 M624 122 V104" stroke="#ffb13b" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="592" cy="154" r="6" fill="#3a3d43"/><circle cx="622" cy="154" r="6" fill="#3a3d43"/>
+        </g>
+      </g>
+
+      <!-- fx Alistamiento: los puntos que revisa la tecnomecánica -->
+      <g class="fx fx-checks" font-family="Montserrat, Arial, sans-serif" font-weight="800" font-size="19" fill="#fff">
+        <g class="fx-check" transform="translate(944 196)"><circle r="17" fill="#F25C05"/><path d="M-7 0 L-2 6 L8 -6" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="7">Luces</text></g>
+        <g class="fx-check" transform="translate(1002 424)"><circle r="17" fill="#F25C05"/><path d="M-7 0 L-2 6 L8 -6" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="7">Frenos</text></g>
+        <g class="fx-check" transform="translate(186 588)"><circle r="17" fill="#F25C05"/><path d="M-7 0 L-2 6 L8 -6" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="-26" y="7" text-anchor="end">Llantas</text></g>
+        <g class="fx-check" transform="translate(338 380)"><circle r="17" fill="#F25C05"/><path d="M-7 0 L-2 6 L8 -6" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="-26" y="7" text-anchor="end">Gases y ruido</text></g>
+        <path d="M360 404 q-10 12 0 24 M346 398 q-16 18 0 36" fill="none" stroke="#F25C05" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <!-- fx Torno: el eje trasero fuera de la moto, con la cuchilla cortando -->
+      <g class="fx fx-shaft">
+        <rect x="112" y="474" width="182" height="16" rx="3" fill="#cfd4da"/>
+        <rect x="236" y="469" width="22" height="26" rx="2" fill="#aeb4bc"/>
+        <path class="fx-thread" d="M120 474 V490 M128 474 V490 M136 474 V490 M144 474 V490 M152 474 V490" stroke="#7b8189" stroke-width="2"/>
+        <path d="M188 526 L210 526 L200 491 Z" fill="#F25C05"/>
+        <path class="fx-chip" d="M212 506 q10 -4 12 6 q-2 8 -10 6" fill="none" stroke="#ffb13b" stroke-width="2.5" stroke-linecap="round"/>
+        <path class="fx-chip" d="M222 516 q12 0 10 10" fill="none" stroke="#ffb13b" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+
+      <!-- fx Prensa: rodamiento entrando a presión en la manzana delantera -->
+      <g class="fx fx-bearing">
+        <g class="fx-bearing-ring">
+          <circle cx="905" cy="482" r="30" fill="none" stroke="#F25C05" stroke-width="7"/>
+          <circle cx="905" cy="482" r="14" fill="none" stroke="#F25C05" stroke-width="5"/>
+          <g fill="#ffd9c0"><circle cx="927" cy="482" r="4"/><circle cx="905" cy="504" r="4"/><circle cx="883" cy="482" r="4"/><circle cx="905" cy="460" r="4"/><circle cx="921" cy="498" r="4"/><circle cx="889" cy="498" r="4"/><circle cx="889" cy="466" r="4"/><circle cx="921" cy="466" r="4"/></g>
+        </g>
+        <path class="fx-press" d="M905 420 v14 m-7 -7 l7 7 l7 -7 M905 544 v-14 m-7 7 l7 -7 l7 7 M843 482 h14 m-7 -7 l7 7 l-7 7 M967 482 h-14 m7 -7 l-7 7 l7 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- fx Pintura: pistola de pintura y la nube de pintura sobre el tanque -->
+      <g class="fx fx-spray">
+        <ellipse class="fx-mist" cx="704" cy="176" rx="86" ry="42" fill="url(#lp-g-mist)"/>
+        <g transform="rotate(28 800 108)">
+          <rect x="772" y="92" width="64" height="26" rx="6" fill="#2a2d33" stroke="#F25C05" stroke-width="3"/>
+          <rect x="752" y="99" width="22" height="12" rx="2" fill="#aeb4bc"/>
+          <path d="M818 118 L826 158 L812 160 L806 118 Z" fill="#2a2d33"/>
+          <rect x="786" y="62" width="30" height="32" rx="5" fill="#3a3e45"/>
+        </g>
+        <g class="fx-specks" fill="#F25C05"><circle cx="742" cy="160" r="3"/><circle cx="716" cy="170" r="2.5"/><circle cx="690" cy="166" r="2"/><circle cx="728" cy="186" r="2"/><circle cx="668" cy="182" r="2.5"/></g>
+      </g>
+
+      <!-- fx Lavado: espuma y gotas -->
+      <g class="fx fx-foam" fill="#ffffff" fill-opacity=".9" stroke="#cfe0f5" stroke-width="2">
+        <circle cx="640" cy="214" r="14"/><circle cx="664" cy="204" r="10"/><circle cx="690" cy="210" r="16"/><circle cx="716" cy="200" r="11"/><circle cx="740" cy="208" r="13"/>
+        <circle cx="400" cy="262" r="10"/><circle cx="420" cy="270" r="13"/><circle cx="446" cy="266" r="9"/>
+        <circle cx="262" cy="584" r="12"/><circle cx="286" cy="592" r="9"/><circle cx="312" cy="586" r="13"/><circle cx="338" cy="594" r="8"/>
+        <circle cx="870" cy="586" r="13"/><circle cx="896" cy="592" r="9"/><circle cx="922" cy="584" r="12"/><circle cx="946" cy="592" r="8"/>
+        <circle cx="680" cy="488" r="10"/><circle cx="700" cy="496" r="7"/>
+        <g fill="#9cc6ff" fill-opacity=".9" stroke="none"><path d="M598 322 c3 6 5 9 5 12 a5 5 0 0 1 -10 0 c0 -3 2 -6 5 -12z"/><path d="M836 372 c3 6 5 9 5 12 a5 5 0 0 1 -10 0 c0 -3 2 -6 5 -12z"/><path d="M484 346 c3 6 5 9 5 12 a5 5 0 0 1 -10 0 c0 -3 2 -6 5 -12z"/></g>
+      </g>
+
+      <!-- fx Detailing: brillo en la pintura y destellos -->
+      <g class="fx fx-shine">
+        <path d="M772 222 C736 206 674 204 620 224" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+        <g fill="#ffffff">
+          <path class="fx-star" d="M700 190 l5 14 l14 5 l-14 5 l-5 14 l-5 -14 l-14 -5 l14 -5 z"/>
+          <path class="fx-star" d="M958 398 l4 11 l11 4 l-11 4 l-4 11 l-4 -11 l-11 -4 l11 -4 z"/>
+          <path class="fx-star" d="M896 222 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 l9 -3 z"/>
+          <path class="fx-star" d="M332 244 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 l9 -3 z"/>
+        </g>
+      </g>
 
       <!-- ── Casco sobre el asiento (solo en Lavado de cascos) ── -->
       <g class="s-helmet">
         <path class="s-helmet-shell" d="M444 252 C436 198 474 164 520 166 C562 168 584 200 576 236 L562 254 Z"/>
         <path d="M512 196 C540 192 566 204 572 226 L542 232 C536 216 526 206 508 204 Z" fill="#101114"/>
         <path d="M520 199 C538 198 552 205 560 216" fill="none" stroke="#ffffff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>
+        <g class="fx-helmet-foam" fill="#ffffff" fill-opacity=".92" stroke="#cfe0f5" stroke-width="2">
+          <circle cx="452" cy="206" r="10"/><circle cx="470" cy="180" r="7"/><circle cx="590" cy="210" r="9"/><circle cx="578" cy="182" r="6"/><circle cx="500" cy="160" r="6"/>
+        </g>
       </g>
     </g>
   </defs>

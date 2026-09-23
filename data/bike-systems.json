@@ -1,0 +1,17 @@
+{
+  "_doc": "Qué parte de la moto ilustrada (views/partials/landing/bike-art.ejs) muestra cada servicio de data/landing-services.js. system = sufijo de la propiedad CSS --on-<system>. focus = encuadre de la lupa [x, y, ancho, alto] en coordenadas del arte (1200x700), siempre 16:10. lamp = lámpara de inspección del escenario de escritorio [cx, cy, radio].",
+  "art": [0, 0, 1200, 700],
+  "systems": {
+    "mecanica":                   { "system": "engine",   "focus": [555, 272, 320, 200], "lamp": [712, 380, 150] },
+    "mecanica-rapida":            { "system": "oil",      "focus": [572, 330, 272, 170], "lamp": [712, 432, 120] },
+    "electricidad":               { "system": "electric", "focus": [200, 100, 1000, 625], "lamp": [640, 300, 520] },
+    "escaneo-de-motos":           { "system": "scan",     "focus": [400, 40, 432, 270], "lamp": [600, 220, 230] },
+    "alistamiento-tecnomecanica": { "system": "inspect",  "focus": [100, 90, 1024, 640], "lamp": [600, 420, 600] },
+    "torno":                      { "system": "axle",     "focus": [96, 392, 288, 180], "lamp": [220, 482, 130] },
+    "prensa":                     { "system": "hub",      "focus": [785, 407, 240, 150], "lamp": [905, 482, 110] },
+    "pintura":                    { "system": "body",     "focus": [520, 50, 384, 240], "lamp": [700, 200, 190] },
+    "lavado-motos":               { "system": "wash",     "focus": [150, 130, 1000, 625], "lamp": [600, 420, 540] },
+    "detailing-motos":            { "system": "detail",   "focus": [560, 150, 448, 280], "lamp": [760, 290, 230] },
+    "lavado-cascos":              { "system": "helmet",   "focus": [410, 138, 208, 130], "lamp": [512, 208, 120] }
+  }
+}

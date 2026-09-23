@@ -73,7 +73,6 @@
 .s-battery { fill: #1f2226; stroke: color-mix(in srgb, var(--hl) calc(var(--on-electric, 0) * 100%), #6a7079); stroke-width: 3 }
 .s-wiring { stroke: #ffb13b }
 .s-electric { opacity: min(1, calc(var(--on-electric, 0) + var(--on-scan, 0))) }
-.s-connector { opacity: var(--on-scan, 0); fill: var(--hl); stroke: var(--hl) }
 .s-headlight { fill: color-mix(in srgb, #fff3c4 calc((var(--on-electric, 0) + var(--on-inspect, 0)) * 100%), #9aa6b4) }
 .s-taillight { fill: color-mix(in srgb, #ff3b2f calc((var(--on-electric, 0) + var(--on-inspect, 0)) * 100%), #6e1a14) }
 .s-body {
@@ -93,3 +92,15 @@
 .s-plate rect:first-child { fill: var(--lp-plate, #F6C700) }
 .s-helmet { opacity: var(--on-helmet, 0) }
 .s-helmet-shell { fill: color-mix(in srgb, var(--hl) 88%, #2a2d33) }
+
+/* Grupos de efecto: la "prueba" de cada servicio, quietos en su estado final. */
+.fx-piston  { opacity: var(--on-engine, 0) }
+.fx-oil     { opacity: var(--on-oil, 0) }
+.fx-beam    { opacity: calc(var(--on-electric, 0) * .9) }
+.fx-scanner { opacity: var(--on-scan, 0) }
+.fx-checks  { opacity: var(--on-inspect, 0) }
+.fx-shaft   { opacity: var(--on-axle, 0) }
+.fx-bearing { opacity: var(--on-hub, 0) }
+.fx-spray   { opacity: var(--on-body, 0) }
+.fx-foam    { opacity: var(--on-wash, 0) }
+.fx-shine   { opacity: var(--on-detail, 0) }
