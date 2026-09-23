@@ -267,7 +267,7 @@ function setupDesktop(root, gsap) {
     const d = instant ? 0 : 0.9;
     gsap.to(stageSvg, { attr: { viewBox: viewBoxString(box) }, duration: d, ease: 'power3.inOut', overwrite: true });
     gsap.to([hole, glow], { attr: { cx: lx, cy: ly, r: lr }, duration: d, ease: 'power3.inOut', overwrite: true });
-    gsap.to(ratchet, { y: list.offsetTop + li.offsetTop + li.offsetHeight / 2 - 20, duration: instant ? 0 : 0.5, ease: "back.out(1.8)", overwrite: "auto" });
+    gsap.to(ratchet, { y: li.offsetTop + li.offsetHeight / 2 - 20, duration: instant ? 0 : 0.5, ease: "back.out(1.8)", overwrite: "auto" });
 
     if (current) {
       current.kill();
