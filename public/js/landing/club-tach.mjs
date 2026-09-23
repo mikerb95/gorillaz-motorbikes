@@ -75,13 +75,13 @@ export function drawDial(host, levels) {
       label.textContent = String(p / 100);
     }
   }
-  const unit = el('text', { x: CX, y: CY + 58, 'text-anchor': 'middle', fill: '#8d939b', 'font-size': 11, 'font-weight': 800, 'letter-spacing': 2, 'font-family': 'Montserrat, Arial, sans-serif' }, svg);
+  const unit = el('text', { x: CX, y: CY - 46, 'text-anchor': 'middle', fill: '#8d939b', 'font-size': 11, 'font-weight': 800, 'letter-spacing': 2, 'font-family': 'Montserrat, Arial, sans-serif' }, svg);
   unit.textContent = '×100 PUNTOS';
 
   // Visor central: nivel actual y puntos, como el indicador de marcha.
-  el('rect', { x: CX - 78, y: CY + 70, width: 156, height: 58, rx: 10, fill: '#050506', stroke: '#2c2f35', 'stroke-width': 2 }, svg);
-  const levelText = el('text', { x: CX, y: CY + 96, 'text-anchor': 'middle', fill: '#F25C05', 'font-size': 18, 'font-weight': 900, 'letter-spacing': 1, 'font-family': 'Montserrat, Arial, sans-serif' }, svg);
-  const pointsText = el('text', { x: CX, y: CY + 117, 'text-anchor': 'middle', fill: '#c9ced4', 'font-size': 13, 'font-weight': 700, 'font-family': 'Montserrat, Arial, sans-serif' }, svg);
+  el('rect', { x: CX - 96, y: CY + 88, width: 192, height: 58, rx: 10, fill: '#050506', stroke: '#2c2f35', 'stroke-width': 2 }, svg);
+  const levelText = el('text', { x: CX, y: CY + 113, 'text-anchor': 'middle', fill: '#F25C05', 'font-size': 16, 'font-weight': 900, 'letter-spacing': 1, 'font-family': 'Montserrat, Arial, sans-serif' }, svg);
+  const pointsText = el('text', { x: CX, y: CY + 134, 'text-anchor': 'middle', fill: '#c9ced4', 'font-size': 13, 'font-weight': 700, 'font-family': 'Montserrat, Arial, sans-serif' }, svg);
 
   // Aguja: apunta hacia arriba (0°) y gira alrededor del centro.
   const needle = el('g', { class: 'lp-tach-needle' }, svg);
