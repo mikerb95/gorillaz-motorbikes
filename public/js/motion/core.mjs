@@ -56,7 +56,7 @@ export function mount(selector, init, ctx = {}) {
     };
     try {
       const api = init(root, { ...ctx, fail: (e) => fail(e) });
-      if (api && typeof api.then === 'function') api.catch(fail);
+      if (api && typeof api.then === 'function') api.then((a) => apis.push({ root, api: a }), fail);
       else apis.push({ root, api });
       root.dataset.motion = 'on';
     } catch (err) {
