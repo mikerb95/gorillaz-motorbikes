@@ -13,6 +13,7 @@ import { mount, prefersReduced, getGsap } from '../motion/core.mjs';
 import initHero from './hero-shutter.mjs';
 import initServices from './service-bike.mjs';
 import initTicket from './ticket-stamps.mjs';
+import initClub from './club-tach.mjs';
 
 const reduced = prefersReduced();
 const gsap = getGsap();
@@ -25,6 +26,8 @@ if (!reduced) {
 } else {
   document.documentElement.classList.remove('lp-shutter-pending');
 }
+// El dial del club se dibuja siempre (con movimiento reducido, quieto).
+mount('[data-lp="club"]', initClub);
 
 // Las imágenes y fuentes cambian alturas: recalcular los disparadores al final.
 if (gsap && window.ScrollTrigger) {

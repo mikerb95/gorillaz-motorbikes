@@ -423,3 +423,11 @@ section .lp-product-name { max-width: none }
   --on-inspect: 0 !important; --on-axle: 0 !important; --on-hub: 0 !important; --on-body: 0 !important;
   --on-wash: 0 !important; --on-detail: 0 !important; --on-helmet: 0 !important;
 }
+
+/* ─── Club: piezas que agrega el JS ────────────────────────────────────── */
+.lp-odo-strip { display: flex; flex-direction: column }
+.lp-odo-strip > span { display: block; height: 1.35em; line-height: 1.35em }
+.lp-level-list li { transition: background .35s ease, padding .35s ease }
+.lp-level-list li.is-lit { background: rgba(20, 13, 8, .1); padding-left: 8px; padding-right: 8px }
+.lp-level-list li.is-lit .lp-level-name::after { content: "" }
+.lp-level-list li.is-lit .lp-level-name::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #140d08; margin-right: 8px; vertical-align: .1em }

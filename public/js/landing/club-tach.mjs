@@ -107,7 +107,11 @@ function buildOdometer(odo) {
     const strip = document.createElement('span');
     strip.className = 'lp-odo-strip';
     // Dos vueltas de números para que la unidad dé una vuelta completa antes de parar.
-    strip.textContent = '01234567890123456789';
+    for (let k = 0; k < 20; k++) {
+      const s = document.createElement('span');
+      s.textContent = String(k % 10);
+      strip.appendChild(s);
+    }
     d.replaceChildren(strip);
     return { strip, target };
   });
