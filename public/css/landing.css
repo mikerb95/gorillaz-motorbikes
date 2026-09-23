@@ -1,0 +1,95 @@
+/* ════════════════════════════════════════════════════════════════════════
+   LANDING "TALLER A LA VISTA" (solo views/home.ejs)
+
+   Lenguaje visual: los materiales del propio taller. Cortina metálica,
+   paredes naranja y negro, piso azul epóxico, la placa amarilla y la ficha de
+   trabajo de papel. Todo lo que está aquí es el ESTADO FINAL: sin JS o con
+   prefers-reduced-motion la página se ve completa y quieta. Lo que se esconde
+   para animarlo vive bajo `.motion-ok … .is-armed` (ver public/js/motion/core.mjs).
+
+   No toca la navbar: todo cuelga de clases lp-*.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.page-home {
+  --lp-orange: #F25C05;
+  --lp-orange-hot: #ff7a1f;
+  --lp-ink: #0e0f11;
+  --lp-graphite: #17181b;
+  --lp-steel: #aeb4bc;
+  --lp-floor: #1f4c9c;
+  --lp-plate: #F6C700;
+  --lp-paper: #f3ead9;
+  --lp-cream: #FFF9F5;
+  --lp-muted: #6b7280;
+  --lp-gutter: clamp(16px, 4vw, 48px);
+  --lp-max: 1400px;
+}
+
+/* ─── Moto ilustrada: color de cada pieza por sistema ──────────────────────
+   Cada pieza mezcla su color base con --hl según su --on-<sistema> (0..1).
+   @property hace que el cambio se anime con una transición CSS; si el
+   navegador no lo soporta, el var(…, 0) de respaldo deja la pieza en su color
+   base y el resaltado simplemente aparece sin transición. */
+@property --on-engine   { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-oil      { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-electric { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-scan     { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-inspect  { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-axle     { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-hub      { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-body     { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-wash     { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-detail   { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --on-helmet   { syntax: '<number>'; inherits: true; initial-value: 0; }
+
+.lp-bike-view {
+  --hl: #F25C05;
+  transition: --on-engine .5s, --on-oil .5s, --on-electric .5s, --on-scan .5s, --on-inspect .5s,
+    --on-axle .5s, --on-hub .5s, --on-body .6s, --on-wash .5s, --on-detail .6s, --on-helmet .5s;
+}
+
+.lp-bike-defs { position: absolute; width: 0; height: 0; overflow: hidden }
+
+.s-tire { fill: color-mix(in srgb, var(--hl) calc((var(--on-inspect, 0) + var(--on-wash, 0)) * 62%), #0b0c0e) }
+.s-rim { fill: #1b1d21; stroke: color-mix(in srgb, #ffffff calc(var(--on-detail, 0) * 70%), #99a0a8); stroke-width: 6 }
+.s-spoke { stroke: color-mix(in srgb, #ffffff calc(var(--on-detail, 0) * 70%), #99a0a8) }
+.s-disc { stroke: color-mix(in srgb, var(--hl) calc(var(--on-inspect, 0) * 90%), #b9bec5) }
+.s-caliper { fill: color-mix(in srgb, var(--hl) calc(var(--on-inspect, 0) * 90%), #a3a9b1) }
+.s-axle { fill: color-mix(in srgb, var(--hl) calc(var(--on-axle, 0) * 95%), #7d838c) }
+.s-hub { fill: color-mix(in srgb, var(--hl) calc(var(--on-hub, 0) * 95%), #7d838c) }
+.s-chain { stroke: color-mix(in srgb, var(--hl) calc(var(--on-engine, 0) * 70%), #5b6068) }
+.s-sprocket { fill: color-mix(in srgb, var(--hl) calc(var(--on-engine, 0) * 80%), #6a7079) }
+.s-frame { fill: #25282d }
+.s-radiator { fill: #2e3137 }
+.s-muffler { fill: color-mix(in srgb, var(--hl) calc(var(--on-inspect, 0) * 85%), #80858d) }
+.s-engine-case { fill: color-mix(in srgb, var(--hl) calc(var(--on-engine, 0) * 85%), #5d626a) }
+.s-engine-block { fill: color-mix(in srgb, var(--hl) calc(var(--on-engine, 0) * 92%), #4f545c) }
+.s-engine-head { fill: color-mix(in srgb, var(--hl) calc(var(--on-engine, 0) * 80%), #6a7079) }
+.s-engine-cam { fill: color-mix(in srgb, var(--hl) calc(var(--on-engine, 0) * 70%), #8a909a) }
+.s-engine-cover { fill: color-mix(in srgb, var(--hl) calc(var(--on-engine, 0) * 75%), #7a8089) }
+.s-oil-cap { fill: color-mix(in srgb, var(--hl) calc(var(--on-oil, 0) * 95%), #c9ced4) }
+.s-oil-filter { fill: color-mix(in srgb, var(--hl) calc(var(--on-oil, 0) * 95%), #3c4047) }
+.s-oil-sump { fill: color-mix(in srgb, var(--hl) calc(var(--on-oil, 0) * 90%), #464b52) }
+.s-battery { fill: #1f2226; stroke: color-mix(in srgb, var(--hl) calc(var(--on-electric, 0) * 100%), #6a7079); stroke-width: 3 }
+.s-wiring { stroke: #ffb13b }
+.s-electric { opacity: min(1, calc(var(--on-electric, 0) + var(--on-scan, 0))) }
+.s-connector { opacity: var(--on-scan, 0); fill: var(--hl); stroke: var(--hl) }
+.s-headlight { fill: color-mix(in srgb, #fff3c4 calc((var(--on-electric, 0) + var(--on-inspect, 0)) * 100%), #9aa6b4) }
+.s-taillight { fill: color-mix(in srgb, #ff3b2f calc((var(--on-electric, 0) + var(--on-inspect, 0)) * 100%), #6e1a14) }
+.s-body {
+  fill: color-mix(in srgb, #9aa2ad calc(var(--on-detail, 0) * 45%),
+          color-mix(in srgb, var(--hl) calc(var(--on-body, 0) * 92%), #474c54));
+}
+.s-fender {
+  fill: none;
+  stroke: color-mix(in srgb, #9aa2ad calc(var(--on-detail, 0) * 45%),
+            color-mix(in srgb, var(--hl) calc(var(--on-body, 0) * 92%), #474c54));
+}
+.s-sidepanel { fill-opacity: calc(1 - min(1, calc(var(--on-electric, 0) + var(--on-scan, 0))) * .8) }
+.s-seat { fill: #16171a }
+.s-mirror { fill: #1b1d21 }
+.s-fork-up { fill: #2a2d33 }
+.s-fork-low { fill: #b8913a }
+.s-plate rect:first-child { fill: var(--lp-plate, #F6C700) }
+.s-helmet { opacity: var(--on-helmet, 0) }
+.s-helmet-shell { fill: color-mix(in srgb, var(--hl) 88%, #2a2d33) }
