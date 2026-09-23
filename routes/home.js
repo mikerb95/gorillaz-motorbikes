@@ -1,29 +1,11 @@
 'use strict';
 const express = require('express');
-const path    = require('path');
-const fs      = require('fs');
 const { RECAPTCHA_SITE_KEY } = require('../config');
 const { catalog } = require('../helpers/catalog');
+const { loadPuntosConfig } = require('../helpers/score');
+const landingServices = require('../data/landing-services');
 
 const router = express.Router();
-
-// Los slides son archivos estáticos que solo cambian al desplegar, así que
-// listamos el directorio una vez al cargar el módulo (una vez por cold start)
-// en lugar de hacer fs.readdirSync síncrono en cada visita a la home, que es
-// la página de mayor tráfico y bloquearía el event loop en cada request.
-const SLIDES = (() => {
-  const allowed    = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
-  const readSlides = (dir, urlPrefix) => {
-    try {
-      return fs.readdirSync(dir)
-        .filter(f => allowed.has(path.extname(f).toLowerCase()))
-        .sort()
-        .map(f => `${urlPrefix}/${encodeURIComponent(f)}`);
-    } catch { return []; }
-  };
-  const webp = readSlides(path.join(__dirname, '..', 'images', 'slideshow', 'WEBP'), '/images/slideshow/WEBP');
-  return webp.length ? webp : readSlides(path.join(__dirname, '..', 'images', 'slideshow'), '/images/slideshow');
-})();
 
 router.get('/', (req, res) => {
   const flash            = req.query.flash || null;
@@ -34,8 +16,13 @@ router.get('/', (req, res) => {
     .sort((a, b) => b.discount - a.discount)
     .slice(0, 3);
 
+  // Niveles y puntos reales del club (app_settings 'puntos' o sus valores por
+  // defecto): el tacómetro de la landing se dibuja con ellos.
+  const club = loadPuntosConfig();
+
   res.render('home', {
-    slides: SLIDES,
+    landingServices,
+    club,
     newsletterStatus,
     recaptchaSiteKey: RECAPTCHA_SITE_KEY,
     featuredProducts,
