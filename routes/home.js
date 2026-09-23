@@ -4,6 +4,7 @@ const { RECAPTCHA_SITE_KEY } = require('../config');
 const { catalog } = require('../helpers/catalog');
 const { loadPuntosConfig } = require('../helpers/score');
 const landingServices = require('../data/landing-services');
+const bikeSystems     = require('../data/bike-systems.json');
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.get('/', (req, res) => {
 
   res.render('home', {
     landingServices,
+    bikeSystems,
     club,
     newsletterStatus,
     recaptchaSiteKey: RECAPTCHA_SITE_KEY,

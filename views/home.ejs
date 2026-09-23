@@ -1,229 +1,179 @@
 <%- include('partials/head', { title: 'Gorillaz Motorbikes' , user }) %>
+<%#
+  LANDING "TALLER A LA VISTA"
+  Todo lo que hay en este marcado es el estado final y legible: sin JS o con
+  prefers-reduced-motion la página se ve completa y quieta. El motion
+  (public/js/landing/*.mjs) solo lo realza y, si falla, devuelve lo que haya
+  escondido (contrato fail-open en public/js/motion/core.mjs).
+%>
+<link rel="stylesheet" href="/static/css/landing.css?v=1" />
+<%- include('partials/landing/bike-art') %>
 
-    <h1 class="sr-only">Gorillaz Motorbikes — Taller de motos en Bogotá</h1>
+    <h1 class="sr-only">Gorillaz Motorbikes, taller de motos en Bogotá</h1>
 
-    <!-- Hero con CTA -->
-    <section class="hero" data-slideshow='<%- JSON.stringify(slides||[]) %>'>
-      <div class="hero-slides" aria-hidden="true"></div>
-      <div class="hero-content">
-        <h2>Tu moto en manos de expertos en Bogotá</h2>
+    <!-- ═══ Hero: la cortina metálica se enrolla y descubre el taller real ═══ -->
+    <section class="hero lp-hero" data-lp="hero" aria-labelledby="lp-hero-title">
+      <script>
+        // Antes de pintar: si esta visita va a ver la apertura de la cortina,
+        // la tapamos con una cortina CSS para que la foto no "parpadee" antes
+        // de que arranque WebGL. Si el motion no arranca en 3,5 s se destapa
+        // sola (fail-open). Solo la primera vez por sesión.
+        (function (d) {
+          try {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            if (!('WebGL2RenderingContext' in window) || !('noModule' in HTMLScriptElement.prototype)) return;
+            if (sessionStorage.getItem('lp-cortina')) return;
+            d.classList.add('lp-shutter-pending');
+            window.__lpShutterTimer = setTimeout(function () { d.classList.remove('lp-shutter-pending'); }, 3500);
+          } catch (e) {}
+        })(document.documentElement);
+      </script>
+      <picture class="lp-hero-photo">
+        <source media="(max-width: 700px)" srcset="/images/landing/taller-z1000-movil.webp" width="720" height="960" />
+        <img src="/images/landing/taller-z1000-1440.webp"
+          srcset="/images/landing/taller-z1000-960.webp 960w, /images/landing/taller-z1000-1440.webp 1440w"
+          sizes="100vw" width="1440" height="900" fetchpriority="high" decoding="async"
+          alt="Una moto naked dentro del taller Gorillaz Motorbikes, conectada a un cargador de batería" />
+      </picture>
+      <div class="lp-hero-shade" aria-hidden="true"></div>
+      <div class="lp-hero-cover" aria-hidden="true"></div>
+      <canvas class="lp-hero-canvas" aria-hidden="true"></canvas>
+      <div class="lp-hero-content">
+        <p class="lp-kicker"><span class="lp-dot" aria-hidden="true"></span>Taller de motos en Bogotá</p>
+        <h2 id="lp-hero-title" class="lp-hero-title">Tu moto en manos de expertos en Bogotá</h2>
+        <p class="lp-hero-sub">Conoce el taller, elige el servicio y consulta en qué va tu moto sin llamar.</p>
         <div class="btn-row">
           <a class="btn" href="/servicios/agendar">Agendar servicio</a>
           <a class="btn btn-outline" href="/servicios">Ver servicios</a>
         </div>
       </div>
-      <button class="scroll-cue" aria-label="Desplázate para ver el contenido" title="Desplázate"
-        onclick="(function(){var next=document.querySelector('.stats-strip'); if(next){next.scrollIntoView({behavior:'smooth'});} else {window.scrollTo({top: window.innerHeight, behavior:'smooth'});} })()">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path fill="currentColor"
-            d="M12 16.5c-.3 0-.6-.1-.8-.3l-6-6a1.1 1.1 0 0 1 1.6-1.6L12 13.8l5.2-5.2a1.1 1.1 0 0 1 1.6 1.6l-6 6c-.2.2-.5.3-.8.3Z" />
-        </svg>
-      </button>
+      <a class="lp-hero-cue" href="#servicios">
+        <span>Mira lo que hacemos</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M12 5v14m-6-6 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
     </section>
 
-    <!-- Franja de estadísticas — rellena los números con tus datos reales -->
-    <section class="stats-strip" aria-label="Números de confianza">
-      <div class="stats-inner">
-        <div class="stat-item">
-          <span class="stat-num"><!-- CLIENTES -->+</span>
-          <span class="stat-label">Clientes atendidos</span>
+    <!-- ═══ Servicios: un experto para cada sistema de la moto ═══ -->
+    <section class="lp-services" id="servicios" data-lp="services" aria-labelledby="lp-services-title">
+      <div class="lp-wrap lp-services-head">
+        <p class="lp-label">Servicios</p>
+        <h2 id="lp-services-title" class="lp-h2">Un experto para cada sistema de tu moto</h2>
+        <p class="lp-lead"><%= landingServices.length %> servicios en el mismo taller: del motor a la pintura, de la electricidad al lavado.</p>
+      </div>
+      <div class="lp-wrap lp-services-body">
+        <div class="lp-stage" aria-hidden="true">
+          <svg class="lp-bike-view lp-stage-svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid meet" focusable="false"><use href="#lp-bike-art"/></svg>
+          <div class="lp-stage-floor"></div>
         </div>
-        <div class="stat-item">
-          <span class="stat-num"><!-- AÑOS --></span>
-          <span class="stat-label">Años en Bogotá</span>
+        <ol class="lp-service-list">
+          <% landingServices.forEach(function (s, i) { var sys = bikeSystems.systems[s.slug]; %>
+          <li class="lp-service" id="servicio-<%= s.slug %>" data-slug="<%= s.slug %>" data-system="<%= sys.system %>"
+            data-focus="<%= sys.focus.join(' ') %>" data-lamp="<%= sys.lamp.join(' ') %>">
+            <svg class="lp-lens lp-bike-view" viewBox="<%= sys.focus.join(' ') %>" style="--on-<%= sys.system %>:1"
+              aria-hidden="true" focusable="false"><use href="#lp-bike-art"/></svg>
+            <h3 class="lp-service-name"><span class="lp-num" aria-hidden="true"><%= String(i + 1).padStart(2, '0') %></span><span class="lp-service-title"><%= s.name %></span></h3>
+            <div class="lp-service-panel">
+              <img class="lp-service-photo" src="<%= s.img %>" alt="" loading="lazy" decoding="async" />
+              <p><%= s.desc %></p>
+              <a class="lp-link" href="<%= s.href %>">Ver <%= s.name.toLowerCase() %><span aria-hidden="true"> &rarr;</span></a>
+            </div>
+          </li>
+          <% }) %>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ═══ Estado de tu moto: la ficha de trabajo recibe un sello por etapa ═══ -->
+    <section class="lp-status" id="estado" data-lp="ticket" aria-labelledby="lp-status-title">
+      <div class="lp-wrap lp-status-grid">
+        <div class="lp-status-copy">
+          <p class="lp-label">¿Tu moto está en el taller?</p>
+          <h2 id="lp-status-title" class="lp-h2">Consulta el estado de tu moto</h2>
+          <p class="lp-lead">Ingresa tu placa y revisa en qué etapa está el trabajo, el valor total y los días de parqueadero, sin llamar al taller.</p>
+          <a class="btn" href="/mi-orden">Ver estado de mi moto <span aria-hidden="true">&rarr;</span></a>
         </div>
-        <div class="stat-item">
-          <span class="stat-num">8</span>
-          <span class="stat-label">Servicios especializados</span>
+        <figure class="lp-ticket-scene">
+          <img class="lp-status-photo" src="/images/landing/taller-elevadores.webp" width="960" height="482" loading="lazy" decoding="async"
+            alt="Dos motos sobre los elevadores naranja del taller" />
+          <div class="lp-ticket-rig">
+            <span class="lp-ticket-hook" aria-hidden="true"></span>
+            <div class="lp-ticket" data-m>
+              <span class="lp-ticket-hole" aria-hidden="true"></span>
+              <p class="lp-example-tag">Ejemplo ilustrativo</p>
+              <p class="lp-ticket-head">Orden de servicio</p>
+              <p class="lp-ticket-plate" aria-label="Placa ABC 12D"><span class="lp-plate-top" data-plate="ABC">ABC</span><span class="lp-plate-bottom" data-plate="12D">12D</span><span class="lp-plate-city" aria-hidden="true">Bogotá D.C.</span></p>
+              <ol class="lp-ticket-stages" aria-label="Etapas de la orden">
+                <li data-status="ingreso_taller"><span class="lp-stamp" data-m>Ingreso al taller</span></li>
+                <li data-status="trabajo_en_curso"><span class="lp-stamp" data-m>Trabajo en curso</span></li>
+                <li data-status="trabajo_completo"><span class="lp-stamp" data-m>Listo para recoger</span></li>
+                <li data-status="entregado"><span class="lp-stamp" data-m>Entregado</span></li>
+              </ol>
+              <dl class="lp-ticket-rows">
+                <div><dt>Comentarios del taller</dt><dd>Cambio de aceite y ajuste de cadena.</dd></div>
+                <div><dt>Valor total</dt><dd>$ 185.000 COP</dd></div>
+                <div><dt>Parqueadero</dt><dd>0 días</dd></div>
+              </dl>
+            </div>
+          </div>
+          <figcaption class="sr-only">Ejemplo ilustrativo de una orden de servicio con sus cuatro etapas.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ═══ Club: la aguja del tacómetro recorre los niveles reales ═══ -->
+    <section class="lp-club" id="club" data-lp="club" aria-labelledby="lp-club-title"
+      data-levels='<%- JSON.stringify(club.levels.map(function (l) { return { name: l.name, min: +l.min }; })) %>'>
+      <div class="lp-wrap lp-club-grid">
+        <div class="lp-club-copy">
+          <p class="lp-label">Club Gorillaz</p>
+          <h2 id="lp-club-title" class="lp-h2">Sube de nivel con cada rodada</h2>
+          <p class="lp-lead">Sumas puntos cuando asistes a rodadas y encuentros del club o cuando visitas el taller. Ser parte del Club te da prioridad en agenda y sorpresas durante el año.</p>
+          <ul class="lp-perks">
+            <li><h3>Descuento en mecánica rápida</h3><p>Ahorra en servicios ágiles y mantenimiento esencial.</p></li>
+            <li><h3>Recordatorios de SOAT y Tecnomecánica</h3><p>Evita vencimientos y mantén tus documentos al día.</p></li>
+            <li><h3>Descuentos en repuestos y consumibles</h3><p>Mejores precios en lo que tu moto necesita.</p></li>
+            <li><h3>Historial detallado de servicios</h3><p>Consulta trabajos, fechas y recomendaciones.</p></li>
+          </ul>
+          <div class="btn-row">
+            <a class="btn" href="/club">Conoce el Club</a>
+            <% if (!user) { %>
+              <a class="btn btn-outline" href="/club/login">Iniciar sesión</a>
+            <% } else { %>
+              <a class="btn btn-outline" href="/club/panel">Mi panel</a>
+            <% } %>
+          </div>
         </div>
-        <div class="stat-item">
-          <span class="stat-num">⭐ <!-- RATING --></span>
-          <span class="stat-label">en Google</span>
+        <div class="lp-club-gauges">
+          <div class="lp-tach" aria-hidden="true"></div>
+          <div class="lp-levels">
+            <p class="lp-levels-title">Niveles del Club</p>
+            <ol class="lp-level-list">
+              <% club.levels.slice().sort(function (a, b) { return a.min - b.min; }).forEach(function (l) { %>
+                <li data-min="<%= l.min %>"><span class="lp-level-name"><%= l.name %></span><span class="lp-level-min"><%= Number(l.min).toLocaleString('es-CO') %> pts</span></li>
+              <% }) %>
+            </ol>
+            <p class="lp-levels-title">Puntos por actividad</p>
+            <ul class="lp-points-list">
+              <% Object.keys(club.points).sort(function (a, b) { return club.points[b] - club.points[a]; }).forEach(function (k) { %>
+                <li><span><%= k.charAt(0).toUpperCase() + k.slice(1) %></span><strong>+<%= club.points[k] %></strong></li>
+              <% }) %>
+            </ul>
+          </div>
+          <div class="lp-reminder" data-m>
+            <p class="lp-example-tag">Ejemplo ilustrativo</p>
+            <p class="lp-reminder-head">Recordatorio en tu panel</p>
+            <p class="lp-reminder-body">Tu <strong>SOAT</strong> vence en <span class="lp-odo" data-value="12"><span class="lp-odo-digit">1</span><span class="lp-odo-digit">2</span></span> días</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Servicios disponibles -->
-    <section class="container">
-      <h2>Servicios destacados</h2>
-      <ul class="grid halves services-grid">
-        <li>
-          <a href="/servicios/mecanica" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/mecanica.webp')"
-              aria-label="Mecánica — diagnóstico y mantenimiento preventivo">
-              <div class="service-content">
-                <h3>Mecánica</h3>
-                <p>Diagnóstico, mantenimiento preventivo y correctivo con control de calidad.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/pintura" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/pintura.webp')"
-              aria-label="Pintura — acabados y protección">
-              <div class="service-content">
-                <h3>Pintura</h3>
-                <p>Acabados profesionales, retoques y protección de superficies.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/alistamiento-tecnomecanica" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/alisamiento.webp')"
-              aria-label="Alistamiento tecnomecánica — revisión para inspección">
-              <div class="service-content">
-                <h3>Alistamiento tecnomecánica</h3>
-                <p>Revisión integral y ajustes previos a la inspección.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/electricidad" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/electricidad.webp')"
-              aria-label="Electricidad — sistema de carga e iluminación">
-              <div class="service-content">
-                <h3>Electricidad</h3>
-                <p>Diagnóstico eléctrico, sistema de carga, arranque e iluminación.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/torno" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/torno.webp')"
-              aria-label="Torno — fabricación y ajuste de piezas">
-              <div class="service-content">
-                <h3>Torno</h3>
-                <p>Fabricación y ajuste de componentes según especificación.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/prensa" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/prensa.webp')"
-              aria-label="Prensa — montaje y desmontaje seguro">
-              <div class="service-content">
-                <h3>Prensa</h3>
-                <p>Montaje y desmontaje seguro de rodamientos y piezas a presión.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/mecanica-rapida" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/mecanica-rapida.webp')"
-              aria-label="Mecánica rápida — servicios ágiles">
-              <div class="service-content">
-                <h3>Mecánica rápida</h3>
-                <p>Cambios de aceite, filtros y ajustes ágiles con cita.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/escaneo-de-motos" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/scaneo.webp')"
-              aria-label="Escaneo de motos, diagnóstico computarizado">
-              <div class="service-content">
-                <h3>Escaneo de motos</h3>
-                <p>Diagnóstico computarizado para detectar fallas electrónicas con precisión.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/lavado-motos" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/lavado-motos.png')"
-              aria-label="Lavado de motos, limpieza profunda">
-              <div class="service-content">
-                <h3>Lavado de motos</h3>
-                <p>Limpieza profunda para tu motocicleta, cuidando cada detalle para que luzca impecable y protegida.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/detailing-motos" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/detailing-motos.webp')"
-              aria-label="Detailing de motos, restauración premium">
-              <div class="service-content">
-                <h3>Detailing de motos</h3>
-                <p>Restauración y protección estética paso a paso con productos premium para dejar tu moto como nueva.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li>
-          <a href="/servicios/lavado-cascos" style="text-decoration:none; color:inherit; display:block; height:100%;">
-            <div class="service-card" style="--bg:url('/images/services/lavado-cascos.webp')"
-              aria-label="Lavado de cascos, desinfección total">
-              <div class="service-content">
-                <h3>Lavado de cascos</h3>
-                <p>Desinfección y limpieza interior y exterior de tu casco, eliminando olores e impurezas acumuladas.</p>
-              </div>
-            </div>
-          </a>
-        </li>
-      </ul>
-    </section>
-
-    <!-- CTA consulta de orden -->
-    <section class="container">
-      <div class="order-qr-section">
-        <div class="order-qr-text">
-          <p class="section-label">¿Tu moto está en el taller?</p>
-          <h2>Consulta el estado de tu moto</h2>
-          <p>Ingresa tu placa y revisa en qué etapa está el trabajo, el valor total y los días de parqueadero, sin llamar al taller.</p>
-          <a class="btn" href="/mi-orden">Ver estado de mi moto &rarr;</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Club Gorillaz -->
-    <section class="container club-section">
-      <h2>Club Gorillaz</h2>
-      <ul class="grid four" style="margin-top:8px">
-        <li class="card">
-          <h3 style="margin:0 0 6px">Descuento en mecánica rápida</h3>
-          <p class="muted" style="margin:0">Ahorra en servicios ágiles y mantenimiento esencial.</p>
-        </li>
-        <li class="card">
-          <h3 style="margin:0 0 6px">Recordatorios de SOAT y Tecnomecánica</h3>
-          <p class="muted" style="margin:0">Evita vencimientos y mantén tus documentos al día.</p>
-        </li>
-        <li class="card">
-          <h3 style="margin:0 0 6px">Descuentos en repuestos y consumibles</h3>
-          <p class="muted" style="margin:0">Mejores precios en lo que tu moto necesita.</p>
-        </li>
-        <li class="card">
-          <h3 style="margin:0 0 6px">Historial detallado de servicios</h3>
-          <p class="muted" style="margin:0">Consulta trabajos, fechas y recomendaciones.</p>
-        </li>
-      </ul>
-      <div class="btn-row" style="margin-top:12px">
-        <a class="btn btn-sm" href="/club">Conoce el Club</a>
-        <% if (!user) { %>
-          <a class="btn btn-sm btn-outline" href="/club/login">Iniciar sesión</a>
-        <% } else { %>
-          <a class="btn btn-sm btn-outline" href="/club/panel">Mi panel</a>
-        <% } %>
-      </div>
-      <p class="muted">Ser parte del Club Gorillaz te da prioridad en agenda y sorpresas durante el año.</p>
-      <!-- Rellena el número de miembros cuando tengas el dato:
-      <p class="club-member-count">Únete a los <strong>N miembros</strong> del Club</p>
-      -->
-    </section>
-
-    <!-- Reseñas -->
-    <section class="container reviews-cta-card" style="text-align:center">
-      <p class="section-label">Tu opinión nos importa</p>
-      <h2>¿Cómo te fue con nosotros?</h2>
-      <p class="muted">Cuéntale a otros moteros tu experiencia — te toma menos de un minuto.</p>
-      <div class="btn-row" style="margin-top:16px; justify-content:center">
+    <!-- ═══ Reseñas ═══ -->
+    <section class="lp-reviews" aria-labelledby="lp-reviews-title">
+      <div class="lp-wrap lp-reviews-inner">
+        <p class="lp-label">Tu opinión nos importa</p>
+        <h2 id="lp-reviews-title" class="lp-h2">¿Cómo te fue con nosotros?</h2>
+        <p class="lp-lead">Cuéntale a otros moteros tu experiencia. Te toma menos de un minuto.</p>
         <a href="/resenas" class="btn btn-outline">Déjanos tu reseña en Google</a>
       </div>
     </section>
@@ -238,66 +188,73 @@
     </section>
     -->
 
-    <!-- Tienda destacada -->
-    <section class="container fp-section">
-      <div class="fp-header">
-        <div>
-          <p class="fp-label">Nuestra tienda</p>
-          <h2 class="fp-title">Equípate con lo mejor</h2>
+    <!-- ═══ Tienda: las etiquetas de precio cuelgan y se mecen con el scroll ═══ -->
+    <section class="lp-shop" data-lp="shop" aria-labelledby="lp-shop-title">
+      <div class="lp-wrap">
+        <div class="lp-shop-head">
+          <div>
+            <p class="lp-label">Nuestra tienda</p>
+            <h2 id="lp-shop-title" class="lp-h2">Equípate con lo mejor</h2>
+          </div>
+          <a href="/tienda" class="lp-link">Ver todos los productos<span aria-hidden="true"> &rarr;</span></a>
         </div>
-        <a href="/tienda" class="fp-all-link">Ver todos los productos &rarr;</a>
-      </div>
-      <div class="fp-grid">
-        <% featuredProducts.forEach((p, i) => { %>
-          <article class="fp-card">
-            <a href="/tienda/<%= p.id %>" class="fp-card-media">
-              <img src="<%= p.image %>" alt="<%= p.name %>" loading="lazy">
-              <% if (p.discount > 0) { %>
-                <span class="fp-badge">-<%= p.discount %>% OFF</span>
-              <% } else if (i === 0) { %>
-                <span class="fp-badge">Destacado</span>
-              <% } %>
-            </a>
-            <div class="fp-card-body">
-              <p class="fp-card-meta"><%= p.brand %> &middot; <%= p.category.charAt(0).toUpperCase() + p.category.slice(1) %></p>
-              <h3 class="fp-card-name"><a href="/tienda/<%= p.id %>"><%= p.name %></a></h3>
-              <div class="fp-card-footer">
+        <div class="lp-shop-grid">
+          <% featuredProducts.forEach(function (p, i) {
+               var final = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price; %>
+            <article class="lp-product">
+              <a href="/tienda/<%= p.id %>" class="lp-product-media">
+                <img src="<%= p.image %>" alt="<%= p.name %>" loading="lazy" decoding="async" />
                 <% if (p.discount > 0) { %>
-                  <span class="fp-price">$<%= Math.round(p.price * (1 - p.discount / 100)).toLocaleString('es-CO') %></span>
-                <% } else { %>
-                  <span class="fp-price">$<%= p.price.toLocaleString('es-CO') %></span>
+                  <span class="lp-badge">-<%= p.discount %>%</span>
+                <% } else if (i === 0) { %>
+                  <span class="lp-badge">Destacado</span>
                 <% } %>
-                <button type="button" class="fp-add-btn btn-add-cart" data-id="<%= p.id %>"
+              </a>
+              <div class="lp-tag" data-m>
+                <span class="lp-tag-string" aria-hidden="true"></span>
+                <span class="lp-tag-card">
+                  <span class="lp-tag-price">$<%= final.toLocaleString('es-CO') %></span>
+                  <% if (p.discount > 0) { %><s class="lp-tag-old">$<%= p.price.toLocaleString('es-CO') %></s><% } %>
+                </span>
+              </div>
+              <div class="lp-product-body">
+                <p class="lp-product-meta"><%= p.brand %> &middot; <%= p.category.charAt(0).toUpperCase() + p.category.slice(1) %></p>
+                <h3 class="lp-product-name"><a href="/tienda/<%= p.id %>"><%= p.name %></a></h3>
+                <button type="button" class="lp-add btn-add-cart" data-id="<%= p.id %>"
                   data-name="<%= p.name %>"
                   data-image="<%= (p.gallery && p.gallery[0]) || p.image || '/images/download.png' %>"
-                  data-price="$<%= (p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price).toLocaleString('es-CO') %>"
-                  aria-label="Añadir al carrito">+</button>
+                  data-price="$<%= final.toLocaleString('es-CO') %>">
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+                  Añadir al carrito
+                </button>
               </div>
-            </div>
-          </article>
-        <% }) %>
+            </article>
+          <% }) %>
+        </div>
       </div>
     </section>
 
-    <!-- Ubicación -->
-    <section class="container">
-      <h2>¿Dónde estamos?</h2>
-      <div class="map-wrap">
-        <iframe class="map-embed" title="Ubicación Gorillaz Motorbikes" loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          src="https://www.google.com/maps?q=GORILLAZ%20MOTORBIKES%20Bogot%C3%A1&hl=es&z=17&output=embed">
-        </iframe>
+    <!-- ═══ Ubicación ═══ -->
+    <section class="lp-map" aria-labelledby="lp-map-title">
+      <div class="lp-wrap">
+        <h2 id="lp-map-title" class="lp-h2">¿Dónde estamos?</h2>
+        <div class="map-wrap">
+          <iframe class="map-embed" title="Ubicación Gorillaz Motorbikes" loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=GORILLAZ%20MOTORBIKES%20Bogot%C3%A1&hl=es&z=17&output=embed">
+          </iframe>
+        </div>
+        <p class="muted">Bogotá, Colombia &middot; <a
+            href="https://www.google.com/maps/place/GORILLAZ+MOTORBIKES/data=!4m2!3m1!1s0x0:0xbb0428b400709cf?sa=X&ved=1t:2428&ictx=111"
+            target="_blank" rel="noopener">Abrir en Google Maps</a></p>
       </div>
-      <p class="muted">Bogotá, Colombia — <a
-          href="https://www.google.com/maps/place/GORILLAZ+MOTORBIKES/data=!4m2!3m1!1s0x0:0xbb0428b400709cf?sa=X&ved=1t:2428&ictx=111"
-          target="_blank" rel="noopener">Abrir en Google Maps</a></p>
     </section>
 
     <!-- Newsletter -->
     <section class="newsletter">
       <div class="newsletter-inner">
         <h2>Recibe tu checklist de mantenimiento gratis</h2>
-        <p class="muted">Suscríbete y te enviamos la guía de mantenimiento preventivo para tu moto — más novedades y descuentos exclusivos.</p>
+        <p class="muted">Suscríbete y te enviamos la guía de mantenimiento preventivo para tu moto, además de novedades y descuentos exclusivos.</p>
         <p class="muted">Lee nuestra <a href="/privacidad">política de privacidad</a> para conocer cómo tratamos tus datos.</p>
 
         <% if (newsletterStatus==='ok') { %>
@@ -325,134 +282,137 @@
       </div>
     </section>
 
-  <script type="application/ld+json">
-  [
-    {
-      "@context": "https://schema.org",
-      "@type": "AutoRepair",
-      "name": "Gorillaz Motorbikes",
-      "url": "https://gorillazmotorbikes.com",
-      "logo": "https://gorillazmotorbikes.com/images/nobg_logo/logo_transp.png",
-      "image": "https://gorillazmotorbikes.com/images/og-default.jpg",
-      "description": "Taller de motos en Bogotá: mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo computarizado, torno y tienda de accesorios.",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Bogotá",
-        "addressLocality": "Bogotá",
-        "addressRegion": "Cundinamarca",
-        "addressCountry": "CO"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 4.6479,
-        "longitude": -74.0817
-      },
-      "telephone": "+573213204299",
-      "sameAs": [
-        "https://www.facebook.com/gorillazmotorbikes",
-        "https://www.instagram.com/gorillazmotorbikes"
-      ],
-      "priceRange": "$$",
-      "openingHoursSpecification": [
-        {
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
-          "opens": "08:00",
-          "closes": "18:00"
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "AutoRepair",
+        "name": "Gorillaz Motorbikes",
+        "url": "https://gorillazmotorbikes.com",
+        "logo": "https://gorillazmotorbikes.com/images/nobg_logo/logo_transp.png",
+        "image": "https://gorillazmotorbikes.com/images/og-default.jpg",
+        "description": "Taller de motos en Bogotá: mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo computarizado, torno y tienda de accesorios.",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Bogotá",
+          "addressLocality": "Bogotá",
+          "addressRegion": "Cundinamarca",
+          "addressCountry": "CO"
         },
-        {
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": "Saturday",
-          "opens": "08:00",
-          "closes": "14:00"
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 4.6479,
+          "longitude": -74.0817
+        },
+        "telephone": "+573213204299",
+        "sameAs": [
+          "https://www.facebook.com/gorillazmotorbikes",
+          "https://www.instagram.com/gorillazmotorbikes"
+        ],
+        "priceRange": "$$",
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+            "opens": "08:00",
+            "closes": "18:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Saturday",
+            "opens": "08:00",
+            "closes": "14:00"
+          }
+        ],
+        "hasMap": "https://maps.google.com/?q=Gorillaz+Motorbikes+Bogot%C3%A1",
+        "areaServed": {
+          "@type": "City",
+          "name": "Bogotá"
+        },
+        "knowsAbout": [
+          "Mecánica de motos",
+          "Pintura de motos",
+          "Electricidad de motos",
+          "Alistamiento tecnomecánica",
+          "Escaneo computarizado",
+          "Accesorios para motos"
+        ],
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "RATING_AQUI",
+          "reviewCount": "N_RESENAS_AQUI",
+          "bestRating": "5",
+          "worstRating": "1"
         }
-      ],
-      "hasMap": "https://maps.google.com/?q=Gorillaz+Motorbikes+Bogot%C3%A1",
-      "areaServed": {
-        "@type": "City",
-        "name": "Bogotá"
       },
-      "knowsAbout": [
-        "Mecánica de motos",
-        "Pintura de motos",
-        "Electricidad de motos",
-        "Alistamiento tecnomecánica",
-        "Escaneo computarizado",
-        "Accesorios para motos"
-      ],
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "RATING_AQUI",
-        "reviewCount": "N_RESENAS_AQUI",
-        "bestRating": "5",
-        "worstRating": "1"
-      }
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Gorillaz Motorbikes",
-      "url": "https://gorillazmotorbikes.com",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://gorillazmotorbikes.com/tienda?q={search_term_string}"
-        },
-        "query-input": "required name=search_term_string"
-      }
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "¿Cómo agendo una cita para mi moto?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Puedes solicitar agendamiento desde la sección Servicios en gorillazmotorbikes.com/servicios. Completa el formulario con tus datos, servicio y fecha deseada. Te contactaremos para confirmar."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Tienen servicios rápidos sin cita?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ofrecemos mecánica rápida para cambios de aceite y ajustes menores. Puedes venir directamente o agendar para asegurar tu espacio."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Qué métodos de pago aceptan?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Aceptamos Nequi, Daviplata y todas las tarjetas débito y crédito en la tienda y en el taller."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Pueden preparar mi moto para la tecnomecánica?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sí. Ofrecemos alistamiento tecnomecánico, diagnóstico y corrección de fallas para que tu moto pase la revisión sin problemas."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Cómo obtengo o renuevo mi membresía del club?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Regístrate o inicia sesión en gorillazmotorbikes.com/club. Desde tu panel puedes ver tu estado, renovar y acceder a beneficios exclusivos."
-          }
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Gorillaz Motorbikes",
+        "url": "https://gorillazmotorbikes.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://gorillazmotorbikes.com/tienda?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
         }
-      ]
-    }
-  ]
-  </script>
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "¿Cómo agendo una cita para mi moto?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Puedes solicitar agendamiento desde la sección Servicios en gorillazmotorbikes.com/servicios. Completa el formulario con tus datos, servicio y fecha deseada. Te contactaremos para confirmar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Tienen servicios rápidos sin cita?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ofrecemos mecánica rápida para cambios de aceite y ajustes menores. Puedes venir directamente o agendar para asegurar tu espacio."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Qué métodos de pago aceptan?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Aceptamos Nequi, Daviplata y todas las tarjetas débito y crédito en la tienda y en el taller."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Pueden preparar mi moto para la tecnomecánica?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí. Ofrecemos alistamiento tecnomecánico, diagnóstico y corrección de fallas para que tu moto pase la revisión sin problemas."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Cómo obtengo o renuevo mi membresía del club?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Regístrate o inicia sesión en gorillazmotorbikes.com/club. Desde tu panel puedes ver tu estado, renovar y acceder a beneficios exclusivos."
+            }
+          }
+        ]
+      }
+    ]
+    </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
-  <script src="/static/js/hero-gsap.js"></script>
+  <%# Motion de la landing. GSAP va fijado y alojado en el propio sitio
+      (npm run vendor:gsap). Los scripts defer y el módulo se ejecutan en orden
+      tras el parseo, así que main.mjs ya encuentra window.gsap. %>
+  <script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
+  <script defer src="/static/vendor/gsap-3.15.0/ScrollTrigger.min.js"></script>
+  <script type="module" src="/static/js/landing/main.mjs?v=1"></script>
 
   <%- include('partials/footer') %>
