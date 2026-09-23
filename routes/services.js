@@ -32,7 +32,7 @@ function calcParking(order, config) {
 }
 
 const router = express.Router();
-const SERVICES = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos'];
+const SERVICES = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos', 'Lavado de motos', 'Detailing de motos', 'Lavado de cascos'];
 
 const servicesData = [
   {

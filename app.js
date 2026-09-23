@@ -12,8 +12,15 @@ const contentStore                  = require('./helpers/content');
 const { JWT_SECRET }                = require('./config');
 const { csrfToken, validateCsrf }   = require('./middleware/csrf');
 const { jwtCart, templateLocals }   = require('./middleware/locals');
+const { medidorDesdeEnv }           = require('./medidor.cjs');
 
 const app = express();
+
+// Medidor de cómputo (medidor.cjs, generado en el portafolio de codebymike):
+// mide lo que cada petición gasta de la cuota de Vercel y lo reporta al panel.
+// Va antes que todo lo demás para medir la petición entera. Sin
+// COMPUTO_PROYECTO y COMPUTO_SECRETO no hace nada.
+app.use(medidorDesdeEnv().express());
 
 // En serverless (Vercel) la instancia puede congelarse antes de que un
 // initDb() "fire-and-forget" termine, dejando migraciones sin aplicar. Por eso
