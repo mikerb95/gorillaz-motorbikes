@@ -195,6 +195,26 @@ section .lp-service-name { max-width: none }
 .lp-tab { all: unset; cursor: pointer; display: inline-flex; gap: 12px; align-items: baseline; border-radius: 6px }
 .lp-tab:focus-visible { outline: 2px solid var(--lp-orange); outline-offset: 4px }
 
+/* Móvil: carrusel horizontal con scroll-snap (funciona igual sin JS). La
+   sección tiene overflow: clip, así que los márgenes negativos no desbordan
+   la página. */
+@media (max-width: 700px) {
+  .lp-service-list {
+    display: flex; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+    gap: 12px; margin: 26px -12px 0; padding: 0 12px 6px; scroll-padding-inline: 12px; scrollbar-width: none;
+  }
+  .lp-service-list::-webkit-scrollbar { display: none }
+  .lp-service { flex: 0 0 84%; scroll-snap-align: center }
+  .lp-service-list:focus-visible { outline: 2px solid var(--lp-orange); outline-offset: 4px }
+}
+.lp-carousel-dots { display: none }
+@media (max-width: 700px) {
+  .lp-carousel-dots { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 16px }
+  .lp-carousel-dots span { width: 6px; height: 6px; border-radius: 2px; background: rgba(255, 255, 255, .22); transition: background .3s, transform .3s }
+  .lp-carousel-dots span.is-on { background: var(--lp-orange); transform: scaleY(2.2) }
+  .lp-carousel-count { margin-left: 10px; font-size: .72rem; font-weight: 800; letter-spacing: .1em; color: rgba(244, 241, 236, .6); font-variant-numeric: tabular-nums }
+}
+
 /* ─── Servicios: escenario fijado de escritorio (lo activa el JS) ──────── */
 @media (min-width: 1024px) {
   .lp-services.is-staged {
@@ -232,9 +252,10 @@ section .lp-service-name { max-width: none }
 .lp-status { padding: clamp(64px, 8vw, 120px) 0; background: var(--lp-cream); overflow: clip }
 .lp-status-grid { display: grid; gap: 40px; align-items: center; grid-template-columns: 1fr }
 @media (min-width: 900px) { .lp-status-grid { grid-template-columns: 1fr 1.25fr; gap: 56px } }
-.lp-ticket-scene { position: relative; margin: 0; padding-bottom: 150px }
+.lp-ticket-scene { position: relative; margin: 0; display: flex; flex-direction: column }
 .lp-status-photo { display: block; width: 100%; height: auto; aspect-ratio: 960 / 482; object-fit: cover; border-radius: 18px; filter: saturate(.9) contrast(1.02) }
-.lp-ticket-rig { position: absolute; top: 14%; right: 5%; width: min(300px, 64%); display: flex; flex-direction: column; align-items: center }
+.lp-ticket-rig { position: relative; z-index: 1; width: min(300px, 82%); margin: -64px auto 0; display: flex; flex-direction: column; align-items: center }
+@media (min-width: 900px) { .lp-ticket-rig { margin: -150px 7% 0 auto } }
 .lp-ticket-hook {
   width: 34px; height: 34px; border-radius: 50%; margin-bottom: -6px; position: relative; z-index: 2;
   background: radial-gradient(circle at 35% 35%, #f5f6f7, #9ba1a9 55%, #5d636b); box-shadow: 0 3px 8px rgba(0, 0, 0, .35);

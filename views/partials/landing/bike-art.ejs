@@ -27,6 +27,13 @@
       <stop offset="0" stop-color="#fff6d6" stop-opacity=".85"/>
       <stop offset="1" stop-color="#fff6d6" stop-opacity="0"/>
     </linearGradient>
+    <!-- Tinta de sello: bordes irregulares y poros, como un sello de caucho real -->
+    <filter id="lp-ink" x="-6%" y="-12%" width="112%" height="124%">
+      <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feComponentTransfer in="n" result="pores"><feFuncA type="discrete" tableValues="1 1 1 1 0 1 1 1 1 1"/></feComponentTransfer>
+      <feComposite in="d" in2="pores" operator="in"/>
+    </filter>
     <radialGradient id="lp-g-mist" cx=".5" cy=".5" r=".5">
       <stop offset="0" stop-color="#F25C05" stop-opacity=".55"/>
       <stop offset="1" stop-color="#F25C05" stop-opacity="0"/>
