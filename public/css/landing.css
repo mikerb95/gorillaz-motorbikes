@@ -50,7 +50,7 @@
 
 .lp-bike-defs { position: absolute; width: 0; height: 0; overflow: hidden }
 
-.s-tire { fill: color-mix(in srgb, var(--hl) calc((var(--on-inspect, 0) + var(--on-wash, 0)) * 62%), #0b0c0e) }
+.s-tire { fill: color-mix(in srgb, var(--hl) calc(var(--on-inspect, 0) * 38%), #0b0c0e) }
 .s-rim { fill: #1b1d21; stroke: color-mix(in srgb, #ffffff calc(var(--on-detail, 0) * 70%), #99a0a8); stroke-width: 6 }
 .s-spoke { stroke: color-mix(in srgb, #ffffff calc(var(--on-detail, 0) * 70%), #99a0a8) }
 .s-disc { stroke: color-mix(in srgb, var(--hl) calc(var(--on-inspect, 0) * 90%), #b9bec5) }
