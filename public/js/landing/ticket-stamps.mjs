@@ -119,7 +119,8 @@ export default function initTicket(root) {
     if (ctx.conditions.desktop) {
       st = ST.create({
         trigger: root,
-        start: 'center center',
+        // Centrada si cabe; si la ventana es baja, desde arriba (bajo la navbar).
+        start: () => (root.offsetHeight > window.innerHeight - 40 ? 'top top' : 'center center'),
         end: '+=120%',
         pin: true,
         scrub: 0.6,

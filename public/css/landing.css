@@ -272,7 +272,7 @@ section .lp-service-name { max-width: none }
 .lp-ticket-scene { position: relative; margin: 0; display: flex; flex-direction: column }
 .lp-status-photo { display: block; width: 100%; height: auto; aspect-ratio: 960 / 482; object-fit: cover; border-radius: 18px; filter: saturate(.9) contrast(1.02) }
 .lp-ticket-rig { position: relative; z-index: 1; width: min(300px, 82%); margin: -64px auto 0; display: flex; flex-direction: column; align-items: center }
-@media (min-width: 900px) { .lp-ticket-rig { margin: -150px 7% 0 auto } }
+@media (min-width: 900px) { .lp-ticket-rig { margin: -300px 6% 0 auto } }
 .lp-ticket-hook {
   width: 34px; height: 34px; border-radius: 50%; margin-bottom: -6px; position: relative; z-index: 2;
   background: radial-gradient(circle at 35% 35%, #f5f6f7, #9ba1a9 55%, #5d636b); box-shadow: 0 3px 8px rgba(0, 0, 0, .35);
