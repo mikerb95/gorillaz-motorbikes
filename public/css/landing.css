@@ -223,7 +223,7 @@ section .lp-service-name { max-width: none }
   .lp-carousel-dots { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 16px }
   .lp-carousel-dots span { width: 6px; height: 6px; border-radius: 2px; background: rgba(255, 255, 255, .22); transition: background .3s, transform .3s }
   .lp-carousel-dots span.is-on { background: var(--lp-orange); transform: scaleY(2.2) }
-  .lp-carousel-count { margin-left: 10px; font-size: .72rem; font-weight: 800; letter-spacing: .1em; color: rgba(244, 241, 236, .6); font-variant-numeric: tabular-nums }
+  .lp-carousel-count { white-space: nowrap; margin-left: 10px; font-size: .72rem; font-weight: 800; letter-spacing: .1em; color: rgba(244, 241, 236, .6); font-variant-numeric: tabular-nums }
 }
 
 /* ─── Servicios: escenario fijado de escritorio (lo activa el JS) ──────── */
@@ -288,11 +288,6 @@ section .lp-service-name { max-width: none }
   clip-path: polygon(16% 0, 84% 0, 100% 8%, 100% 100%, 0 100%, 0 8%);
   filter: drop-shadow(0 18px 24px rgba(40, 25, 5, .22)) drop-shadow(0 2px 3px rgba(40, 25, 5, .2));
   transform: rotate(var(--tilt)); transform-origin: 50% 18px;
-}
-.lp-ticket::before {
-  /* el hilo que va del gancho al ojal */
-  content: ""; position: absolute; left: 50%; top: -30px; width: 2px; height: 48px; margin-left: -1px;
-  background: #7b6a4f; border-radius: 2px;
 }
 .lp-ticket-hole {
   position: absolute; left: 50%; top: 14px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%;
