@@ -114,13 +114,17 @@ vec3 curtain(vec2 p, float u, vec2 view) {
     // Perfil convexo: la mitad de abajo mira al piso (oscura), la de arriba al
     // cielo (clara). Más una costilla central pequeña.
     float slope = -cos(3.14159 * f) + 0.32 * sin(12.566 * f);
-    n = normalize(vec3(0.0, slope * 1.15, 1.0));
+    // Abolladuras: cada lámina se comba un poco distinto a lo ancho.
+    slope += (noise(vec2(p.x * 0.0045, idx * 1.7)) - 0.5) * 0.55;
+    n = normalize(vec3((noise(vec2(p.x * 0.01, idx)) - 0.5) * 0.25, slope * 1.15, 1.0));
     ao = mix(0.3, 1.0, groove);
     base *= 0.92 + 0.12 * hash(vec2(idx, 3.1));
   }
 
-  float diff = max(dot(n, L), 0.0);
-  float spec = pow(max(dot(n, H), 0.0), 70.0);
+  // Luz de calle: más fuerte hacia el centro-izquierda, cae hacia los lados.
+  float key = 0.78 + 0.32 * (1.0 - smoothstep(0.0, 0.75, abs(p.x / view.x - 0.42)));
+  float diff = max(dot(n, L), 0.0) * key;
+  float spec = pow(max(dot(n, H), 0.0), 70.0) * key;
 
   // Esténcil pintado: se mueve con la cortina porque vive en coordenadas de la cortina.
   vec2 suv = vec2((p.x - uLogo.x) / (uLogo.z * 4.0 / 3.0) + 0.5, (uLogo.y - u) / uLogo.z + 0.5);
@@ -135,7 +139,10 @@ vec3 curtain(vec2 p, float u, vec2 view) {
   c = mix(c, vec3(0.12, 0.13, 0.14) * (0.5 + diff), plate * 0.85);
 
   // Mugre: más abajo (las láminas que tocan el piso) y chorreones verticales.
-  float grime = (1.0 - smoothstep(0.0, uSlat * 5.0, u)) * 0.3 + noise(vec2(p.x * 0.03, u * 0.004)) * 0.14;
+  float grime = (1.0 - smoothstep(0.0, uSlat * 5.0, u)) * 0.3 + noise(vec2(p.x * 0.011, u * 0.0025)) * 0.1;
+  // Chorreones de óxido: pocos, desde abajo, de ancho irregular.
+  float streak = smoothstep(0.8, 0.95, noise(vec2(p.x * 0.045, 7.0))) * (1.0 - smoothstep(0.0, uSlat * 9.0, u));
+  c = mix(c, c * vec3(0.72, 0.5, 0.36), streak * 0.55);
   c *= 1.0 - grime;
   c += smoothstep(0.985, 1.0, noise(vec2(p.x * 0.006, u * 0.8))) * 0.18;
   // Sombra de la caja sobre las primeras láminas.

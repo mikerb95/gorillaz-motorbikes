@@ -171,6 +171,17 @@ section .lp-hero-title,
     repeating-linear-gradient(180deg, #7c838c 0 2px, #c9ced4 2px 9px, #a3aab2 9px 16px, #737a83 16px 23px, #555b63 23px 27px, #9aa1a9 27px 32px);
 }
 .lp-shutter-pending .lp-hero-cover { opacity: 1; visibility: visible }
+/* El mismo esténcil del shader, para que el relevo CSS → WebGL no salte. */
+.lp-hero-cover::after {
+  content: ""; position: absolute; left: 50%;
+  --logo-h: min(46svh, 52vw);
+  width: calc(var(--logo-h) * 4 / 3); height: var(--logo-h);
+  top: calc(48% + .52 * (var(--header-offset, 92px) + 3.5svh) - var(--logo-h) / 2);
+  transform: translateX(-50%);
+  background: #d9550f; opacity: .92;
+  -webkit-mask: url(/images/landing/cortina-estencil.png) center / contain no-repeat;
+  mask: url(/images/landing/cortina-estencil.png) center / contain no-repeat luminance;
+}
 .lp-hero-cover.is-lifting { opacity: 1; visibility: visible; transform: translateY(-100%); transition: transform 1.4s cubic-bezier(.55, .05, .2, 1) }
 
 /* ─── Servicios: estado base (móvil y sin JS): tarjetas con lupa ───────── */
