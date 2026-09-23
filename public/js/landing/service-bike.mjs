@@ -17,10 +17,10 @@
 // Sin JS o con movimiento reducido: la lista de tarjetas del servidor, cada
 // una con su lupa ya encendida (ver bike-art.ejs y landing.css).
 
-import { getGsap, MQ } from '../motion/core.mjs';
-import { detentIndex, detentProgress, ratchetAngle } from '../motion/lib/ratchet.mjs';
-import { cameraBox, viewBoxString } from '../motion/lib/camera.mjs';
-import { polar } from '../motion/lib/tach.mjs';
+import { getGsap, MQ } from '../motion/core.mjs?v=1';
+import { detentIndex, detentProgress, ratchetAngle } from '../motion/lib/ratchet.mjs?v=1';
+import { cameraBox, viewBoxString } from '../motion/lib/camera.mjs?v=1';
+import { polar } from '../motion/lib/tach.mjs?v=1';
 
 const NS = 'http://www.w3.org/2000/svg';
 const ART = [0, 0, 1200, 700];
@@ -269,27 +269,39 @@ function setupDesktop(root, gsap) {
     gsap.to([hole, glow], { attr: { cx: lx, cy: ly, r: lr }, duration: d, ease: 'power3.inOut', overwrite: true });
     gsap.to(ratchet, { y: li.offsetTop + li.offsetHeight / 2 - 20, duration: instant ? 0 : 0.5, ease: "back.out(1.8)", overwrite: "auto" });
 
-    if (current) {
-      current.kill();
-      gsap.set(art.querySelectorAll('.fx *, .s-wiring, .s-oil-cap, .s-helmet *'), { clearProps: 'transform,opacity,strokeDasharray,strokeDashoffset,fillOpacity' });
-      gsap.set(overlay.querySelector('.lp-scanline'), { opacity: 0 });
-    }
-    current = fx[sys] ? fx[sys]() : null;
-    if (current && !visible) current.pause();
+    activeSys = sys;
+    syncFx();
   }
 
-  // Solo corre la micro-animación si la sección está en pantalla.
+  // La micro-animación solo existe mientras la sección está en pantalla y la
+  // pestaña visible. Fuera de eso se destruye (no solo se pausa): una línea de
+  // tiempo pausada en bucle impide que el ticker de GSAP se duerma.
+  let activeSys = null;
+  let runningSys = null;
   let visible = false;
+  function stopFx() {
+    if (!current) return;
+    current.kill();
+    current = null;
+    runningSys = null;
+    gsap.set(art.querySelectorAll('.fx *, .s-wiring, .s-oil-cap, .s-helmet *'), { clearProps: 'transform,opacity,strokeDasharray,strokeDashoffset,fillOpacity' });
+    gsap.set(overlay.querySelector('.lp-scanline'), { opacity: 0 });
+  }
+  function syncFx() {
+    const want = visible && !document.hidden ? activeSys : null;
+    if (want === runningSys) return;
+    stopFx();
+    if (want && fx[want]) {
+      current = fx[want]();
+      runningSys = want;
+    }
+  }
   const io = new IntersectionObserver((entries) => {
-    visible = entries.some((e) => e.isIntersecting) && !document.hidden;
-    if (current) (visible ? current.resume() : current.pause());
+    visible = entries.some((e) => e.isIntersecting);
+    syncFx();
   });
   io.observe(root);
-  const onVis = () => {
-    if (!current) return;
-    if (document.hidden) current.pause();
-    else if (visible) current.resume();
-  };
+  const onVis = () => syncFx();
   document.addEventListener('visibilitychange', onVis);
 
   const st = ST.create({
@@ -318,7 +330,7 @@ function setupDesktop(root, gsap) {
     st.kill(true);
     io.disconnect();
     document.removeEventListener('visibilitychange', onVis);
-    current?.kill();
+    stopFx();
     root.classList.remove('is-staged');
     list.removeAttribute('role');
     list.removeAttribute('aria-orientation');

@@ -10,7 +10,7 @@
     "torno":                      { "system": "axle",     "focus": [96, 392, 288, 180], "lamp": [220, 482, 130] },
     "prensa":                     { "system": "hub",      "focus": [785, 407, 240, 150], "lamp": [905, 482, 110] },
     "pintura":                    { "system": "body",     "focus": [520, 50, 384, 240], "lamp": [700, 200, 190] },
-    "lavado-motos":               { "system": "wash",     "focus": [150, 130, 1000, 625], "lamp": [600, 420, 540] },
+    "lavado-motos":               { "system": "wash",     "focus": [150, 75, 1000, 625], "lamp": [600, 420, 540] },
     "detailing-motos":            { "system": "detail",   "focus": [560, 150, 448, 280], "lamp": [760, 290, 230] },
     "lavado-cascos":              { "system": "helmet",   "focus": [410, 138, 208, 130], "lamp": [512, 208, 120] }
   }

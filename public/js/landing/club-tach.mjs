@@ -7,7 +7,7 @@
 // llena desde helpers/score.js), así que si el admin los cambia, el dial se
 // redibuja solo.
 //
-// Mecanismo propio: la aguja tiene inercia (gsap.quickTo la persigue, no la
+// Mecanismo propio: la aguja tiene inercia (persigue su objetivo con amortiguación, no la
 // teletransporta) y en la zona roja vibra, como una moto acelerada. Al cruzar
 // cada umbral se enciende su nivel en la lista y el visor central cambia,
 // como el indicador de marcha de un tablero.
@@ -18,8 +18,8 @@
 // Con movimiento reducido el dial se dibuja igual, quieto y con la aguja en el
 // último nivel (estado final). Sin JS queda la lista de niveles.
 
-import { getGsap, prefersReduced, createLoop } from '../motion/core.mjs';
-import { levelBands, dialMaxFor, pointsToAngle, levelAt, arcPath, polar } from '../motion/lib/tach.mjs';
+import { getGsap, prefersReduced, createLoop } from '../motion/core.mjs?v=1';
+import { levelBands, dialMaxFor, pointsToAngle, levelAt, arcPath, polar } from '../motion/lib/tach.mjs?v=1';
 
 const NS = 'http://www.w3.org/2000/svg';
 const START = -132;
@@ -145,16 +145,24 @@ export default function initClub(root) {
   }
 
   root.classList.add('is-armed');
-  const state = { points: 0, jitter: 0 };
-  const chase = gsap.quickTo(state, 'points', { duration: 0.9, ease: 'power3.out', onUpdate: () => loop.wake() });
-  const loop = createLoop(host, (now) => {
+  // La aguja persigue su objetivo con amortiguación exponencial (inercia):
+  // no salta al valor del scroll, lo alcanza.
+  const state = { points: 0, target: 0, jitter: 0 };
+  const loop = createLoop(host, (now, dt) => {
+    const k = 1 - Math.exp(-dt / 180);
+    state.points += (state.target - state.points) * k;
+    if (Math.abs(state.target - state.points) < 0.5) state.points = state.target;
     // En la zona roja la aguja vibra, como una moto acelerada.
     const red = state.points >= dial.bands.at(-1).min;
     state.jitter = red ? Math.sin(now / 23) * 0.9 + Math.sin(now / 11) * 0.5 : 0;
     setAngle(pointsToAngle(state.points, dial.max, START, END) + state.jitter);
     show(state.points);
-    return red || gsap.isTweening(state);
+    return red || state.points !== state.target;
   });
+  const chase = (v) => {
+    state.target = v;
+    loop.wake();
+  };
   setAngle(pointsToAngle(0, dial.max, START, END));
   show(0);
 
@@ -172,13 +180,18 @@ export default function initClub(root) {
   if (odo) {
     const drums = buildOdometer(odo);
     drums.forEach(({ strip }) => gsap.set(strip, { yPercent: 0 }));
-    odoTl = gsap.timeline({ paused: true });
-    drums.forEach(({ strip, target }, i) => {
-      const last = i === drums.length - 1;
-      const stop = last ? 10 + target : target; // la unidad da una vuelta extra
-      odoTl.to(strip, { yPercent: -(stop * 100) / 20, duration: last ? 1.6 : 1.1, ease: 'power3.inOut' }, i * 0.15);
+    // La línea de tiempo se crea al aparecer, no antes (pausada no deja dormir al ticker).
+    odoST = window.ScrollTrigger.create({
+      trigger: odo, start: 'top 85%', once: true,
+      onEnter: () => {
+        odoTl = gsap.timeline();
+        drums.forEach(({ strip, target }, i) => {
+          const last = i === drums.length - 1;
+          const stop = last ? 10 + target : target; // la unidad da una vuelta extra
+          odoTl.to(strip, { yPercent: -(stop * 100) / 20, duration: last ? 1.6 : 1.1, ease: 'power3.inOut' }, i * 0.15);
+        });
+      },
     });
-    odoST = window.ScrollTrigger.create({ trigger: odo, start: 'top 85%', once: true, onEnter: () => odoTl.play() });
   }
 
   return {

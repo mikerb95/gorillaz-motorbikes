@@ -21,9 +21,9 @@
 // Fail-open: si WebGL no existe o algo falla, se quita la cortina CSS de
 // espera y queda la foto del servidor con su texto.
 
-import { createLoop, getGsap, imageReady } from '../motion/core.mjs';
-import { openingCurve, shutterLayout, shutterEdge, textClipTop } from '../motion/lib/shutter.mjs';
-import { createResolutionGovernor } from '../motion/lib/adaptive.mjs';
+import { createLoop, getGsap, imageReady } from '../motion/core.mjs?v=1';
+import { openingCurve, shutterLayout, shutterEdge, textClipTop } from '../motion/lib/shutter.mjs?v=1';
+import { createResolutionGovernor } from '../motion/lib/adaptive.mjs?v=1';
 
 const INTRO_MS = 2600;
 const STENCIL_SRC = '/images/landing/cortina-estencil.png';
@@ -401,7 +401,6 @@ export default async function initHero(root, { fail }) {
   // se acerca y el bloque de texto sube un poco más lento que la página.
   const gsap = getGsap();
   let st = null;
-  let parallax = null;
   if (gsap && window.ScrollTrigger) {
     st = window.ScrollTrigger.create({
       trigger: root,
@@ -410,17 +409,16 @@ export default async function initHero(root, { fail }) {
       onUpdate(self) {
         state.scroll = self.progress;
         wantsScrollFrame = true;
+        // Parallax del texto con un set directo: un tween "scrub" quedaría
+        // pausado para siempre en la línea de tiempo global y no dejaría
+        // dormir al ticker de GSAP.
+        gsap.set(content, { yPercent: -16 * self.progress });
         // Si el visitante hace scroll durante la apertura, no lo hacemos esperar.
         if (state.introStart !== null && state.introStart !== -1 && self.progress > 0.02) {
           state.introStart -= 120;
         }
         loop.wake();
       },
-    });
-    parallax = gsap.to(content, {
-      yPercent: -16,
-      ease: 'none',
-      scrollTrigger: { trigger: root, start: 'top top', end: 'bottom top', scrub: true },
     });
   }
 
@@ -436,8 +434,7 @@ export default async function initHero(root, { fail }) {
       loop.destroy();
       ro.disconnect();
       st?.kill();
-      parallax?.scrollTrigger?.kill();
-      parallax?.kill();
+      gsap?.set(content, { clearProps: 'transform' });
       canvas.classList.remove('is-live');
       content.style.clipPath = '';
       if (cue) cue.style.visibility = '';

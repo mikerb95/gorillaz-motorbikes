@@ -15,10 +15,10 @@
 // devolver). Móvil: la misma coreografía se reproduce una vez por tiempo.
 // Todo es "Ejemplo ilustrativo" (así lo dice la ficha).
 
-import { getGsap, MQ, createLoop } from '../motion/core.mjs';
-import { ticketState, typedPlate } from '../motion/lib/ticket.mjs';
-import { stepPendulum, atRest } from '../motion/lib/pendulum.mjs';
-import { hashString, mulberry32, between } from '../motion/lib/prng.mjs';
+import { getGsap, MQ, createLoop } from '../motion/core.mjs?v=1';
+import { ticketState, typedPlate } from '../motion/lib/ticket.mjs?v=1';
+import { stepPendulum, atRest } from '../motion/lib/pendulum.mjs?v=1';
+import { hashString, mulberry32, between } from '../motion/lib/prng.mjs?v=1';
 
 const PLATE_SHARE = 0.18;
 
@@ -52,6 +52,9 @@ function build(root, gsap) {
   };
 
   const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
+  // Fuera de la línea de tiempo global: la maneja ScrollTrigger (o un tween
+  // en móvil) y así, pausada, no mantiene despierto el ticker de GSAP.
+  gsap.globalTimeline.remove(tl);
   tl.set({}, {}, 1); // duración total = 1 (unidades de progreso)
 
   // Placa: se escribe carácter por carácter.
