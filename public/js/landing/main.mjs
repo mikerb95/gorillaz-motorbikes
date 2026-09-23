@@ -11,6 +11,7 @@
 
 import { mount, prefersReduced, getGsap } from '../motion/core.mjs';
 import initHero from './hero-shutter.mjs';
+import initServices from './service-bike.mjs';
 
 const reduced = prefersReduced();
 const gsap = getGsap();
@@ -18,6 +19,7 @@ const gsap = getGsap();
 if (!reduced) {
   document.documentElement.classList.add('motion-ok');
   mount('[data-lp="hero"]', initHero);
+  mount('[data-lp="services"]', initServices);
 } else {
   document.documentElement.classList.remove('lp-shutter-pending');
 }

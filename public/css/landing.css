@@ -403,3 +403,21 @@ section .lp-product-name { max-width: none }
 
 /* ─── Ubicación ────────────────────────────────────────────────────────── */
 .lp-map { padding: clamp(40px, 5vw, 72px) 0; background: var(--lp-cream) }
+
+/* ─── Servicios: piezas que agrega el JS ───────────────────────────────── */
+@media (min-width: 1024px) {
+  .is-staged .lp-service-list { position: relative; padding-left: 50px }
+  .lp-ratchet { position: absolute; left: 0; top: 0; width: 40px; height: 40px; filter: drop-shadow(0 4px 10px rgba(242, 92, 5, .35)) }
+  .is-staged .lp-stage-count {
+    grid-column: 1; grid-row: 2; margin: 0 0 0 50px; font-size: .74rem; font-weight: 800; letter-spacing: .16em;
+    color: rgba(244, 241, 236, .5); font-variant-numeric: tabular-nums;
+  }
+}
+/* Móvil / tableta: la lupa "enfoca" cuando su tarjeta queda a la vista. */
+.motion-ok .lp-services.is-armed .lp-lens { transition: filter .8s ease, transform 1s cubic-bezier(.2, .8, .2, 1), --on-engine .6s, --on-oil .6s, --on-electric .6s, --on-scan .6s, --on-inspect .6s, --on-axle .6s, --on-hub .6s, --on-body .6s, --on-wash .6s, --on-detail .6s, --on-helmet .6s }
+.motion-ok .lp-services.is-armed .lp-service:not(.is-in) .lp-lens {
+  filter: blur(5px) saturate(.35) brightness(.75); transform: scale(1.14);
+  --on-engine: 0 !important; --on-oil: 0 !important; --on-electric: 0 !important; --on-scan: 0 !important;
+  --on-inspect: 0 !important; --on-axle: 0 !important; --on-hub: 0 !important; --on-body: 0 !important;
+  --on-wash: 0 !important; --on-detail: 0 !important; --on-helmet: 0 !important;
+}
