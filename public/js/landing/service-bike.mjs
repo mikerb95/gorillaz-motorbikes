@@ -310,7 +310,9 @@ function setupDesktop(root, gsap) {
     end: () => '+=' + Math.round(window.innerHeight * 0.5 * (n - 1)),
     pin: true,
     anticipatePin: 1,
-    snap: { snapTo: 1 / (n - 1), duration: { min: 0.18, max: 0.45 }, delay: 0.06, ease: 'power2.inOut' },
+    // directional: false = siempre a la parada más cercana. Con el modo direccional
+    // (el de GSAP por defecto) un píxel de más empuja a la parada siguiente.
+    snap: { snapTo: 1 / (n - 1), directional: false, duration: { min: 0.18, max: 0.45 }, delay: 0.06, ease: 'power2.inOut' },
     onUpdate(self) {
       setActive(detentIndex(self.progress, n));
       gsap.set(ratchet.querySelector('.lp-ratchet-head'), { rotation: ratchetAngle(self.progress, n, 24), svgOrigin: '0 0' });
@@ -318,8 +320,11 @@ function setupDesktop(root, gsap) {
   });
 
   function goTo(i) {
+    // Si el visitante acaba de hacer scroll, puede haber un snap en curso que
+    // se quedaría con el desplazamiento: se cancela antes de ir al servicio.
+    st.getTween(true)?.kill();
     const y = st.start + (st.end - st.start) * detentProgress(i, n);
-    window.scrollTo({ top: Math.round(y) + 1, behavior: 'smooth' });
+    window.scrollTo({ top: Math.round(y), behavior: 'smooth' });
     setActive(i);
   }
 
