@@ -56,7 +56,7 @@
         <label for="service">Servicio</label>
         <select id="service" name="service" required>
           <% services.forEach(s => { %>
-            <option value="<%= s %>"><%= s %></option>
+            <option value="<%= s %>"<%= (typeof preselect !== 'undefined' && preselect === s) ? ' selected' : '' %>><%= s %></option>
           <% }) %>
         </select>
       </div>
