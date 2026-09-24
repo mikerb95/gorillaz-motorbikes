@@ -117,7 +117,11 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 2px 4px rgba(0, 0, 0, .35);
   border-radius: 2px;
 }
-.sv-slot-name { position: relative; z-index: 2; margin-top: 4px; padding: 3px 8px; font-size: .58rem; transform: rotate(-1deg) }
+.sv-slot-name {
+  position: relative; z-index: 2; margin-top: 4px; padding: 3px 8px; font-size: .58rem; transform: rotate(-1deg);
+  /* En columnas angostas (móvil) la cinta se parte en dos renglones antes que desbordar. */
+  max-width: 100%; white-space: normal; text-align: center; justify-content: center; line-height: 1.35;
+}
 .sv-slot:hover .sv-slot-name,
 .sv-slot:focus-visible .sv-slot-name,
 .sv-slot.is-out .sv-slot-name { background: linear-gradient(180deg, #ff8a3d, #d84f04 60%, #e0600f); text-shadow: 0 -1px 0 rgba(90, 30, 0, .8), 0 1px 0 rgba(255, 255, 255, .3) }
@@ -128,7 +132,7 @@
   background: #fff; border-radius: 20px; box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 14px 36px rgba(60, 30, 10, .08);
 }
 @media (min-width: 640px) { .sv-card { grid-template-columns: minmax(170px, 34%) 1fr } }
-@media (min-width: 1024px) { .sv-card { min-height: 62vh; align-content: stretch } }
+@media (min-width: 1024px) { .sv-card { min-height: 440px } }
 /* Retazo de tablero de cada ficha: donde queda la herramienta mientras la usas. */
 .sv-card-tool {
   position: relative; display: grid; place-items: center; padding: 28px 22px; min-height: 180px;
