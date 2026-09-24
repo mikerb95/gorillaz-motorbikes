@@ -256,11 +256,19 @@ export default async function initHero(root, { fail }) {
   }
 
   // ── Programa ─────────────────────────────────────────────────────────
+  // Si el shader no compila en este equipo, la cortina CSS de espera se
+  // levanta ya (no a los 3,5 s del temporizador) y queda la foto.
   const prog = gl.createProgram();
-  gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
-  gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
-  gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error('link: ' + gl.getProgramInfoLog(prog));
+  try {
+    gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error('link: ' + gl.getProgramInfoLog(prog));
+  } catch (err) {
+    releaseCover(true);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    throw err;
+  }
   gl.useProgram(prog);
   const buf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -385,6 +393,12 @@ export default async function initHero(root, { fail }) {
     loop.wake();
   });
   ro.observe(root);
+  // Montserrat llega después del primer cálculo y cambia el alto del bloque de
+  // texto, del que depende el recorte "detrás de la cortina".
+  document.fonts?.ready.then(() => {
+    measure();
+    loop.wake();
+  });
 
   // Primer cuadro dibujado: se muestra el canvas y se quita la cortina CSS.
   requestAnimationFrame((now) => {
@@ -439,6 +453,7 @@ export default async function initHero(root, { fail }) {
       content.style.clipPath = '';
       if (cue) cue.style.visibility = '';
       releaseCover(false);
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
     },
   };
 }
