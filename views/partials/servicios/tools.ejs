@@ -1,0 +1,176 @@
+<%#
+  Herramientas del tablero de /servicios, dibujadas a mano en SVG.
+
+  Cada servicio es la herramienta con la que se hace: se define UNA vez como
+  <symbol> y se usa con <use> en el tablero, en su silueta pintada y en la
+  ficha del servicio. Todas comparten el mismo lienzo (200x120) para que el
+  tablero las alinee igual.
+
+  La silueta pintada del tablero es el MISMO símbolo con --sil (el naranja de
+  la pintura): cada pieza hace fill: var(--sil, su color), así que la silueta
+  sale plana y sin detalles, como el contorno pintado de un tablero real. El
+  filtro sv-dilate la engorda un poco para que asome alrededor de la
+  herramienta colgada.
+%>
+<svg class="sv-defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="sv-g-steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef0f2"/>
+      <stop offset=".45" stop-color="#aeb4bc"/>
+      <stop offset="1" stop-color="#6d737b"/>
+    </linearGradient>
+    <linearGradient id="sv-g-dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3e45"/>
+      <stop offset="1" stop-color="#15171a"/>
+    </linearGradient>
+    <linearGradient id="sv-g-orange" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8a3d"/>
+      <stop offset="1" stop-color="#d84f04"/>
+    </linearGradient>
+    <filter id="sv-dilate" x="-10%" y="-10%" width="120%" height="120%">
+      <feMorphology operator="dilate" radius="3.5"/>
+    </filter>
+
+    <!-- 01 Mecánica: llave combinada -->
+    <symbol id="sv-t-mecanica" viewBox="0 0 200 120">
+      <path class="t-steel" d="M20 45 A28 28 0 1 1 20 75 L36 69 L36 51 Z"/>
+      <path class="t-steel" d="M62 50 L146 53 L146 67 L62 70 Z"/>
+      <circle class="t-steel" cx="166" cy="60" r="23"/>
+      <circle class="t-hole" cx="166" cy="60" r="12"/>
+      <path class="t-line" d="M68 55 L140 57" stroke-width="3" stroke-linecap="round"/>
+      <text class="t-mark" x="100" y="66" text-anchor="middle" font-size="9" font-weight="800" font-family="Montserrat, Arial, sans-serif">13 mm</text>
+    </symbol>
+
+    <!-- 02 Mecánica rápida: aceitera -->
+    <symbol id="sv-t-mecanica-rapida" viewBox="0 0 200 120">
+      <path class="t-dark" d="M38 66 C14 68 12 98 30 104 C36 106 40 104 42 102" fill="none" stroke-width="7" stroke-linecap="round"/>
+      <path class="t-steel" d="M70 46 L184 10 L187 16 L78 54 Z"/>
+      <rect class="t-steel" x="60" y="40" width="22" height="16" rx="3"/>
+      <path class="t-orange" d="M36 62 C50 50 94 50 108 62 L108 104 Q108 114 98 114 L46 114 Q36 114 36 104 Z"/>
+      <rect class="t-shade" x="36" y="78" width="72" height="14"/>
+      <text class="t-mark" x="72" y="89" text-anchor="middle" font-size="9" font-weight="900" font-family="Montserrat, Arial, sans-serif">ACEITE</text>
+      <path class="t-dark" d="M88 52 C94 38 108 32 122 34 L122 40 C110 40 100 46 96 56 Z"/>
+    </symbol>
+
+    <!-- 03 Electricidad: multímetro con puntas (marca 12,6 V: una batería sana) -->
+    <symbol id="sv-t-electricidad" viewBox="0 0 200 120">
+      <path class="t-red" d="M40 104 C58 122 108 122 128 98" fill="none" stroke-width="4" stroke-linecap="round"/>
+      <path class="t-dark" d="M70 104 C90 116 132 114 150 102" fill="none" stroke-width="4" stroke-linecap="round"/>
+      <path class="t-red" d="M126 100 L170 70" stroke-width="7" stroke-linecap="round"/>
+      <path class="t-steel" d="M168 72 L184 60" stroke-width="2.5" stroke-linecap="round"/>
+      <path class="t-dark" d="M148 104 L186 86" stroke-width="7" stroke-linecap="round"/>
+      <path class="t-steel" d="M184 87 L198 80" stroke-width="2.5" stroke-linecap="round"/>
+      <rect class="t-orange" x="20" y="6" width="70" height="108" rx="12"/>
+      <rect class="t-dark" x="28" y="14" width="54" height="92" rx="8"/>
+      <rect class="t-glass" x="34" y="21" width="42" height="22" rx="3"/>
+      <text class="t-lcd" x="55" y="38" text-anchor="middle" font-size="14" font-weight="800" font-family="Montserrat, Arial, sans-serif">12.6</text>
+      <circle class="t-steel" cx="55" cy="68" r="15"/>
+      <path class="t-hole" d="M55 68 L55 55" stroke-width="4" stroke-linecap="round"/>
+      <circle class="t-red" cx="41" cy="97" r="4"/><circle class="t-steel" cx="55" cy="97" r="4"/><circle class="t-hole" cx="69" cy="97" r="4"/>
+    </symbol>
+
+    <!-- 04 Escaneo: escáner de diagnóstico con conector OBD -->
+    <symbol id="sv-t-escaneo-de-motos" viewBox="0 0 200 120">
+      <path class="t-dark" d="M106 66 C130 66 134 60 152 60" fill="none" stroke-width="6" stroke-linecap="round"/>
+      <rect class="t-orange" x="14" y="20" width="96" height="80" rx="14"/>
+      <rect class="t-dark" x="20" y="26" width="84" height="68" rx="10"/>
+      <rect class="t-glass" x="28" y="33" width="52" height="40" rx="4"/>
+      <path class="t-lcdline" d="M36 64 V56 M44 64 V48 M52 64 V58 M60 64 V44 M68 64 V52" stroke-width="4" stroke-linecap="round"/>
+      <circle class="t-steel" cx="92" cy="44" r="5"/><circle class="t-steel" cx="92" cy="62" r="5"/>
+      <rect class="t-steel" x="34" y="80" width="40" height="7" rx="3"/>
+      <path class="t-dark" d="M150 42 L192 42 L186 80 L156 80 Z"/>
+      <path class="t-line" d="M162 50 V58 M170 50 V58 M178 50 V58 M162 64 V72 M170 64 V72 M178 64 V72" stroke-width="2.5"/>
+    </symbol>
+
+    <!-- 05 Alistamiento tecnomecánica: manómetro de llantas -->
+    <symbol id="sv-t-alistamiento-tecnomecanica" viewBox="0 0 200 120">
+      <path class="t-dark" d="M94 62 C120 62 128 80 150 80" fill="none" stroke-width="8" stroke-linecap="round"/>
+      <path class="t-steel" d="M148 72 L186 72 L190 76 L190 84 L186 88 L148 88 Z"/>
+      <rect class="t-dark" x="186" y="75" width="10" height="10" rx="2"/>
+      <circle class="t-steel" cx="56" cy="60" r="40"/>
+      <circle class="t-face" cx="56" cy="60" r="32"/>
+      <path class="t-tick" d="M34 74 L39 71 M30 58 L36 58 M36 42 L40 46 M56 32 L56 38 M76 42 L72 46 M82 58 L76 58 M78 74 L73 71" stroke-width="2.5" stroke-linecap="round"/>
+      <path class="t-orange" d="M54 62 L72 42 L58 64 Z"/>
+      <circle class="t-hole" cx="56" cy="62" r="5"/>
+      <text class="t-marksm" x="56" y="84" text-anchor="middle" font-size="8" font-weight="800" font-family="Montserrat, Arial, sans-serif">PSI</text>
+    </symbol>
+
+    <!-- 06 Torno: buril con inserto de carburo -->
+    <symbol id="sv-t-torno" viewBox="0 0 200 120">
+      <rect class="t-darksteel" x="16" y="46" width="134" height="28" rx="3"/>
+      <path class="t-line" d="M28 52 H136 M28 68 H136" stroke-width="2"/>
+      <path class="t-steel" d="M146 46 L186 46 L172 74 L146 74 Z"/>
+      <path class="t-gold" d="M162 48 L186 48 L174 66 Z"/>
+      <circle class="t-hole" cx="162" cy="62" r="5"/>
+      <text class="t-mark" x="82" y="64" text-anchor="middle" font-size="9" font-weight="800" font-family="Montserrat, Arial, sans-serif">HSS · 16</text>
+    </symbol>
+
+    <!-- 07 Prensa: extractor de rodamientos de dos garras -->
+    <symbol id="sv-t-prensa" viewBox="0 0 200 120">
+      <rect class="t-steel" x="62" y="4" width="76" height="10" rx="5"/>
+      <rect class="t-steel" x="94" y="10" width="12" height="96" rx="2"/>
+      <path class="t-line" d="M94 20 L106 24 M94 28 L106 32 M94 36 L106 40 M94 60 L106 64 M94 68 L106 72 M94 76 L106 80 M94 84 L106 88" stroke-width="2"/>
+      <path class="t-steel" d="M94 104 L100 114 L106 104 Z"/>
+      <rect class="t-orange" x="40" y="40" width="120" height="18" rx="8"/>
+      <path class="t-darksteel" d="M42 42 L56 42 L52 100 L64 106 L62 114 L40 114 L38 100 Z"/>
+      <path class="t-darksteel" d="M158 42 L144 42 L148 100 L136 106 L138 114 L160 114 L162 100 Z"/>
+      <circle class="t-hole" cx="49" cy="49" r="3"/><circle class="t-hole" cx="151" cy="49" r="3"/>
+    </symbol>
+
+    <!-- 08 Pintura: pistola de pintura con vaso de gravedad -->
+    <symbol id="sv-t-pintura" viewBox="0 0 200 120">
+      <path class="t-orangeglass" d="M70 10 L104 10 L100 42 L74 42 Z"/>
+      <rect class="t-steel" x="66" y="6" width="42" height="7" rx="3"/>
+      <path class="t-shade" d="M72 26 L102 26 L100 42 L74 42 Z"/>
+      <rect class="t-steel" x="82" y="40" width="10" height="8"/>
+      <rect class="t-steel" x="40" y="46" width="98" height="22" rx="8"/>
+      <path class="t-steel" d="M18 48 L42 44 L42 70 L18 66 Z"/>
+      <circle class="t-darksteel" cx="22" cy="57" r="8"/>
+      <path class="t-line" d="M48 52 H130" stroke-width="3" stroke-linecap="round"/>
+      <path class="t-dark" d="M112 66 L136 66 L150 110 L128 114 Z"/>
+      <path class="t-steel" d="M66 66 C62 82 70 98 84 104 L88 98 C78 92 74 80 76 68 Z"/>
+      <rect class="t-darksteel" x="130" y="108" width="20" height="10" rx="2"/>
+    </symbol>
+
+    <!-- 09 Lavado de motos: pistola de hidrolavadora -->
+    <symbol id="sv-t-lavado-motos" viewBox="0 0 200 120">
+      <rect class="t-steel" x="14" y="40" width="104" height="9" rx="3"/>
+      <rect class="t-dark" x="4" y="36" width="16" height="17" rx="3"/>
+      <path class="t-orange" d="M108 30 L166 30 Q172 30 172 36 L172 52 L108 52 Z"/>
+      <path class="t-dark" d="M136 50 L160 50 L170 104 L148 108 Z"/>
+      <path class="t-orange" d="M118 52 C114 66 118 82 130 90 L134 84 C126 78 124 66 128 54 Z"/>
+      <rect class="t-steel" x="150" y="104" width="16" height="14" rx="2"/>
+      <path class="t-water" d="M2 30 L-6 24 M2 44 L-8 44 M2 58 L-6 64" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- 10 Detailing: pulidora rotativa con almohadilla de espuma -->
+    <symbol id="sv-t-detailing-motos" viewBox="0 0 200 120">
+      <path class="t-dark" d="M72 34 C74 8 118 8 122 34" fill="none" stroke-width="9" stroke-linecap="round"/>
+      <rect class="t-dark" x="46" y="32" width="110" height="34" rx="14"/>
+      <rect class="t-orange" x="96" y="32" width="14" height="34"/>
+      <rect class="t-darksteel" x="150" y="40" width="40" height="18" rx="8"/>
+      <path class="t-steel" d="M26 36 L56 36 L56 72 L26 72 Z"/>
+      <rect class="t-darksteel" x="36" y="72" width="10" height="10"/>
+      <ellipse class="t-steel" cx="41" cy="84" rx="30" ry="5"/>
+      <path class="t-orange" d="M11 88 L71 88 L68 100 Q41 106 14 100 Z"/>
+      <path class="t-line" d="M60 44 H90 M60 54 H90" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- 11 Lavado de cascos: atomizador de limpiador -->
+    <symbol id="sv-t-lavado-cascos" viewBox="0 0 200 120">
+      <path class="t-glass2" d="M76 44 L112 44 Q122 44 122 56 L122 106 Q122 116 112 116 L76 116 Q66 116 66 106 L66 56 Q66 44 76 44 Z"/>
+      <rect class="t-label" x="66" y="70" width="56" height="26"/>
+      <text class="t-marksm" x="94" y="87" text-anchor="middle" font-size="9" font-weight="900" font-family="Montserrat, Arial, sans-serif">CASCOS</text>
+      <rect class="t-dark" x="80" y="32" width="28" height="14" rx="2"/>
+      <path class="t-orange" d="M72 8 L118 8 L132 20 L132 26 L112 26 L112 34 L76 34 L72 26 Z"/>
+      <rect class="t-dark" x="130" y="16" width="12" height="8" rx="2"/>
+      <path class="t-dark" d="M78 26 C70 34 70 46 76 54 L82 50 C78 44 80 36 86 30 Z"/>
+      <path class="t-water" d="M146 20 L160 14 M146 20 L162 22 M146 20 L158 30" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- Placa del tablero: el gorila pintado con esténcil en el hueco doce -->
+    <symbol id="sv-t-sello" viewBox="0 0 200 120">
+      <image href="/images/landing/cortina-estencil.png" x="46" y="4" width="108" height="81" class="t-stencil"/>
+    </symbol>
+  </defs>
+</svg>
