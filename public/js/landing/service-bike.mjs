@@ -310,28 +310,56 @@ function setupDesktop(root, gsap) {
     end: () => '+=' + Math.round(window.innerHeight * 0.5 * (n - 1)),
     pin: true,
     anticipatePin: 1,
-    // directional: false = siempre a la parada más cercana. Con el modo direccional
-    // (el de GSAP por defecto) un píxel de más empuja a la parada siguiente.
-    snap: { snapTo: 1 / (n - 1), directional: false, duration: { min: 0.18, max: 0.45 }, delay: 0.06, ease: 'power2.inOut' },
+    // Parada de trinquete: siempre a la más cercana (el modo direccional de GSAP
+    // empuja a la siguiente con un píxel de más). Mientras una pestaña está
+    // llevando el scroll a su servicio, el snap no mueve nada: si no, el snap
+    // pendiente del último giro de rueda se queda con el desplazamiento.
+    snap: {
+      snapTo: (v) => (navigating ? v : detentProgress(detentIndex(v, n), n)),
+      directional: false, duration: { min: 0.18, max: 0.45 }, delay: 0.06, ease: 'power2.inOut',
+    },
     onUpdate(self) {
       setActive(detentIndex(self.progress, n));
       gsap.set(ratchet.querySelector('.lp-ratchet-head'), { rotation: ratchetAngle(self.progress, n, 24), svgOrigin: '0 0' });
     },
   });
 
+  // Navegación desde una pestaña: un tween propio sobre el scroll (en vez del
+  // scroll suave del navegador) para poder coordinarlo con el snap.
+  let navigating = false;
+  let navTween = null;
+  const scrollPos = { y: 0 };
+  const stopNav = () => {
+    navTween?.kill();
+    navTween = null;
+    navigating = false;
+  };
   function goTo(i) {
-    // Si el visitante acaba de hacer scroll, puede haber un snap en curso que
-    // se quedaría con el desplazamiento: se cancela antes de ir al servicio.
     st.getTween(true)?.kill();
-    const y = st.start + (st.end - st.start) * detentProgress(i, n);
-    window.scrollTo({ top: Math.round(y), behavior: 'smooth' });
+    stopNav();
+    const y = Math.round(st.start + (st.end - st.start) * detentProgress(i, n));
+    scrollPos.y = window.scrollY;
+    navigating = true;
+    const distance = Math.abs(y - scrollPos.y);
+    navTween = gsap.to(scrollPos, {
+      y, duration: Math.min(1.2, 0.45 + distance / 5000), ease: 'power2.inOut',
+      onUpdate: () => window.scrollTo(0, scrollPos.y),
+      onComplete: () => { navigating = false; navTween = null; },
+    });
     setActive(i);
   }
+  // Si la persona mueve la rueda o toca la pantalla a mitad de camino, manda ella.
+  const userTakesOver = () => navigating && stopNav();
+  window.addEventListener('wheel', userTakesOver, { passive: true });
+  window.addEventListener('touchstart', userTakesOver, { passive: true });
 
   setActive(0, true);
   ST.refresh();
 
   return () => {
+    stopNav();
+    window.removeEventListener('wheel', userTakesOver);
+    window.removeEventListener('touchstart', userTakesOver);
     st.kill(true);
     io.disconnect();
     document.removeEventListener('visibilitychange', onVis);
