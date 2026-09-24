@@ -177,3 +177,9 @@ section .sv-card-title { max-width: none }
   .sv-page.is-armed .sv-card.has-tool .sv-card-tool .sv-tool { opacity: 1 }
 }
 .sv-flyer { position: fixed; left: 0; top: 0; z-index: 90; pointer-events: none; overflow: visible; filter: drop-shadow(0 22px 16px rgba(0, 0, 0, .35)); will-change: transform }
+
+/* Con movimiento reducido, nada queda fijado: el tablero se desplaza con la página. */
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+  .sv-board-col { position: static; height: auto; padding-top: 12px }
+  .sv-intro { min-height: auto; padding: 24px 0 40px }
+}
