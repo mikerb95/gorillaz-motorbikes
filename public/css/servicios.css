@@ -1,0 +1,159 @@
+/* ════════════════════════════════════════════════════════════════════════
+   /SERVICIOS · "CADA TRABAJO CON SU HERRAMIENTA"
+
+   El tablero de herramientas del taller es el índice de servicios. Cada
+   herramienta cuelga sobre su silueta pintada; en escritorio el tablero queda
+   fijo a la izquierda y la herramienta del servicio que estás leyendo sale del
+   tablero hacia su ficha. Lo que incluye cada servicio se imprime en cinta de
+   rotuladora (Dymo).
+
+   Todo lo de aquí es el ESTADO FINAL (sin JS o con movimiento reducido).
+   Tokens y piezas comunes: taller-base.css. No toca la navbar.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.page-servicios main.page-root { background: var(--lp-cream) }
+
+/* ─── Piezas de las herramientas (views/partials/servicios/tools.ejs) ─────
+   Cada pieza usa var(--sil, su color): en la silueta pintada --sil vale el
+   naranja de la pintura y la herramienta sale plana, sin detalles. */
+.sv-defs { position: absolute; width: 0; height: 0; overflow: hidden }
+.t-steel { fill: var(--sil, url(#sv-g-steel)) }
+.t-darksteel { fill: var(--sil, #737a83) }
+.t-dark { fill: var(--sil, url(#sv-g-dark)) }
+.t-orange { fill: var(--sil, url(#sv-g-orange)) }
+.t-orangeglass { fill: var(--sil, #F25C05); fill-opacity: var(--sil-op, .82) }
+.t-red { fill: var(--sil, #c8281e) }
+.t-glass { fill: var(--sil, #a8bca9) }
+.t-glass2 { fill: var(--sil, #8fb8d8); fill-opacity: var(--sil-op, .78) }
+.t-face { fill: var(--sil, #f4f1ea) }
+.t-gold { fill: var(--sil, #d4a93c) }
+.t-shade { fill: var(--sil, #000); fill-opacity: var(--sil-op, .18) }
+.t-label { fill: var(--sil, #fff) }
+.t-hole { fill: var(--sil, #121316) }
+.t-mark { fill: var(--sil, rgba(0, 0, 0, .5)) }
+.t-marksm { fill: var(--sil, #3a2a1a) }
+.t-lcd { fill: var(--sil, #1f2a20) }
+.s-dark { fill: none; stroke: var(--sil, #1b1d21) }
+.s-red { fill: none; stroke: var(--sil, #c8281e) }
+.s-steel { fill: none; stroke: var(--sil, #c9ced4) }
+.s-line { fill: none; stroke: var(--sil, rgba(255, 255, 255, .55)) }
+.s-tick { fill: none; stroke: var(--sil, #2b2e33) }
+.s-lcd { fill: none; stroke: var(--sil, #2e3b2f) }
+.s-hole { fill: none; stroke: var(--sil, #121316) }
+.s-water { fill: none; stroke: #9cc6ff; opacity: var(--sil-hide, 1) }
+
+/* La silueta pintada: el mismo símbolo, plano y un poco más gordo. */
+.sv-sil { --sil: #d9550f; --sil-op: 1; --sil-hide: 0; filter: url(#sv-dilate); opacity: .92 }
+.sv-tool { filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .45)) }
+
+/* ─── Diseño general ───────────────────────────────────────────────────── */
+.sv-page { padding: 28px 0 clamp(64px, 8vw, 120px) }
+.sv-shop { display: grid; gap: 28px; grid-template-areas: "intro" "board" "cards" }
+.sv-intro { grid-area: intro }
+.sv-board-col { grid-area: board }
+.sv-cards { grid-area: cards; display: grid; gap: 18px }
+
+@media (min-width: 1024px) {
+  .sv-page { padding-top: 16px }
+  .sv-shop {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-areas: "board intro" "board cards";
+    column-gap: clamp(32px, 4vw, 64px); row-gap: 0; align-items: start;
+  }
+  /* El tablero queda fijo mientras pasan las fichas (sticky: sin JS también). */
+  .sv-board-col {
+    position: sticky; top: calc(var(--header-offset, 92px) + 12px);
+    height: calc(100vh - var(--header-offset, 92px) - 24px);
+    display: flex; align-items: center;
+  }
+  .sv-intro { min-height: calc(100vh - var(--header-offset, 92px) - 24px); display: flex; flex-direction: column; justify-content: center; padding-bottom: 40px }
+}
+
+/* ─── Encabezado ───────────────────────────────────────────────────────── */
+.sv-title { font-size: clamp(3.2rem, 8vw, 6.8rem); line-height: .9; letter-spacing: -.035em; font-weight: 900; margin: 0 0 10px }
+.sv-claim { margin: 0 0 18px; font-size: clamp(1.25rem, 2vw, 1.7rem); font-weight: 800; color: var(--lp-orange-text); letter-spacing: -.01em }
+.sv-hint { margin: -8px 0 22px; font-size: .9rem; color: var(--lp-muted) }
+.sv-intro .btn-row { margin-top: 0 }
+.sv-intro .btn { padding: 13px 20px }
+
+/* ─── Tablero perforado ────────────────────────────────────────────────── */
+.sv-board {
+  --hole: 22px;
+  position: relative; width: 100%; padding: 20px 18px 22px; border-radius: 18px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 12px;
+  background:
+    radial-gradient(circle, #07080a 0 2.3px, rgba(0, 0, 0, 0) 2.9px) 0 0 / var(--hole) var(--hole),
+    radial-gradient(120% 80% at 30% 10%, #2e3136, #1a1c20 70%);
+  box-shadow: inset 0 0 0 2px #34373d, inset 0 0 70px rgba(0, 0, 0, .5), 0 30px 60px rgba(40, 20, 0, .22);
+}
+.sv-slot {
+  position: relative; display: grid; grid-template-rows: 1fr auto; justify-items: center;
+  padding: 18px 4px 6px; border-radius: 12px; text-decoration: none; color: inherit;
+  outline: none;
+}
+.sv-slot:hover { text-decoration: none }
+.sv-slot > svg { grid-row: 1; grid-column: 1; width: 100%; height: auto; aspect-ratio: 200 / 120; overflow: visible }
+.sv-hook {
+  position: absolute; top: 6px; left: 50%; width: 10px; height: 14px; margin-left: -5px; z-index: 2;
+  border: 3px solid #b9bec5; border-top: 0; border-radius: 0 0 8px 8px; box-shadow: 0 2px 2px rgba(0, 0, 0, .5);
+}
+.sv-slot .sv-tool { position: relative; z-index: 1; transition: transform .45s cubic-bezier(.3, 1.5, .5, 1), filter .3s }
+.sv-slot:hover .sv-tool,
+.sv-slot:focus-visible .sv-tool { transform: translate(6px, -16px) rotate(-7deg); filter: drop-shadow(0 18px 14px rgba(0, 0, 0, .55)) }
+.sv-slot:focus-visible { box-shadow: 0 0 0 2px var(--lp-orange) }
+.sv-slot-brand {
+  background: #d9550f; opacity: .85;
+  -webkit-mask: url(/images/landing/cortina-estencil.png) center / 78% auto no-repeat;
+  mask: url(/images/landing/cortina-estencil.png) center / 78% auto no-repeat luminance;
+}
+
+/* Cinta de rotuladora (Dymo): relieve blanco sobre cinta negra. */
+.sv-slot-name,
+.sv-dymo {
+  display: inline-flex; align-items: center; white-space: nowrap;
+  font-weight: 800; text-transform: uppercase; letter-spacing: .12em; color: #f2f2f2;
+  background: linear-gradient(180deg, #34363b 0%, #111214 55%, #1b1c1f 100%);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 2px 4px rgba(0, 0, 0, .35);
+  border-radius: 2px;
+}
+.sv-slot-name { position: relative; z-index: 2; margin-top: 4px; padding: 3px 8px; font-size: .58rem; transform: rotate(-1deg) }
+.sv-slot:hover .sv-slot-name,
+.sv-slot:focus-visible .sv-slot-name,
+.sv-slot.is-out .sv-slot-name { background: linear-gradient(180deg, #ff8a3d, #d84f04 60%, #e0600f); text-shadow: 0 -1px 0 rgba(90, 30, 0, .8), 0 1px 0 rgba(255, 255, 255, .3) }
+
+/* ─── Fichas de servicio ───────────────────────────────────────────────── */
+.sv-card {
+  display: grid; grid-template-columns: 1fr; overflow: hidden; scroll-margin-top: calc(var(--header-offset, 92px) + 16px);
+  background: #fff; border-radius: 20px; box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 14px 36px rgba(60, 30, 10, .08);
+}
+@media (min-width: 640px) { .sv-card { grid-template-columns: minmax(170px, 34%) 1fr } }
+@media (min-width: 1024px) { .sv-card { min-height: 62vh; align-content: stretch } }
+/* Retazo de tablero de cada ficha: donde queda la herramienta mientras la usas. */
+.sv-card-tool {
+  position: relative; display: grid; place-items: center; padding: 28px 22px; min-height: 180px;
+  background:
+    radial-gradient(circle, #07080a 0 2.1px, rgba(0, 0, 0, 0) 2.7px) 0 0 / 20px 20px,
+    radial-gradient(120% 90% at 40% 20%, #2e3136, #1a1c20 75%);
+}
+.sv-card-tool > svg { grid-area: 1 / 1; width: min(100%, 240px); height: auto; aspect-ratio: 200 / 120; overflow: visible }
+.sv-card-tool .sv-tool { position: relative; z-index: 1 }
+.sv-card-body { padding: clamp(20px, 3vw, 36px); display: flex; flex-direction: column; gap: 4px; justify-content: center }
+.sv-num { margin: 0 0 6px; font-size: .72rem; font-weight: 800; letter-spacing: .16em; color: var(--lp-orange-text); font-variant-numeric: tabular-nums }
+.sv-card-title { margin: 0 0 8px; font-size: clamp(1.4rem, 2.3vw, 2rem); line-height: 1.08; font-weight: 900; letter-spacing: -.015em; text-wrap: balance }
+section .sv-card-title { max-width: none }
+.sv-card-desc { margin: 0 0 14px; color: #3f3a36; line-height: 1.55; max-width: 56ch }
+.sv-includes-title { margin: 4px 0 8px; font-size: .68rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--lp-muted) }
+.sv-dymo-list { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 10px }
+.sv-dymo { padding: 6px 12px; font-size: .74rem; transform: rotate(var(--r, 0deg)) }
+.sv-dymo:nth-child(3n + 1) { --r: -1.2deg }
+.sv-dymo:nth-child(3n + 2) { --r: .8deg }
+.sv-dymo:nth-child(3n) { --r: -.4deg }
+.sv-card-photo { margin: 0 0 18px; position: relative; max-width: 420px }
+.sv-card-photo img { display: block; width: 100%; height: auto; aspect-ratio: 640 / 420; object-fit: cover; border-radius: 12px }
+.sv-card-photo figcaption { position: absolute; left: 10px; bottom: 10px; font-size: .64rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #fff; background: rgba(0, 0, 0, .55); padding: 4px 8px; border-radius: 999px }
+.sv-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: auto }
+.sv-card-actions .btn { padding: 11px 20px }
+
+.sv-final { text-align: center; padding: clamp(40px, 6vw, 80px) 0 0 }
+.sv-final-title { margin: 0 0 18px; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 900; letter-spacing: -.02em }

@@ -1,50 +1,89 @@
-<%- include('partials/head', { title: 'Servicios — Gorillaz Motorbikes' }) %>
+<%- include('partials/head', { title: title, user }) %>
+<%#
+  /servicios: "CADA TRABAJO CON SU HERRAMIENTA"
+  El tablero de herramientas del taller es el índice: cada servicio es la
+  herramienta con que se hace, colgada sobre su silueta pintada. Este marcado es
+  el estado final y legible (sin JS o con movimiento reducido se ve completo y
+  quieto); public/js/servicios/*.mjs lo anima y, si falla, devuelve lo que haya
+  escondido (contrato fail-open de public/js/motion/core.mjs).
+  Nota: head.ejs ya abre <main>; aquí no se abre otro.
+%>
+<link rel="stylesheet" href="/static/css/taller-base.css?v=1" />
+<link rel="stylesheet" href="/static/css/servicios.css?v=1" />
+<%- include('partials/servicios/tools') %>
 
-  <main>
-    <section class="services-hero">
-      <div class="services-hero-inner container">
-        <h1 class="section-title">Servicios</h1>
-        <p class="section-subtitle">Especialistas en mantenimiento, performance y estética para tu moto. Calidad
-          certificada y pasión por cada detalle.</p>
-        <div class="btn-row">
-          <a class="btn btn-outline" href="/servicios/agendar">Agendar servicio</a>
-        </div>
+<div class="sv-page" data-sv="page">
+  <div class="lp-wrap sv-shop">
+
+    <header class="sv-intro">
+      <p class="lp-label"><%= services.length %> servicios en el taller</p>
+      <h1 class="sv-title">Servicios</h1>
+      <p class="sv-claim">Cada trabajo con su herramienta.</p>
+      <p class="lp-lead">Especialistas en mantenimiento, performance y estética para tu moto. Calidad certificada y pasión por cada detalle.</p>
+      <p class="sv-hint">Elige una herramienta del tablero para ver qué incluye su servicio.</p>
+      <div class="btn-row">
+        <a class="btn" href="/servicios/agendar">Agendar servicio</a>
       </div>
-      <div class="services-hero-bg" aria-hidden="true"></div>
-      <div class="services-hero-gradient" aria-hidden="true"></div>
-      <a href="#lista-servicios" class="services-cue" aria-label="Ver servicios">
-        <div class="scroll-cue-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
-          </svg>
-        </div>
-      </a>
-    </section>
+    </header>
 
-    <section id="lista-servicios" class="services-list container">
-      <% (services || []).forEach(function(s){ %>
-        <article id="<%= s.slug %>" class="service-row">
-          <div class="service-media" style="background-image: url('<%= s.img %>');"></div>
-          <div class="service-body">
-            <h2>
-              <%= s.title %>
-            </h2>
-            <p>
-              <%= s.desc %>
-            </p>
-            <div class="service-meta">
-              <a class="link" href="/servicios/agendar?servicio=<%= encodeURIComponent(s.title) %>">Agendar</a>
-              <a class="link" href="#<%= s.slug %>">#</a>
+    <div class="sv-board-col">
+      <nav class="sv-board" aria-label="Tablero de servicios" data-sv="board">
+        <% services.forEach(function (s) { %>
+          <a class="sv-slot" href="#<%= s.slug %>" data-slug="<%= s.slug %>">
+            <span class="sv-hook" aria-hidden="true"></span>
+            <svg class="sv-sil" viewBox="0 0 200 120" aria-hidden="true" focusable="false"><use href="#sv-t-<%= s.slug %>"/></svg>
+            <svg class="sv-tool" viewBox="0 0 200 120" aria-hidden="true" focusable="false" data-m><use href="#sv-t-<%= s.slug %>"/></svg>
+            <span class="sv-slot-name"><%= s.name %></span>
+          </a>
+        <% }) %>
+        <span class="sv-slot sv-slot-brand" aria-hidden="true"></span>
+      </nav>
+    </div>
+
+    <div class="sv-cards">
+      <% services.forEach(function (s, i) { %>
+        <article class="sv-card" id="<%= s.slug %>" data-slug="<%= s.slug %>" aria-labelledby="sv-h-<%= s.slug %>">
+          <div class="sv-card-tool" aria-hidden="true">
+            <svg class="sv-sil" viewBox="0 0 200 120" focusable="false"><use href="#sv-t-<%= s.slug %>"/></svg>
+            <svg class="sv-tool" viewBox="0 0 200 120" focusable="false" data-m><use href="#sv-t-<%= s.slug %>"/></svg>
+          </div>
+          <div class="sv-card-body">
+            <p class="sv-num" aria-hidden="true"><%= String(i + 1).padStart(2, '0') %> / <%= String(services.length).padStart(2, '0') %></p>
+            <h2 id="sv-h-<%= s.slug %>" class="sv-card-title"><%= s.title %></h2>
+            <p class="sv-card-desc"><%= s.desc %></p>
+            <% if (s.includes && s.includes.length) { %>
+              <p class="sv-includes-title" id="sv-inc-<%= s.slug %>">Lo que hacemos</p>
+              <ul class="sv-dymo-list" aria-labelledby="sv-inc-<%= s.slug %>">
+                <% s.includes.forEach(function (t) { %><li class="sv-dymo" data-m><span><%= t %></span></li><% }) %>
+              </ul>
+            <% } %>
+            <% if (s.realPhoto) { %>
+              <figure class="sv-card-photo">
+                <img src="<%= s.realPhoto.src %>" alt="<%= s.realPhoto.alt %>" loading="lazy" decoding="async" width="640" height="420" />
+                <figcaption>Foto del taller</figcaption>
+              </figure>
+            <% } %>
+            <div class="sv-card-actions">
+              <a class="btn" href="/servicios/agendar?servicio=<%= encodeURIComponent(s.name) %>">Agendar<span class="sr-only"> <%= s.name.toLowerCase() %></span></a>
+              <a class="lp-link" href="<%= s.detailHref %>">Ver detalle<span class="sr-only"> de <%= s.name.toLowerCase() %></span><span aria-hidden="true"> &rarr;</span></a>
             </div>
           </div>
         </article>
-        <% }) %>
+      <% }) %>
 
-          <div class="services-cta">
-            <a class="btn" href="/servicios/agendar">Agendar servicio</a>
-          </div>
-    </section>
-  </main>
+      <div class="sv-final">
+        <p class="lp-label">¿Listo?</p>
+        <p class="sv-final-title">Trae tu moto al taller</p>
+        <a class="btn" href="/servicios/agendar">Agendar servicio</a>
+      </div>
+    </div>
 
-  <%- include('partials/footer') %>
+  </div>
+</div>
+
+<%# Motion de /servicios (GSAP fijado y alojado en el sitio, como la home). %>
+<script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
+<script defer src="/static/vendor/gsap-3.15.0/ScrollTrigger.min.js"></script>
+<script type="module" src="/static/js/servicios/main.mjs?v=1"></script>
+
+<%- include('partials/footer') %>
