@@ -348,9 +348,11 @@ function setupDesktop(root, gsap) {
     });
     setActive(i);
   }
-  // Si la persona mueve la rueda o toca la pantalla a mitad de camino, manda ella.
+  // Si la persona toca la pantalla a mitad de camino, manda ella. La rueda NO
+  // cancela: los trackpads siguen mandando eventos de inercia hasta un segundo
+  // después de soltar, y cancelarían justo la navegación que se pidió. El
+  // recorrido dura como mucho 1,2 s.
   const userTakesOver = () => navigating && stopNav();
-  window.addEventListener('wheel', userTakesOver, { passive: true });
   window.addEventListener('touchstart', userTakesOver, { passive: true });
 
   setActive(0, true);
@@ -358,7 +360,6 @@ function setupDesktop(root, gsap) {
 
   return () => {
     stopNav();
-    window.removeEventListener('wheel', userTakesOver);
     window.removeEventListener('touchstart', userTakesOver);
     st.kill(true);
     io.disconnect();
