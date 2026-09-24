@@ -13,6 +13,20 @@
 <%- include('partials/servicios/tools') %>
 
 <div class="sv-page" data-sv="page">
+  <script>
+    // Antes de pintar: la entrada del tablero (siluetas pintadas y herramientas
+    // que se cuelgan) arranca desde el tablero vacío. Si el motion no arranca en
+    // 3 s, todo se destapa solo (fail-open). Solo la primera vez por sesión.
+    (function (d) {
+      try {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (!('noModule' in HTMLScriptElement.prototype)) return;
+        if (sessionStorage.getItem('sv-tablero')) return;
+        d.classList.add('sv-enter-pending');
+        window.__svEnterTimer = setTimeout(function () { d.classList.remove('sv-enter-pending'); }, 3000);
+      } catch (e) {}
+    })(document.documentElement);
+  </script>
   <div class="lp-wrap sv-shop">
 
     <header class="sv-intro">

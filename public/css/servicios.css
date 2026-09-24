@@ -161,3 +161,19 @@ section .sv-card-title { max-width: none }
 
 .sv-final { text-align: center; padding: clamp(40px, 6vw, 80px) 0 0 }
 .sv-final-title { margin: 0 0 18px; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 900; letter-spacing: -.02em }
+
+/* ─── Estados que usa el motion (solo con JS; ver servicios/*.mjs) ─────── */
+/* Entrada del tablero: tablero vacío hasta que el JS lo cuelga (1.ª visita). */
+.sv-enter-pending .sv-board .sv-tool,
+.sv-enter-pending .sv-board .sv-slot-name { opacity: 0 }
+.sv-enter-pending .sv-board .sv-sil { clip-path: inset(0 100% 0 0) }
+
+/* La herramienta que está "en uso" deja su gancho vacío: se ve la silueta. */
+.sv-slot.is-out .sv-tool { opacity: 0; transform: translate(8px, -26px) rotate(-9deg); transition: transform .35s cubic-bezier(.5, 0, .75, 0), opacity .25s .1s }
+
+/* Escritorio: cada ficha solo muestra su herramienta cuando la trajiste del tablero. */
+@media (min-width: 1024px) {
+  .sv-page.is-armed .sv-card-tool .sv-tool { opacity: 0; transition: opacity .15s }
+  .sv-page.is-armed .sv-card.has-tool .sv-card-tool .sv-tool { opacity: 1 }
+}
+.sv-flyer { position: fixed; left: 0; top: 0; z-index: 90; pointer-events: none; overflow: visible; filter: drop-shadow(0 22px 16px rgba(0, 0, 0, .35)); will-change: transform }
