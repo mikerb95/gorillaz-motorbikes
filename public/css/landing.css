@@ -10,20 +10,8 @@
    No toca la navbar: todo cuelga de clases lp-*.
    ════════════════════════════════════════════════════════════════════════ */
 
-.page-home {
-  --lp-orange: #F25C05;
-  --lp-orange-hot: #ff7a1f;
-  --lp-ink: #0e0f11;
-  --lp-graphite: #17181b;
-  --lp-steel: #aeb4bc;
-  --lp-floor: #1f4c9c;
-  --lp-plate: #F6C700;
-  --lp-paper: #f3ead9;
-  --lp-cream: #FFF9F5;
-  --lp-muted: #6b7280;
-  --lp-gutter: clamp(16px, 4vw, 48px);
-  --lp-max: 1400px;
-}
+/* Tokens y piezas comunes (envoltura, rótulos, titulares, etiqueta de ejemplo):
+   public/css/taller-base.css, compartido con /servicios. */
 
 /* ─── Moto ilustrada: color de cada pieza por sistema ──────────────────────
    Cada pieza mezcla su color base con --hl según su --on-<sistema> (0..1).
@@ -104,28 +92,6 @@
 .fx-spray   { opacity: var(--on-body, 0) }
 .fx-foam    { opacity: var(--on-wash, 0) }
 .fx-shine   { opacity: var(--on-detail, 0) }
-
-/* ─── Piezas comunes ───────────────────────────────────────────────────── */
-.page-home { --lp-orange-text: #b8460b }
-.lp-wrap { max-width: var(--lp-max); margin: 0 auto; padding: 0 12px }
-.lp-label {
-  font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
-  color: var(--lp-orange-text); margin: 0 0 12px;
-}
-section .lp-h2,
-.lp-h2 {
-  font-size: clamp(1.9rem, 4.2vw, 3.4rem); line-height: 1.02; letter-spacing: -.02em; font-weight: 900;
-  max-width: 18ch; margin: 0 0 16px; text-wrap: balance;
-}
-.lp-lead { font-size: clamp(1rem, 1.25vw, 1.14rem); line-height: 1.55; max-width: 52ch; margin: 0 0 26px; opacity: .82 }
-.lp-link { color: var(--lp-orange-text); font-weight: 800; text-decoration: none }
-.lp-link:hover { text-decoration: underline }
-.lp-example-tag {
-  display: inline-flex; align-items: center; gap: 6px; margin: 0;
-  font-size: .64rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
-  color: #5b4a2e; background: rgba(0, 0, 0, .06); border-radius: 999px; padding: 4px 9px;
-}
-.lp-example-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .6 }
 
 /* ─── Hero ─────────────────────────────────────────────────────────────── */
 .lp-hero { padding: 0; background: #0b0c0e; isolation: isolate; min-height: 100vh; min-height: 100svh }
