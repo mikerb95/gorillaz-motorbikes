@@ -93,7 +93,7 @@ export function drawDial(host, levels) {
   return { svg, needle, levelText, pointsText, max, bands };
 }
 
-/** Tambores de odómetro: cada dígito es una tira 0–9 que rueda hasta su valor. */
+/** Tambores de odómetro: cada dígito es una tira 0-9 que rueda hasta su valor. */
 function buildOdometer(odo) {
   const value = odo.dataset.value || odo.textContent.trim();
   const digits = Array.from(odo.querySelectorAll('.lp-odo-digit'));
