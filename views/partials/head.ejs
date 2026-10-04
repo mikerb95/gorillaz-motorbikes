@@ -99,10 +99,10 @@
     var navEventsHref = '/eventos' + ((typeof eventsFirstAnchor !== 'undefined' && eventsFirstAnchor) ? eventsFirstAnchor : '');
   %>
   <header class="site-header">
+    <div class="mnav-backdrop" aria-hidden="true"></div>
     <div class="nav-bar">
       <div class="header-inner">
         <div class="nav-left">
-          <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
           <nav class="nav" data-nav>
             <div class="nav-links">
               <div class="nav-item has-submenu" data-panel="wide">
@@ -142,46 +142,6 @@
                   <% } %>
                 </div>
               </div>
-            </div>
-            <div class="nav-cta">
-              <a class="cart-link" href="<%= navEventsHref %>" aria-label="Eventos">
-                <svg class="ni" width="22" height="22" aria-hidden="true"><use href="#ni-calendar"/></svg>
-                <span class="nav-mobile-label">Eventos</span>
-                <span class="cart-badge" data-count="events"><%= navEvents %></span>
-              </a>
-              <a class="btn-ghost btn-sm btn-square cart-link" href="/carrito" aria-label="Carrito">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                  <path d="M3 4h2l2.5 12h9l2-8H7.2" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"></path>
-                  <circle cx="9" cy="20" r="1.8" fill="currentColor"></circle>
-                  <circle cx="17" cy="20" r="1.8" fill="currentColor"></circle>
-                </svg>
-                <span class="nav-mobile-label">Carrito</span>
-                <span class="cart-badge" data-count="cart"><%= navCartCount %></span>
-              </a>
-              <div class="nav-item has-submenu">
-                <a class="btn-ghost btn-sm btn-square" href="/tienda">Tienda</a>
-                <div class="nav-submenu nav-megamenu" aria-label="Categorías de tienda">
-                  <div class="megamenu-cols">
-                    <div class="megamenu-col">
-                      <strong class="megamenu-heading">Categorías</strong>
-                      <a href="/tienda?cat=naked">Naked</a>
-                      <a href="/tienda?cat=adventure">Adventure</a>
-                      <a href="/tienda?cat=sport">Sport</a>
-                      <a href="/tienda?cat=scooter">Scooter</a>
-                      <a href="/tienda?cat=enduro">Enduro</a>
-                    </div>
-                    <div class="megamenu-col">
-                      <strong class="megamenu-heading">Acceso rápido</strong>
-                      <a href="/tienda?sort=price-asc">Más baratos</a>
-                      <a href="/tienda?sort=price-desc">Más caros</a>
-                      <a href="/tienda">Ver todo</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <a class="btn-ghost btn-sm btn-square" href="/cursos">Cursos</a>
-              <a class="btn-ghost btn-sm btn-square" href="/servicios/agendar">Agendar servicio</a>
             </div>
           </nav>
         </div>
@@ -237,7 +197,85 @@
           </div>
           <a class="nav-cta-pill" href="/servicios/agendar" aria-label="Agendar servicio">Agendar</a>
         </div>
+        <%# Barra móvil (y modo compact): logo a la izquierda, carrito y menú a la derecha %>
+        <div class="mbar-actions">
+          <a class="cart-link mbar-cart" href="/carrito" aria-label="Carrito">
+            <svg class="ni" aria-hidden="true"><use href="#ni-cart"/></svg>
+            <span class="cart-badge" data-count="cart"><%= navCartCount %></span>
+          </a>
+          <button class="mnav-toggle" type="button" aria-controls="mnav" aria-expanded="false" aria-label="Abrir menú">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
       </div>
+      <nav class="mnav" id="mnav" aria-label="Menú principal" inert>
+        <div class="mnav-inner">
+          <a class="mnav-cta" href="/servicios/agendar">Agendar servicio<svg class="ni" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
+
+          <p class="mnav-heading">Taller</p>
+          <div class="mnav-acc">
+            <button class="mnav-row" type="button" aria-expanded="false" aria-controls="mnav-servicios">
+              <svg class="ni mnav-icon" aria-hidden="true"><use href="#ni-wrench"/></svg><span class="mnav-label">Servicios</span><svg class="ni mnav-chev" aria-hidden="true"><use href="#ni-chev"/></svg>
+            </button>
+            <div class="mnav-sub" id="mnav-servicios">
+              <div class="mnav-sub-inner">
+                <% nav.serviceGroups.forEach(function (group) { %>
+                <p class="mnav-subhead"><%= group.title %></p>
+                <div class="mnav-chips">
+                  <% group.items.forEach(function (it) { %><a class="mnav-chip" href="<%= it.href %>"><%= it.label %></a><% }) %>
+                </div>
+                <% }) %>
+                <a class="mnav-all" href="/servicios">Ver todos los servicios<svg class="ni" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
+              </div>
+            </div>
+          </div>
+          <a class="mnav-row" href="/cursos"><svg class="ni mnav-icon" aria-hidden="true"><use href="#ni-book"/></svg><span class="mnav-label">Cursos</span><svg class="ni mnav-go" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
+
+          <p class="mnav-heading">Tienda</p>
+          <div class="mnav-acc">
+            <button class="mnav-row" type="button" aria-expanded="false" aria-controls="mnav-tienda">
+              <svg class="ni mnav-icon" aria-hidden="true"><use href="#ni-bike"/></svg><span class="mnav-label">Tienda</span><svg class="ni mnav-chev" aria-hidden="true"><use href="#ni-chev"/></svg>
+            </button>
+            <div class="mnav-sub" id="mnav-tienda">
+              <div class="mnav-sub-inner">
+                <p class="mnav-subhead">Categorías</p>
+                <div class="mnav-chips">
+                  <% nav.shop.categories.forEach(function (l) { %><a class="mnav-chip" href="<%= l.href %>"><%= l.label %></a><% }) %>
+                </div>
+                <p class="mnav-subhead">Acceso rápido</p>
+                <div class="mnav-chips">
+                  <% nav.shop.quick.forEach(function (l) { %><a class="mnav-chip" href="<%= l.href %>"><%= l.label %></a><% }) %>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a class="mnav-row" href="/carrito"><svg class="ni mnav-icon" aria-hidden="true"><use href="#ni-cart"/></svg><span class="mnav-label">Carrito</span><span class="mnav-count" data-count="cart"><%= navCartCount %></span><svg class="ni mnav-go" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
+
+          <p class="mnav-heading">Comunidad</p>
+          <a class="mnav-row" href="/club"><svg class="ni mnav-icon" aria-hidden="true"><use href="#ni-users"/></svg><span class="mnav-label">Club</span><svg class="ni mnav-go" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
+          <a class="mnav-row" href="<%= navEventsHref %>"><svg class="ni mnav-icon" aria-hidden="true"><use href="#ni-calendar"/></svg><span class="mnav-label">Eventos</span><% if (navEvents > 0) { %><span class="mnav-count" data-count="events"><%= navEvents %></span><% } %><svg class="ni mnav-go" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
+          <a class="mnav-row" href="/clasificados"><svg class="ni mnav-icon" aria-hidden="true"><use href="#ni-tag"/></svg><span class="mnav-label">Clasificados</span><svg class="ni mnav-go" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
+
+          <div class="mnav-foot<%= user ? ' mnav-user' : '' %>">
+            <% if (user) { %>
+            <p class="mnav-hello">Hola, <strong><%= user.name %></strong></p>
+            <div class="mnav-foot-links">
+              <a class="mnav-mini" href="/club/panel"><svg class="ni" aria-hidden="true"><use href="#ni-gauge"/></svg>Mi panel</a>
+              <a class="mnav-mini" href="/club/panel#vehiculos"><svg class="ni" aria-hidden="true"><use href="#ni-bike"/></svg>Mis vehículos</a>
+              <% if (user.role === 'admin') { %>
+              <a class="mnav-mini" href="/admin"><svg class="ni" aria-hidden="true"><use href="#ni-shield"/></svg>Panel admin</a>
+              <% } %>
+              <form action="/club/logout" method="post">
+                <button class="mnav-mini" type="submit"><svg class="ni" aria-hidden="true"><use href="#ni-logout"/></svg>Cerrar sesión</button>
+              </form>
+            </div>
+            <% } else { %>
+            <a class="mnav-btn mnav-btn--ghost" href="/club/login">Iniciar sesión</a>
+            <a class="mnav-btn" href="/club/registro">Registro</a>
+            <% } %>
+          </div>
+        </div>
+      </nav>
       <% if (user) { %>
         <div class="sub-embed">
           <div class="sub-inner">

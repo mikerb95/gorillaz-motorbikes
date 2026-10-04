@@ -28,6 +28,35 @@
   ];
   var reducido = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Burbuja doble, como la de codebymike.net: el verde y el logo siguen
+  // diciendo WhatsApp, y el círculo oscuro con la chispa dice que adentro
+  // también hay un asistente con IA. Se arma aquí y no en el HTML porque sin
+  // JavaScript la burbuja es solo el enlace a WhatsApp; si la IA resulta no
+  // estar disponible, el círculo se quita.
+  function burbujaDoble(si) {
+    var ia = fab.querySelector('.wa-fab-ia');
+    if (!si) {
+      if (ia) { ia.remove(); fab.querySelector('.wa-fab-raya').remove(); }
+      fab.removeAttribute('data-ia');
+      fab.setAttribute('aria-label', 'Contactar por WhatsApp');
+      return;
+    }
+    if (ia) return;
+    var raya = el('span', 'wa-fab-raya');
+    raya.setAttribute('aria-hidden', 'true');
+    ia = el('span', 'wa-fab-ia');
+    ia.setAttribute('aria-hidden', 'true');
+    ia.innerHTML =
+      '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">' +
+      '<path class="wa-chispa-grande" d="M10.5 5.5C11.1 9.4 13.6 12.4 18 13 13.6 13.6 11.1 16.6 10.5 20.5 9.9 16.6 7.4 13.6 3 13 7.4 12.4 9.9 9.4 10.5 5.5Z"></path>' +
+      '<path class="wa-chispa-chica" d="M18.5 2.5C18.8 4 19.3 5.2 21.5 5.5 19.3 5.8 18.8 7 18.5 8.5 18.2 7 17.7 5.8 15.5 5.5 17.7 5.2 18.2 4 18.5 2.5Z"></path>' +
+      '</svg>';
+    fab.appendChild(raya);
+    fab.appendChild(ia);
+    fab.setAttribute('data-ia', '');
+    fab.setAttribute('aria-label', 'Contacto: WhatsApp o asistente con IA');
+  }
+
   var estado = leer();
   var disponible = null; // null = sin preguntar todavía
   var enviando = false;
@@ -550,5 +579,7 @@
     }, 220);
   }
 
+  burbujaDoble(true);
+  consultarDisponible().then(burbujaDoble);
   setTimeout(mostrarGlobo, GLOBO_ESPERA);
 })();
