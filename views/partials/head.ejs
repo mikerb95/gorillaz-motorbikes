@@ -4,30 +4,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>
-    <%= title || 'Gorillaz Motorbikes | Taller de motos en Bogotá' %>
-  </title>
-  <meta name="description"
-    content="<%= typeof description !== 'undefined' && description ? description : 'Gorillaz Motorbikes — Taller de motos en Bogotá. Mecánica, pintura, electricidad, alistamiento tecnomecánica, escaneo y tienda de accesorios.' %>" />
-  <link rel="canonical"
-    href="https://gorillazmotorbikes.com<%= typeof canonicalPath !== 'undefined' ? canonicalPath : '' %>" />
+  <%#
+    SEO: título con la marca siempre al final, descripción por página y URL
+    canónica propia (middleware/locals.js la calcula con req.path).
+  %>
+  <%
+    var SITE = 'https://gorillazmotorbikes.com';
+    var DEFAULT_TITLE = 'Gorillaz Motorbikes | Taller de motos en Bogotá';
+    var DEFAULT_DESC = 'Taller de motos en Bogotá: mecánica, electricidad, escaneo, pintura, alistamiento para la tecnomecánica y tienda de accesorios. Agenda en línea.';
+    var pageTitle = (typeof title !== 'undefined' && title) ? String(title).trim() : DEFAULT_TITLE;
+    if (!/gorillaz/i.test(pageTitle)) pageTitle += ' | Gorillaz Motorbikes';
+    var pageDesc = (typeof description !== 'undefined' && description) ? String(description).trim() : DEFAULT_DESC;
+    var pagePath = (typeof canonicalPath !== 'undefined' && canonicalPath) ? canonicalPath : '/';
+    var pageUrl = SITE + pagePath;
+    var pageImage = (typeof ogImage !== 'undefined' && ogImage) ? ogImage : SITE + '/images/og-default.jpg';
+    if (pageImage.charAt(0) === '/') pageImage = SITE + pageImage;
+  %>
+  <title><%= pageTitle %></title>
+  <meta name="description" content="<%= pageDesc %>" />
+  <link rel="canonical" href="<%= pageUrl %>" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_CO" />
   <meta property="og:site_name" content="Gorillaz Motorbikes" />
-  <meta property="og:title" content="<%= title || 'Gorillaz Motorbikes | Taller de motos en Bogotá' %>" />
-  <meta property="og:description"
-    content="<%= typeof description !== 'undefined' && description ? description : 'Taller de motos en Bogotá — mecánica, pintura, electricidad, alistamiento tecnomecánica y tienda de accesorios.' %>" />
-  <meta property="og:image"
-    content="<%= typeof ogImage !== 'undefined' ? ogImage : 'https://gorillazmotorbikes.com/images/og-default.jpg' %>" />
-  <meta property="og:url"
-    content="https://gorillazmotorbikes.com<%= typeof canonicalPath !== 'undefined' ? canonicalPath : '' %>" />
+  <meta property="og:title" content="<%= pageTitle %>" />
+  <meta property="og:description" content="<%= pageDesc %>" />
+  <meta property="og:image" content="<%= pageImage %>" />
+  <% if (pageImage === SITE + '/images/og-default.jpg') { %><meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <% } %><meta property="og:url" content="<%= pageUrl %>" />
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="<%= title || 'Gorillaz Motorbikes | Taller de motos en Bogotá' %>" />
-  <meta name="twitter:description"
-    content="<%= typeof description !== 'undefined' && description ? description : 'Taller de motos en Bogotá — mecánica, pintura, electricidad, alistamiento tecnomecánica y tienda de accesorios.' %>" />
-  <meta name="twitter:image"
-    content="<%= typeof ogImage !== 'undefined' ? ogImage : 'https://gorillazmotorbikes.com/images/og-default.jpg' %>" />
+  <meta name="twitter:title" content="<%= pageTitle %>" />
+  <meta name="twitter:description" content="<%= pageDesc %>" />
+  <meta name="twitter:image" content="<%= pageImage %>" />
   <!-- Autor del proyecto: mikerb95 (Gorillaz Motorbikes) -->
   <link rel="icon" href="/favicons/favicon.ico" />
   <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />

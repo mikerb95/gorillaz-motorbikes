@@ -1176,6 +1176,22 @@ function rowToOrder(row) {
     customerPhone: row.customer_phone,
     customerAddress: row.customer_address,
     customerCity: row.customer_city,
+    customerDept: row.customer_dept || null,
+    publicCode: row.public_code || null,
+    subtotal: Number(row.subtotal) || Number(row.total) || 0,
+    discountTotal: Number(row.discount_total) || 0,
+    discounts: safeJson(row.discounts, []),
+    deliveryMethod: row.delivery_method || null,
+    deliveryZone: row.delivery_zone || null,
+    deliveryFee: Number(row.delivery_fee) || 0,
+    installation: safeJson(row.installation, null),
+    appointmentId: row.appointment_id || null,
+    couponCode: row.coupon_code || null,
+    pointsAwarded: Number(row.points_awarded) || 0,
+    fulfillmentStatus: row.fulfillment_status || 'nuevo',
+    stockReserved: Number(row.stock_decremented) === 1,
+    notes: row.notes || null,
+    paidAt: row.paid_at || null,
     createdAt: row.created_at,
   };
 }
@@ -1185,8 +1201,10 @@ async function createOrder(data) {
   await db.execute({
     sql: `INSERT INTO orders
             (id, user_id, bold_order_id, status, total, items,
-             customer_name, customer_email, customer_phone, customer_address, customer_city)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+             customer_name, customer_email, customer_phone, customer_address, customer_city,
+             customer_dept, public_code, subtotal, discount_total, discounts,
+             delivery_method, delivery_zone, delivery_fee, installation, coupon_code, notes)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     args: [
       id,
       data.userId || null,
@@ -1199,9 +1217,63 @@ async function createOrder(data) {
       data.customerPhone || null,
       data.customerAddress || null,
       data.customerCity || null,
+      data.customerDept || null,
+      data.publicCode || null,
+      data.subtotal ?? data.total ?? 0,
+      data.discountTotal || 0,
+      JSON.stringify(data.discounts || []),
+      data.deliveryMethod || null,
+      data.deliveryZone || null,
+      data.deliveryFee || 0,
+      data.installation ? JSON.stringify(data.installation) : null,
+      data.couponCode || null,
+      data.notes || null,
     ],
   });
   return id;
+}
+
+// Seguimiento sin cuenta: el cliente consulta con el código corto del pedido.
+async function getOrderByPublicCode(code) {
+  const r = await db.execute({ sql: 'SELECT * FROM orders WHERE public_code = ?', args: [code] });
+  return rowToOrder(r.rows[0] || null);
+}
+
+// Estado logístico del pedido (independiente del estado del pago).
+async function updateOrderFulfillment(id, fulfillmentStatus) {
+  await db.execute({ sql: 'UPDATE orders SET fulfillment_status = ? WHERE id = ?', args: [fulfillmentStatus, id] });
+}
+
+async function setOrderAppointment(id, appointmentId) {
+  await db.execute({ sql: 'UPDATE orders SET appointment_id = ? WHERE id = ? AND appointment_id IS NULL', args: [appointmentId, id] });
+}
+
+// Libera la reserva de stock de un pedido que no se pagó. Devuelve true solo a
+// quien gana la reclamación, para que el stock no se devuelva dos veces.
+async function claimStockRelease(id) {
+  const r = await db.execute({
+    sql: "UPDATE orders SET stock_decremented = 0 WHERE id = ? AND stock_decremented = 1 AND status != 'paid'",
+    args: [id],
+  });
+  return (r.rowsAffected ?? r.changes ?? 0) > 0;
+}
+
+// Puntos del club por compra: se otorgan una sola vez por pedido.
+async function claimOrderPoints(id, points) {
+  const r = await db.execute({
+    sql: "UPDATE orders SET points_awarded = ? WHERE id = ? AND points_awarded = 0 AND status = 'paid'",
+    args: [points, id],
+  });
+  return (r.rowsAffected ?? r.changes ?? 0) > 0;
+}
+
+// Pedidos sin pagar con reserva de stock vencida (el enlace de pago dura 30 min).
+async function getExpiredReservedOrders(olderThanIso) {
+  const r = await db.execute({
+    sql: "SELECT * FROM orders WHERE stock_decremented = 1 AND status IN ('pending','failed') AND created_at < ?",
+    args: [olderThanIso],
+  });
+  return r.rows.map(rowToOrder);
 }
 
 async function updateOrderStatus(id, status, boldPaymentId) {
@@ -1209,8 +1281,9 @@ async function updateOrderStatus(id, status, boldPaymentId) {
   // Un webhook/return tardío o duplicado con 'failed'/'pending_confirmation' no
   // debe degradarla. Solo un nuevo 'paid' (idempotente) puede tocarla.
   const guard = status === 'paid' ? '' : " AND status != 'paid'";
+  const paidAt = status === 'paid' ? ", paid_at = COALESCE(paid_at, strftime('%Y-%m-%dT%H:%M:%SZ','now'))" : '';
   await db.execute({
-    sql: `UPDATE orders SET status = ?, bold_payment_id = ? WHERE id = ?${guard}`,
+    sql: `UPDATE orders SET status = ?, bold_payment_id = ?${paidAt} WHERE id = ?${guard}`,
     args: [status, boldPaymentId || null, id],
   });
 }
@@ -2876,6 +2949,7 @@ module.exports = {
   createEnrollment,
   createJobApplication,
   createOrder, updateOrderStatus, claimStockDecrement, getOrderById, getAllOrders, getOrdersPage, getOrderStats, getOrdersByUser, countOrders,
+  getOrderByPublicCode, updateOrderFulfillment, setOrderAppointment, claimStockRelease, claimOrderPoints, getExpiredReservedOrders,
   createQuotation, updateQuotation, getDraftQuotations, getQuotationById, getAllQuotations, getConvertedQuotationIds, countQuotations, getQuotationsByMotorcyclePlates, updateQuotationPhone, deleteQuotation,
   createServiceOrder, getServiceOrderById, getAllServiceOrders, getServiceOrdersPage, getServiceOrderStatusCounts, updateServiceOrder, updateServiceOrderPhone, countServiceOrders,
   getServiceOrdersByEmployee, getActiveServiceOrders, countPendingReviewOrders, getServiceOrderEvents, addServiceOrderEvent, detachOrderFromInvoice, deleteServiceOrder, getDueServiceOrders,
