@@ -313,7 +313,6 @@ body.has-subbar .nav-bar .header-inner {
 .nav-squeeze .nav-links>.nav-item>a,
 .nav-squeeze .header-right>a:not(.nav-cta-pill),
 .nav-squeeze .header-right>.nav-item>a,
-.nav-squeeze .nav-cta a,
 .nav-squeeze .header-right form button,
 .nav-squeeze .nav-cta form button {
   padding: 7px 8px
@@ -760,7 +759,6 @@ body.has-subbar .nav-bar .header-inner {
 /* Make right-side and mobile CTA items look like nav links */
 .site-header .header-right>a:not(.nav-cta-pill),
 .site-header .header-right>.nav-item>a,
-.site-header .nav-cta a,
 .site-header .header-right form button,
 .site-header .nav-cta form button {
   background: transparent !important;
@@ -780,7 +778,6 @@ body.has-subbar .nav-bar .header-inner {
 
 .site-header .header-right>a:not(.nav-cta-pill):hover,
 .site-header .header-right>.nav-item>a:hover,
-.site-header .nav-cta a:hover,
 .site-header .header-right form button:hover,
 .site-header .nav-cta form button:hover {
   opacity: 1;
@@ -792,12 +789,6 @@ body.has-subbar .nav-bar .header-inner {
 .site-header .nav-cta form button {
   font-family: inherit;
   font-size: inherit;
-}
-
-.nav-cta {
-  display: none;
-  align-items: center;
-  gap: var(--nav-gap)
 }
 
 .nav form {
@@ -989,7 +980,6 @@ body.has-subbar .nav-bar .header-inner {
 
 .logo-hover-dim .site-header .nav a,
 .logo-hover-dim .site-header .header-right a,
-.logo-hover-dim .site-header .nav-cta a,
 .logo-hover-dim .site-header .header-right form button,
 .logo-hover-dim .site-header .nav-cta form button {
   opacity: .25 !important;
@@ -2572,8 +2562,6 @@ main.schedule-full {
   .nav-compact .site-header .logo img {
     height: 40px
   }
-
-  /* Con la barra de usuario oculta, su contenido vive al pie del panel */
 }
 
 .site-header .mbar-cart {
