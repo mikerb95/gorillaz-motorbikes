@@ -67,18 +67,21 @@
   }
 
   // Rutas internas del sitio ("/servicios/agendar") como enlaces; todo lo
-  // demás, texto plano.
+  // demás, texto plano. La ruta tiene que empezar por letra y venir después de
+  // un espacio o paréntesis, para que "04/10/2026" no se vuelva enlace.
   function pintarTexto(nodo, texto) {
-    var partes = texto.split(/(\/[a-z0-9][a-z0-9\-\/]*[a-z0-9])/g);
-    for (var i = 0; i < partes.length; i++) {
-      if (i % 2 === 1) {
-        var a = el('a', null, partes[i]);
-        a.href = partes[i];
-        nodo.appendChild(a);
-      } else if (partes[i]) {
-        nodo.appendChild(document.createTextNode(partes[i]));
-      }
+    var re = /(^|[\s(])(\/[a-z][a-z0-9\-\/]*[a-z0-9])/g;
+    var desde = 0;
+    var m;
+    while ((m = re.exec(texto))) {
+      var inicio = m.index + m[1].length;
+      nodo.appendChild(document.createTextNode(texto.slice(desde, inicio)));
+      var a = el('a', null, m[2]);
+      a.href = m[2];
+      nodo.appendChild(a);
+      desde = inicio + m[2].length;
     }
+    nodo.appendChild(document.createTextNode(texto.slice(desde)));
   }
 
   function construir() {
@@ -224,7 +227,7 @@
       }
       bajar();
     };
-    if (!animar || reducido) return fin();
+    if (!animar || reducido) { fin(); return b; }
     // Efecto de "escribiendo": la respuesta ya pasó la guardia completa en el
     // servidor; aquí solo se revela de a poco.
     var i = 0;
@@ -236,6 +239,7 @@
       bajar();
       requestAnimationFrame(tick);
     })();
+    return b;
   }
 
   function aviso(texto) {
@@ -264,7 +268,7 @@
     var sug = lista.querySelector('.asesor-sugerencias');
     if (sug) sug.remove();
     campo.value = '';
-    agregarBurbuja('usuario', texto, null, false);
+    var burbuja = agregarBurbuja('usuario', texto, null, false);
     var mensajes = estado.mensajes.concat([{ rol: 'usuario', texto: texto }]);
 
     enviando = true;
@@ -302,7 +306,9 @@
           agregarBurbuja('asesor', d.texto, extra, true);
           return;
         }
-        // La pregunta no quedó en el historial: se puede volver a intentar.
+        // La pregunta no quedó en el historial: vuelve al campo para reintentar.
+        burbuja.remove();
+        if (!campo.value) campo.value = texto;
         if (res.status === 503) {
           disponible = false;
           aviso('El asistente no está disponible en este momento. Escríbele al taller por WhatsApp y te responden.');

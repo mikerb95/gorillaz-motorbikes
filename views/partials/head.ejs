@@ -51,6 +51,9 @@
       <script defer src="/static/js/main.js"></script>
       <script defer src="/static/js/colombia-cities.js"></script>
       <script defer src="/static/js/motorcycle-brands.js"></script>
+  <% var asesorV = typeof assetV === 'function' ? assetV : function () { return 'dev'; }; %>
+  <link rel="stylesheet" href="/static/css/asesor.css?v=<%= asesorV('css/asesor.css') %>" />
+  <script defer src="/static/js/asesor.js?v=<%= asesorV('js/asesor.js') %>"></script>
 </head>
 
 <body<% if (typeof bodyClass !== 'undefined' && bodyClass) { %> class="<%= bodyClass %>"<% } %>>
