@@ -183,3 +183,82 @@ section .sv-card-title { max-width: none }
   .sv-board-col { position: static; height: auto; padding-top: 12px }
   .sv-intro { min-height: auto; padding: 24px 0 40px }
 }
+
+/* ─── Ficha ampliada (/servicios/<slug>) ───────────────────────────────────
+   La misma ficha de la lista, en grande: el retazo de tablero con la
+   herramienta en su gancho a la izquierda y todo el texto a la derecha.
+   Debajo, el tablero completo (board.ejs) con el gancho de este servicio vacío. */
+.sv-detail-page { padding-top: 18px }
+.sv-back { margin: 0 0 14px; font-size: .92rem }
+@media (min-width: 640px) { .sv-detail { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr) } }
+@media (min-width: 1024px) { .sv-detail { min-height: calc(100vh - var(--header-offset, 92px) - 90px) } }
+.sv-detail-tool { padding: 34px 24px 30px; min-height: 260px; align-content: center; gap: 18px }
+.sv-detail-hang { position: relative; display: grid; width: min(100%, 440px); padding-top: 30px }
+.sv-detail-hang > svg { grid-area: 1 / 1; width: 100%; height: auto; aspect-ratio: 200 / 120; overflow: visible }
+.sv-detail-hang .sv-tool { position: relative; z-index: 1; filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .5)) }
+.sv-detail-hang .sv-hook { top: 0; width: 16px; height: 24px; margin-left: -8px; border-width: 4px }
+/* La cinta con el nombre, en naranja: es la herramienta que está en uso. */
+.sv-detail-tag {
+  font-size: .78rem; padding: 5px 12px; margin: 0;
+  background: linear-gradient(180deg, #ff8a3d, #d84f04 60%, #e0600f); text-shadow: 0 -1px 0 rgba(90, 30, 0, .8), 0 1px 0 rgba(255, 255, 255, .3);
+}
+.sv-detail-body { padding: clamp(24px, 4vw, 56px); justify-content: flex-start }
+section .sv-detail-title,
+.sv-detail-title { font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.02; letter-spacing: -.025em; margin: 0 0 14px; max-width: 18ch }
+.sv-detail-lead { font-size: clamp(1.05rem, 1.3vw, 1.2rem); margin-bottom: 22px }
+.sv-detail-text { margin: 6px 0 22px; max-width: 62ch }
+.sv-detail-text p { margin: 0 0 12px; color: #3f3a36; line-height: 1.7 }
+.sv-detail .sv-card-photo { max-width: 520px }
+.sv-detail .sv-card-actions { margin-top: 8px }
+
+.sv-detail-more { margin-top: clamp(44px, 6vw, 80px) }
+.sv-more-title { margin: 0 0 18px; font-size: clamp(1.5rem, 2.6vw, 2.2rem); font-weight: 900; letter-spacing: -.02em }
+@media (min-width: 640px) { .sv-board-wide { grid-template-columns: repeat(4, minmax(0, 1fr)) } }
+@media (min-width: 1024px) { .sv-board-wide { grid-template-columns: repeat(6, minmax(0, 1fr)); padding: 22px 26px 24px } }
+.sv-slot[aria-current] { cursor: default }
+
+/* Las cintas esperan a la rotuladora (detail.mjs; 3 s de gracia, fail-open). */
+.sv-tapes-pending .sv-detail .sv-dymo { clip-path: inset(0 100% 0 0) }
+
+/* ─── Transición de vista: la ficha se amplía (vt.js pone los nombres) ─────
+   sv-card    la ficha blanca, que crece de su sitio en la lista a la página.
+   sv-board   el retazo de tablero perforado. El grupo lleva su propia textura
+              para que los agujeros no se estiren mientras cambia de tamaño.
+   sv-tool    la herramienta: viaja ladeándose, como en el vuelo del tablero.
+   sv-tool-back  entre fichas ampliadas, la que vuelve a su gancho.
+   sv-title   el título, que se acomoda.
+   Con movimiento reducido no hay transición: cambio de página normal. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto }
+}
+::view-transition-group(sv-card),
+::view-transition-group(sv-board),
+::view-transition-group(sv-title),
+::view-transition-group(sv-tool),
+::view-transition-group(sv-tool-back) { animation-duration: .62s; animation-timing-function: cubic-bezier(.65, 0, .25, 1) }
+::view-transition-group(sv-card) { background: #fff; border-radius: 20px; overflow: clip; box-shadow: 0 14px 36px rgba(60, 30, 10, .12) }
+::view-transition-group(sv-board) {
+  border-radius: 20px 20px 0 0; overflow: clip;
+  background:
+    radial-gradient(circle, #07080a 0 2.1px, rgba(0, 0, 0, 0) 2.7px) 0 0 / 20px 20px,
+    radial-gradient(120% 90% at 40% 20%, #2e3136, #1a1c20 75%);
+}
+@media (min-width: 640px) { ::view-transition-group(sv-board) { border-radius: 20px 0 0 20px } }
+/* El contenido de la ficha y del retazo se cambia rápido: sale al empezar y
+   entra al final, cuando la caja ya casi tiene su tamaño (sin estirarse). */
+::view-transition-old(sv-card),
+::view-transition-old(sv-board) { animation: sv-vt-out .18s ease-in both }
+::view-transition-new(sv-card),
+::view-transition-new(sv-board) { animation: sv-vt-in .24s .38s ease-out both }
+/* La herramienta y el encabezado van por encima de la ficha que crece. */
+::view-transition-group(sv-title) { z-index: 2 }
+::view-transition-group(sv-tool),
+::view-transition-group(sv-tool-back) { z-index: 3 }
+::view-transition-group(site-header) { z-index: 4 }
+::view-transition-image-pair(sv-tool),
+::view-transition-image-pair(sv-tool-back) { animation: sv-vt-swing .62s cubic-bezier(.65, 0, .25, 1) both }
+@keyframes sv-vt-out { to { opacity: 0 } }
+@keyframes sv-vt-in { from { opacity: 0 } }
+@keyframes sv-vt-swing {
+  45% { rotate: -14deg; translate: 0 -6% }
+}

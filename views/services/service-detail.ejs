@@ -35,9 +35,11 @@
 
     <article class="sv-card sv-detail" data-slug="<%= service.slug %>" aria-labelledby="sv-h">
       <div class="sv-card-tool sv-detail-tool" aria-hidden="true">
-        <span class="sv-hook"></span>
-        <svg class="sv-sil" viewBox="0 0 200 120" focusable="false"><use href="#sv-t-<%= service.slug %>"/></svg>
-        <svg class="sv-tool" viewBox="0 0 200 120" focusable="false" data-m><use href="#sv-t-<%= service.slug %>"/></svg>
+        <div class="sv-detail-hang">
+          <span class="sv-hook"></span>
+          <svg class="sv-sil" viewBox="0 0 200 120" focusable="false"><use href="#sv-t-<%= service.slug %>"/></svg>
+          <svg class="sv-tool" viewBox="0 0 200 120" focusable="false" data-m><use href="#sv-t-<%= service.slug %>"/></svg>
+        </div>
         <span class="sv-slot-name sv-detail-tag"><%= service.name %></span>
       </div>
       <div class="sv-card-body sv-detail-body">
