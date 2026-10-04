@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Check-in de taller — Gorillaz</title>
+  <% if (ok) { %>
+    <%# Éxito del camino sin JS: la tablet queda abierta todo el día, así que
+        vuelve sola al formulario para el siguiente cliente. %>
+    <meta http-equiv="refresh" content="20;url=/kds/checkin">
+  <% } %>
   <link rel="icon" href="/favicons/favicon.ico" />
   <link rel="preload" href="/static/fonts/barlow/barlow-500-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/barlow/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -16,6 +21,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="/static/js/kds-pwa.js?v=<%= assetV('js/kds-pwa.js') %>" defer></script>
   <script src="/static/js/kds-fullscreen.js?v=<%= assetV('js/kds-fullscreen.js') %>"></script>
+  <script src="/static/js/kds-csrf.js?v=<%= assetV('js/kds-csrf.js') %>" defer></script>
   <style>
     .cw-progress{height:4px;background:var(--kds-line-2);border-radius:2px;overflow:hidden;margin-bottom:26px}
     .cw-progress__bar{height:100%;width:20%;background:var(--kds-brand);transition:width .3s ease}
@@ -300,17 +306,12 @@
     function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
     // Si la página llevaba más de una hora abierta, la cookie CSRF ya venció
-    // (dura 1 h): se pide la página otra vez para estrenar token y se reintenta.
+    // (dura 1 h): se pide un token nuevo y se reintenta una vez.
+    // (El latido de kds-csrf.js ya lo mantiene vigente; esto cubre la tablet
+    // que estuvo sin red más de una hora.)
     function refreshCsrf() {
-      return fetch('/kds/checkin', { credentials: 'same-origin' })
-        .then(function (r) { return r.text(); })
-        .then(function (html) {
-          var m = html.match(/name="_csrf" value="([^"]+)"/);
-          if (!m) throw new Error('sin token');
-          csrf = m[1];
-          card.setAttribute('data-csrf', csrf);
-          form.querySelector('input[name="_csrf"]').value = csrf;
-        });
+      if (window.KdsCsrf) return window.KdsCsrf.refresh().then(function (t) { csrf = t; });
+      return Promise.reject(new Error('sin kds-csrf'));
     }
 
     // POST que se repite ante un corte de red y devuelve { status, data }.
@@ -320,7 +321,7 @@
         return fetch(url, {
           method: 'POST',
           credentials: 'same-origin',
-          headers: { 'Content-Type': contentType, 'Accept': 'application/json', 'x-csrf-token': csrf },
+          headers: { 'Content-Type': contentType, 'Accept': 'application/json', 'x-csrf-token': (window.KdsCsrf && window.KdsCsrf.token()) || csrf },
           body: makeBody(),
         }).then(function (r) {
           if (r.status === 403 && !csrfRetried) {
@@ -378,6 +379,7 @@
       document.getElementById('cwSuccessText').textContent = text;
       document.getElementById('cwSuccessPlate').textContent = normPlate();
       successBox.style.display = '';
+      scheduleSuccessReset();
     }
 
     function escapeHtml(s) {
@@ -385,6 +387,68 @@
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
       });
     }
+
+    // ── Kiosco abierto todo el día ─────────────────────────────────────────
+    // La misma pestaña atiende a todos los clientes del día, así que:
+    //  - tras un registro, vuelve sola al primer paso para el siguiente;
+    //  - si alguien deja el formulario a medias, se limpia tras un rato sin
+    //    uso (sus datos no quedan a la vista del siguiente cliente);
+    //  - cada cliente recibe un id de check-in nuevo;
+    //  - en reposo, recarga cada pocas horas para tomar versiones nuevas.
+    var SUCCESS_RESET_MS = 15000;
+    var IDLE_RESET_MS    = 90000;
+    var RELOAD_AFTER_MS  = 3 * 60 * 60 * 1000;
+    var loadedAt = Date.now();
+    var lastActivity = Date.now();
+    var successTimer = null;
+
+    ['pointerdown', 'keydown', 'input'].forEach(function (ev) {
+      document.addEventListener(ev, function () { lastActivity = Date.now(); }, true);
+    });
+
+    function isPristine() {
+      return idx === 0 && !normPlate() && successBox.style.display === 'none' && !apptPanel.classList.contains('is-active');
+    }
+
+    function resetForAnotherClient() {
+      clearTimeout(successTimer);
+      if (window.KDSKeyboard) window.KDSKeyboard.close();
+      form.querySelectorAll('input[type="text"], input[type="tel"]').forEach(function (inp) {
+        inp.value = inp.name === 'clientPhoneCountry' ? '+57' : '';
+      });
+      document.getElementById('checkinId').value = uuid4();
+      var err = document.querySelector('.kds-error');
+      if (err) err.remove();
+      lookupDone = false;
+      idx = 0;
+      hideAppointment();
+      confirmBusy(false);
+      submitBusy(false);
+      successBox.style.display = 'none';
+      card.style.display = '';
+      render();
+    }
+
+    // Llamado por showSuccess: deja leer la confirmación y vuelve al inicio.
+    function scheduleSuccessReset() {
+      clearTimeout(successTimer);
+      successTimer = setTimeout(resetForAnotherClient, SUCCESS_RESET_MS);
+    }
+
+    setInterval(function () {
+      var idle = Date.now() - lastActivity;
+      if (!isPristine() && successBox.style.display === 'none' && idle > IDLE_RESET_MS && !submitBtn.disabled && !confirmBtn.disabled) {
+        resetForAnotherClient();
+      }
+      // Recarga solo en reposo y si el servidor responde: si la red está
+      // caída, una recarga dejaría la tablet en la página de error.
+      if (isPristine() && idle > IDLE_RESET_MS && Date.now() - loadedAt > RELOAD_AFTER_MS) {
+        loadedAt = Date.now();
+        fetch('/kds/checkin', { method: 'HEAD', cache: 'no-store' })
+          .then(function (r) { if (r.ok) location.reload(); })
+          .catch(function () { /* sin red: se reintenta en el próximo ciclo */ });
+      }
+    }, 5000);
 
     form.addEventListener('click', function (e) {
       if (e.target.matches('[data-next]')) { e.preventDefault(); goNext(); }

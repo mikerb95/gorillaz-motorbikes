@@ -73,13 +73,14 @@ function stamp(box) {
 
 function initSuccess(box) {
   const shown = () => box.style.display !== 'none' && box.offsetParent !== null;
-  if (shown()) {
-    stamp(box);
-    return null;
-  }
-  // El de la cita aparece después (cuando el inline le quita display:none).
+  let wasShown = shown();
+  if (wasShown) stamp(box);
+  // La pestaña atiende a todo el día: el éxito aparece y desaparece muchas
+  // veces (el inline cambia su display), y cada vez cae el sello.
   const mo = new MutationObserver(() => {
-    if (shown()) { mo.disconnect(); stamp(box); }
+    const now = shown();
+    if (now && !wasShown) stamp(box);
+    wasShown = now;
   });
   mo.observe(box, { attributes: true, attributeFilter: ['style'] });
   return { destroy() { mo.disconnect(); } };

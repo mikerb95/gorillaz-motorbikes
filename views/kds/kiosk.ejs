@@ -16,6 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="/static/js/kds-pwa.js?v=<%= assetV('js/kds-pwa.js') %>" defer></script>
   <script src="/static/js/kds-fullscreen.js?v=<%= assetV('js/kds-fullscreen.js') %>"></script>
+  <script src="/static/js/kds-csrf.js?v=<%= assetV('js/kds-csrf.js') %>" defer></script>
   <%# Las fichas del "taller en vivo" se esconden antes del primer pintado para
       que caigan sin parpadeo. Si el módulo no llega a montar en 2,5 s, se
       devuelven: el marcado del servidor es el estado final. %>
@@ -246,7 +247,7 @@
         try {
           var resp = await fetch('/kds/tv/comando', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '<%= csrfToken %>' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': (window.KdsCsrf ? window.KdsCsrf.token() : '<%= csrfToken %>') },
             body: JSON.stringify({ action: btn.dataset.tvCmd }),
           });
           var data = await resp.json().catch(function () { return null; });
@@ -274,7 +275,7 @@
     async function postJson(url, body) {
       var resp = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '<%= csrfToken %>' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': (window.KdsCsrf ? window.KdsCsrf.token() : '<%= csrfToken %>') },
         body: JSON.stringify(body || {}),
       });
       var data = await resp.json().catch(function () { return null; });
