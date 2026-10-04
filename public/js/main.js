@@ -77,13 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (nextState !== prevState) {
       body.classList.toggle('nav-compact', nextState === 'compact');
       body.classList.toggle('nav-squeeze', nextState === 'squeeze');
-      if (prevState === 'compact' && nextState !== 'compact') {
-        // Ensure overlay menu is closed when returning from compact
-        const nav = document.querySelector('[data-nav]');
-        const toggle = document.querySelector('.nav-toggle');
-        if (nav) { nav.setAttribute('data-open', 'false'); }
-        if (toggle) { toggle.setAttribute('aria-expanded', 'false'); }
-      }
+      // El panel móvil se cierra solo si la barra vuelve a ser la de escritorio
+      document.dispatchEvent(new CustomEvent('navlayoutchange'));
     } else {
       // No state change: if we removed classes for measuring, reapply the same
       if (prevState === 'compact') body.classList.add('nav-compact');
@@ -212,56 +207,84 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('has-hero');
   }
 
-  const toggle = document.querySelector('.nav-toggle');
-  const nav = document.querySelector('[data-nav]');
-
-  const closeNav = () => {
-    if (!nav || !toggle) return;
-    nav.setAttribute('data-open', 'false');
-    toggle.setAttribute('aria-expanded', 'false');
-    toggle.textContent = '☰';
-  };
-
-  if (toggle && nav) {
-    toggle.addEventListener('click', () => {
-      const open = nav.getAttribute('data-open') === 'true';
-      nav.setAttribute('data-open', String(!open));
-      toggle.setAttribute('aria-expanded', String(!open));
-      toggle.textContent = !open ? '✕' : '☰';
-      setHeaderOffset();
-    });
-
-    // Close menu when tapping a non-submenu-parent link
-    nav.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        const isSubmenuParent = link.closest('.nav-item.has-submenu') &&
-          link === link.closest('.nav-item.has-submenu').querySelector(':scope > a');
-        if (!isSubmenuParent) closeNav();
+  // Panel móvil (<=900px y modo compact): la barra naranja se expande con el menú.
+  const mnav = document.getElementById('mnav');
+  const mToggle = document.querySelector('.mnav-toggle');
+  const mBackdrop = document.querySelector('.mnav-backdrop');
+  if (mnav && mToggle && navBar) {
+    const mobileNav = () => !desktopNavMq.matches || document.body.classList.contains('nav-compact');
+    const isOpen = () => mnav.classList.contains('is-open');
+    const focusables = () => [mToggle, ...mnav.querySelectorAll('a[href], button:not([disabled])')]
+      .filter(el => el === mToggle || el.offsetParent !== null);
+    const setMnav = (open, { restoreFocus = true } = {}) => {
+      if (open === isOpen()) return;
+      // Alto de la fila de la barra: el panel ocupa el resto de la pantalla
+      if (menuHost) navBar.style.setProperty('--mbar-h', Math.ceil(menuHost.getBoundingClientRect().bottom) + 'px');
+      mnav.classList.toggle('is-open', open);
+      mnav.inert = !open;
+      navBar.classList.toggle('mnav-open', open);
+      if (mBackdrop) mBackdrop.classList.toggle('is-on', open);
+      document.documentElement.classList.toggle('mnav-lock', open);
+      mToggle.setAttribute('aria-expanded', String(open));
+      mToggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+      if (!open) {
+        mnav.querySelectorAll('.mnav-acc.is-open').forEach(acc => setAcc(acc, false));
+        if (restoreFocus && mnav.contains(document.activeElement)) mToggle.focus({ preventScroll: true });
+      }
+    };
+    const setAcc = (acc, open) => {
+      acc.classList.toggle('is-open', open);
+      const btn = acc.querySelector(':scope > .mnav-row');
+      if (btn) btn.setAttribute('aria-expanded', String(open));
+      const sub = acc.querySelector(':scope > .mnav-sub');
+      if (sub) sub.inert = !open;
+    };
+    mnav.querySelectorAll('.mnav-acc').forEach(acc => {
+      setAcc(acc, false);
+      const btn = acc.querySelector(':scope > .mnav-row');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const open = !acc.classList.contains('is-open');
+        // Solo un acordeón abierto a la vez
+        mnav.querySelectorAll('.mnav-acc.is-open').forEach(other => { if (other !== acc) setAcc(other, false); });
+        setAcc(acc, open);
       });
     });
 
-    // Close menu when tapping outside the panel (it no longer covers the full screen)
-    document.addEventListener('click', (e) => {
-      if (nav.getAttribute('data-open') !== 'true') return;
-      if (nav.contains(e.target) || toggle.contains(e.target)) return;
-      closeNav();
+    mToggle.addEventListener('click', () => setMnav(!isOpen()));
+    if (mBackdrop) mBackdrop.addEventListener('click', () => setMnav(false));
+    // Navegar desde el panel lo cierra (sin devolver el foco: la página cambia)
+    mnav.addEventListener('click', (e) => {
+      if (e.target.closest('a[href]')) setMnav(false, { restoreFocus: false });
     });
+    document.addEventListener('keydown', (e) => {
+      if (!isOpen()) return;
+      if (e.key === 'Escape') { setMnav(false); return; }
+      if (e.key !== 'Tab') return;
+      // Foco atrapado entre la hamburguesa y el contenido del panel
+      const list = focusables();
+      if (!list.length) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+    const closeIfDesktop = () => { if (!mobileNav()) setMnav(false, { restoreFocus: false }); };
+    desktopNavMq.addEventListener('change', closeIfDesktop);
+    document.addEventListener('navlayoutchange', closeIfDesktop);
+    // bfcache: al volver atrás la página no debe quedar con el panel abierto
+    window.addEventListener('pageshow', (e) => { if (e.persisted) setMnav(false, { restoreFocus: false }); });
   }
 
-  // Touch-friendly submenus: tap parent link toggles submenu on mobile
-  document.querySelectorAll('.nav-item.has-submenu > a').forEach(parentLink => {
-    parentLink.addEventListener('click', (e) => {
-      if (window.innerWidth > 900) return;
-      e.preventDefault();
-      const item = parentLink.closest('.nav-item.has-submenu');
-      const isOpen = item.classList.contains('submenu-touch-open');
-      // Close all open submenus first
-      document.querySelectorAll('.nav-item.has-submenu.submenu-touch-open').forEach(el => {
-        el.classList.remove('submenu-touch-open');
-      });
-      if (!isOpen) item.classList.add('submenu-touch-open');
+  // Con sesión, la barra de usuario se oculta en móvil/compact: el alto del header
+  // cambia al cruzar ese límite, así que se vuelve a medir (con el panel cerrado).
+  if (document.body.classList.contains('has-subbar')) {
+    window.addEventListener('resize', () => {
+      if (navBar && navBar.classList.contains('mnav-open')) return;
+      clearTimeout(setHeaderOffset._t);
+      setHeaderOffset._t = setTimeout(setHeaderOffset, 120);
     });
-  });
+  }
 
   // Build and animate the orange blob under brand and nav items (hidden by default)
   const headerInner = document.querySelector('.header-inner');
@@ -269,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // La pill CTA y las tarjetas del panel ya tienen fondo propio: sin blob
   const noBlob = (el) => !el.matches('.nav-cta-pill, .nav-feature, .nav-feature-btn');
   const links = Array.from(document.querySelectorAll('.nav-links a')).filter(noBlob);
-  const ctaLinks = Array.from(document.querySelectorAll('.header-right a, .nav-cta a, .nav-cta form button, .header-right form button')).filter(noBlob);
+  const ctaLinks = Array.from(document.querySelectorAll('.header-right a, .header-right form button')).filter(noBlob);
   if (headerInner && logo) {
     const blob = document.createElement('div');
     blob.className = 'nav-blob';
