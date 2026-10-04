@@ -144,11 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
     navBar.classList.toggle('submenu-open', depth > 0);
   };
 
-  // Paneles compactos (Club, Carrito): alineados con su ítem dentro de .header-inner
+  // Paneles compactos (Club, Carrito): alineados con su ítem dentro de .header-inner.
+  // --bridge: alto del hueco entre el link y el panel (el puente invisible del CSS).
   const placePanel = (item) => {
-    const mode = item.dataset.panel;
-    if (!menuHost || (mode !== 'item-left' && mode !== 'item-right')) return;
+    if (!menuHost) return;
     const host = menuHost.getBoundingClientRect();
+    const trigger = item.querySelector(':scope > a') || item;
+    const t = trigger.getBoundingClientRect();
+    item.style.setProperty('--bridge', Math.max(0, Math.floor(host.bottom - t.bottom)) + 'px');
+    const mode = item.dataset.panel;
+    if (mode !== 'item-left' && mode !== 'item-right') return;
     const r = item.getBoundingClientRect();
     const x = mode === 'item-left' ? r.left - host.left : host.right - r.right;
     item.style.setProperty('--panel-x', Math.max(12, Math.round(x)) + 'px');

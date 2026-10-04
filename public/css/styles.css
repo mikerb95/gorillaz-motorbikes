@@ -300,7 +300,8 @@ body.has-subbar .nav-bar .header-inner {
   column-gap: 8px
 }
 
-.nav-squeeze .nav-left {
+.nav-squeeze .nav-left,
+.nav-squeeze .nav-links {
   gap: calc(var(--nav-gap) - 10px)
 }
 
@@ -372,20 +373,15 @@ body.has-subbar .nav-bar .header-inner {
     left: 20px
   }
 
-  /* Puente invisible sobre el panel: cubre el hueco entre el ítem y el panel
-     sin tapar los demás links (en los anchos es bajo; en los compactos va bajo su ítem). */
+  /* Puente invisible sobre el panel: cubre justo el hueco entre el borde inferior
+     del link y el panel (--bridge lo mide main.js), así nunca tapa ningún link. */
   .nav-item.has-submenu .nav-submenu::before {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    top: -12px;
-    height: 26px
-  }
-
-  .nav-item[data-panel^="item"]>.nav-submenu::before {
-    top: -34px;
-    height: 48px
+    top: calc(-1 * var(--bridge, 8px));
+    height: var(--bridge, 8px)
   }
 
   body:not(.nav-compact) .nav-item.has-submenu:hover>.nav-submenu,
@@ -2729,6 +2725,21 @@ main.schedule-full {
     border: none !important;
     padding-left: 24px;
     font-size: .85rem
+  }
+
+  /* Provisional hasta el panel móvil nuevo: el contenido de los paneles de escritorio
+     se ve como la lista simple de antes */
+  .nav .nav-sub-desc,
+  .nav .nav-sub-icon,
+  .nav .nav-chev,
+  .site-header .nav a.nav-feature,
+  .nav .nav-panel-heading {
+    display: none
+  }
+
+  .nav .nav-panel-cols,
+  .nav .nav-panel-col {
+    display: contents
   }
 
   .nav-item.has-submenu>a::after {
