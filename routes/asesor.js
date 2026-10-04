@@ -7,6 +7,9 @@ const express = require('express');
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const { validarEntrada } = require('../helpers/asesor/bucle');
 const { AsesorNoDisponible, disponible, responder } = require('../helpers/asesor/motor');
+const { DatosInvalidos, buscarOrden } = require('../helpers/asesor/orden');
+const { getServiceOrdersByPlate } = require('../db');
+const { calcParking, loadParqueaderoConfig } = require('./services');
 
 const router = express.Router();
 
@@ -41,6 +44,18 @@ const estadoLimiter = rateLimit({
   message: { disponible: false },
 });
 
+// Placa + 4 dígitos son 10.000 combinaciones por placa: pocos intentos
+// fallidos por IP. Las consultas que encuentran la orden no cuentan.
+const ordenLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 8,
+  keyGenerator: ipVisitante,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'limite_ip' },
+});
+
 function sinCache(res) {
   res.set('Cache-Control', 'no-store');
   return res;
@@ -61,6 +76,24 @@ router.post('/', preguntaLimiter, async (req, res) => {
   } catch (err) {
     if (err instanceof AsesorNoDisponible) return res.status(503).json({ error: 'no_disponible' });
     console.error('[asesor]', err && err.message ? err.message : err);
+    res.status(502).json({ error: 'fallo' });
+  }
+});
+
+/** Estado de una moto desde el chat. No pasa por la IA (helpers/asesor/orden). */
+router.post('/orden', ordenLimiter, async (req, res) => {
+  sinCache(res);
+  try {
+    const r = await buscarOrden(req.body, {
+      ordenesPorPlaca: getServiceOrdersByPlate,
+      parqueadero: (o) => calcParking(o, loadParqueaderoConfig()),
+    });
+    // 404 cuenta para el límite: igual si no hay orden o si el celular no coincide.
+    if (!r) return res.status(404).json({ error: 'no_encontrada' });
+    res.json(r);
+  } catch (err) {
+    if (err instanceof DatosInvalidos) return res.status(400).json({ error: err.message });
+    console.error('[asesor/orden]', err && err.message ? err.message : err);
     res.status(502).json({ error: 'fallo' });
   }
 });
