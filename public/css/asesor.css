@@ -415,6 +415,22 @@
   animation: wa-chispa-chica 7s ease-in-out infinite;
 }
 
+/* Además del latido, cada estrella gira sobre su propio centro sin parar: la
+   grande despacio, la chica más rápido y al revés. El giro va en el <g> y el
+   latido en el <path>, para que los dos transform no se pisen. */
+.wa-giro-grande,
+.wa-giro-chica {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.wa-giro-grande { animation: wa-giro 9s linear infinite; }
+.wa-giro-chica { animation: wa-giro 5s linear infinite reverse; }
+
+@keyframes wa-giro {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes wa-chispa-grande {
   0%, 80%, 100% { transform: scale(1); filter: none; }
   87% { transform: scale(1.2) rotate(8deg); filter: drop-shadow(0 0 3px var(--brand, #f25c05)); }
@@ -446,6 +462,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .wa-giro-grande,
+  .wa-giro-chica,
   .wa-chispa-grande,
   .wa-chispa-chica,
   .asesor-globo:not([hidden]),

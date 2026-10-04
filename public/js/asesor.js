@@ -48,8 +48,8 @@
     ia.setAttribute('aria-hidden', 'true');
     ia.innerHTML =
       '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">' +
-      '<path class="wa-chispa-grande" d="M10.5 5.5C11.1 9.4 13.6 12.4 18 13 13.6 13.6 11.1 16.6 10.5 20.5 9.9 16.6 7.4 13.6 3 13 7.4 12.4 9.9 9.4 10.5 5.5Z"></path>' +
-      '<path class="wa-chispa-chica" d="M18.5 2.5C18.8 4 19.3 5.2 21.5 5.5 19.3 5.8 18.8 7 18.5 8.5 18.2 7 17.7 5.8 15.5 5.5 17.7 5.2 18.2 4 18.5 2.5Z"></path>' +
+      '<g class="wa-giro-grande"><path class="wa-chispa-grande" d="M10.5 5.5C11.1 9.4 13.6 12.4 18 13 13.6 13.6 11.1 16.6 10.5 20.5 9.9 16.6 7.4 13.6 3 13 7.4 12.4 9.9 9.4 10.5 5.5Z"></path></g>' +
+      '<g class="wa-giro-chica"><path class="wa-chispa-chica" d="M18.5 2.5C18.8 4 19.3 5.2 21.5 5.5 19.3 5.8 18.8 7 18.5 8.5 18.2 7 17.7 5.8 15.5 5.5 17.7 5.2 18.2 4 18.5 2.5Z"></path></g>' +
       '</svg>';
     fab.appendChild(raya);
     fab.appendChild(ia);
