@@ -19,7 +19,7 @@
   var w = window;
   // detail.mjs espera a que termine la transición de entrada para imprimir las
   // cintas; sin soporte (o sin transición) la promesa resuelve null.
-  if (!('onpagereveal' in w) || !('onpageswap' in w)) {
+  if (!('onpagereveal' in w) || !('onpageswap' in w) || !w.navigation) {
     w.__svRevealed = Promise.resolve(null);
     return;
   }
@@ -39,6 +39,24 @@
   }
 
   var here = parse(location.href) || {};
+
+  // De dónde viene y a dónde va cada cambio de página. La URL de las otras
+  // entradas del historial llega null con Referrer-Policy no-referrer (helmet),
+  // así que cada página deja su ruta en el estado de su propia entrada.
+  try {
+    var st = w.navigation.currentEntry.getState();
+    if (!st || typeof st !== 'object' || st.svPath !== location.pathname) {
+      w.navigation.updateCurrentEntry({ state: Object.assign({}, st && typeof st === 'object' ? st : {}, { svPath: location.pathname }) });
+    }
+  } catch (e) {}
+  function where(entry) {
+    if (!entry) return null;
+    if (entry.url) return parse(entry.url);
+    try {
+      var s = entry.getState();
+      return s && s.svPath ? parse(s.svPath) : null;
+    } catch (e) { return null; }
+  }
 
   function name(el, n) {
     if (!el) return;
@@ -95,20 +113,12 @@
     }
   }
 
-  // Relevo entre las dos páginas: quién sale y hacia dónde. No sirve
-  // navigation.activation.from: con Referrer-Policy no-referrer (helmet) la
-  // URL de las otras entradas del historial llega null.
-  var HANDOFF = 'sv-vt';
-
   // Página que se va.
   w.addEventListener('pageswap', function (e) {
     clear();
-    try { sessionStorage.removeItem(HANDOFF); } catch (err) {}
-    if (!e.viewTransition || !e.activation || !e.activation.entry) return;
-    var toUrl = e.activation.entry.url;
-    var to = parse(toUrl);
+    if (!e.viewTransition || !e.activation) return;
+    var to = where(e.activation.entry);
     if (!to) return;
-    try { sessionStorage.setItem(HANDOFF, JSON.stringify({ from: location.pathname, to: new URL(toUrl).pathname })); } catch (err) {}
     if (here.board && to.slug) {
       if (!nameCard(to.slug)) e.viewTransition.skipTransition();
     } else if (here.slug && to.board) {
@@ -128,12 +138,7 @@
   w.addEventListener('pagereveal', function (e) {
     clear(); // por si la página vuelve del bfcache con nombres puestos
     var vt = e.viewTransition;
-    var from = null;
-    try {
-      var h = JSON.parse(sessionStorage.getItem(HANDOFF) || 'null');
-      sessionStorage.removeItem(HANDOFF);
-      if (vt && h && h.to === location.pathname) from = parse(h.from);
-    } catch (err) {}
+    var from = vt && w.navigation.activation ? where(w.navigation.activation.from) : null;
     if (vt && from) {
       if (here.slug && from.board) nameCard(here.slug);
       else if (here.board && from.slug) nameCard(from.slug);

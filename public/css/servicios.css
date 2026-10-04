@@ -193,6 +193,8 @@ section .sv-card-title { max-width: none }
 @media (min-width: 640px) { .sv-detail { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr) } }
 @media (min-width: 1024px) { .sv-detail { min-height: calc(100vh - var(--header-offset, 92px) - 90px) } }
 .sv-detail-tool { padding: 34px 24px 30px; min-height: 260px; align-content: center; gap: 18px }
+/* En columnas, el texto alarga la ficha: la herramienta cuelga arriba, a la vista. */
+@media (min-width: 640px) { .sv-detail-tool { align-content: start; padding-top: clamp(48px, 9vh, 110px) } }
 .sv-detail-hang { position: relative; display: grid; width: min(100%, 440px); padding-top: 30px }
 .sv-detail-hang > svg { grid-area: 1 / 1; width: 100%; height: auto; aspect-ratio: 200 / 120; overflow: visible }
 .sv-detail-hang .sv-tool { position: relative; z-index: 1; filter: drop-shadow(0 12px 10px rgba(0, 0, 0, .5)) }
@@ -211,7 +213,9 @@ section .sv-detail-title,
 .sv-detail .sv-card-photo { max-width: 520px }
 .sv-detail .sv-card-actions { margin-top: 8px }
 
-.sv-detail-more { margin-top: clamp(44px, 6vw, 80px) }
+/* Sin el padding global de section: el tablero alinea con la ficha. */
+section.sv-detail-more { margin-top: clamp(44px, 6vw, 80px); padding: 0 }
+section .sv-more-title { max-width: none }
 .sv-more-title { margin: 0 0 18px; font-size: clamp(1.5rem, 2.6vw, 2.2rem); font-weight: 900; letter-spacing: -.02em }
 @media (min-width: 640px) { .sv-board-wide { grid-template-columns: repeat(4, minmax(0, 1fr)) } }
 @media (min-width: 1024px) { .sv-board-wide { grid-template-columns: repeat(6, minmax(0, 1fr)); padding: 22px 26px 24px } }
@@ -250,6 +254,10 @@ section .sv-detail-title,
 ::view-transition-old(sv-board) { animation: sv-vt-out .18s ease-in both }
 ::view-transition-new(sv-card),
 ::view-transition-new(sv-board) { animation: sv-vt-in .24s .38s ease-out both }
+/* Título: solo la captura nueva, que se escala sin deformarse (las dos juntas
+   dejan un fantasma porque cada una corta las líneas distinto). */
+::view-transition-old(sv-title) { display: none }
+::view-transition-new(sv-title) { animation: none }
 /* La herramienta y el encabezado van por encima de la ficha que crece. */
 ::view-transition-group(sv-title) { z-index: 2 }
 ::view-transition-group(sv-tool),
