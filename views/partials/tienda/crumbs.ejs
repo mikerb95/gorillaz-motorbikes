@@ -1,0 +1,9 @@
+<% if (typeof crumbs !== 'undefined' && crumbs && crumbs.length) { %>
+<nav class="tn-crumbs" aria-label="Ruta de navegación">
+  <ol>
+    <% crumbs.forEach(function (c, i) { %>
+      <li><% if (i < crumbs.length - 1) { %><a href="<%= c.path %>"><%= c.name %></a><% } else { %><span aria-current="page"><%= c.name %></span><% } %></li>
+    <% }) %>
+  </ol>
+</nav>
+<% } %>

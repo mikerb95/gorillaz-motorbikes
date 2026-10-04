@@ -1,0 +1,43 @@
+<%#
+  Tarjeta de producto. Recibe: p (producto), price (unitPrice del producto),
+  y opcional lazy (false para las primeras tarjetas, mejora el LCP).
+  Dos acciones: "Comprar ahora" (va directo al checkout) y "Agregar".
+  Si el producto tiene variantes, ambas llevan a la ficha para elegir opción.
+%>
+<% var hasVariants = p.variants && p.variants.length > 0;
+   var soldOut = p.stock === 0;
+   var eager = typeof lazy !== 'undefined' && lazy === false; %>
+<article class="tn-card<%= soldOut ? ' is-soldout' : '' %>">
+  <a class="tn-card-media" href="<%= p.url %>" tabindex="-1" aria-hidden="true">
+    <% if (p.image) { %>
+      <img src="<%= p.image %>" alt="" width="400" height="400" <%= eager ? 'fetchpriority=high' : 'loading=lazy' %> decoding="async" />
+    <% } else { %>
+      <span class="tn-nophoto"><svg class="ni" aria-hidden="true"><use href="#ni-bike"/></svg></span>
+    <% } %>
+    <% if (price.pct > 0) { %><span class="tn-tag tn-tag--off">-<%= price.pct %>%</span><% } %>
+    <% if (soldOut) { %><span class="tn-tag tn-tag--out">Agotado</span><% } %>
+  </a>
+  <div class="tn-card-body">
+    <% if (p.brand) { %><span class="tn-card-brand"><%= p.brand %></span><% } %>
+    <h3 class="tn-card-title"><a href="<%= p.url %>"><%= p.name %></a></h3>
+    <% if (p.installable) { %><span class="tn-card-note"><svg class="ni" aria-hidden="true"><use href="#ni-wrench"/></svg>Instalación en el taller</span><% } %>
+    <div class="tn-price">
+      <strong class="tn-price-now"><%= fmtCOP(price.final) %></strong>
+      <% if (price.final < price.base) { %><s class="tn-price-was"><%= fmtCOP(price.base) %></s><% } %>
+      <% if (price.club && !price.isClubApplied) { %><span class="tn-price-club">Precio club <%= fmtCOP(price.club) %></span><% } %>
+      <% if (price.isClubApplied) { %><span class="tn-price-club">Tu precio club</span><% } %>
+    </div>
+  </div>
+  <div class="tn-card-actions">
+    <% if (soldOut) { %>
+      <a class="tn-btn tn-btn--ghost" href="<%= p.url %>">Ver producto</a>
+    <% } else if (hasVariants) { %>
+      <a class="tn-btn tn-btn--primary" href="<%= p.url %>">Elegir opción</a>
+    <% } else { %>
+      <button type="button" class="tn-btn tn-btn--primary" data-buy="<%= p.id %>">Comprar ahora</button>
+      <button type="button" class="tn-btn tn-btn--icon" data-add="<%= p.id %>" data-name="<%= p.name %>" data-image="<%= p.image || '' %>" data-price="<%= fmtCOP(price.final) %>" aria-label="Agregar <%= p.name %> al carrito">
+        <svg class="ni" aria-hidden="true"><use href="#ni-cart"/></svg><span>Agregar</span>
+      </button>
+    <% } %>
+  </div>
+</article>

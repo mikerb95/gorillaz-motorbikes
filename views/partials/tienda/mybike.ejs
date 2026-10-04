@@ -1,0 +1,16 @@
+<%# Selector "Mi moto": filtra la tienda por modelo compatible. Persistente
+    (cookie y, con sesión, la cuenta del club). %>
+<% if (typeof bikeModelsList !== 'undefined' && bikeModelsList.length) { %>
+<form class="tn-mybike" method="post" action="/tienda/mi-moto">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <input type="hidden" name="back" value="<%= typeof backPath !== 'undefined' ? backPath : '/tienda' %>" />
+  <label class="tn-mybike-label" for="mimoto"><svg class="ni" aria-hidden="true"><use href="#ni-bike"/></svg>Mi moto</label>
+  <select id="mimoto" name="moto" data-autosubmit>
+    <option value="">Todas las motos</option>
+    <% bikeModelsList.forEach(function (m) { %>
+      <option value="<%= m.slug %>" <%= myBike && myBike.slug === m.slug ? 'selected' : '' %>><%= m.brand %> <%= m.model %><%= m.cc ? ' ' + m.cc + ' cc' : '' %></option>
+    <% }) %>
+  </select>
+  <noscript><button class="tn-btn tn-btn--ghost" type="submit">Aplicar</button></noscript>
+</form>
+<% } %>

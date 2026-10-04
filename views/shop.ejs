@@ -1,244 +1,143 @@
-<%- include('partials/head', { title: 'Tienda de accesorios y repuestos para motos en Bogotá', description: 'Cascos, guantes, repuestos, accesorios y productos de limpieza para tu moto. Compra en línea en Gorillaz Motorbikes, taller de motos en Bogotá.' }) %>
+<%- include('partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<%
+  var products = result.products;
+  var crumbsList = typeof crumbs !== 'undefined' ? crumbs : [{ name: 'Inicio', path: '/' }, { name: 'Tienda', path: '/tienda' }];
+  var filtering = !!(f.q || f.brand || f.type || f.min !== null || f.max !== null || (f.bike && view !== 'bike'));
+%>
+<div class="tn-page">
+  <%- include('partials/tienda/banner') %>
+  <%- include('partials/tienda/crumbs', { crumbs: crumbsList }) %>
 
-  <main class="container shop-layout">
-    <aside class="shop-sidebar">
-      <form class="shop-filters" method="get" action="/tienda">
-        <div class="filter-group">
-          <label for="q">Buscar</label>
-          <div class="shop-search-wrap">
-            <input id="q" name="q" placeholder="Producto, marca o categoría" value="<%= q %>" />
-            <button type="submit" class="shop-search-btn" aria-label="Buscar">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </button>
+  <header class="tn-head">
+    <div class="tn-head-text">
+      <h1 class="tn-h1"><%= h1 %></h1>
+      <% if (intro) { %><p class="tn-intro"><%= intro %></p><% } %>
+    </div>
+    <%- include('partials/tienda/mybike', { backPath: basePath }) %>
+  </header>
+
+  <% if (categories.length) { %>
+  <nav class="tn-cats" aria-label="Categorías de la tienda">
+    <a class="tn-cat<%= view === 'all' ? ' is-active' : '' %>" href="/tienda">Todo</a>
+    <% categories.forEach(function (c) { %>
+      <a class="tn-cat<%= (typeof category !== 'undefined' && category && category.slug === c.slug) ? ' is-active' : '' %>" href="/tienda/c/<%= c.slug %>"><%= c.name %> <span><%= c.count %></span></a>
+    <% }) %>
+  </nav>
+  <% } %>
+
+  <% if (myBike && view !== 'bike' && f.bike === myBike.slug) { var allQs = qs({ bike: '' }); %>
+    <p class="tn-filter-note">Mostrando productos compatibles con tu <strong><%= myBike.brand %> <%= myBike.model %></strong>. <a href="<%= allQs %><%= allQs.indexOf('?') >= 0 ? '&' : '?' %>todas=1">Ver todos</a></p>
+  <% } %>
+
+  <div class="tn-layout">
+    <aside class="tn-side">
+      <details class="tn-filters" <%= filtering ? 'open' : '' %>>
+        <summary>Filtrar y ordenar</summary>
+        <form method="get" action="<%= basePath %>">
+          <% if (view !== 'bike' && f.bike) { %><input type="hidden" name="moto" value="<%= f.bike %>" /><% } %>
+          <div class="tn-field">
+            <label for="tn-q">Buscar</label>
+            <input id="tn-q" type="search" name="q" value="<%= f.q %>" placeholder="Producto, marca o referencia" />
           </div>
-        </div>
-
-        <div class="filter-group">
-          <div class="filter-title">Categorías</div>
-          <ul class="filter-list">
-            <li><a class="<%= !selectedCat ? 'is-active' : '' %>"
-                href="/tienda<%= baseQuery ? ('?' + baseQuery) : '' %>">
-                <span>Todas</span>
-                <small class="muted">
-                  <%= allProductsCount %>
-                </small>
-              </a></li>
-            <% categories.forEach(c=> { %>
-              <li>
-                <a class="<%= selectedCat === c.slug ? 'is-active' : '' %>"
-                  href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %>cat=<%= c.slug %>">
-                  <span>
-                    <%= c.name %>
-                  </span>
-                  <small class="muted">
-                    <%= c.count %>
-                  </small>
-                </a>
-              </li>
-              <% }) %>
-          </ul>
-        </div>
-
-        <% if (brands && brands.length> 1) { %>
-          <div class="filter-group">
-            <div class="filter-title">Marca</div>
-            <ul class="filter-list">
-              <li><a class="<%= !selectedBrand ? 'is-active' : '' %>"
-                  href="/tienda?<%= baseQuery ? baseQuery : '' %><%= selectedCat ? ('&cat=' + selectedCat) : '' %>">Todas</a>
-              </li>
-              <% brands.forEach(b=> { %>
-                <li><a class="<%= selectedBrand === b ? 'is-active' : '' %>"
-                    href="/tienda?<%= baseQuery ? (baseQuery + '&') : '' %><%= selectedCat ? ('cat=' + selectedCat + '&') : '' %>brand=<%= encodeURIComponent(b) %>">
-                    <%= b %>
-                  </a></li>
-                <% }) %>
-            </ul>
+          <div class="tn-field">
+            <label for="tn-sort">Ordenar por</label>
+            <select id="tn-sort" name="sort">
+              <% Object.keys(sorts).forEach(function (k) { %><option value="<%= k %>" <%= f.sort === k ? 'selected' : '' %>><%= sorts[k] %></option><% }) %>
+            </select>
+          </div>
+          <% if (result.facets.bikeTypes.length > 1) { %>
+          <div class="tn-field">
+            <label for="tn-tipo">Tipo de moto</label>
+            <select id="tn-tipo" name="tipo">
+              <option value="">Todos</option>
+              <% result.facets.bikeTypes.forEach(function (t) { %><option value="<%= t.slug %>" <%= f.type === t.slug ? 'selected' : '' %>><%= t.name %> (<%= t.count %>)</option><% }) %>
+            </select>
           </div>
           <% } %>
-
-            <div class="filter-group">
-              <div class="filter-title">Precio</div>
-              <div class="price-slider" data-price-slider data-min-default="<%= priceStats.min %>"
-                data-max-default="<%= priceStats.max %>">
-                <div class="price-values">
-                  <span>Desde: $<span data-price-min-text>
-                      <%= (min || priceStats.min).toLocaleString('es-CO') %>
-                    </span></span>
-                  <span>Hasta: $<span data-price-max-text>
-                      <%= (max || priceStats.max).toLocaleString('es-CO') %>
-                    </span></span>
-                </div>
-                <div class="slider-rows">
-                  <input type="range" min="<%= priceStats.min %>" max="<%= priceStats.max %>" step="1"
-                    value="<%= min || priceStats.min %>" data-price-min>
-                  <input type="range" min="<%= priceStats.min %>" max="<%= priceStats.max %>" step="1"
-                    value="<%= max || priceStats.max %>" data-price-max>
-                </div>
-                <input type="hidden" name="min" value="<%= min %>">
-                <input type="hidden" name="max" value="<%= max %>">
-              </div>
-            </div>
-
-            <div class="filter-group">
-              <label for="sort">Ordenar</label>
-              <select id="sort" name="sort">
-                <option value="">Relevancia</option>
-                <option value="price-asc" <%=sort==='price-asc' ? 'selected' : '' %>>Precio: menor a mayor</option>
-                <option value="price-desc" <%=sort==='price-desc' ? 'selected' : '' %>>Precio: mayor a menor</option>
-              </select>
-            </div>
-
-            <div class="filter-actions">
-              <button class="btn btn-primary" type="submit">Aplicar</button>
-              <a class="btn btn-ghost" href="/tienda">Limpiar</a>
-            </div>
-      </form>
+          <% if (result.facets.brands.length > 1) { %>
+          <div class="tn-field">
+            <label for="tn-marca">Marca</label>
+            <select id="tn-marca" name="marca">
+              <option value="">Todas</option>
+              <% result.facets.brands.forEach(function (b) { %><option value="<%= b %>" <%= f.brand === b ? 'selected' : '' %>><%= b %></option><% }) %>
+            </select>
+          </div>
+          <% } %>
+          <% if (result.priceRange.max > result.priceRange.min) { %>
+          <fieldset class="tn-field tn-range">
+            <legend>Precio (COP)</legend>
+            <label><span class="sr-only">Desde</span><input type="number" name="min" inputmode="numeric" min="0" step="1000" value="<%= f.min !== null ? f.min : '' %>" placeholder="Desde <%= result.priceRange.min.toLocaleString('es-CO') %>" /></label>
+            <label><span class="sr-only">Hasta</span><input type="number" name="max" inputmode="numeric" min="0" step="1000" value="<%= f.max !== null ? f.max : '' %>" placeholder="Hasta <%= result.priceRange.max.toLocaleString('es-CO') %>" /></label>
+          </fieldset>
+          <% } %>
+          <div class="tn-filter-actions">
+            <button class="tn-btn tn-btn--primary" type="submit">Aplicar</button>
+            <% if (filtering || f.sort) { %><a class="tn-btn tn-btn--ghost" href="<%= basePath %>">Limpiar</a><% } %>
+          </div>
+        </form>
+      </details>
     </aside>
 
-    <section class="shop-content">
-      <!-- Breadcrumb -->
-      <nav class="breadcrumb">
-        <a href="/">Inicio</a>
-        <span class="breadcrumb-sep">›</span>
-        <a href="/tienda">Tienda</a>
-        <% if (selectedCat) { %>
-          <span class="breadcrumb-sep">›</span>
-          <span>
-            <%= (categories.find(c=> c.slug === selectedCat) || {}).name %>
-          </span>
-          <% } %>
-      </nav>
+    <section class="tn-main" aria-labelledby="tn-results">
+      <p class="tn-count" id="tn-results"><%= result.total %> producto<%= result.total === 1 ? '' : 's' %><%= f.q ? ' para "' + f.q + '"' : '' %></p>
 
-      <div class="shop-header">
-        <h1 class="section-title">Tienda</h1>
-        <% if (selectedCat) { %>
-          <div class="muted">Categoría: <strong>
-              <%= (categories.find(c=> c.slug === selectedCat) || {}).name %>
-            </strong></div>
+      <% if (!products.length) { %>
+        <div class="tn-empty">
+          <% if (view === 'bike') { %>
+            <h2>Aún no tenemos productos publicados para <%= bikeModel.brand %> <%= bikeModel.model %></h2>
+            <p>Escríbenos y te decimos qué podemos conseguir e instalar en el taller.</p>
+          <% } else { %>
+            <h2>No encontramos productos con esos filtros</h2>
+            <p>Prueba con otra búsqueda o pregúntanos por WhatsApp: muchas referencias las conseguimos por encargo.</p>
           <% } %>
-            <span class="muted">
-              <%= allProductsCount %> producto(s)
-            </span>
-      </div>
-
-      <% if (products.length===0) { %>
-        <div class="shop-empty">
-          <p>No hay resultados para tu búsqueda.</p>
-          <a class="btn btn-ghost" href="/tienda">Ver todos los productos</a>
-        </div>
-        <% } else { %>
-          <div class="grid products-grid">
-            <% products.forEach(p=> { %>
-              <article class="card product-card">
-                <a href="/tienda/<%= p.id %>" class="product-card-link">
-                  <% const cardImgs = (p.gallery && p.gallery.length > 0) ? p.gallery : [p.image || '/images/download.png']; %>
-                  <div class="card-media">
-                    <% cardImgs.forEach((img, i) => { %>
-                      <img src="<%= img %>" alt="<%= p.name %> imagen <%= i+1 %>" class="<%= i === 0 ? 'active' : '' %>" loading="lazy">
-                    <% }) %>
-                    <% if (cardImgs.length > 1) { %>
-                      <button type="button" class="slider-arrow slider-prev" data-dir="-1" aria-label="Anterior">&#8249;</button>
-                      <button type="button" class="slider-arrow slider-next" data-dir="1" aria-label="Siguiente">&#8250;</button>
-                      <div class="slider-dots">
-                        <% cardImgs.forEach((_, i) => { %><span class="<%= i === 0 ? 'active' : '' %>"></span><% }) %>
-                      </div>
-                    <% } %>
-                    <% if (p.discount > 0) { %><span class="product-discount-chip">-<%= p.discount %>%</span><% } %>
-                    <% if (typeof p.stock === 'number' && p.stock === 0) { %><span class="product-soldout-chip">Agotado</span><% } %>
-                  </div>
-                  <div class="card-body">
-                    <% if (p.brand) { %><span class="product-brand"><%= p.brand %></span><% } %>
-                    <h3 class="card-title"><%= p.name %></h3>
-                    <% if (p.description) { %>
-                      <p class="card-text"><%= p.description.substring(0, 72) %><%= p.description.length > 72 ? '…' : '' %></p>
-                    <% } %>
-                  </div>
-                </a>
-                <div class="product-card-footer">
-                  <div class="price-col">
-                    <% if (p.discount > 0) { %>
-                      <span class="price">$<%= Math.round(p.price * (1 - p.discount / 100)).toLocaleString('es-CO') %></span>
-                      <span class="price-old">$<%= p.price.toLocaleString('es-CO') %></span>
-                    <% } else { %>
-                      <span class="price">$<%= p.price.toLocaleString('es-CO') %></span>
-                    <% } %>
-                  </div>
-                  <button type="button" class="btn btn-add-cart card-add-btn"
-                    data-id="<%= p.id %>"
-                    data-name="<%= p.name %>"
-                    data-image="<%= (p.gallery && p.gallery[0]) || p.image || '/images/download.png' %>"
-                    data-price="$<%= (p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price).toLocaleString('es-CO') %>"
-                    <%= (typeof p.stock === 'number' && p.stock === 0) ? 'disabled' : '' %>>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                      <path d="M3 4h2l2.5 12h9l2-8H7.2"/>
-                      <circle cx="9" cy="20" r="1.5"/>
-                      <circle cx="17" cy="20" r="1.5"/>
-                    </svg>
-                    Agregar
-                  </button>
-                </div>
-              </article>
-              <% }) %>
+          <div class="tn-empty-actions">
+            <a class="tn-btn tn-btn--primary" href="<%= waLink(view === 'bike' ? waMsg.bike({ model: bikeModel.brand + ' ' + bikeModel.model, url: siteUrl + basePath }) : waMsg.shop()) %>" target="_blank" rel="noopener">Preguntar por WhatsApp</a>
+            <% if (filtering) { %><a class="tn-btn tn-btn--ghost" href="<%= basePath %>">Quitar filtros</a><% } %>
           </div>
+        </div>
+      <% } else { %>
+        <div class="tn-grid">
+          <% products.forEach(function (p, i) { %>
+            <%- include('partials/tienda/card', { p: p, price: priceOf(p), lazy: i >= 4 }) %>
+          <% }) %>
+        </div>
 
-          <!-- Pagination -->
-          <% if (totalPages> 1) { %>
-            <nav class="shop-pagination">
-              <% if (page> 1) { %>
-                <a href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %><%= selectedCat ? ('cat=' + selectedCat + '&') : '' %>page=<%= page - 1 %>"
-                  class="btn btn-ghost btn-sm">← Anterior</a>
-                <% } %>
-                  <div class="shop-pagination-pages">
-                    <% for (let i=1; i <=totalPages; i++) { %>
-                      <a href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %><%= selectedCat ? ('cat=' + selectedCat + '&') : '' %>page=<%= i %>"
-                        class="shop-pagination-page <%= i === page ? 'is-active' : '' %>">
-                        <%= i %>
-                      </a>
-                      <% } %>
-                  </div>
-                  <% if (page < totalPages) { %>
-                    <a href="/tienda?<%= baseQuery %><%= baseQuery ? '&' : '' %><%= selectedCat ? ('cat=' + selectedCat + '&') : '' %>page=<%= page + 1 %>"
-                      class="btn btn-ghost btn-sm">Siguiente →</a>
-                    <% } %>
-            </nav>
-            <% } %>
-              <% } %>
+        <% if (result.totalPages > 1) { %>
+        <nav class="tn-pager" aria-label="Páginas">
+          <% if (result.page > 1) { %><a rel="prev" href="<%= qs({ page: result.page - 1 }) %>">Anterior</a><% } %>
+          <% for (var i = 1; i <= result.totalPages; i++) { %>
+            <a href="<%= qs({ page: i }) %>" <%- i === result.page ? 'aria-current="page" class="is-active"' : '' %>><%= i %></a>
+          <% } %>
+          <% if (result.page < result.totalPages) { %><a rel="next" href="<%= qs({ page: result.page + 1 }) %>">Siguiente</a><% } %>
+        </nav>
+        <% } %>
+      <% } %>
+
+      <% if (view === 'bike' && typeof bikeServices !== 'undefined' && bikeServices.length) { %>
+      <section class="tn-section">
+        <h2 class="tn-h2">Servicios para tu <%= bikeModel.brand %> <%= bikeModel.model %></h2>
+        <p class="tn-muted">Lo que compres aquí te lo instalamos en el taller. También hacemos el mantenimiento de tu moto.</p>
+        <ul class="tn-services">
+          <% bikeServices.forEach(function (s) { %>
+            <li><a href="<%= s.href %>"><strong><%= s.name %></strong><span><%= s.desc %></span></a></li>
+          <% }) %>
+        </ul>
+        <a class="tn-btn tn-btn--primary" href="/servicios/agendar">Agendar en el taller</a>
+      </section>
+      <% } %>
+
+      <% if (view === 'all' && typeof bikeModels !== 'undefined' && bikeModels.length) { %>
+      <section class="tn-section">
+        <h2 class="tn-h2">Compra por modelo de moto</h2>
+        <ul class="tn-bikes">
+          <% bikeModels.forEach(function (m) { %>
+            <li><a href="/tienda/moto/<%= m.slug %>"><strong><%= m.brand %> <%= m.model %></strong><span><%= m.count %> producto<%= m.count === 1 ? '' : 's' %></span></a></li>
+          <% }) %>
+        </ul>
+      </section>
+      <% } %>
     </section>
-  </main>
-
-  <script>
-    document.querySelectorAll('.product-card .card-media').forEach(media => {
-      const imgs = media.querySelectorAll('img');
-      if (imgs.length <= 1) return;
-      const dots = media.querySelectorAll('.slider-dots span');
-      let cur = 0;
-
-      function goTo(idx) {
-        imgs[cur].classList.remove('active');
-        dots[cur].classList.remove('active');
-        cur = (idx + imgs.length) % imgs.length;
-        imgs[cur].classList.add('active');
-        dots[cur].classList.add('active');
-      }
-
-      media.querySelectorAll('.slider-arrow').forEach(btn => {
-        btn.addEventListener('click', e => {
-          e.preventDefault();
-          e.stopPropagation();
-          goTo(cur + parseInt(btn.dataset.dir));
-        });
-      });
-
-      let tx = 0;
-      media.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
-      media.addEventListener('touchend', e => {
-        const dx = e.changedTouches[0].clientX - tx;
-        if (Math.abs(dx) > 40) goTo(cur + (dx < 0 ? 1 : -1));
-      });
-    });
-  </script>
-
-  <%- include('partials/footer') %>
+  </div>
+</div>
+<script defer src="/static/js/tienda.js?v=<%= assetV('js/tienda.js') %>"></script>
+<%- include('partials/footer') %>

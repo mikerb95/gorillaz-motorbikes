@@ -1,0 +1,6 @@
+<% if (typeof shopBanner !== 'undefined' && shopBanner) { %>
+<aside class="tn-banner" aria-label="Promoción">
+  <p><%= shopBanner.text %></p>
+  <% if (shopBanner.href && shopBanner.cta) { %><a class="tn-btn tn-btn--light" href="<%= shopBanner.href %>"><%= shopBanner.cta %></a><% } %>
+</aside>
+<% } %>
