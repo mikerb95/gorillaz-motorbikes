@@ -14,8 +14,11 @@
   --radius-lg: 14px;
   --radius-pill: 999px;
   --nav-gap: clamp(12px, 2.4vw, 36px);
-  --nav-center-gap: 84px;
+  /* La columna del logo ya reserva el nombre a escala 1 (se ve a .65): ~60px de aire por lado */
+  --nav-center-gap: 24px;
   --header-offset: 100px;
+  /* Texto naranja oscuro sobre blanco (pill CTA): contraste AA */
+  --nav-cta-ink: #B93D06;
 }
 
 /* Page transitions via View Transitions API */
@@ -119,9 +122,11 @@ a:hover {
   /* intensify edge darkening on orange background */
 }
 
+/* Columnas laterales idénticas: el logo queda en el centro exacto de la barra
+   (y el rayo sale de ahí). Si un lado no cabe, main.js pasa a squeeze/compact. */
 .header-inner {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   column-gap: var(--nav-center-gap);
   padding: 12px 20px;
@@ -303,8 +308,10 @@ body.has-subbar .nav-bar .header-inner {
   gap: calc(var(--nav-gap) - 10px)
 }
 
-.nav-squeeze .nav-links a,
-.nav-squeeze .header-right a,
+.nav-squeeze .nav-links>a,
+.nav-squeeze .nav-links>.nav-item>a,
+.nav-squeeze .header-right>a:not(.nav-cta-pill),
+.nav-squeeze .header-right>.nav-item>a,
 .nav-squeeze .nav-cta a,
 .nav-squeeze .header-right form button,
 .nav-squeeze .nav-cta form button {
@@ -323,54 +330,86 @@ body.has-subbar .nav-bar .header-inner {
   right: -4px
 }
 
-/* Desktop submenu for navbar items (no changes to other items) */
+/* Desktop submenus: paneles dentro de la barra naranja.
+   Todos cuelgan de .header-inner (top:100%) para arrancar en la misma línea:
+   los anchos (Servicios, Tienda) van pegados al borde de su lado, en espejo,
+   y los compactos (Club, Carrito) bajo su ítem con --panel-x (lo fija main.js).
+   La barra crece con --submenu-depth igual que antes. */
 @media (min-width:901px) {
-  .nav-item {
-    position: relative
+  .header-inner .nav-item {
+    position: static
   }
 
   .nav-item>a {
-    display: inline-block
+    display: inline-flex;
+    align-items: center
   }
 
   .nav-item.has-submenu .nav-submenu {
     position: absolute;
-    left: 0;
     top: 100%;
-    margin-top: 0;
+    left: var(--panel-x, 20px);
     display: none;
-    min-width: 220px;
     z-index: 5;
+    padding-top: 14px;
+    color: #fff;
     background: transparent;
     border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    padding-top: 8px
+    box-shadow: none
   }
 
-  .nav-item.has-submenu .nav-submenu a {
-    display: block;
-    padding: 0;
-    margin: 4px 0;
-    color: #fff;
-    font-weight: 400;
-    text-transform: none;
-    border-radius: 0
+  .nav-item[data-panel="item-right"]>.nav-submenu,
+  .nav-item[data-panel="wide-right"]>.nav-submenu {
+    left: auto;
+    right: var(--panel-x, 20px)
   }
 
-  .nav-item.has-submenu .nav-submenu a:hover {
-    background: transparent;
-    text-decoration: none
+  .nav-item[data-panel="wide-right"]>.nav-submenu {
+    right: 20px
   }
 
-  /* Show submenu on hover of the parent item */
-  .nav-item.has-submenu:hover .nav-submenu {
-    display: block
+  .nav-item[data-panel="wide"]>.nav-submenu {
+    left: 20px
   }
 
-  /* Keep visible when hovering the submenu itself */
-  .nav-item.has-submenu .nav-submenu:hover {
-    display: block
+  /* Puente invisible sobre el panel: cubre el hueco entre el ítem y el panel
+     sin tapar los demás links (en los anchos es bajo; en los compactos va bajo su ítem). */
+  .nav-item.has-submenu .nav-submenu::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -12px;
+    height: 26px
+  }
+
+  .nav-item[data-panel^="item"]>.nav-submenu::before {
+    top: -34px;
+    height: 48px
+  }
+
+  body:not(.nav-compact) .nav-item.has-submenu:hover>.nav-submenu,
+  body:not(.nav-compact) .nav-item.has-submenu.is-open>.nav-submenu,
+  body:not(.nav-compact) .nav-item.has-submenu:focus-within>.nav-submenu {
+    display: grid
+  }
+
+  /* Línea que separa la fila principal del panel abierto */
+  .header-inner::after {
+    content: "";
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, .22);
+    opacity: 0;
+    transition: opacity .2s ease;
+    pointer-events: none
+  }
+
+  .nav-bar.submenu-open .header-inner::after {
+    opacity: 1
   }
 
   /* Expand navbar thickness while submenu is visible (class-based, set by JS) */
@@ -386,10 +425,345 @@ body.has-subbar .nav-bar .header-inner {
   body.has-subbar .nav-bar.submenu-open {
     padding-bottom: 0
   }
+
+  /* --- Contenido de los paneles --- */
+  .nav-panel--services {
+    width: min(1000px, calc(100% - 40px));
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 24px;
+    align-items: start
+  }
+
+  .nav-panel--shop {
+    width: 360px
+  }
+
+  .nav-panel--compact {
+    width: 230px;
+    gap: 2px
+  }
+
+  .nav-panel--cart {
+    width: 320px
+  }
+
+  .nav-panel-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 4px 18px
+  }
+
+  .nav-panel-col {
+    display: grid;
+    align-content: start;
+    gap: 2px
+  }
+
+  .nav-panel-heading {
+    display: block;
+    padding: 0 10px 6px;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #fff;
+    opacity: .72
+  }
+
+  .site-header .nav-panel a.nav-sub {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: #fff;
+    opacity: 1;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: .2px;
+    line-height: 1.25;
+    text-align: left;
+    transition: background-color .18s ease
+  }
+
+  .site-header .nav-panel a.nav-sub:hover,
+  .site-header .nav-panel a.nav-sub:focus-visible {
+    background: rgba(255, 255, 255, .12)
+  }
+
+  .nav-sub-icon {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    opacity: .9
+  }
+
+  .nav-sub-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0
+  }
+
+  .nav-sub-title {
+    font-weight: 700;
+    font-size: .9rem
+  }
+
+  .nav-sub-desc {
+    font-size: .74rem;
+    opacity: .78
+  }
+
+  /* Mini-card destacada (no es una franja: fondo tintado completo) */
+  .site-header .nav-panel a.nav-feature {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    padding: 16px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, .14);
+    color: #fff;
+    opacity: 1;
+    text-transform: none;
+    font-weight: 400;
+    letter-spacing: .2px;
+    transition: background-color .2s ease
+  }
+
+  .site-header .nav-panel a.nav-feature:hover,
+  .site-header .nav-panel a.nav-feature:focus-visible {
+    background: rgba(0, 0, 0, .2)
+  }
+
+  .nav-feature-kicker {
+    font-size: .74rem;
+    opacity: .85
+  }
+
+  .nav-feature-title {
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1.2
+  }
+
+  .nav-feature-go {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 7px 12px;
+    border-radius: var(--radius-pill);
+    background: #fff;
+    color: var(--nav-cta-ink);
+    font-size: .74rem;
+    font-weight: 800;
+    letter-spacing: .6px;
+    text-transform: uppercase
+  }
+
+  .nav-feature-go .ni,
+  .site-header .nav-panel a.nav-feature-btn .ni {
+    width: 14px;
+    height: 14px;
+    transition: transform .2s ease
+  }
+
+  .site-header .nav-panel a.nav-feature:hover .nav-feature-go .ni,
+  .site-header .nav-panel a.nav-feature-btn:hover .ni {
+    transform: translateX(3px)
+  }
+
+  /* Carrito: filas con cantidad, nombre y precio alineado */
+  .nav-cart-list {
+    display: grid;
+    gap: 2px;
+    max-height: 260px;
+    overflow-y: auto
+  }
+
+  .site-header .nav-panel a.nav-cart-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: #fff;
+    opacity: 1;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: .2px;
+    transition: background-color .18s ease
+  }
+
+  .site-header .nav-panel a.nav-cart-row:hover {
+    background: rgba(255, 255, 255, .12)
+  }
+
+  .nav-cart-row .nav-sub-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+  }
+
+  .nav-cart-qty {
+    display: grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, .2);
+    font-size: .72rem;
+    font-weight: 800
+  }
+
+  .nav-cart-price,
+  .nav-cart-total {
+    font-variant-numeric: tabular-nums
+  }
+
+  .nav-cart-price {
+    font-size: .84rem;
+    opacity: .9
+  }
+
+  .nav-cart-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding: 10px 10px 8px;
+    border-top: 1px solid rgba(255, 255, 255, .22);
+    font-size: .9rem
+  }
+
+  .nav-cart-empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 4px 10px 12px;
+    font-size: .9rem
+  }
+
+  .nav-cart-empty .ni {
+    width: 20px;
+    height: 20px;
+    opacity: .85
+  }
+
+  .site-header .nav-panel a.nav-feature-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 0;
+    padding: 9px 14px;
+    border-radius: var(--radius-pill);
+    background: #fff;
+    color: var(--nav-cta-ink);
+    opacity: 1;
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .6px;
+    text-transform: uppercase
+  }
+
+  /* Entrada escalonada del contenido al abrir (display:none -> grid reinicia la animación) */
+  .nav-panel>*,
+  .nav-panel-cols>* {
+    animation: nav-panel-in .28s cubic-bezier(.2, .8, .2, 1) both
+  }
+
+  .nav-panel-cols>:nth-child(2) {
+    animation-delay: 40ms
+  }
+
+  .nav-panel-cols>:nth-child(3) {
+    animation-delay: 80ms
+  }
+
+  .nav-panel>.nav-feature {
+    animation-delay: 120ms
+  }
+
+  .nav-panel--compact>:nth-child(2) { animation-delay: 30ms }
+  .nav-panel--compact>:nth-child(3) { animation-delay: 60ms }
+  .nav-panel--compact>:nth-child(4) { animation-delay: 90ms }
+}
+
+@keyframes nav-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px)
+  }
+
+  to {
+    opacity: 1;
+    transform: none
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .nav-panel>*,
+  .nav-panel-cols>* {
+    animation: none
+  }
+
+  .nav-chev {
+    transition: none
+  }
+}
+
+/* Íconos del sprite (views/partials/head.ejs) */
+.ni-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden
+}
+
+.ni {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round
+}
+
+.nav-icon-link .ni {
+  width: 22px;
+  height: 22px
+}
+
+/* Chevron de los ítems con submenú: gira al abrir */
+.nav-chev {
+  width: 10px;
+  height: 10px;
+  margin-left: 6px;
+  stroke-width: 3;
+  opacity: .85;
+  transition: transform .22s ease
+}
+
+.nav-item.is-open>a .nav-chev {
+  transform: rotate(180deg)
+}
+
+.nav-link {
+  white-space: nowrap
 }
 
 /* Make right-side and mobile CTA items look like nav links */
-.site-header .header-right a,
+.site-header .header-right>a:not(.nav-cta-pill),
+.site-header .header-right>.nav-item>a,
 .site-header .nav-cta a,
 .site-header .header-right form button,
 .site-header .nav-cta form button {
@@ -408,7 +782,8 @@ body.has-subbar .nav-bar .header-inner {
   cursor: pointer;
 }
 
-.site-header .header-right a:hover,
+.site-header .header-right>a:not(.nav-cta-pill):hover,
+.site-header .header-right>.nav-item>a:hover,
 .site-header .nav-cta a:hover,
 .site-header .header-right form button:hover,
 .site-header .nav-cta form button:hover {
@@ -441,6 +816,32 @@ body.has-subbar .nav-bar .header-inner {
 
 .header-right .cart-link {
   margin-left: -8px
+}
+
+/* CTA principal: pill blanca que cierra el lado derecho */
+.site-header .header-right>a.nav-cta-pill {
+  display: inline-block;
+  padding: 9px 18px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: var(--nav-cta-ink);
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+  transition: transform .18s ease, box-shadow .18s ease, opacity .25s ease
+}
+
+.site-header .header-right>a.nav-cta-pill:hover,
+.site-header .header-right>a.nav-cta-pill:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .18)
+}
+
+.nav-squeeze .site-header .header-right>a.nav-cta-pill {
+  padding: 8px 14px
 }
 
 .header-right form {

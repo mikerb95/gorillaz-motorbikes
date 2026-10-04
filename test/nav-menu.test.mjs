@@ -55,3 +55,9 @@ test('styles.css y main.js se piden con versión (caché immutable)', () => {
   assert.match(head, /styles\.css\?v=<%=/);
   assert.match(head, /main\.js\?v=<%=/);
 });
+
+test('el sprite de íconos va después de la etiqueta <body> completa, no dentro', () => {
+  const bodyTag = head.match(/<body[^\n]*\n/)[0];
+  assert.match(bodyTag, /<% } %>>\n$/, 'la etiqueta <body> quedó partida');
+  assert.ok(head.indexOf('class="ni-sprite"') > head.indexOf(bodyTag) + bodyTag.length - 1);
+});

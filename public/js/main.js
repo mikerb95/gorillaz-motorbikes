@@ -24,6 +24,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Remove to measure natural state
     body.classList.remove('nav-compact', 'nav-squeeze');
 
+    // Las columnas laterales tienen ancho fijo (minmax(0,1fr)): si el contenido
+    // no cabe se sale de su caja sin agrandarla, así que se mide el contenido.
+    const spills = (box, tol) => {
+      const r = box.getBoundingClientRect();
+      if (r.width === 0) return false;
+      const walk = (el) => Array.from(el.children).some(c => {
+        const cr = c.getBoundingClientRect();
+        if (cr.width === 0) return false;
+        return cr.left < r.left - tol || cr.right > r.right + tol || (c.matches('.nav, .nav-links') && walk(c));
+      });
+      return walk(box);
+    };
+
     // Base measurement
     const host = headerInner.getBoundingClientRect();
     const left = navLeft.getBoundingClientRect();
@@ -32,8 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const clipRight = (host.right - right.right) < 2;
     const overlapRightCenter = right.left < center.right + 2;
     const overlapLeftCenter = left.right > center.left - 2;
+    const spill = spills(navLeft, 1) || spills(headerRight, 1);
 
-    let shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter;
+    let shouldCompact = clipRight || overlapRightCenter || overlapLeftCenter || spill;
     let shouldSqueeze = false;
 
     if (shouldCompact) {
@@ -46,7 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const clipRight2 = (host2.right - right2.right) < 4;
       const overlapRightCenter2 = right2.left < center2.right + 4; // tighter threshold under squeeze
       const overlapLeftCenter2 = left2.right > center2.left - 4;
-      if (!(clipRight2 || overlapRightCenter2 || overlapLeftCenter2)) {
+      const spill2 = spills(navLeft, 1) || spills(headerRight, 1);
+      if (!(clipRight2 || overlapRightCenter2 || overlapLeftCenter2 || spill2)) {
         // Squeeze rescued layout; prefer squeeze over compact
         shouldCompact = false;
         shouldSqueeze = true;
@@ -104,31 +119,86 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(setHeaderOffset, 0);
   }
 
-  // Measure submenu height to push sub-embed to the bottom while it's open
+  // Desktop submenus: se abren con .is-open (hover con tolerancia, foco o teclado)
+  // y la barra crece con --submenu-depth para contener el panel abierto.
   const navBar = document.querySelector('.nav-bar');
+  const menuHost = document.querySelector('.header-inner');
+  const desktopNavMq = window.matchMedia('(min-width: 901px)');
+  const menuItems = Array.from(document.querySelectorAll('.header-inner .nav-item.has-submenu'));
+  const desktopMenus = () => desktopNavMq.matches && !document.body.classList.contains('nav-compact');
+  const isShown = (item) => item.classList.contains('is-open') || item.matches(':hover') || item.matches(':focus-within');
+
   const updateSubmenuDepth = () => {
     if (!navBar) return;
     let depth = 0;
-    // Find the tallest visible submenu under hover/focus
-    document.querySelectorAll('.nav-item.has-submenu .nav-submenu').forEach(sm => {
-      const host = sm.closest('.nav-item.has-submenu');
-      const hovered = host && (host.matches(':hover') || sm.matches(':hover'));
-      if (!hovered) return;
-      const r = sm.getBoundingClientRect();
-      depth = Math.max(depth, Math.ceil(r.height + 16)); // include a little breathing room
-    });
+    if (desktopMenus()) {
+      menuItems.forEach(item => {
+        if (!isShown(item)) return;
+        const sm = item.querySelector(':scope > .nav-submenu');
+        if (!sm) return;
+        depth = Math.max(depth, Math.ceil(sm.getBoundingClientRect().height + 16)); // include a little breathing room
+      });
+    }
     navBar.style.setProperty('--submenu-depth', depth > 0 ? depth + 'px' : '');
     // Toggle a CSS class so we can style without :has()
     navBar.classList.toggle('submenu-open', depth > 0);
   };
-  // Hook events
-  document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
-    item.addEventListener('mouseenter', updateSubmenuDepth);
-    item.addEventListener('mouseleave', () => { updateSubmenuDepth(); });
-    item.addEventListener('focusin', updateSubmenuDepth);
-    item.addEventListener('focusout', updateSubmenuDepth);
+
+  // Paneles compactos (Club, Carrito): alineados con su ítem dentro de .header-inner
+  const placePanel = (item) => {
+    const mode = item.dataset.panel;
+    if (!menuHost || (mode !== 'item-left' && mode !== 'item-right')) return;
+    const host = menuHost.getBoundingClientRect();
+    const r = item.getBoundingClientRect();
+    const x = mode === 'item-left' ? r.left - host.left : host.right - r.right;
+    item.style.setProperty('--panel-x', Math.max(12, Math.round(x)) + 'px');
+  };
+  const setMenuOpen = (item, open) => {
+    item.classList.toggle('is-open', open);
+    const trigger = item.querySelector(':scope > a');
+    if (trigger) trigger.setAttribute('aria-expanded', String(open));
+  };
+  const openMenu = (item) => {
+    if (!desktopMenus()) return;
+    menuItems.forEach(other => {
+      if (other === item) return;
+      clearTimeout(other._closeT);
+      setMenuOpen(other, false);
+    });
+    clearTimeout(item._closeT);
+    placePanel(item);
+    setMenuOpen(item, true);
+    updateSubmenuDepth();
+  };
+  const closeMenu = (item, delay) => {
+    clearTimeout(item._closeT);
+    item._closeT = setTimeout(() => {
+      setMenuOpen(item, false);
+      updateSubmenuDepth();
+    }, delay);
+  };
+  menuItems.forEach(item => {
+    item.addEventListener('mouseenter', () => openMenu(item));
+    // Tolerancia: cruzar el hueco entre el ítem y el panel no lo cierra
+    item.addEventListener('mouseleave', () => closeMenu(item, 160));
+    item.addEventListener('focusin', () => openMenu(item));
+    item.addEventListener('focusout', (e) => {
+      if (!item.contains(e.relatedTarget)) closeMenu(item, 0);
+    });
   });
-  window.addEventListener('resize', () => { updateSubmenuDepth(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const open = menuItems.find(item => item.classList.contains('is-open'));
+    if (!open) return;
+    menuItems.forEach(item => { clearTimeout(item._closeT); setMenuOpen(item, false); });
+    const trigger = open.querySelector(':scope > a');
+    if (trigger && open.contains(document.activeElement)) trigger.focus();
+    updateSubmenuDepth();
+  });
+  window.addEventListener('resize', () => {
+    menuItems.forEach(item => { if (item.classList.contains('is-open')) placePanel(item); });
+    updateSubmenuDepth();
+  });
   // Initial compute after layout
   setTimeout(updateSubmenuDepth, 0);
 
@@ -191,8 +261,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Build and animate the orange blob under brand and nav items (hidden by default)
   const headerInner = document.querySelector('.header-inner');
   const logo = document.querySelector('.nav-center .logo') || document.querySelector('.logo');
-  const links = Array.from(document.querySelectorAll('.nav-links a'));
-  const ctaLinks = Array.from(document.querySelectorAll('.header-right a, .nav-cta a, .nav-cta form button, .header-right form button'));
+  // La pill CTA y las tarjetas del panel ya tienen fondo propio: sin blob
+  const noBlob = (el) => !el.matches('.nav-cta-pill, .nav-feature, .nav-feature-btn');
+  const links = Array.from(document.querySelectorAll('.nav-links a')).filter(noBlob);
+  const ctaLinks = Array.from(document.querySelectorAll('.header-right a, .nav-cta a, .nav-cta form button, .header-right form button')).filter(noBlob);
   if (headerInner && logo) {
     const blob = document.createElement('div');
     blob.className = 'nav-blob';
@@ -209,19 +281,23 @@ document.addEventListener('DOMContentLoaded', () => {
       let centerX;
       let baseW;
       let h;
+      let centerY = rect.top + rect.height / 2;
       if (isSub) {
-        // Use Range to measure the text content bounds precisely
+        // Use Range to measure the text content bounds precisely (ítems con ícono
+        // y descripción: solo el título, para que el blob no se corra al ícono)
+        const textEl = el.querySelector('.nav-sub-title') || el;
         let txtRect = rect;
         try {
           const range = document.createRange();
-          range.selectNodeContents(el);
+          range.selectNodeContents(textEl);
           const rects = range.getClientRects();
           txtRect = rects.length ? rects[0] : range.getBoundingClientRect();
           range.detach && range.detach();
         } catch { }
         centerX = txtRect.left - host.left + (txtRect.width / 2);
         baseW = Math.max(64, txtRect.width + 8); // tight around text, slight breathing room
-        h = Math.max(24, rect.height + 6);
+        h = Math.max(24, (textEl === el ? rect.height : txtRect.height) + 6);
+        if (textEl !== el) centerY = txtRect.top + txtRect.height / 2;
       } else {
         const padX = 24; // extra width for main items only
         const padY = 10;
@@ -234,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Small fine-tune bias for submenu (visual centering) – far less than before
       const leftBias = isSub ? 2 : 0;
       const x = centerX - (w / 2) - leftBias;
-      const y = rect.top - host.top + rect.height / 2;
+      const y = centerY - host.top;
       blob.style.setProperty('--x', `${x}px`);
       blob.style.setProperty('--w', `${w}px`);
       blob.style.setProperty('--h', `${h}px`);
