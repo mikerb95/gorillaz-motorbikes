@@ -1,279 +1,154 @@
-<%- include('../partials/admin-head', { title: 'Editar: ' + product.name }) %>
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'productos' }) %>
+<%
+  var p = product;
+  var stockVal = p.ownStock === null || p.ownStock === undefined ? '' : p.ownStock;
+  var specsText = (p.specs || []).map(function (s) { return s.value ? s.label + ': ' + s.value : s.label; }).join('\n');
+%>
+<% if (typeof errors !== 'undefined' && errors && errors.length) { %>
+  <div class="ash-err"><strong>Revisa:</strong><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div>
+<% } %>
+
+<form method="post" action="/admin/tienda/guardar" id="productForm" data-admin-product>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <% if (p.id) { %><input type="hidden" name="id" value="<%= p.id %>" /><% } %>
 
   <div class="crm-page-header">
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <a href="/admin/tienda"
-        style="color:#71717a;text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:4px">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-        Tienda
-      </a>
-      <span style="color:#d4d4d8">›</span>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <form method="post" action="/admin/tienda/eliminar"
-        data-confirm="¿Eliminar «<%= product.name %>» permanentemente?">
-        <input type="hidden" name="id" value="<%= product.id %>" />
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-        <button type="submit" class="btn btn-danger btn-sm">Eliminar producto</button>
-      </form>
+    <h1 class="crm-page-title"><%= p.id ? p.name : 'Nuevo producto' %></h1>
+    <div class="ash-row">
+      <% if (p.id) { %><a class="btn btn-ghost btn-sm" href="/tienda/<%= p.slug %>" target="_blank" rel="noopener">Ver en la tienda</a><% } %>
+      <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
     </div>
   </div>
 
-  <!-- Meta info -->
-  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;font-size:.75rem;color:#71717a">
-    <span>ID: <code style="background:#f4f4f5;padding:2px 6px;border-radius:5px"><%= product.id %></code></span>
-    <% if (product.createdAt) { %><span>Creado: <%= fechaCO(product.createdAt, {}) %></span>
-      <% } %>
-        <% if (product.updatedAt) { %><span>Actualizado: <%= fechaCO(product.updatedAt, {}) %>
-          </span>
-          <% } %>
+  <div class="crm-card">
+    <div class="crm-card-title">Datos básicos</div>
+    <div class="crm-form-grid">
+      <div class="crm-form-group crm-form-full"><label>Nombre <span class="required">*</span></label><input name="name" required value="<%= p.name %>" placeholder="Incluye el modelo si es específico: Defensa para Yamaha MT-03" /></div>
+      <div class="crm-form-group"><label>URL (slug)</label><input name="slug" value="<%= p.slug %>" placeholder="se genera del nombre" /><p class="ash-help">Si la cambias, la URL anterior redirige sola (301).</p></div>
+      <div class="crm-form-group"><label>Estado</label>
+        <select name="status">
+          <option value="draft" <%= p.status === 'draft' ? 'selected' : '' %>>Borrador (no se ve)</option>
+          <option value="active" <%= p.status === 'active' ? 'selected' : '' %>>Publicado</option>
+          <option value="archived" <%= p.status === 'archived' ? 'selected' : '' %>>Archivado</option>
+        </select>
+        <% if (p.isDemo) { %><label class="ash-check"><input type="checkbox" name="keepDemo" value="1" checked /> Mantener como demo (no se publica en producción)</label><% } %>
+      </div>
+      <div class="crm-form-group"><label>Categoría <span class="required">*</span></label>
+        <select name="category" required><option value="">Elige</option><% categories.forEach(function (c) { %><option value="<%= c.slug %>" <%= p.category === c.slug ? 'selected' : '' %>><%= c.name %></option><% }) %></select>
+      </div>
+      <div class="crm-form-group"><label>Marca del fabricante</label><input name="brand" value="<%= p.brand || '' %>" placeholder="La marca real del producto" /></div>
+      <div class="crm-form-group"><label>SKU / referencia</label><input name="sku" value="<%= p.sku || '' %>" /></div>
+      <div class="crm-form-group crm-form-full"><label class="ash-check"><input type="checkbox" name="featured" value="1" <%= p.featured ? 'checked' : '' %> /> Destacado (sale primero y en el home)</label></div>
+    </div>
   </div>
 
-  <form method="post" action="/admin/tienda/actualizar" id="editForm"
-    onsubmit="document.getElementById('priceInput').value = document.getElementById('priceInput').value.replace(/[^\d]/g, '')">
-    <input type="hidden" name="id" value="<%= product.id %>" />
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
-
-      <!-- Left column -->
-      <div>
-        <!-- Basic info -->
-        <div class="crm-card">
-          <div class="crm-card-title">Información básica</div>
-          <div class="crm-form-grid" style="margin-bottom:14px">
-            <div class="crm-form-group">
-              <label>Nombre <span class="required">*</span></label>
-              <input name="name" value="<%= product.name %>" required />
-            </div>
-            <div class="crm-form-group">
-              <label>SKU</label>
-              <input name="sku" value="<%= product.sku || '' %>" placeholder="NK-CAS-001" />
-            </div>
-            <div class="crm-form-group">
-              <label>Marca</label>
-              <input name="brand" value="<%= product.brand || '' %>" placeholder="Ej: Gorillaz" />
-            </div>
-            <div class="crm-form-group">
-              <label>Categoría <span class="required">*</span></label>
-              <select name="category" required>
-                <option value="">— Seleccionar —</option>
-                <% categories.forEach(c=> { %>
-                  <option value="<%= c.slug %>" <%=product.category===c.slug ? 'selected' : '' %>><%= c.name %>
-                  </option>
-                  <% }) %>
-              </select>
-            </div>
-            <div class="crm-form-group crm-form-full">
-              <label>Descripción</label>
-              <textarea name="description" rows="4"
-                placeholder="Describe el producto…"><%= product.description || '' %></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- Price & inventory -->
-        <div class="crm-card">
-          <div class="crm-card-title">Precio e inventario</div>
-          <div class="crm-form-grid cols-3" style="margin-bottom:12px">
-            <div class="crm-form-group">
-              <label>Precio (COP) <span class="required">*</span></label>
-              <input type="text" name="price" id="priceInput"
-                value="<%= Number(product.price).toLocaleString('es-CO') %>" min="0" required
-                oninput="formatPrice(); updatePricePreview()" />
-            </div>
-            <div class="crm-form-group">
-              <label>Descuento (%)</label>
-              <input type="number" name="discount" id="discountInput" value="<%= product.discount || 0 %>" min="0"
-                max="100" oninput="updatePricePreview()" />
-            </div>
-            <div class="crm-form-group">
-              <label>Stock</label>
-              <input type="number" name="stock" value="<%= typeof product.stock === 'number' ? product.stock : 0 %>"
-                min="0" />
-            </div>
-          </div>
-          <div id="pricePreview"
-            style="display:none;padding:10px 12px;background:#f0fdf4;border-radius:8px;font-size:.85rem;color:#16a34a;font-weight:700">
-          </div>
-        </div>
-
-        <!-- Gallery -->
-        <div class="crm-card">
-          <div class="crm-card-title">Galería de imágenes</div>
-          <p style="font-size:.78rem;color:#71717a;margin:0 0 12px">Máximo 5 imágenes. La primera será la imagen
-            principal.</p>
-          <div class="admin-gallery" id="galleryPreview">
-            <% (product.gallery || [product.image]).forEach((img, i)=> { %>
-              <div class="admin-gallery-item">
-                <img src="<%= img %>" alt="Imagen <%= i + 1 %>" />
-                <input type="hidden" name="existingImages" value="<%= img %>" />
-                <button type="button" class="admin-gallery-remove"
-                  onclick="this.closest('.admin-gallery-item').remove()" title="Quitar">✕</button>
-                <% if (i===0) { %><span class="admin-gallery-badge">Principal</span>
-                  <% } %>
-              </div>
-              <% }) %>
-          </div>
-          <div class="admin-gallery-upload" style="margin-top:10px">
-            <label class="btn btn-ghost btn-sm" style="cursor:pointer" id="editUploadLabel">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-              <span id="editUploadText">Agregar imágenes</span>
-              <input type="file" accept="image/*" multiple style="display:none" onchange="handleEditImages(this)" />
-            </label>
-          </div>
-        </div>
-
-        <!-- Tags -->
-        <div class="crm-card">
-          <div class="crm-card-title">Etiquetas</div>
-          <div class="crm-form-group" style="margin-bottom:10px">
-            <label>Tags (separadas por coma)</label>
-            <input name="tags" value="<%= (product.tags || []).join(', ') %>" placeholder="casco, protección, naked"
-              oninput="updateTagsPreview(this.value)" />
-          </div>
-          <div id="tagsPreview" style="display:flex;flex-wrap:wrap;gap:6px">
-            <% (product.tags || []).forEach(tag=> { %>
-              <span class="chip">
-                <%= tag %>
-              </span>
-              <% }) %>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right column: save + preview -->
-      <div>
-        <div class="crm-card" style="position:sticky;top:74px">
-          <div class="crm-card-title">Guardar</div>
-          <button type="submit" class="btn btn-primary" style="width:100%;margin-bottom:10px">
-            Guardar cambios
-          </button>
-          <a href="/admin/tienda" class="btn btn-ghost" style="width:100%;text-align:center;display:block">
-            Cancelar
-          </a>
-          <hr style="border:none;border-top:1px solid #e4e4e7;margin:14px 0">
-          <a href="/tienda/<%= product.id %>" target="_blank"
-            style="display:flex;align-items:center;gap:6px;font-size:.8rem;color:#52525b;text-decoration:none">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              formatPrice() {
-              const input = document.getElementById('priceInput');
-              const value = input.value.replace(/[^\d]/g, '');
-              const numValue = parseInt(value, 10);
-              if (!isNaN(numValue)) {
-              input.value = numValue.toLocaleString('es-CO');
-              }
-              }
-
-              function updatePricePreview() {
-              const priceText = document.getElementById('priceInput').value.replace(/[^\d]/g, '');
-              const price = parseFloat(priceText
-              Ver en tienda
-          </a>
-
-          <hr style="border:none;border-top:1px solid #e4e4e7;margin:14px 0">
-          <div style="font-size:.75rem;color:#71717a">
-            <% if (product.stock===0) { %>
-              <span class="badge badge-danger" style="display:block;margin-bottom:6px">Agotado</span>
-              <% } else if (product.stock <=5) { %>
-                <span class="badge badge-warning" style="display:block;margin-bottom:6px">Poco stock (<%= product.stock
-                    %>)</span>
-                <% } else { %>
-                  <span class="badge badge-success" style="display:block;margin-bottom:6px">En stock (<%= product.stock
-                      %>)</span>
-                  <% } %>
-                    <% if (product.discount> 0) { %>
-                      <span class="badge badge-orange" style="display:block">
-                        <%= product.discount %>% de descuento activo
-                      </span>
-                      <% } %>
-          </div>
-        </div>
-      </div>
-
+  <div class="crm-card">
+    <div class="crm-card-title">Precio y stock</div>
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Precio (COP) <span class="required">*</span></label><input name="price" inputmode="numeric" required value="<%= p.price || '' %>" data-price /></div>
+      <div class="crm-form-group"><label>Descuento (%)</label><input name="discount" type="number" min="0" max="100" value="<%= p.discount || 0 %>" data-discount /></div>
+      <div class="crm-form-group"><label>Descuento club (%)</label><input name="clubDiscount" type="number" min="0" max="100" value="<%= p.clubDiscount || 0 %>" data-club /><p class="ash-help">Para miembros con sesión. Aplica el mayor entre este y el descuento normal.</p></div>
+      <div class="crm-form-group"><label>Stock</label><input name="stock" type="number" min="0" value="<%= stockVal %>" placeholder="vacío = no controlar" /><p class="ash-help">Si el producto tiene variantes, el stock se lleva por variante.</p></div>
+      <div class="crm-form-group crm-form-full"><p class="ash-preview" data-price-preview></p></div>
     </div>
-  </form>
+  </div>
 
-  <script>
-    function formatPrice() {
-      const input = document.getElementById('priceInput');
-      const value = input.value.replace(/[^\d]/g, '');
-      const numValue = parseInt(value, 10);
-      if (!isNaN(numValue)) {
-        input.value = numValue.toLocaleString('es-CO');
-      }
-    }
+  <div class="crm-card">
+    <div class="crm-card-title">Variantes (color / talla)</div>
+    <p class="ash-help">Deja el precio vacío para usar el del producto. Stock vacío = no controlar.</p>
+    <table class="crm-table ash-table" data-variants>
+      <thead><tr><th>Color</th><th>Talla</th><th>SKU</th><th>Precio</th><th>Stock</th><th></th></tr></thead>
+      <tbody>
+        <% (p.variants || []).forEach(function (v, i) { %>
+        <tr>
+          <td><input type="hidden" name="variants[<%= i %>][id]" value="<%= v.id || '' %>" /><input name="variants[<%= i %>][color]" value="<%= v.color %>" /></td>
+          <td><input name="variants[<%= i %>][size]" value="<%= v.size %>" /></td>
+          <td><input name="variants[<%= i %>][sku]" value="<%= v.sku %>" /></td>
+          <td><input name="variants[<%= i %>][price]" inputmode="numeric" value="<%= v.price === null ? '' : v.price %>" /></td>
+          <td><input name="variants[<%= i %>][stock]" type="number" min="0" value="<%= v.stock === null ? '' : v.stock %>" /></td>
+          <td><button type="button" class="btn btn-ghost btn-xs" data-remove-row>Quitar</button></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <button type="button" class="btn btn-ghost btn-sm" data-add-variant style="margin-top:8px">+ Agregar variante</button>
+  </div>
 
-    function updatePricePreview() {
-      const priceText = document.getElementById('priceInput').value.replace(/[^\d]/g, '');
-      const price = parseFloat(priceText) || 0;
-      const disc = parseFloat(document.getElementById('discountInput').value) || 0;
-      const preview = document.getElementById('pricePreview');
-      if (disc > 0) {
-        const final = Math.round(price * (1 - disc / 100));
-        preview.style.display = 'block';
-        preview.textContent = 'Precio final con ' + disc + '% dto: $' + final.toLocaleString('es-CO');
-      } else {
-        preview.style.display = 'none';
-      }
-    }
+  <div class="crm-card">
+    <div class="crm-card-title">Fotos</div>
+    <p class="ash-help">Solo fotos propias del producto. La primera es la principal. Se reducen a WebP antes de subirlas. Escribe un texto alternativo que describa la foto.</p>
+    <div class="ash-imgs" data-images>
+      <% (p.images || []).forEach(function (img, i) { %>
+      <div class="ash-img">
+        <img src="<%= img.url %>" alt="" />
+        <input type="hidden" name="images[<%= i %>][url]" value="<%= img.url %>" />
+        <input name="images[<%= i %>][alt]" value="<%= img.alt %>" placeholder="Texto alternativo" />
+        <div class="ash-img-actions"><button type="button" data-img-left title="Mover antes">&lt;</button><button type="button" data-img-right title="Mover después">&gt;</button><button type="button" data-remove-img title="Quitar">x</button></div>
+      </div>
+      <% }) %>
+    </div>
+    <label class="btn btn-ghost btn-sm" style="margin-top:10px;cursor:pointer">Subir fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden data-upload /></label>
+    <span class="ash-help" data-upload-status></span>
+  </div>
 
-    function updateTagsPreview(value) {
-      const container = document.getElementById('tagsPreview');
-      const tags = value.split(',').map(t => t.trim()).filter(Boolean);
-      container.innerHTML = tags.map(t => '<span class="chip">' + t + '</span>').join('');
-    }
+  <div class="crm-card">
+    <div class="crm-card-title">Compatibilidad</div>
+    <p class="ash-help">Modelos en los que sirve. Años vacíos = todos los del modelo. ¿Falta un modelo? <a href="/admin/tienda/motos">Créalo aquí</a>.</p>
+    <table class="crm-table ash-table" data-compat>
+      <thead><tr><th>Modelo</th><th>Desde (año)</th><th>Hasta (año)</th><th></th></tr></thead>
+      <tbody>
+        <% (p.compat || []).forEach(function (c, i) { %>
+        <tr>
+          <td><select name="compat[<%= i %>][model]"><% bikeModels.forEach(function (m) { %><option value="<%= m.id %>" <%= c.bikeModelId === m.id ? 'selected' : '' %>><%= m.brand %> <%= m.model %><%= m.cc ? ' ' + m.cc + ' cc' : '' %></option><% }) %></select></td>
+          <td><input name="compat[<%= i %>][from]" type="number" value="<%= c.yearFrom || '' %>" /></td>
+          <td><input name="compat[<%= i %>][to]" type="number" value="<%= c.yearTo || '' %>" /></td>
+          <td><button type="button" class="btn btn-ghost btn-xs" data-remove-row>Quitar</button></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% if (bikeModels.length) { %><button type="button" class="btn btn-ghost btn-sm" data-add-compat style="margin-top:8px">+ Agregar modelo</button><% } %>
+    <template data-compat-options><% bikeModels.forEach(function (m) { %><option value="<%= m.id %>"><%= m.brand %> <%= m.model %><%= m.cc ? ' ' + m.cc + ' cc' : '' %></option><% }) %></template>
+    <div class="crm-form-group" style="margin-top:14px"><label>Tipos de moto</label>
+      <div class="ash-checks"><% bikeTypes.forEach(function (t) { %><label class="ash-check"><input type="checkbox" name="bikeTypes" value="<%= t.slug %>" <%= (p.bikeTypes || []).indexOf(t.slug) >= 0 ? 'checked' : '' %> /> <%= t.name %></label><% }) %></div>
+    </div>
+  </div>
 
-    async function handleEditImages(input) {
-      const gallery = document.getElementById('galleryPreview');
-      const currentCount = gallery.querySelectorAll('.admin-gallery-item').length;
-      const files = Array.from(input.files).slice(0, 5 - currentCount);
-      if (!files.length) return;
+  <div class="crm-card">
+    <div class="crm-card-title">Contenido de la ficha</div>
+    <div class="crm-form-grid">
+      <div class="crm-form-group crm-form-full"><label>Descripción</label><textarea name="description" rows="6" placeholder="Texto propio. Separa párrafos con una línea en blanco."><%= p.description || '' %></textarea></div>
+      <div class="crm-form-group"><label>Especificaciones</label><textarea name="specs" rows="6" placeholder="Material: Aluminio&#10;Peso: 1,2 kg"><%= specsText %></textarea><p class="ash-help">Una por línea, con el formato Etiqueta: valor.</p></div>
+      <div class="crm-form-group"><label>Qué incluye</label><textarea name="includes" rows="6" placeholder="Un elemento por línea"><%= p.includes || '' %></textarea></div>
+      <div class="crm-form-group"><label>Garantía</label><input name="warranty" value="<%= p.warranty || '' %>" placeholder="Ej: 6 meses por defectos de fabricación" /></div>
+      <div class="crm-form-group"><label>Tiempo de entrega</label><input name="deliveryTime" value="<%= p.deliveryTime || '' %>" placeholder="Ej: disponible para recoger hoy" /></div>
+      <div class="crm-form-group crm-form-full"><label>Etiquetas (separadas por coma)</label><input name="tags" value="<%= (p.tags || []).join(', ') %>" /></div>
+    </div>
+  </div>
 
-      const label = document.getElementById('editUploadLabel');
-      const textEl = document.getElementById('editUploadText');
-      textEl.textContent = 'Subiendo…';
-      label.style.pointerEvents = 'none';
-      input.value = '';
+  <div class="crm-card">
+    <div class="crm-card-title">Instalación y servicios</div>
+    <div class="crm-form-grid">
+      <div class="crm-form-group crm-form-full"><label class="ash-check"><input type="checkbox" name="installable" value="1" <%= p.installable ? 'checked' : '' %> /> Se puede instalar en el taller (aparece el add-on en ficha y carrito)</label></div>
+      <div class="crm-form-group"><label>Precio de instalación por unidad (COP)</label><input name="installPrice" inputmode="numeric" value="<%= typeof p.installPrice === 'number' ? p.installPrice : '' %>" placeholder="vacío = se confirma en el taller" /></div>
+      <div class="crm-form-group"><label>Duración estimada (minutos)</label><input name="installMinutes" type="number" min="0" value="<%= p.installMinutes || '' %>" /></div>
+      <div class="crm-form-group crm-form-full"><label>Servicios relacionados (venta cruzada)</label>
+        <div class="ash-checks"><% services.forEach(function (s) { %><label class="ash-check"><input type="checkbox" name="relatedServices" value="<%= s.slug %>" <%= (p.relatedServices || []).indexOf(s.slug) >= 0 ? 'checked' : '' %> /> <%= s.name %></label><% }) %></div>
+      </div>
+    </div>
+  </div>
 
-      const csrf = document.querySelector('input[name="_csrf"]').value;
-      const formData = new FormData();
-      files.forEach(f => formData.append('images', f));
+  <div class="crm-card">
+    <div class="crm-card-title">SEO (opcional)</div>
+    <p class="ash-help">Si los dejas vacíos se generan: "{Producto} para {moto} | Gorillaz Motorbikes" y una descripción con precio.</p>
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Título</label><input name="seoTitle" maxlength="70" value="<%= p.seoTitle || '' %>" /></div>
+      <div class="crm-form-group"><label>Descripción</label><input name="seoDescription" maxlength="170" value="<%= p.seoDescription || '' %>" /></div>
+    </div>
+  </div>
 
-      try {
-        const res = await fetch('/admin/tienda/upload-image', {
-          method: 'POST',
-          headers: { 'X-CSRF-Token': csrf },
-          body: formData,
-        });
-        const data = await res.json();
-        if (!data.ok) throw new Error('Upload failed');
-        (data.urls || []).forEach(url => {
-          const div = document.createElement('div');
-          div.className = 'admin-gallery-item admin-gallery-new';
-          div.innerHTML = `<img src="${url}" alt="Nueva imagen" />
-          <input type="hidden" name="existingImages" value="${url}" />
-          <button type="button" class="admin-gallery-remove" onclick="this.closest('.admin-gallery-item').remove()">✕</button>`;
-          gallery.appendChild(div);
-        });
-      } catch {
-        alert('Error al subir imágenes. Intenta de nuevo.');
-      } finally {
-        textEl.textContent = 'Agregar imágenes';
-        label.style.pointerEvents = '';
-      }
-    }
-
-    // Init price preview
-    updatePricePreview();
-  </script>
-
-  <%- include('../partials/admin-foot') %>
+  <div class="crm-form-actions"><button class="btn btn-primary" type="submit">Guardar producto</button></div>
+</form>
+<script src="/static/js/admin-tienda.js?v=<%= assetV('js/admin-tienda.js') %>" defer></script>
+<%- include('../partials/admin-foot') %>
