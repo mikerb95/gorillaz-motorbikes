@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="/static/css/taller-base.css?v=1" />
 <link rel="stylesheet" href="/static/css/servicios.css?v=1" />
 <%- include('partials/servicios/tools') %>
+<%# "Ver detalle" amplía la ficha con una transición de vista (antes del contenido: ver el archivo). %>
+<script src="/static/js/servicios/vt.js?v=1"></script>
 
 <div class="sv-page" data-sv="page">
   <script>
@@ -41,17 +43,7 @@
     </header>
 
     <div class="sv-board-col">
-      <nav class="sv-board" aria-label="Tablero de servicios" data-sv="board">
-        <% services.forEach(function (s) { %>
-          <a class="sv-slot" href="#<%= s.slug %>" data-slug="<%= s.slug %>">
-            <span class="sv-hook" aria-hidden="true"></span>
-            <svg class="sv-sil" viewBox="0 0 200 120" aria-hidden="true" focusable="false"><use href="#sv-t-<%= s.slug %>"/></svg>
-            <svg class="sv-tool" viewBox="0 0 200 120" aria-hidden="true" focusable="false" data-m><use href="#sv-t-<%= s.slug %>"/></svg>
-            <span class="sv-slot-name"><%= s.name %></span>
-          </a>
-        <% }) %>
-        <span class="sv-slot sv-slot-brand" aria-hidden="true"></span>
-      </nav>
+      <%- include('partials/servicios/board', { services: services }) %>
     </div>
 
     <div class="sv-cards">
@@ -90,6 +82,7 @@
         <p class="sv-final-title">Trae tu moto al taller</p>
         <a class="btn" href="/servicios/agendar">Agendar servicio</a>
       </div>
+      <span id="sv-cards-end"></span>
     </div>
 
   </div>
