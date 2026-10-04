@@ -117,6 +117,7 @@ app.use('/kds',            require('./routes/kds'));
 app.use('/admin/finanzas', require('./routes/finanzas'));
 app.get('/tv', (req, res) => res.redirect('/admin/tv'));
 app.use('/admin/tv',       require('./routes/tv'));
+app.use('/admin',          require('./routes/admin-shop'));
 app.use('/admin',          require('./routes/admin'));
 
 app.use((req, res) => res.status(404).render('404'));

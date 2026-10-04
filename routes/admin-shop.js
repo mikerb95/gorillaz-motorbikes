@@ -49,7 +49,7 @@ const intOrNull = (v) => {
 const pct = (v) => Math.min(100, Math.max(0, intOrNull(v) || 0));
 const arr = (v) => (Array.isArray(v) ? v : v === undefined || v === null || v === '' ? [] : [v]);
 const rows = (v) => (Array.isArray(v) ? v : v && typeof v === 'object' ? Object.values(v) : []);
-const audit = (req, action, detail) => logAdminAction && logAdminAction(req.userId, action, detail).catch(() => {});
+const audit = (req, action, detail) => logAdminAction(req.userId, '', action, 'tienda', null, { detail }).catch(() => {});
 
 // ── Productos ───────────────────────────────────────────────────────────
 

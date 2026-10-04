@@ -5,10 +5,10 @@ const fs       = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { courses, classes: classesData, availability, saveCourses, saveClasses, saveAvailability } = require('../helpers/content');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { uploadProduct, uploadSlideImage, deleteFromBlob } = require('../helpers/files');
+const { uploadSlideImage, deleteFromBlob } = require('../helpers/files');
 const { setFlash } = require('../helpers/flash');
 const settings = require('../helpers/settings');
-const { catalog, saveCatalog } = require('../helpers/catalog');
+const { catalog } = require('../helpers/catalog');
 const { SCORE_POINTS, loadPuntosConfig, DEFAULTS: PUNTOS_DEFAULTS }  = require('../helpers/score');
 const { buildQuotationSummary } = require('../helpers/quotationStats');
 const {
@@ -117,10 +117,23 @@ router.get('/pedidos', requireAuth, requireAdmin, async (req, res) => {
   });
 });
 
+// Marcar pagado/fallido a mano pasa por el mismo ciclo que la pasarela: stock,
+// cupón, puntos, cita de instalación y correos se aplican una sola vez.
 router.post('/pedidos/estado', requireAuth, requireAdmin, async (req, res) => {
   const { id, status } = req.body;
-  await updateOrderStatus(id, status, null);
+  const { confirmPaid, markFailed } = require('../helpers/shop/orders');
+  if (status === 'paid') await confirmPaid(id, null);
+  else if (status === 'failed') await markFailed(id, null);
+  else if (['pending', 'pending_confirmation'].includes(status)) await updateOrderStatus(id, status, null);
   res.redirect('/admin/pedidos');
+});
+
+// Estado logístico del pedido (lo que ve el cliente en /tienda/pedido).
+router.post('/pedidos/logistica', requireAuth, requireAdmin, async (req, res) => {
+  const { updateOrderFulfillment } = require('../db');
+  const allowed = ['nuevo', 'confirmado', 'preparando', 'listo', 'entregado', 'cancelado'];
+  if (allowed.includes(req.body.fulfillment)) await updateOrderFulfillment(req.body.id, req.body.fulfillment);
+  res.redirect(req.get('referer') || '/admin/pedidos');
 });
 
 router.get('/calendario', requireAuth, requireAdmin, (req, res) => res.render('admin/calendar', { availability }));
@@ -380,80 +393,6 @@ router.post('/cursos/eliminar', requireAuth, requireAdmin, async (req, res) => {
   const idx = courses.findIndex(c => c.slug === req.body.slug);
   if (idx !== -1) { courses.splice(idx, 1); await saveCourses(); }
   res.redirect('/admin/cursos');
-});
-
-router.get('/tienda', requireAuth, requireAdmin, (req, res) => {
-  const search    = (req.query.q   || '').toString().trim().toLowerCase();
-  const filterCat = (req.query.cat || '').toString();
-  let prods       = catalog.products || [];
-  if (search)    prods = prods.filter(p => p.name.toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search));
-  if (filterCat) prods = prods.filter(p => p.category === filterCat);
-  res.render('admin/shop', { categories: catalog.categories || [], products: prods, search, filterCat });
-});
-
-router.get('/tienda/:id/editar', requireAuth, requireAdmin, (req, res) => {
-  const product = (catalog.products || []).find(p => p.id === req.params.id);
-  if (!product) return res.redirect('/admin/tienda');
-  res.render('admin/shop-edit', { product, categories: catalog.categories || [] });
-});
-
-router.post('/tienda/crear', requireAuth, requireAdmin, async (req, res) => {
-  const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
-  if (!catalog.products) catalog.products = [];
-  const prodId    = id && id.trim() ? id.trim() : uuidv4();
-  const gallery   = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
-  const mainImage = gallery.length > 0 ? gallery[0] : '/images/download.png';
-  if (name && category) {
-    catalog.products.push({ id: prodId, name, price: parseInt(price || '0', 10) || 0, category, image: mainImage, gallery: gallery.length > 0 ? gallery : ['/images/download.png'], brand: (brand || '').trim(), sku: (sku || '').trim(), stock: parseInt(stock || '0', 10), discount: Math.min(100, Math.max(0, parseInt(discount || '0', 10))), tags: (tags || '').split(',').map(t => t.trim()).filter(Boolean), description: description || '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-    await saveCatalog();
-  }
-  res.redirect('/admin/tienda');
-});
-
-router.post('/tienda/actualizar', requireAuth, requireAdmin, async (req, res) => {
-  const { id, name, price, category, description, brand, sku, stock, discount, tags, existingImages } = req.body;
-  const p = (catalog.products || []).find(x => x.id === id);
-  if (p) {
-    if (name)               p.name        = name;
-    if (price       !== undefined) p.price       = parseInt(price || '0', 10) || 0;
-    if (category)           p.category    = category;
-    if (description !== undefined) p.description = description;
-    if (brand       !== undefined) p.brand       = (brand || '').trim();
-    if (sku         !== undefined) p.sku         = (sku || '').trim();
-    if (stock       !== undefined) p.stock       = parseInt(stock || '0', 10);
-    if (discount    !== undefined) p.discount    = Math.min(100, Math.max(0, parseInt(discount || '0', 10)));
-    if (tags        !== undefined) p.tags        = (tags || '').split(',').map(t => t.trim()).filter(Boolean);
-    const gallery = existingImages ? (Array.isArray(existingImages) ? existingImages : [existingImages]) : [];
-    if (gallery.length > 0) { p.gallery = gallery; p.image = gallery[0]; }
-    p.updatedAt = new Date().toISOString();
-    await saveCatalog();
-  }
-  res.redirect('/admin/tienda');
-});
-
-router.post('/tienda/eliminar', requireAuth, requireAdmin, async (req, res) => {
-  catalog.products = (catalog.products || []).filter(p => p.id !== req.body.id);
-  await saveCatalog();
-  res.redirect('/admin/tienda');
-});
-
-router.post('/tienda/upload-image', requireAuth, requireAdmin, uploadProduct, (req, res) => {
-  res.json({ ok: true, urls: req.blobUrls || [] });
-});
-
-router.post('/tienda/delete-image', requireAuth, requireAdmin, async (req, res) => {
-  const { productId, imageUrl } = req.body;
-  const p = (catalog.products || []).find(x => x.id === productId);
-  if (p && p.gallery) {
-    p.gallery   = p.gallery.filter(img => img !== imageUrl);
-    p.image     = p.gallery.length > 0 ? p.gallery[0] : '/images/download.png';
-    if (!p.gallery.length) p.gallery = ['/images/download.png'];
-    p.updatedAt = new Date().toISOString();
-    await saveCatalog();
-    await deleteFromBlob(imageUrl);
-  }
-  if ((req.headers.accept || '').includes('application/json')) return res.json({ ok: true });
-  res.redirect('/admin/tienda/' + productId + '/editar');
 });
 
 // ── Clasificados del club: moderación ───────────────────────────────────────
