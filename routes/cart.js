@@ -134,6 +134,27 @@ router.post('/cart/install', cartLimiter, async (req, res) => {
   res.redirect(303, req.body.back === 'checkout' ? '/checkout' : '/carrito');
 });
 
+// Agrega un kit completo (todas sus piezas en sus cantidades). Las piezas con
+// variantes no se pueden elegir aquí: se avisa para elegirlas en la ficha.
+router.post('/tienda/combos/:slug/agregar', cartLimiter, async (req, res) => {
+  const { catalog } = require('../helpers/catalog');
+  const { setFlash } = require('../helpers/flash');
+  const combo = catalog.combos.find((c) => c.slug === req.params.slug && c.active && c.kind === 'kit');
+  if (!combo) return res.redirect(303, '/tienda/combos');
+  const cart = getCart(req);
+  const pending = [];
+  for (const it of combo.items) {
+    const p = findById(it.productId);
+    if (!p || !isPublic(p)) continue;
+    if (p.variants && p.variants.length) { pending.push(p.name); continue; }
+    const key = makeKey(p.id);
+    cart.items[key] = Math.min(MAX_QTY, (parseInt(cart.items[key], 10) || 0) + (it.qty || 1));
+  }
+  await commitCart(req, res, cart);
+  if (pending.length) setFlash(res, 'info', `Elige la opción de: ${pending.join(', ')} para completar el kit.`);
+  res.redirect(303, '/carrito');
+});
+
 router.post('/cart/clear', async (req, res) => {
   await commitCart(req, res, emptyCart());
   res.redirect(303, '/carrito');
