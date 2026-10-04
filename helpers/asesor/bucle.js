@@ -125,6 +125,7 @@ async function atender(e, catalogo, deps) {
 
   let uso = USO_CERO;
   let whatsapp = null;
+  let orden = false;
   let reintentoGuardia = false;
   // Texto escrito junto a una llamada a herramienta. El modelo suele dar la
   // respuesta completa en el mismo mensaje en que pide preparar WhatsApp, y
@@ -135,6 +136,7 @@ async function atender(e, catalogo, deps) {
   const cerrar = (texto, respaldo) => ({
     texto,
     whatsapp,
+    orden,
     busquedas,
     uso,
     cifras: respaldo ? [] : h.cifrasBuscadas(texto, encontrados),
@@ -156,6 +158,7 @@ async function atender(e, catalogo, deps) {
       const resultados = usos.map((u) => {
         const salida = ejecutarHerramienta(u, catalogo, encontrados, busquedas);
         if (salida.whatsapp) whatsapp = salida.whatsapp;
+        if (salida.orden) orden = true;
         return { type: 'tool_result', tool_use_id: u.id, content: salida.contenido, is_error: salida.error };
       });
       mensajes.push({ role: 'user', content: resultados });
@@ -200,6 +203,15 @@ function ejecutarHerramienta(u, catalogo, encontrados, busquedas) {
         contenido: 'Listo: el botón "Enviárselo a Gorillaz" ya está visible para el visitante debajo de tu respuesta.',
         error: false,
         whatsapp: h.mensajeWhatsapp(p, encontrados),
+      };
+    }
+    if (u.name === 'consultar_orden') {
+      return {
+        contenido:
+          'Listo: debajo de tu respuesta el visitante ya ve el formulario de placa y últimos 4 dígitos del celular. ' +
+          'Dile en una frase que lo llene ahí. No le pidas esos datos en el chat ni inventes el estado.',
+        error: false,
+        orden: true,
       };
     }
   } catch (err) {

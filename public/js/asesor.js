@@ -225,6 +225,7 @@
       cuerpo.textContent = '';
       if (rol === 'asesor') pintarTexto(cuerpo, texto); else cuerpo.textContent = texto;
       if (extra && extra.cifras && extra.cifras.length) b.appendChild(el('span', 'asesor-marca', 'Precio publicado en la tienda'));
+      if (extra && extra.orden) b.appendChild(extra.resultado ? tarjetaOrden(extra.resultado) : formularioOrden(extra));
       if (extra && extra.whatsapp) {
         var a = el('a', 'asesor-wa', 'Enviárselo a Gorillaz por WhatsApp');
         a.href = enlaceWhatsapp(extra.whatsapp);
@@ -247,6 +248,126 @@
       requestAnimationFrame(tick);
     })();
     return b;
+  }
+
+  // ── Estado de la moto (POST /asesor/orden) ─────────────────────────────
+  // La placa y el celular van directo al servidor, nunca a la IA. El
+  // resultado se guarda en el extra del mensaje para repintarlo al volver.
+
+  function csrf() {
+    return (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+  }
+
+  function pesos(n) {
+    return '$' + Math.round(Number(n) || 0).toLocaleString('es-CO');
+  }
+
+  function formularioOrden(extra) {
+    var f = el('form', 'asesor-orden');
+    var placa = el('input', 'asesor-orden-placa');
+    placa.name = 'placa';
+    placa.placeholder = 'Placa (ABC12D)';
+    placa.maxLength = 7;
+    placa.autocomplete = 'off';
+    placa.setAttribute('autocapitalize', 'characters');
+    placa.setAttribute('aria-label', 'Placa de la moto');
+    placa.required = true;
+    var digitos = el('input', 'asesor-orden-digitos');
+    digitos.name = 'digitos';
+    digitos.placeholder = 'Últimos 4 del celular';
+    digitos.maxLength = 4;
+    digitos.inputMode = 'numeric';
+    digitos.pattern = '[0-9]{4}';
+    digitos.autocomplete = 'off';
+    digitos.setAttribute('aria-label', 'Últimos 4 dígitos del celular registrado en el taller');
+    digitos.required = true;
+    var ir = el('button', 'asesor-orden-ir', 'Consultar');
+    ir.type = 'submit';
+    var error = el('p', 'asesor-orden-error');
+    error.setAttribute('role', 'alert');
+    error.hidden = true;
+    f.appendChild(placa);
+    f.appendChild(digitos);
+    f.appendChild(ir);
+    f.appendChild(error);
+
+    function fallar(texto) {
+      error.textContent = texto;
+      error.hidden = false;
+      ir.disabled = false;
+      ir.textContent = 'Consultar';
+      bajar();
+    }
+
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      error.hidden = true;
+      ir.disabled = true;
+      ir.textContent = 'Consultando…';
+      fetch('/asesor/orden', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'x-csrf-token': csrf() },
+        body: JSON.stringify({ placa: placa.value, digitos: digitos.value }),
+      })
+        .then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, d: d }; });
+        })
+        .catch(function () { return { status: 0, d: {} }; })
+        .then(function (res) {
+          if (res.status === 200 && res.d && res.d.estado) {
+            extra.resultado = res.d;
+            guardar();
+            f.replaceWith(tarjetaOrden(res.d));
+            bajar();
+            return;
+          }
+          if (res.status === 404) fallar('No encontramos una orden con esa placa y esos dígitos. Revísalos o escríbele al taller.');
+          else if (res.status === 400 && res.d.error === 'placa') fallar('Revisa la placa: son 3 letras y 3 caracteres, por ejemplo ABC12D.');
+          else if (res.status === 400) fallar('Escribe los últimos 4 dígitos del celular que diste en el taller.');
+          else if (res.status === 429) fallar('Hiciste muchos intentos. Espera 15 minutos o escríbele al taller por WhatsApp.');
+          else if (res.status === 403) fallar('La sesión de la página venció. Recárgala e inténtalo de nuevo.');
+          else fallar('No pude consultar ahora. Inténtalo de nuevo o escríbele al taller por WhatsApp.');
+        });
+    });
+    return f;
+  }
+
+  function tarjetaOrden(o) {
+    var c = el('div', 'asesor-orden-card');
+    var cab = el('div', 'asesor-orden-cab');
+    cab.appendChild(el('span', 'asesor-orden-label', o.orden || 'Tu orden'));
+    var estadoClase = o.listo ? ' es-listo' : o.entregado ? ' es-entregado' : '';
+    cab.appendChild(el('span', 'asesor-orden-estado' + estadoClase, o.estado));
+    c.appendChild(cab);
+    if (o.moto) c.appendChild(el('p', 'asesor-orden-moto', o.moto));
+    if (o.trabajos && o.trabajos.length) {
+      var ul = el('ul', 'asesor-orden-trabajos');
+      o.trabajos.forEach(function (t) {
+        ul.appendChild(el('li', null, t.nombre + (t.cantidad > 1 ? ' × ' + t.cantidad : '')));
+      });
+      c.appendChild(ul);
+    }
+    if (o.comentarios) {
+      var nota = el('p', 'asesor-orden-nota');
+      nota.appendChild(el('strong', null, 'Comentarios del taller: '));
+      nota.appendChild(document.createTextNode(o.comentarios));
+      c.appendChild(nota);
+    }
+    var total = (Number(o.total) || 0) + (o.parqueadero ? o.parqueadero.valor : 0);
+    if (o.parqueadero) {
+      c.appendChild(el('p', 'asesor-orden-fila', 'Parqueadero: ' + o.parqueadero.dias + ' día' + (o.parqueadero.dias === 1 ? '' : 's') + ', ' + pesos(o.parqueadero.valor)));
+    }
+    if (total > 0) {
+      var fila = el('p', 'asesor-orden-total');
+      fila.appendChild(document.createTextNode('Total: '));
+      fila.appendChild(el('strong', null, pesos(total)));
+      c.appendChild(fila);
+    }
+    if (o.diasGratisRestantes) {
+      c.appendChild(el('p', 'asesor-orden-fila', 'Te quedan ' + o.diasGratisRestantes + ' día' + (o.diasGratisRestantes === 1 ? '' : 's') + ' de parqueadero sin costo.'));
+    }
+    return c;
   }
 
   function aviso(texto) {
@@ -307,7 +428,9 @@
         if (res.status === 200 && typeof d.texto === 'string') {
           estado.mensajes = mensajes.concat([{ rol: 'asesor', texto: d.texto }]);
           estado.busquedas = Array.isArray(d.busquedas) ? d.busquedas : estado.busquedas;
-          var extra = d.whatsapp || (d.cifras && d.cifras.length) ? { whatsapp: d.whatsapp || null, cifras: d.cifras || [] } : null;
+          var extra = d.whatsapp || d.orden || (d.cifras && d.cifras.length)
+            ? { whatsapp: d.whatsapp || null, cifras: d.cifras || [], orden: !!d.orden }
+            : null;
           if (extra) estado.extras[estado.mensajes.length - 1] = extra;
           guardar();
           agregarBurbuja('asesor', d.texto, extra, true);

@@ -72,7 +72,7 @@ router.post('/', preguntaLimiter, async (req, res) => {
   if (entrada.error) return res.status(400).json(entrada);
   try {
     const r = await responder(entrada);
-    res.json({ texto: r.texto, whatsapp: r.whatsapp, busquedas: r.busquedas, cifras: r.cifras });
+    res.json({ texto: r.texto, whatsapp: r.whatsapp, orden: r.orden, busquedas: r.busquedas, cifras: r.cifras });
   } catch (err) {
     if (err instanceof AsesorNoDisponible) return res.status(503).json({ error: 'no_disponible' });
     console.error('[asesor]', err && err.message ? err.message : err);

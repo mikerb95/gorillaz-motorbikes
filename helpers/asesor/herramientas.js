@@ -170,6 +170,15 @@ function definiciones() {
         additionalProperties: false,
       },
     },
+    {
+      name: 'consultar_orden',
+      description:
+        'Muestra en el chat un formulario donde la persona escribe la placa de su moto y los últimos 4 dígitos del ' +
+        'celular registrado en el taller; el sistema le muestra el estado de su orden ahí mismo. Úsala cuando pregunte ' +
+        'cómo va su moto, si ya está lista, qué le están haciendo o cuánto debe de una orden. No recibe datos: tú nunca ' +
+        'ves la placa, el celular ni la orden.',
+      input_schema: { type: 'object', properties: {}, additionalProperties: false },
+    },
   ];
 }
 

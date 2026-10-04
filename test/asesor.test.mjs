@@ -14,6 +14,7 @@ const { systemPrompt, MAX_PREGUNTAS } = require('../helpers/asesor/prompt.js');
 const h = require('../helpers/asesor/herramientas.js');
 const b = require('../helpers/asesor/bucle.js');
 const p = require('../helpers/asesor/presupuesto.js');
+const o = require('../helpers/asesor/orden.js');
 const { createClient } = require('@libsql/client');
 
 const RAYA = String.fromCharCode(0x2014);
@@ -250,6 +251,55 @@ test('el anuncio escrito antes de buscar_producto no llega al visitante', async 
   ]);
   const r = await b.atender(pregunta('¿tienen cascos?'), FUENTES, m);
   assert.equal(r.texto, 'El Casco Pro Naked cuesta $320.000 en la tienda.');
+});
+
+test('consultar_orden muestra el formulario y no le pasa datos al modelo', async () => {
+  const m = modelo([
+    herramienta('consultar_orden', {}),
+    texto('Escribe la placa y los últimos 4 dígitos del celular en el formulario de abajo.'),
+  ]);
+  const r = await b.atender(pregunta('¿cómo va mi moto?'), FUENTES, m);
+  assert.equal(r.orden, true);
+  assert.equal(r.respaldo, null);
+  const resultado = m.llamadas[1].at(-1).content[0];
+  assert.equal(resultado.is_error, false);
+  assert.match(resultado.content, /formulario/);
+  assert.equal((await b.atender(pregunta('hola'), FUENTES, modelo([texto('Hola.')]))).orden, false);
+});
+
+const ORDENES = [
+  { label: 'OS-0007', status: 'entregado', motorcycle: 'ABC12D Pulsar NS 200', clientPhone: '3001234567', items: [], total: 50000, createdAt: '2026-01-01T10:00:00Z' },
+  { label: 'OS-0042', status: 'trabajo_en_curso', motorcycle: 'ABC12D Pulsar NS 200', clientPhone: '+57 300 123 4567', notes: 'Esperando pastillas', items: [{ name: 'Cambio de aceite', qty: 1 }], total: 80000, createdAt: '2026-09-30T10:00:00Z' },
+  { label: 'OS-0050', status: 'pendiente', motorcycle: 'ABC12D Pulsar NS 200', clientPhone: '3109998888', items: [], total: 0, createdAt: '2026-10-02T10:00:00Z' },
+];
+const depsOrden = (ordenes = ORDENES) => ({
+  ordenesPorPlaca: async () => ordenes,
+  parqueadero: () => ({ aplica: false }),
+});
+
+test('buscarOrden: placa + 4 dígitos dan la orden activa de ese celular', async () => {
+  const r = await o.buscarOrden({ placa: 'abc 12d', digitos: '4567' }, depsOrden());
+  assert.equal(r.orden, 'OS-0042');
+  assert.equal(r.estado, 'Trabajo en curso');
+  assert.equal(r.comentarios, 'Esperando pastillas');
+  assert.deepEqual(r.trabajos, [{ nombre: 'Cambio de aceite', cantidad: 1 }]);
+  assert.ok(!JSON.stringify(r).includes('300'), 'no devuelve el celular');
+  // Otro celular con la misma placa (moto vendida): ve solo su orden.
+  assert.equal((await o.buscarOrden({ placa: 'ABC12D', digitos: '8888' }, depsOrden())).orden, 'OS-0050');
+});
+
+test('buscarOrden: dígitos que no coinciden y placa sin orden responden igual', async () => {
+  assert.equal(await o.buscarOrden({ placa: 'ABC12D', digitos: '0000' }, depsOrden()), null);
+  assert.equal(await o.buscarOrden({ placa: 'XYZ98A', digitos: '4567' }, depsOrden([])), null);
+});
+
+test('buscarOrden: exige placa completa y 4 dígitos', async () => {
+  for (const placa of ['AB', 'ABC', '%', 'ABC12D9']) {
+    await assert.rejects(o.buscarOrden({ placa, digitos: '4567' }, depsOrden()), o.DatosInvalidos);
+  }
+  for (const digitos of ['456', '45678', 'abcd', '']) {
+    await assert.rejects(o.buscarOrden({ placa: 'ABC12D', digitos }, depsOrden()), o.DatosInvalidos);
+  }
 });
 
 test('los teléfonos del historial no llegan al modelo', async () => {

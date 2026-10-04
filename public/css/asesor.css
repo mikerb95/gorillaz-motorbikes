@@ -384,3 +384,80 @@
   .asesor-globo[data-saliendo],
   .asesor-globo:not([hidden]) .asesor-globo-palabra { animation: none; }
 }
+
+/* Estado de la moto dentro del chat (formulario y tarjeta de la orden) */
+.asesor-orden {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.asesor-orden input {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font: inherit;
+  /* 16px evita el zoom automático de iOS al enfocar */
+  font-size: 16px;
+}
+
+.asesor-orden-placa { text-transform: uppercase; }
+.asesor-orden-placa::placeholder { text-transform: none; }
+
+.asesor-orden input:focus { outline: 2px solid rgba(242, 92, 5, .5); outline-offset: 0; border-color: transparent; }
+
+.asesor-orden-ir {
+  grid-column: 1 / -1;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ink, #0d0d0d);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.asesor-orden-ir:disabled { opacity: .6; cursor: progress; }
+
+.asesor-orden-error { grid-column: 1 / -1; margin: 0; font-size: 13px; color: #b42318; }
+.asesor-orden-error[hidden] { display: none; }
+
+.asesor-orden-card {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  background: #fafaf9;
+  font-size: 14px;
+}
+
+.asesor-orden-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+.asesor-orden-label { font-weight: 800; }
+
+.asesor-orden-estado {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(242, 92, 5, .12);
+  color: #9a3a03;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.asesor-orden-estado.es-listo { background: rgba(37, 211, 102, .16); color: #0b6b33; }
+.asesor-orden-estado.es-entregado { background: #ececec; color: #4b5563; }
+
+.asesor-orden-card p { margin: 0; }
+
+.asesor-orden-moto { color: var(--muted, #6b7280); }
+
+.asesor-orden-trabajos { margin: 0; padding-left: 18px; }
+
+.asesor-orden-nota { font-size: 13.5px; }
+
+.asesor-orden-fila { color: var(--muted, #6b7280); font-size: 13px; }
+
+.asesor-orden-total { padding-top: 6px; border-top: 1px dashed #e5e7eb; }
