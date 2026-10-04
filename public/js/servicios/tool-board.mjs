@@ -18,6 +18,10 @@
 // retazo de tablero: al aparecer, la herramienta se descuelga de su silueta
 // (sube y se ladea, como cuando la tomas) y se imprimen las cintas.
 //
+// VUELTA DESDE LA FICHA AMPLIADA: la transición de vista (vt.js) ya devolvió
+// la herramienta a su ficha, así que esa ficha llega abierta, con sus cintas
+// impresas, sin repetir el vuelo desde el tablero.
+//
 // Sin JS o con movimiento reducido: tablero completo y fichas con su
 // herramienta y sus cintas, quietas (marcado del servidor).
 
@@ -62,7 +66,7 @@ function enterBoard(gsap, board) {
   return tl;
 }
 
-function setupDesktop(page, gsap) {
+function setupDesktop(page, gsap, returning) {
   const ST = window.ScrollTrigger;
   const board = page.querySelector('.sv-board');
   const cards = Array.from(page.querySelectorAll('.sv-card'));
@@ -71,7 +75,7 @@ function setupDesktop(page, gsap) {
   const cardOf = (slug) => page.querySelector(`.sv-card[data-slug="${slug}"]`);
 
   page.classList.add('is-armed');
-  cards.forEach((c) => hideTapes(gsap, c));
+  cards.forEach((c) => (c.dataset.slug === returning ? (c.dataset.printed = 'yes') : hideTapes(gsap, c)));
 
   // Una sola herramienta "en vuelo", reutilizada: vive fuera de las fichas
   // (que recortan su contenido) para poder cruzar la pantalla.
@@ -107,6 +111,13 @@ function setupDesktop(page, gsap) {
     const slot = slotOf(slug);
     const card = cardOf(slug);
     if (!slot || !card) return;
+    if (slug === returning) {
+      // Ya viene en la ficha (la trajo la transición de vista): sin vuelo.
+      returning = null;
+      slot.classList.add('is-out');
+      card.classList.add('has-tool');
+      return;
+    }
     const fromRect = slot.querySelector('.sv-tool').getBoundingClientRect();
     const target = card.querySelector('.sv-card-tool .sv-tool');
     slot.classList.add('is-out');
@@ -163,11 +174,11 @@ function setupDesktop(page, gsap) {
   };
 }
 
-function setupMobile(page, gsap) {
+function setupMobile(page, gsap, returning) {
   const ST = window.ScrollTrigger;
   const cards = Array.from(page.querySelectorAll('.sv-card'));
   if (!ST || !cards.length) return () => {};
-  cards.forEach((c) => hideTapes(gsap, c));
+  cards.forEach((c) => (c.dataset.slug === returning ? (c.dataset.printed = 'yes') : hideTapes(gsap, c)));
   const triggers = cards.map((card) => ST.create({
     trigger: card,
     start: 'top 78%',
@@ -196,8 +207,19 @@ export default function initToolBoard(page) {
   }
   const board = page.querySelector('.sv-board');
   const enter = board ? enterBoard(gsap, board) : null;
+  // La ficha ampliada deja aquí su slug al volver a /servicios (vt.js). Solo
+  // cuenta para el primer montaje: si cambia el ancho, todo arranca normal.
+  let returning = null;
+  try {
+    returning = sessionStorage.getItem('sv-return');
+    sessionStorage.removeItem('sv-return');
+  } catch {}
   const mm = gsap.matchMedia();
-  mm.add({ desktop: MQ.desktop, mobile: MQ.mobile }, (ctx) => (ctx.conditions.desktop ? setupDesktop(page, gsap) : setupMobile(page, gsap)));
+  mm.add({ desktop: MQ.desktop, mobile: MQ.mobile }, (ctx) => {
+    const back = returning;
+    returning = null;
+    return ctx.conditions.desktop ? setupDesktop(page, gsap, back) : setupMobile(page, gsap, back);
+  });
   return {
     destroy() {
       enter?.kill();

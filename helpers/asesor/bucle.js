@@ -68,8 +68,9 @@ function validarEntrada(cuerpo) {
 }
 
 // Celulares colombianos (3xx xxx xxxx, con o sin +57 y separadores) y
-// cualquier tira de 7 o más dígitos con separadores: fijos, cédulas, cuentas.
-const TELEFONO = /(?:\+?57[\s.-]?)?(?<!\d)(?:3\d{2}[\s.-]?\d{3}[\s.-]?\d{4}|\d(?:[\s.-]?\d){6,})(?!\d)/g;
+// cualquier tira de 10 o más dígitos (fijos con indicativo, cuentas). Desde
+// 10 y no menos para no tapar precios que escriba la persona ("$320.000").
+const TELEFONO = /(?:\+?57[\s.-]?)?(?<![\d$])(?:3\d{2}[\s.-]?\d{3}[\s.-]?\d{4}|\d(?:[\s.-]?\d){9,})(?!\d)/g;
 
 /** Tapa números de teléfono (y documentos) antes de mandar el historial al modelo. */
 function taparTelefonos(texto) {

@@ -12,7 +12,7 @@
 // Con prefers-reduced-motion no se monta nada: el marcado ya es el estado final.
 
 import { mount, prefersReduced, getGsap } from '../motion/core.mjs?v=1';
-import initToolBoard from './tool-board.mjs?v=1';
+import initToolBoard from './tool-board.mjs?v=2';
 
 const html = document.documentElement;
 
