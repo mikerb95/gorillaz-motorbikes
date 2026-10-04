@@ -154,8 +154,13 @@ router.get('/carrito', async (req, res) => {
       if (!inCart.has(p.id) && !suggestions.includes(p)) suggestions.push(p);
     }
   }
+  const { unitPrice } = require('../helpers/shop/pricing');
+  const { isClubMember } = require('../helpers/cart');
+  const member = isClubMember(res.locals.user);
   res.render('cart', {
     priced,
+    installableKeys: priced.lines.filter((l) => (findById(l.productId) || {}).installable).map((l) => l.key),
+    priceOf: (p) => unitPrice(p, null, { member }),
     deliveryMethods: availableMethods(deliveryCfg),
     deliveryCfg,
     METHOD_LABELS,

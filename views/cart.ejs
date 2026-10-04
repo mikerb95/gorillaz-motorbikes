@@ -1,167 +1,89 @@
-<%- include('partials/head', { title: 'Tu carrito' }) %>
-
-<%
-  const FREE_THRESHOLD = 300000;
-  const remaining = Math.max(0, FREE_THRESHOLD - cart.subtotal);
-  const freeProgress = Math.min(100, Math.round((cart.subtotal / FREE_THRESHOLD) * 100));
-%>
-
-<div class="cart-page">
-  <div class="cart-page-inner">
-
-    <% if (items.length === 0) { %>
-      <div class="cart-empty">
-        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-          <path d="M3 4h2l2.5 12h9l2-8H7.2"/>
-          <circle cx="9" cy="20" r="1.5"/>
-          <circle cx="17" cy="20" r="1.5"/>
-        </svg>
-        <h1>Tu carrito está vacío</h1>
-        <p>Todavía no agregaste ningún producto.</p>
-        <a class="btn btn-primary" href="/tienda">Ver productos</a>
+<%- include('partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<div class="tn-page tn-page--narrow">
+  <% if (!priced.lines.length) { %>
+    <div class="tn-empty tn-empty--page">
+      <svg class="ni" aria-hidden="true"><use href="#ni-cart"/></svg>
+      <h1 class="tn-h1">Tu carrito está vacío</h1>
+      <p>Mira la tienda o, si buscas algo puntual, pregúntanos por WhatsApp.</p>
+      <div class="tn-empty-actions">
+        <a class="tn-btn tn-btn--primary" href="/tienda">Ir a la tienda</a>
+        <a class="tn-btn tn-btn--ghost" href="<%= waLink(waMsg.shop()) %>" target="_blank" rel="noopener">Preguntar por WhatsApp</a>
       </div>
+    </div>
+  <% } else { %>
+    <header class="tn-head tn-head--row">
+      <h1 class="tn-h1">Tu carrito</h1>
+      <a class="tn-link" href="/tienda">Seguir comprando</a>
+    </header>
 
-    <% } else { %>
-
-      <div class="cart-topbar">
-        <a href="/tienda" class="cart-back-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          Seguir comprando
-        </a>
-        <h1 class="cart-title">Tu carrito</h1>
-      </div>
-
-      <div class="cart-layout">
-
-        <!-- ── Items column ── -->
-        <div class="cart-items-col">
-
-          <% items.forEach(item => { %>
-          <div class="cart-item-card">
-            <button type="button" class="cart-item-remove" data-id="<%= item.id %>" aria-label="Eliminar <%= item.name %>">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-
-            <a href="/tienda/<%= item.id %>" class="cart-item-img-link">
-              <img src="<%= item.image || '/images/download.png' %>" alt="<%= item.name %>" class="cart-item-img" width="88" height="88" loading="lazy">
-            </a>
-
-            <div class="cart-item-body">
-              <a href="/tienda/<%= item.id %>" class="cart-item-name"><%= item.name %></a>
-              <span class="cart-item-unit">
-                $<%= item.unitPrice.toLocaleString('es-CO') %> / unidad
-                <% if (item.discount > 0) { %>
-                  <span class="price-old">$<%= item.price.toLocaleString('es-CO') %></span>
-                <% } %>
-              </span>
-
-              <form method="post" action="/cart/update" class="cart-qty-form">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <input type="hidden" name="id" value="<%= item.id %>">
-                <div class="cart-qty-controls">
-                  <button type="button" class="cart-qty-btn" data-delta="-1" aria-label="Disminuir">−</button>
-                  <input type="number" name="qty" value="<%= item.qty %>" min="0" class="cart-qty-input" readonly>
-                  <button type="button" class="cart-qty-btn" data-delta="1" aria-label="Aumentar">+</button>
-                </div>
-              </form>
-            </div>
-
-            <span class="cart-item-total">$<%= item.total.toLocaleString('es-CO') %></span>
-          </div>
-          <% }) %>
-
-          <div class="cart-clear-row">
-            <form method="post" action="/cart/clear">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <button type="submit" class="cart-clear-btn">Vaciar carrito</button>
+    <div class="tn-cart">
+      <ul class="tn-lines" role="list">
+        <% priced.lines.forEach(function (l) { %>
+        <li class="tn-line">
+          <a class="tn-line-img" href="/tienda/<%= l.slug %>" tabindex="-1" aria-hidden="true">
+            <% if (l.image) { %><img src="<%= l.image %>" alt="" width="88" height="88" loading="lazy" /><% } else { %><span class="tn-nophoto"><svg class="ni" aria-hidden="true"><use href="#ni-bike"/></svg></span><% } %>
+          </a>
+          <div class="tn-line-body">
+            <a class="tn-line-name" href="/tienda/<%= l.slug %>"><%= l.name %></a>
+            <% if (l.variantLabel) { %><span class="tn-muted"><%= l.variantLabel %></span><% } %>
+            <span class="tn-line-unit"><%= fmtCOP(l.unitPrice) %> c/u<% if (l.unitPrice < l.unitBase) { %> <s><%= fmtCOP(l.unitBase) %></s><% } %><% if (l.isClubApplied) { %> · precio club<% } %></span>
+            <form class="tn-line-qty" method="post" action="/cart/update">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <input type="hidden" name="key" value="<%= l.key %>" />
+              <div class="tn-qty-ctrl">
+                <button type="submit" name="qty" value="<%= l.qty - 1 %>" aria-label="Quitar una unidad">-</button>
+                <output aria-live="polite"><%= l.qty %></output>
+                <button type="submit" name="qty" value="<%= l.qty + 1 %>" aria-label="Agregar una unidad">+</button>
+              </div>
+              <button class="tn-link tn-link--danger" type="submit" name="qty" value="0">Quitar</button>
+            </form>
+            <form class="tn-line-install" method="post" action="/cart/install" data-autosubmit-form>
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <input type="hidden" name="key" value="<%= l.key %>" />
+              <input type="hidden" name="on" value="<%= l.install ? '0' : '1' %>" />
+              <% if (l.install) { %>
+                <p class="tn-chip-ok"><svg class="ni" aria-hidden="true"><use href="#ni-wrench"/></svg>Con instalación en el taller<%= l.installPrice !== null ? ': ' + fmtCOP(l.installTotal) : ' (valor a confirmar)' %> <button class="tn-link" type="submit">Quitar instalación</button></p>
+              <% } else if (installableKeys.indexOf(l.key) >= 0) { %>
+                <button class="tn-link" type="submit"><svg class="ni" aria-hidden="true"><use href="#ni-wrench"/></svg>Agregar instalación en el taller</button>
+              <% } %>
             </form>
           </div>
+          <strong class="tn-line-total"><%= fmtCOP(l.lineTotal) %></strong>
+        </li>
+        <% }) %>
+      </ul>
 
-        </div>
+      <aside class="tn-summary" aria-label="Resumen del pedido">
+        <h2 class="tn-h2">Resumen</h2>
+        <dl class="tn-totals">
+          <div><dt>Productos (<%= priced.count %>)</dt><dd><%= fmtCOP(priced.itemsSubtotal) %></dd></div>
+          <% priced.discounts.forEach(function (d) { %><div class="is-discount"><dt><%= d.label %></dt><dd>- <%= fmtCOP(d.amount) %></dd></div><% }) %>
+          <% if (priced.hasInstallation) { %><div><dt>Instalación</dt><dd><%= priced.installationTotal ? fmtCOP(priced.installationTotal) : '' %><%= priced.installationPending ? (priced.installationTotal ? ' + ' : '') + 'a confirmar' : '' %></dd></div><% } %>
+          <div><dt>Entrega</dt><dd><%= deliveryMethods.length ? 'Se calcula al pagar' : '' %></dd></div>
+          <div class="is-total"><dt>Total</dt><dd><%= fmtCOP(priced.merchandise + priced.installationTotal) %></dd></div>
+        </dl>
+        <% if (priced.savings > 0) { %><p class="tn-savings">Estás ahorrando <%= fmtCOP(priced.savings) %></p><% } %>
+        <% if (deliveryMethods.length) { %>
+          <p class="tn-muted">Entrega disponible: <%= deliveryMethods.map(function (m) { return METHOD_LABELS[m].toLowerCase(); }).join(', ') %>.</p>
+        <% } %>
+        <a class="tn-btn tn-btn--primary tn-btn--lg tn-btn--block" href="/checkout">Continuar al pago</a>
+        <p class="tn-muted tn-center">Compra sin crear cuenta. <% if (!user) { %><a href="/club/login?return=/checkout">¿Eres del club? Inicia sesión</a><% } %></p>
+        <form method="post" action="/cart/clear" class="tn-center">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button type="submit" class="tn-link tn-link--danger">Vaciar carrito</button>
+        </form>
+      </aside>
+    </div>
 
-        <!-- ── Summary panel ── -->
-        <aside class="cart-summary-panel">
-          <h2 class="cart-summary-title">Resumen del pedido</h2>
-
-          <div class="cart-summary-rows">
-            <div class="cart-summary-row">
-              <span>Subtotal</span>
-              <span>$<%= cart.subtotal.toLocaleString('es-CO') %></span>
-            </div>
-            <div class="cart-summary-row">
-              <span>Envío</span>
-              <span class="<%= remaining === 0 ? 'free-ship-label' : '' %>">
-                <%= remaining === 0 ? 'Gratis' : 'Calculado al pagar' %>
-              </span>
-            </div>
-          </div>
-
-          <div class="free-ship-bar-wrap">
-            <% if (remaining > 0) { %>
-              <p class="free-ship-hint">Te faltan <strong>$<%= remaining.toLocaleString('es-CO') %></strong> para envío gratis</p>
-            <% } else { %>
-              <p class="free-ship-hint free-ship-achieved">¡Tienes envío gratis!</p>
-            <% } %>
-            <div class="free-ship-bar">
-              <div class="free-ship-progress" style="width:<%= freeProgress %>%"></div>
-            </div>
-          </div>
-
-          <div class="cart-total-row">
-            <div>
-              <span class="cart-total-label">Total</span>
-              <span class="cart-total-note">IVA incluido</span>
-            </div>
-            <span class="cart-total-amount">$<%= cart.subtotal.toLocaleString('es-CO') %></span>
-          </div>
-
-          <a href="/checkout" class="btn btn-primary cart-checkout-btn">
-            Ir a pagar
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-          </a>
-
-          <div class="cart-trust-badges">
-            <span>
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-              Pago 100% seguro
-            </span>
-            <span>
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-              Bold certificado
-            </span>
-            <span>
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-              Política de cambios
-            </span>
-          </div>
-        </aside>
-
+    <% if (suggestions.length) { %>
+    <section class="tn-section">
+      <h2 class="tn-h2">Va bien con lo que llevas</h2>
+      <div class="tn-grid tn-grid--row">
+        <% suggestions.forEach(function (p) { %><%- include('partials/tienda/card', { p: p, price: priceOf(p) }) %><% }) %>
       </div>
+    </section>
     <% } %>
-  </div>
+  <% } %>
 </div>
-
-<script>
-  // +/− qty controls
-  document.querySelectorAll('.cart-qty-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const form = btn.closest('.cart-qty-form');
-      const input = form.querySelector('.cart-qty-input');
-      const val = Math.max(0, parseInt(input.value || '1') + parseInt(btn.dataset.delta));
-      input.value = val;
-      form.submit();
-    });
-  });
-
-  // × remove (sets qty to 0)
-  document.querySelectorAll('.cart-item-remove').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const card = btn.closest('.cart-item-card');
-      const form = card.querySelector('.cart-qty-form');
-      form.querySelector('.cart-qty-input').value = 0;
-      form.submit();
-    });
-  });
-</script>
-
+<script defer src="/static/js/tienda.js?v=<%= assetV('js/tienda.js') %>"></script>
 <%- include('partials/footer') %>
