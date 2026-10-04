@@ -53,7 +53,7 @@ function boardServices() {
 router.get('/servicios', (req, res) => {
   res.render('services', {
     services: boardServices(),
-    title: 'Servicios | Gorillaz Motorbikes',
+    title: 'Servicios de taller de motos en Bogotá | Gorillaz Motorbikes',
     description: 'Mecánica, electricidad, escaneo, torno, prensa, pintura, lavado y detailing de motos en Bogotá. Mira qué incluye cada servicio y agenda en línea.',
     canonicalPath: '/servicios',
     bodyClass: 'page-servicios',
@@ -102,6 +102,14 @@ router.post('/servicios/agendar', async (req, res) => {
 // Ficha ampliada de un servicio: la misma ficha de /servicios, en grande y con
 // el tablero debajo. Entre las dos páginas hay una transición de vista que
 // lleva la herramienta de un sitio al otro (public/js/servicios/vt.js).
+// Título para buscadores: lo que la gente escribe en Google ("pintura de
+// motos en Bogotá"), no el nombre comercial de la ficha.
+function seoServiceTitle(name) {
+  if (/motos|cascos/i.test(name)) return `${name} en Bogotá`;
+  if (/^(torno|prensa)$/i.test(name)) return `${name} para motos en Bogotá`;
+  return `${name} de motos en Bogotá`;
+}
+
 router.get('/servicios/:slug', (req, res, next) => {
   const services = boardServices();
   const index = services.findIndex(s => s.slug === req.params.slug);
@@ -109,8 +117,8 @@ router.get('/servicios/:slug', (req, res, next) => {
   const service = services[index];
   res.render('services/service-detail', {
     service, services, index,
-    title: `${service.title} | Gorillaz Motorbikes`,
-    description: service.desc,
+    title: `${seoServiceTitle(service.name)} | Gorillaz Motorbikes`,
+    description: `${service.desc} Taller de motos en Bogotá, agenda en línea.`,
     canonicalPath: `/servicios/${service.slug}`,
     bodyClass: 'page-servicios page-servicio',
     vtExpect: 'sv-detail-end',

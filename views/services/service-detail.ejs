@@ -76,6 +76,33 @@
   </div>
 </div>
 
+<%
+  var SITE_URL = 'https://gorillazmotorbikes.com';
+  var serviceLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: service.name + ' de Gorillaz Motorbikes',
+      serviceType: service.name,
+      description: service.desc,
+      url: SITE_URL + '/servicios/' + service.slug,
+      image: SITE_URL + ((service.realPhoto && service.realPhoto.src) || service.img),
+      areaServed: { '@type': 'City', name: 'Bogotá' },
+      provider: { '@type': 'MotorcycleRepair', '@id': SITE_URL + '/#negocio', name: 'Gorillaz Motorbikes', url: SITE_URL + '/' }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL + '/' },
+        { '@type': 'ListItem', position: 2, name: 'Servicios', item: SITE_URL + '/servicios' },
+        { '@type': 'ListItem', position: 3, name: service.name, item: SITE_URL + '/servicios/' + service.slug }
+      ]
+    }
+  ];
+%>
+<script type="application/ld+json"><%- JSON.stringify(serviceLd).replace(/</g, '\\u003c') %></script>
+
 <script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
 <script type="module" src="/static/js/servicios/detail.mjs?v=1"></script>
 
