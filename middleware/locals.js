@@ -2,8 +2,13 @@
 const jwt     = require('jsonwebtoken');
 const { JWT_SECRET, RECAPTCHA_SITE_KEY } = require('../config');
 const { getUserById, getAllEvents } = require('../db');
-const catalog = require('../data/catalog');
 const navMenu = require('../data/nav-menu');
+const { getCart, priceCart, isClubMember } = require('../helpers/cart');
+const { visibleCategories } = require('../helpers/catalog');
+const { getBusiness, openStatus, hoursSummary } = require('../helpers/business');
+const { fmtCOP, fmtPesos } = require('../helpers/money');
+const { waLink, waShareLink, messages: waMsg } = require('../helpers/whatsapp');
+const { SITE_URL } = require('../helpers/seo');
 const { readFlash } = require('../helpers/flash');
 const { fechaCO, horaCO, fechaHoraCO } = require('../helpers/datetime');
 const { assetVersion } = require('../helpers/assets');
@@ -87,23 +92,33 @@ const templateLocals = async (req, res, next) => {
   res.locals.horaCO      = horaCO;
   res.locals.fechaHoraCO = fechaHoraCO;
 
-  const c = req.cart || { items: {}, count: 0, subtotal: 0 };
-  let count = 0, subtotal = 0;
-  for (const [id, qty] of Object.entries(c.items || {})) {
-    const prod = (catalog.products || []).find(p => p.id === id);
-    if (prod) {
-      count += qty;
-      const finalPrice = prod.discount > 0 ? Math.round(prod.price * (1 - prod.discount / 100)) : prod.price;
-      subtotal += finalPrice * qty;
-    }
-  }
-  res.locals.cart = { items: c.items || {}, count, subtotal };
+  // Minicarrito del header: mismo cálculo que el carrito y el checkout, sobre
+  // el catálogo vivo (antes leía el seed y podía mostrar precios viejos).
   try {
-    res.locals.cartItems = Object.entries(c.items || {}).map(([id, qty]) => {
-      const p = (catalog.products || []).find(pp => pp.id === id);
-      return p ? { id, name: p.name, qty, total: Math.round(p.price * (1 - (p.discount || 0) / 100)) * qty } : null;
-    }).filter(Boolean);
-  } catch { res.locals.cartItems = []; }
+    const priced = priceCart(getCart(req), { user: res.locals.user });
+    res.locals.cart = { items: req.cart.items, count: priced.count, subtotal: priced.merchandise };
+    res.locals.cartItems = priced.lines.map(l => ({ id: l.key, name: l.name, qty: l.qty, total: l.lineTotal }));
+  } catch {
+    res.locals.cart = { items: {}, count: 0, subtotal: 0 };
+    res.locals.cartItems = [];
+  }
+  res.locals.isClubMember = isClubMember(res.locals.user);
+
+  // Negocio, precios, WhatsApp y SEO para todas las vistas.
+  const biz = getBusiness();
+  res.locals.biz = biz;
+  res.locals.bizOpen = openStatus(biz);
+  res.locals.bizHours = hoursSummary(biz);
+  res.locals.fmtCOP = fmtCOP;
+  res.locals.fmtPesos = fmtPesos;
+  res.locals.waLink = waLink;
+  res.locals.waShareLink = waShareLink;
+  res.locals.waMsg = waMsg;
+  res.locals.siteUrl = SITE_URL;
+  // Canonical por defecto: la ruta propia sin query (nunca el home). Las vistas
+  // que necesitan otro (filtros, paginación) lo sobreescriben.
+  res.locals.canonicalPath = req.path;
+  try { res.locals.shopNavCategories = visibleCategories(); } catch { res.locals.shopNavCategories = []; }
 
   try {
     const today = new Date(); today.setHours(0, 0, 0, 0);

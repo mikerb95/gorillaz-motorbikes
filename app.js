@@ -87,11 +87,11 @@ app.use('/favicons', express.static(path.join(__dirname, 'favicons')));
 app.use('/images',   express.static(path.join(__dirname, 'images')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+// Garantiza que el esquema, la config y el catálogo estén listos antes de
+// armar las variables de plantilla (usuario, minicarrito) y de cualquier ruta.
+app.use((req, res, next) => { ensureDb().then(() => next()).catch(next); });
 app.use(templateLocals);
 app.use(validateCsrf);
-
-// Garantiza que el esquema y las migraciones estén listos antes de cualquier ruta.
-app.use((req, res, next) => { ensureDb().then(() => next()).catch(next); });
 
 app.use('/',       require('./routes/seo'));
 app.use('/',       require('./routes/home'));

@@ -20,24 +20,39 @@
     var pageImage = (typeof ogImage !== 'undefined' && ogImage) ? ogImage : SITE + '/images/og-default.jpg';
     if (pageImage.charAt(0) === '/') pageImage = SITE + pageImage;
   %>
+<%
+    var DEFAULT_TITLE = 'Gorillaz Motorbikes | Taller de motos en Bogotá';
+    var DEFAULT_DESC = 'Taller de motos en Bogotá: mecánica, electricidad, escaneo, pintura, alistamiento para la revisión técnico-mecánica y tienda de accesorios con instalación.';
+    var site = (typeof siteUrl !== 'undefined' && siteUrl) ? siteUrl : 'https://gorillazmotorbikes.com';
+    var pageTitle = (typeof title !== 'undefined' && title) ? title : DEFAULT_TITLE;
+    var pageDesc = (typeof description !== 'undefined' && description) ? description : DEFAULT_DESC;
+    var canonical = (typeof canonicalUrl !== 'undefined' && canonicalUrl) ? canonicalUrl : site + ((typeof canonicalPath !== 'undefined' && canonicalPath) ? canonicalPath : '/');
+    var ogImg = (typeof ogImage !== 'undefined' && ogImage) ? ogImage : '/images/og-default.jpg';
+    if (!/^https?:\/\//.test(ogImg)) ogImg = site + ogImg;
+    var pageRobots = (typeof robots !== 'undefined' && robots) ? robots : ((typeof noIndex !== 'undefined' && noIndex) ? 'noindex, nofollow' : '');
+  %>
   <title><%= pageTitle %></title>
   <meta name="description" content="<%= pageDesc %>" />
-  <link rel="canonical" href="<%= pageUrl %>" />
+  <link rel="canonical" href="<%= canonical %>" />
+  <% if (pageRobots) { %><meta name="robots" content="<%= pageRobots %>" /><% } %>
   <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="es_CO" />
+  <meta property="og:type" content="<%= (typeof ogType !== 'undefined' && ogType) ? ogType : 'website' %>" />
   <meta property="og:site_name" content="Gorillaz Motorbikes" />
+  <meta property="og:locale" content="es_CO" />
   <meta property="og:title" content="<%= pageTitle %>" />
   <meta property="og:description" content="<%= pageDesc %>" />
-  <meta property="og:image" content="<%= pageImage %>" />
-  <% if (pageImage === SITE + '/images/og-default.jpg') { %><meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <% } %><meta property="og:url" content="<%= pageUrl %>" />
+  <meta property="og:image" content="<%= ogImg %>" />
+  <meta property="og:url" content="<%= canonical %>" />
+  <% if (typeof ogExtra !== 'undefined' && ogExtra) { ogExtra.forEach(function (m) { %><meta property="<%= m.property %>" content="<%= m.content %>" />
+  <% }) } %>
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="<%= pageTitle %>" />
   <meta name="twitter:description" content="<%= pageDesc %>" />
-  <meta name="twitter:image" content="<%= pageImage %>" />
+  <meta name="twitter:image" content="<%= ogImg %>" />
+  <% if (typeof preloadImage !== 'undefined' && preloadImage) { %><link rel="preload" as="image" href="<%= preloadImage %>" fetchpriority="high" /><% } %>
+  <% if (typeof structuredData !== 'undefined' && structuredData && typeof toJsonLd === 'function') { [].concat(structuredData).forEach(function (sd) { %><script type="application/ld+json"><%- toJsonLd(sd) %></script>
+  <% }) } %>
   <!-- Autor del proyecto: mikerb95 (Gorillaz Motorbikes) -->
   <link rel="icon" href="/favicons/favicon.ico" />
   <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
@@ -58,7 +73,6 @@
   <%# Hojas propias de la página: en el head bloquean el primer pintado (un @view-transition en el body llega tarde). %>
   <% if (typeof extraCss !== 'undefined') { extraCss.forEach(function (href) { %><link rel="stylesheet" href="<%= href %>" />
   <% }) } %>
-  <% if (typeof noIndex !== 'undefined' && noIndex) { %><meta name="robots" content="noindex, nofollow" /><% } %>
 
   <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
     <meta name="csrf-token" content="<%= csrfToken %>">
@@ -101,7 +115,8 @@
     <symbol id="ni-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></symbol>
   </svg>
   <%
-    var nav = (typeof navMenu !== 'undefined' && navMenu) ? navMenu : { serviceGroups: [], shop: { categories: [], quick: [] } };
+    var nav = (typeof navMenu !== 'undefined' && navMenu) ? navMenu : { serviceGroups: [], shop: { quick: [] } };
+    var navShopCats = (typeof shopNavCategories !== 'undefined' && shopNavCategories) ? shopNavCategories.map(function (c) { return { href: '/tienda/c/' + c.slug, label: c.name }; }) : [];
     var navCartRows = (typeof cartItems !== 'undefined' && cartItems) ? cartItems : [];
     var navCartCount = (typeof cart !== 'undefined' && cart && cart.count) || 0;
     var navCartTotal = (typeof cart !== 'undefined' && cart && cart.subtotal) || 0;
@@ -168,7 +183,7 @@
               <div class="nav-panel-cols">
                 <div class="nav-panel-col">
                   <strong class="nav-panel-heading">Categorías</strong>
-                  <% nav.shop.categories.forEach(function (l) { %><a class="nav-sub" href="<%= l.href %>"><span class="nav-sub-text"><span class="nav-sub-title"><%= l.label %></span></span></a><% }) %>
+                  <% navShopCats.forEach(function (l) { %><a class="nav-sub" href="<%= l.href %>"><span class="nav-sub-text"><span class="nav-sub-title"><%= l.label %></span></span></a><% }) %>
                 </div>
                 <div class="nav-panel-col">
                   <strong class="nav-panel-heading">Acceso rápido</strong>
@@ -193,11 +208,11 @@
                 <a class="nav-cart-row" href="/carrito">
                   <span class="nav-cart-qty"><%= item.qty %></span>
                   <span class="nav-sub-title"><%= item.name %></span>
-                  <span class="nav-cart-price">COP <%= Number(item.total || 0).toLocaleString('es-CO') %></span>
+                  <span class="nav-cart-price"><%= fmtPesos(item.total) %></span>
                 </a>
                 <% }) %>
               </div>
-              <div class="nav-cart-total"><span>Total</span><strong>COP <%= Number(navCartTotal).toLocaleString('es-CO') %></strong></div>
+              <div class="nav-cart-total"><span>Total</span><strong><%= fmtCOP(navCartTotal) %></strong></div>
               <a class="nav-feature-btn" href="/carrito">Ver carrito<svg class="ni" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
               <% } else { %>
               <p class="nav-cart-empty"><svg class="ni" aria-hidden="true"><use href="#ni-cart"/></svg>Tu carrito está vacío</p>
@@ -248,9 +263,9 @@
             </button>
             <div class="mnav-sub" id="mnav-tienda">
               <div class="mnav-sub-inner">
-                <p class="mnav-subhead">Categorías</p>
+                <% if (navShopCats.length) { %><p class="mnav-subhead">Categorías</p><% } %>
                 <div class="mnav-chips">
-                  <% nav.shop.categories.forEach(function (l) { %><a class="mnav-chip" href="<%= l.href %>"><%= l.label %></a><% }) %>
+                  <% navShopCats.forEach(function (l) { %><a class="mnav-chip" href="<%= l.href %>"><%= l.label %></a><% }) %>
                 </div>
                 <p class="mnav-subhead">Acceso rápido</p>
                 <div class="mnav-chips">
@@ -359,7 +374,7 @@
   <div id="cartDrawerOverlay" class="cart-drawer-overlay"></div>
 
   <main class="page-root">
-    <a class="whatsapp-fab" href="https://wa.me/573213204299" target="_blank" rel="noopener"
+    <a class="whatsapp-fab" href="<%= waLink((typeof waContext !== 'undefined' && waContext) ? waContext : waMsg.general()) %>" target="_blank" rel="noopener"
       aria-label="Contactar por WhatsApp">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
         <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.47 0 1.46 1.06 2.87 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35Z" />
