@@ -158,6 +158,7 @@
   }
 
   function mostrar() {
+    ocultarGlobo(true);
     if (!panel) construir();
     panel.hidden = false;
     fab.setAttribute('aria-expanded', 'true');
@@ -171,15 +172,21 @@
     fab.focus();
   }
 
+  var consulta = null;
   function consultarDisponible() {
-    if (disponible !== null) return;
-    fetch('/asesor', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
-      .then(function (r) { return r.ok ? r.json() : { disponible: false }; })
-      .catch(function () { return { disponible: false }; })
-      .then(function (d) {
-        disponible = !!(d && d.disponible);
-        opcionIA.hidden = !disponible;
-      });
+    if (!consulta) {
+      consulta = fetch('/asesor', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : { disponible: false }; })
+        .catch(function () { return { disponible: false }; })
+        .then(function (d) {
+          disponible = !!(d && d.disponible);
+          return disponible;
+        });
+    }
+    return consulta.then(function (si) {
+      if (opcionIA) opcionIA.hidden = !si;
+      return si;
+    });
   }
 
   function abrirChat() {
@@ -331,4 +338,94 @@
     ev.preventDefault();
     if (panel && !panel.hidden) ocultar(); else mostrar();
   });
+
+  // Globo de invitación al asistente, como el de codebymike.net: sale de la
+  // burbuja a los 6 s y se va solo a los 8 s (con el puntero encima espera).
+  // Solo si la IA está disponible, la persona no está conversando y no lo
+  // cerró con la X en esta pestaña. Con la pestaña oculta espera a que vuelva.
+  var CLAVE_GLOBO = 'gz-asesor-globo';
+  var GLOBO_TEXTO = '¿Dudas con tu moto? Pregúntale a nuestro asistente con IA';
+  var GLOBO_ESPERA = 6000;
+  var GLOBO_VISIBLE = 8000;
+  var globo = null;
+  var globoReloj = null;
+
+  function globoCerradoAntes() {
+    try { return sessionStorage.getItem(CLAVE_GLOBO) === '1'; } catch (_) { return false; }
+  }
+
+  function construirGlobo() {
+    globo = el('div', 'asesor-globo');
+    globo.hidden = true;
+    var abrir = el('button', 'asesor-globo-texto');
+    abrir.type = 'button';
+    abrir.setAttribute('aria-label', GLOBO_TEXTO);
+    var palabras = el('span');
+    palabras.setAttribute('aria-hidden', 'true');
+    GLOBO_TEXTO.split(' ').forEach(function (p, i) {
+      var s = el('span', 'asesor-globo-palabra', p);
+      s.style.setProperty('--i', i);
+      palabras.appendChild(s);
+      palabras.appendChild(document.createTextNode(' '));
+    });
+    abrir.appendChild(palabras);
+    abrir.addEventListener('click', function () {
+      mostrar();
+      if (disponible) abrirChat();
+    });
+    var cerrar = el('button', 'asesor-globo-cerrar', '×');
+    cerrar.type = 'button';
+    cerrar.setAttribute('aria-label', 'Cerrar el aviso');
+    cerrar.addEventListener('click', function () {
+      try { sessionStorage.setItem(CLAVE_GLOBO, '1'); } catch (_) { /* sin almacenamiento: solo esta vez */ }
+      ocultarGlobo(false);
+    });
+    globo.appendChild(abrir);
+    globo.appendChild(cerrar);
+    globo.addEventListener('pointerenter', function () { clearTimeout(globoReloj); });
+    globo.addEventListener('pointerleave', function () {
+      if (!globo.hidden && !globo.hasAttribute('data-saliendo')) programarSalidaGlobo(3000);
+    });
+    document.body.appendChild(globo);
+  }
+
+  function programarSalidaGlobo(ms) {
+    clearTimeout(globoReloj);
+    globoReloj = setTimeout(function () { ocultarGlobo(false); }, ms);
+  }
+
+  function mostrarGlobo() {
+    if (document.hidden) {
+      document.addEventListener('visibilitychange', function () { setTimeout(mostrarGlobo, 1500); }, { once: true });
+      return;
+    }
+    if ((panel && !panel.hidden) || estado.mensajes.length || globoCerradoAntes()) return;
+    if (getComputedStyle(fab).display === 'none') return;
+    consultarDisponible().then(function (si) {
+      if (!si || (panel && !panel.hidden)) return;
+      if (!globo) construirGlobo();
+      globo.hidden = false;
+      fab.setAttribute('data-globo', '');
+      programarSalidaGlobo(GLOBO_VISIBLE);
+    });
+  }
+
+  /** `ya`: sin animación de salida, porque lo reemplaza el panel. */
+  function ocultarGlobo(ya) {
+    clearTimeout(globoReloj);
+    if (!globo || globo.hidden) return;
+    fab.removeAttribute('data-globo');
+    if (ya || reducido) {
+      globo.hidden = true;
+      globo.removeAttribute('data-saliendo');
+      return;
+    }
+    globo.setAttribute('data-saliendo', '');
+    setTimeout(function () {
+      globo.hidden = true;
+      globo.removeAttribute('data-saliendo');
+    }, 220);
+  }
+
+  setTimeout(mostrarGlobo, GLOBO_ESPERA);
 })();

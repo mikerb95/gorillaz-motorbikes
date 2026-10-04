@@ -269,3 +269,118 @@
   color: var(--muted, #6b7280);
   font-size: 11.5px;
 }
+
+/* Globo de invitación al asistente (como el de codebymike.net). Nace encima
+   de la burbuja y su cola apunta al centro de ella: 18px de margen + 28px de
+   radio en escritorio, 14px + 26px en celular. Las palabras aparecen con el
+   gesto de "texto que se genera". */
+.asesor-globo {
+  --globo-cola: 28px;
+  position: fixed;
+  right: 18px;
+  bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  z-index: 141;
+  width: max-content;
+  max-width: min(260px, calc(100vw - 32px));
+  transform-origin: calc(100% - var(--globo-cola)) 100%;
+}
+
+.asesor-globo[hidden] { display: none; }
+
+.asesor-globo:not([hidden]) { animation: asesor-globo-entrar .5s cubic-bezier(.16, 1, .3, 1); }
+
+.asesor-globo[data-saliendo] { animation: asesor-globo-salir .22s ease-in forwards; }
+
+@keyframes asesor-globo-entrar {
+  from { opacity: 0; transform: translateY(10px) scale(.55); }
+}
+
+@keyframes asesor-globo-salir {
+  to { opacity: 0; transform: translateY(6px) scale(.85); }
+}
+
+.asesor-globo-texto {
+  position: relative;
+  display: block;
+  padding: 11px 36px 12px 14px;
+  border: 1px solid rgba(242, 92, 5, .45);
+  border-radius: 16px;
+  border-bottom-right-radius: 6px;
+  background: var(--ink, #0d0d0d);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, .55);
+  transition: border-color .2s ease;
+}
+
+.asesor-globo-texto:hover { border-color: var(--brand, #f25c05); }
+
+.asesor-globo-texto:focus-visible { outline: 2px solid var(--brand, #f25c05); outline-offset: 2px; }
+
+.asesor-globo-texto::after {
+  content: "";
+  position: absolute;
+  right: calc(var(--globo-cola) - 6px);
+  bottom: -6px;
+  width: 11px;
+  height: 11px;
+  background: inherit;
+  border-right: inherit;
+  border-bottom: inherit;
+  border-bottom-right-radius: 2px;
+  transform: rotate(45deg);
+}
+
+.asesor-globo-palabra { display: inline-block; }
+
+.asesor-globo:not([hidden]) .asesor-globo-palabra {
+  animation: asesor-globo-palabra .3s ease-out both;
+  animation-delay: calc(.3s + var(--i) * 70ms);
+}
+
+@keyframes asesor-globo-palabra {
+  from { opacity: 0; filter: blur(4px); }
+}
+
+.asesor-globo-cerrar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: rgba(255, 255, 255, .6);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.asesor-globo-cerrar:hover { color: #fff; background: rgba(255, 255, 255, .12); }
+
+.asesor-globo-cerrar:focus-visible { outline: 2px solid var(--brand, #f25c05); }
+
+/* Con el globo afuera, la burbuja se enciende (es de donde habla) y su
+   tooltip de hover se calla para no tapar el globo. */
+.whatsapp-fab[data-globo] { box-shadow: 0 0 0 4px rgba(242, 92, 5, .28), 0 10px 20px rgba(0, 0, 0, .18); }
+
+.whatsapp-fab[data-globo]::after,
+.whatsapp-fab[data-globo]::before { display: none; }
+
+@media (max-width: 640px) {
+  .asesor-globo { --globo-cola: 26px; right: 14px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asesor-globo:not([hidden]),
+  .asesor-globo[data-saliendo],
+  .asesor-globo:not([hidden]) .asesor-globo-palabra { animation: none; }
+}
