@@ -4582,52 +4582,6 @@ body.is-presentation .site-header.is-expanded .sub-embed {
 }
 
 /* ========================================
-   MEGA-MENU FOR TIENDA
-   ======================================== */
-@media (min-width:901px) {
-  .nav-megamenu {
-    min-width: 360px !important
-  }
-
-  .megamenu-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    padding: 8px 0
-  }
-
-  .megamenu-col {
-    display: grid;
-    gap: 4px
-  }
-
-  .megamenu-heading {
-    display: block;
-    font-size: .7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: .7;
-    margin-bottom: 4px;
-    color: #fff !important
-  }
-}
-
-@media (max-width:900px) {
-  .megamenu-cols {
-    display: grid;
-    gap: 8px
-  }
-
-  .megamenu-heading {
-    font-size: .7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: .7;
-    margin-bottom: 2px
-  }
-}
-
-/* ========================================
    PRODUCT CARD IMPROVEMENTS
    ======================================== */
 .product-card-link {
