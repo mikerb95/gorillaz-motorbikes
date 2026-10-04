@@ -153,7 +153,7 @@ function definiciones() {
       name: 'preparar_whatsapp',
       description:
         'Prepara el botón "Enviárselo a Gorillaz", que abre WhatsApp con un resumen ya escrito para el taller. Úsala ' +
-        'cuando la persona quiera agendar, cotizar un servicio, comprar, o pida hablar con alguien del taller. El mensaje ' +
+        'cuando la persona quiera agendar, llevar la moto a revisión, comprar, o pida hablar con alguien del taller. El mensaje ' +
         'lo envía la persona, así que escribe en PRIMERA persona, como si ella le escribiera al taller ("Tengo una Pulsar ' +
         '200 y necesito cambio de aceite...", nunca "Quiere..."). "necesidad": qué necesita, en una o dos frases, con la ' +
         'moto si la mencionó, SIN precios ni cifras de dinero. "pendiente": la duda que le quedó, en primera persona, si ' +

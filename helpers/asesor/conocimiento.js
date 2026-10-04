@@ -53,7 +53,7 @@ function conocimiento(f) {
 Gorillaz Motorbikes es un taller y club de motos en Bogotá, Colombia, con tienda de accesorios y repuestos en línea y cursos. Sitio: gorillazmotorbikes.com. WhatsApp del taller: ${WHATSAPP_VISIBLE} (también está el botón flotante del sitio).`);
 
   s.push(`## Servicios del taller
-Los servicios del taller NO tienen precio publicado: el valor depende de la moto y de lo que se encuentre al revisarla, así que el taller lo cotiza por WhatsApp o al recibir la moto.
+Los servicios del taller NO tienen precio publicado y el taller NO da precios exactos por WhatsApp: siempre hay que revisar la moto en el taller, y el valor exacto solo se sabe al final del trabajo, cuando ya se tiene el total de repuestos que se necesitaron.
 ${servicios
   .map((v) => `- ${v.title} (/servicios/${v.slug}): ${v.desc} Incluye: ${(v.includes || []).join(', ')}.`)
   .join('\n')}

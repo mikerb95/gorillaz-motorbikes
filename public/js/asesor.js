@@ -20,7 +20,7 @@
   var NUMERO = (fab.getAttribute('href').match(/wa\.me\/(\d+)/) || [])[1] || '573213204299';
   var SALUDO =
     'Hola, soy el asistente con IA de Gorillaz Motorbikes. Puedo resolverte dudas de los servicios del taller, ' +
-    'la tienda, los cursos y el club. Lo que cotices o agendes te lo confirma el taller por WhatsApp.';
+    'la tienda, los cursos y el club. Las citas te las confirma el taller por WhatsApp.';
   var SUGERENCIAS = [
     '¿Qué incluye el alistamiento para la tecnomecánica?',
     '¿Cuánto vale un casco?',
@@ -179,7 +179,7 @@
     });
     vistaChat.appendChild(lista);
     vistaChat.appendChild(form);
-    vistaChat.appendChild(el('p', 'asesor-aviso', 'Respuestas generadas con IA. El taller confirma precios, citas y disponibilidad.'));
+    vistaChat.appendChild(el('p', 'asesor-aviso', 'Respuestas generadas con IA. El taller confirma citas y disponibilidad; el precio de un servicio se sabe al revisar la moto.'));
     panel.appendChild(vistaChat);
 
     document.body.appendChild(panel);

@@ -54,6 +54,13 @@ test('el conocimiento no trae voseo, rayas ni cifras que el dueño no quiere', (
   assert.deepEqual(cifrasPublicas(FUENTES), [450000]);
 });
 
+test('el asesor no promete precios de servicios por WhatsApp', () => {
+  const t = systemPrompt(FUENTES, 'servicios');
+  assert.match(t, /NUNCA digas que el taller da el precio/);
+  assert.match(t, /NO da precios exactos por WhatsApp/);
+  assert.doesNotMatch(t, /cotiza por WhatsApp|pedir la cotización por WhatsApp/);
+});
+
 test('el conocimiento cubre servicios, FAQ y la consulta de órdenes', () => {
   const c = conocimiento(FUENTES);
   for (const s of require('../data/services-detail.js')) assert.ok(c.includes(`/servicios/${s.slug}`), s.slug);
