@@ -2483,8 +2483,11 @@ function rowToCheckin(row) {
 
 async function createCheckin(data) {
   const id = data.id || uuidv4();
+  // Con un id dado por el cliente (reintento del kiosco tras un corte de red),
+  // un segundo envío del mismo check-in no crea otro registro: se ignora y se
+  // devuelve el que ya existe.
   await db.execute({
-    sql: `INSERT INTO checkins (id, client_name, client_phone, client_phone_country, plate, brand, reference)
+    sql: `INSERT OR IGNORE INTO checkins (id, client_name, client_phone, client_phone_country, plate, brand, reference)
           VALUES (?,?,?,?,?,?,?)`,
     args: [
       id,
