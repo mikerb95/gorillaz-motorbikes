@@ -95,12 +95,20 @@
     }
   }
 
+  // Relevo entre las dos páginas: quién sale y hacia dónde. No sirve
+  // navigation.activation.from: con Referrer-Policy no-referrer (helmet) la
+  // URL de las otras entradas del historial llega null.
+  var HANDOFF = 'sv-vt';
+
   // Página que se va.
   w.addEventListener('pageswap', function (e) {
     clear();
+    try { sessionStorage.removeItem(HANDOFF); } catch (err) {}
     if (!e.viewTransition || !e.activation || !e.activation.entry) return;
-    var to = parse(e.activation.entry.url);
+    var toUrl = e.activation.entry.url;
+    var to = parse(toUrl);
     if (!to) return;
+    try { sessionStorage.setItem(HANDOFF, JSON.stringify({ from: location.pathname, to: new URL(toUrl).pathname })); } catch (err) {}
     if (here.board && to.slug) {
       if (!nameCard(to.slug)) e.viewTransition.skipTransition();
     } else if (here.slug && to.board) {
@@ -120,8 +128,12 @@
   w.addEventListener('pagereveal', function (e) {
     clear(); // por si la página vuelve del bfcache con nombres puestos
     var vt = e.viewTransition;
-    var act = w.navigation && w.navigation.activation;
-    var from = vt && act && act.from ? parse(act.from.url) : null;
+    var from = null;
+    try {
+      var h = JSON.parse(sessionStorage.getItem(HANDOFF) || 'null');
+      sessionStorage.removeItem(HANDOFF);
+      if (vt && h && h.to === location.pathname) from = parse(h.from);
+    } catch (err) {}
     if (vt && from) {
       if (here.slug && from.board) nameCard(here.slug);
       else if (here.board && from.slug) nameCard(from.slug);

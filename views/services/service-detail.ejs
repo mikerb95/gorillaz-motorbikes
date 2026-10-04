@@ -1,4 +1,4 @@
-<%- include('../partials/head', { title: title }) %>
+<%- include('../partials/head', { title: title, extraCss: ['/static/css/taller-base.css?v=1', '/static/css/servicios.css?v=2'] }) %>
 <%#
   /servicios/<slug>: LA FICHA AMPLIADA
   La misma ficha de /servicios, en grande: el retazo de tablero con la
@@ -10,8 +10,6 @@
   soporte o con movimiento reducido se ve completo y quieto.
   Nota: head.ejs ya abre <main>; aquí no se abre otro.
 %>
-<link rel="stylesheet" href="/static/css/taller-base.css?v=1" />
-<link rel="stylesheet" href="/static/css/servicios.css?v=2" />
 <%- include('../partials/servicios/tools') %>
 <script src="/static/js/servicios/vt.js?v=1"></script>
 <% var paragraphs = [].concat(service.details || []); %>

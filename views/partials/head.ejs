@@ -43,6 +43,9 @@
   <meta name="view-transition" content="same-origin" />
   <%# Transiciones de vista entre páginas: no pintar hasta que exista el elemento que las recibe. %>
   <% if (typeof vtExpect !== 'undefined' && vtExpect) { %><link rel="expect" href="#<%= vtExpect %>" blocking="render" /><% } %>
+  <%# Hojas propias de la página: en el head bloquean el primer pintado (un @view-transition en el body llega tarde). %>
+  <% if (typeof extraCss !== 'undefined') { extraCss.forEach(function (href) { %><link rel="stylesheet" href="<%= href %>" />
+  <% }) } %>
   <% if (typeof noIndex !== 'undefined' && noIndex) { %><meta name="robots" content="noindex, nofollow" /><% } %>
 
   <% if (typeof csrfToken !=='undefined' && csrfToken) { %>

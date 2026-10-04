@@ -1,4 +1,4 @@
-<%- include('partials/head', { title: title, user }) %>
+<%- include('partials/head', { title: title, user, extraCss: ['/static/css/taller-base.css?v=1', '/static/css/servicios.css?v=2'] }) %>
 <%#
   /servicios: "CADA TRABAJO CON SU HERRAMIENTA"
   El tablero de herramientas del taller es el índice: cada servicio es la
@@ -8,8 +8,6 @@
   escondido (contrato fail-open de public/js/motion/core.mjs).
   Nota: head.ejs ya abre <main>; aquí no se abre otro.
 %>
-<link rel="stylesheet" href="/static/css/taller-base.css?v=1" />
-<link rel="stylesheet" href="/static/css/servicios.css?v=2" />
 <%- include('partials/servicios/tools') %>
 <%# "Ver detalle" amplía la ficha con una transición de vista (antes del contenido: ver el archivo). %>
 <script src="/static/js/servicios/vt.js?v=1"></script>
