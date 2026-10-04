@@ -69,7 +69,7 @@
       <div class="card kds-checkin-success" id="cwSuccess" style="display:none" data-kds-success>
         <div class="kds-ok-ticket" aria-hidden="true">
           <span class="plate-badge kds-ok-plate" id="cwSuccessPlate"></span>
-          <span class="kds-ok-stamp" data-m>Confirmado</span>
+          <span class="kds-ok-stamp" id="cwSuccessStamp" data-m>Confirmado</span>
         </div>
         <h2 id="cwSuccessTitle">¡Listo, quedaste registrado!</h2>
         <p id="cwSuccessText">Un mecánico tomará tus datos en unos minutos. Puedes esperar en el taller.</p>
@@ -92,6 +92,9 @@
 
         <form method="post" action="/kds/checkin" id="checkinForm">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <%# Id del check-in, generado en el navegador: si la red se corta y el
+              envío se repite, el servidor reconoce el mismo registro. %>
+          <input type="hidden" name="checkinId" id="checkinId" />
 
           <section class="cw-step is-active" data-step="1">
             <label class="k" for="plate">Placa de tu moto</label>
@@ -277,23 +280,100 @@
       confirmBtn.textContent = b ? 'Confirmando…' : 'Confirmar asistencia →';
     }
 
-    function confirmAttendance() {
-      confirmBusy(true);
-      fetch('/kds/checkin/confirmar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
-        body: JSON.stringify({ plate: normPlate() }),
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data && data.ok) showSuccess('¡Te esperábamos!', 'Confirmamos tu asistencia. Pasa al taller, un mecánico te atenderá enseguida.');
-          else { confirmBusy(false); toast((data && data.error) || 'No pudimos confirmar. Intenta de nuevo.'); }
-        })
-        .catch(function () { confirmBusy(false); toast('No pudimos confirmar. Intenta de nuevo.'); });
+    // ── Envíos que aguantan cortes de red ─────────────────────────────────
+    // La tablet (o el celular del cliente) puede saltar entre el Wi-Fi del
+    // taller y los datos justo al enviar. Un formulario normal (POST) muere
+    // ahí con ERR_NETWORK_CHANGED, porque el navegador nunca repite un POST
+    // por su cuenta. Con fetch se reintenta: el check-in lleva un id propio,
+    // así que repetirlo no lo duplica, y confirmar una cita es idempotente.
+    function uuid4() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      var b = new Uint8Array(16);
+      crypto.getRandomValues(b);
+      b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+      var h = Array.prototype.map.call(b, function (x) { return (x + 256).toString(16).slice(1); }).join('');
+      return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+    }
+    document.getElementById('checkinId').value = uuid4();
+
+    var RETRY_DELAYS = [800, 2000, 4000];
+    function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+    // Si la página llevaba más de una hora abierta, la cookie CSRF ya venció
+    // (dura 1 h): se pide la página otra vez para estrenar token y se reintenta.
+    function refreshCsrf() {
+      return fetch('/kds/checkin', { credentials: 'same-origin' })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          var m = html.match(/name="_csrf" value="([^"]+)"/);
+          if (!m) throw new Error('sin token');
+          csrf = m[1];
+          card.setAttribute('data-csrf', csrf);
+          form.querySelector('input[name="_csrf"]').value = csrf;
+        });
     }
 
-    function showSuccess(title, text) {
+    // POST que se repite ante un corte de red y devuelve { status, data }.
+    function postWithRetry(url, makeBody, contentType) {
+      var csrfRetried = false;
+      function attempt(i) {
+        return fetch(url, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': contentType, 'Accept': 'application/json', 'x-csrf-token': csrf },
+          body: makeBody(),
+        }).then(function (r) {
+          if (r.status === 403 && !csrfRetried) {
+            csrfRetried = true;
+            return refreshCsrf().then(function () { return attempt(i); });
+          }
+          return r.json().catch(function () { return null; }).then(function (data) { return { status: r.status, data: data }; });
+        }, function (err) {
+          if (i >= RETRY_DELAYS.length) throw err;
+          return wait(RETRY_DELAYS[i]).then(function () { return attempt(i + 1); });
+        });
+      }
+      return attempt(0);
+    }
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    function submitBusy(b) {
+      submitBtn.disabled = b;
+      submitBtn.textContent = b ? 'Registrando…' : 'Registrar ingreso →';
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!stepValid(idx) || submitBtn.disabled) return;
+      submitBusy(true);
+      postWithRetry('/kds/checkin', function () { return new URLSearchParams(new FormData(form)).toString(); }, 'application/x-www-form-urlencoded')
+        .then(function (res) {
+          if (res.data && res.data.ok) {
+            showSuccess('¡Listo, quedaste registrado!', 'Un mecánico tomará tus datos en unos minutos. Puedes esperar en el taller.', 'Registrado');
+          } else {
+            submitBusy(false);
+            toast((res.data && res.data.error) || 'No pudimos registrarte. Intenta de nuevo.');
+          }
+        })
+        .catch(function () {
+          submitBusy(false);
+          toast('Se perdió la conexión. Revisa el Wi-Fi y toca Registrar otra vez.');
+        });
+    });
+
+    function confirmAttendance() {
+      confirmBusy(true);
+      postWithRetry('/kds/checkin/confirmar', function () { return JSON.stringify({ plate: normPlate() }); }, 'application/json')
+        .then(function (res) {
+          if (res.data && res.data.ok) showSuccess('¡Te esperábamos!', 'Confirmamos tu asistencia. Pasa al taller, un mecánico te atenderá enseguida.', 'Confirmado');
+          else { confirmBusy(false); toast((res.data && res.data.error) || 'No pudimos confirmar. Intenta de nuevo.'); }
+        })
+        .catch(function () { confirmBusy(false); toast('Se perdió la conexión. Revisa el Wi-Fi y toca Confirmar otra vez.'); });
+    }
+
+    function showSuccess(title, text, stamp) {
       card.style.display = 'none';
+      if (stamp) document.getElementById('cwSuccessStamp').textContent = stamp;
       document.getElementById('cwSuccessTitle').textContent = title;
       document.getElementById('cwSuccessText').textContent = text;
       document.getElementById('cwSuccessPlate').textContent = normPlate();

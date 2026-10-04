@@ -242,6 +242,11 @@ router.get('/checkin', (req, res) => {
   res.render('kds/checkin', { error: null, ok: false, values: {} });
 });
 
+// El kiosco envía el check-in con fetch (y reintenta si la red se corta); sin
+// JS llega como formulario normal. Misma validación para los dos caminos.
+const CHECKIN_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const wantsJson = (req) => String(req.headers.accept || '').includes('application/json');
+
 router.post('/checkin', kdsCheckinLimiter, async (req, res) => {
   const clientName = String(req.body.clientName || '').trim();
   const clientPhone = String(req.body.clientPhone || '').replace(/\D/g, '');
@@ -251,24 +256,29 @@ router.post('/checkin', kdsCheckinLimiter, async (req, res) => {
   const reference = String(req.body.reference || '').trim();
 
   const values = { clientName, clientPhone, clientPhoneCountry, plate, brand, reference };
+  const fail = (error) => (wantsJson(req)
+    ? res.status(400).json({ ok: false, error })
+    : res.status(400).render('kds/checkin', { error, ok: false, values }));
 
   if (!clientName || clientName.length < 3) {
-    return res.status(400).render('kds/checkin', { error: 'Ingresa tu nombre completo.', ok: false, values });
+    return fail('Ingresa tu nombre completo.');
   }
   if (!clientPhone || clientPhone.length < 7) {
-    return res.status(400).render('kds/checkin', { error: 'Ingresa un número de WhatsApp válido.', ok: false, values });
+    return fail('Ingresa un número de WhatsApp válido.');
   }
   if (!plate || plate.length < 4) {
-    return res.status(400).render('kds/checkin', { error: 'Ingresa la placa de tu moto.', ok: false, values });
+    return fail('Ingresa la placa de tu moto.');
   }
   if (!brand) {
-    return res.status(400).render('kds/checkin', { error: 'Ingresa la marca de tu moto.', ok: false, values });
+    return fail('Ingresa la marca de tu moto.');
   }
   if (!reference) {
-    return res.status(400).render('kds/checkin', { error: 'Ingresa la referencia de tu moto.', ok: false, values });
+    return fail('Ingresa la referencia de tu moto.');
   }
 
+  const checkinId = String(req.body.checkinId || '').toLowerCase();
   await createCheckin({
+    id: CHECKIN_ID_RE.test(checkinId) ? checkinId : undefined,
     clientName: clientName.slice(0, 120),
     clientPhone: clientPhone.slice(0, 15),
     clientPhoneCountry,
@@ -278,6 +288,7 @@ router.post('/checkin', kdsCheckinLimiter, async (req, res) => {
   });
 
   // La placa vuelve a la pantalla como la ficha sellada de la confirmación.
+  if (wantsJson(req)) return res.json({ ok: true, plate: plate.slice(0, 20) });
   res.render('kds/checkin', { error: null, ok: true, values: {}, plate: plate.slice(0, 20) });
 });
 
