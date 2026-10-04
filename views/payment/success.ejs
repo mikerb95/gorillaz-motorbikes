@@ -1,19 +1,32 @@
-<%- include('../partials/head', { title: 'Pago Exitoso' }) %>
-
-<main class="container">
-  <section class="section">
-    <h1 class="section-title">¡Pago Exitoso!</h1>
-    <p>Gracias por tu compra en <strong>Gorillaz Motorbikes</strong>.</p>
-    <p>Tu número de orden es <strong><%= orderId %></strong>.</p>
-    <% if (total) { %>
-    <p>Total pagado: <strong>$<%= total.toLocaleString('es-CO') %> COP</strong></p>
+<%- include('../partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<div class="tn-page tn-page--narrow">
+  <section class="tn-done">
+    <svg class="ni tn-done-icon" aria-hidden="true"><use href="#ni-check"/></svg>
+    <h1 class="tn-h1">Pago recibido. Gracias por tu compra</h1>
+    <% if (order) { %>
+      <p class="tn-done-code">Tu número de pedido es <strong><%= order.publicCode %></strong></p>
+      <p>Te enviamos la confirmación a <strong><%= order.customerEmail %></strong>. Guarda el número de pedido para consultar el estado.</p>
+      <dl class="tn-totals">
+        <% order.items.forEach(function (i) { %><div><dt><%= i.qty %> x <%= i.name %><%= i.install ? ' (con instalación)' : '' %></dt><dd><%= fmtCOP(i.total) %></dd></div><% }) %>
+        <% (order.discounts || []).forEach(function (d) { %><div class="is-discount"><dt><%= d.label %></dt><dd>- <%= fmtCOP(d.amount) %></dd></div><% }) %>
+        <% if (order.deliveryFee) { %><div><dt>Entrega</dt><dd><%= fmtCOP(order.deliveryFee) %></dd></div><% } %>
+        <div class="is-total"><dt>Total pagado</dt><dd><%= fmtCOP(order.total) %></dd></div>
+      </dl>
+      <% if (order.installation && order.installation.date) { %>
+        <p class="tn-chip-ok"><svg class="ni" aria-hidden="true"><use href="#ni-calendar"/></svg>Instalación solicitada para el <%= order.installation.date %><%= order.installation.time ? ' a las ' + order.installation.time : '' %>. Te confirmamos la cita por WhatsApp.</p>
+      <% } %>
+      <div class="tn-empty-actions">
+        <a class="tn-btn tn-btn--wa" href="<%= waLink(waMsg.order({ code: order.publicCode, url: siteUrl + '/tienda/pedido' })) %>" target="_blank" rel="noopener">Avisar por WhatsApp</a>
+        <a class="tn-btn tn-btn--ghost" href="/tienda/pedido">Seguir mi pedido</a>
+      </div>
+    <% } else { %>
+      <p>Estamos registrando tu pedido. En unos minutos recibirás la confirmación por correo con tu número de pedido.</p>
+      <div class="tn-empty-actions"><a class="tn-btn tn-btn--ghost" href="/tienda">Volver a la tienda</a></div>
     <% } %>
-    <p class="muted">Recibirás un correo de confirmación de Bold con el comprobante de pago.</p>
-    <div class="actions-row">
-      <a class="btn" href="/tienda">Volver a la tienda</a>
-      <a class="btn btn-primary" href="/">Ir al inicio</a>
-    </div>
   </section>
-</main>
-
+</div>
+<script>
+  // Analítica: compra confirmada (solo si hay medición configurada).
+  <% if (order) { %>window.gzTrack && window.gzTrack('purchase', <%- toJsonLd({ transaction_id: order.publicCode, value: order.total, currency: 'COP', shipping: order.deliveryFee || 0, items: order.items.map(function (i) { return { item_id: i.productId || i.id, item_name: i.name, price: i.unitPrice, quantity: i.qty }; }) }) %>);<% } %>
+</script>
 <%- include('../partials/footer') %>

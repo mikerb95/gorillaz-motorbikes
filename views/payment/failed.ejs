@@ -1,14 +1,13 @@
-<%- include('../partials/head', { title: 'Pago no completado' }) %>
-
-<main class="container">
-  <section class="section">
-    <h1 class="section-title">Pago no completado</h1>
-    <p class="muted"><%= reason %></p>
-    <div class="actions-row">
-      <a class="btn btn-primary" href="/checkout">Intentar de nuevo</a>
-      <a class="btn" href="/carrito">Ver carrito</a>
+<%- include('../partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<div class="tn-page tn-page--narrow">
+  <section class="tn-done">
+    <h1 class="tn-h1">Pago no completado</h1>
+    <p><%= reason %></p>
+    <div class="tn-empty-actions">
+      <a class="tn-btn tn-btn--primary" href="/checkout">Intentar de nuevo</a>
+      <a class="tn-btn tn-btn--ghost" href="/carrito">Ver carrito</a>
+      <a class="tn-btn tn-btn--wa" href="<%= waLink('Hola, tuve un problema al pagar mi pedido en la tienda.') %>" target="_blank" rel="noopener">Pedir ayuda por WhatsApp</a>
     </div>
   </section>
-</main>
-
+</div>
 <%- include('../partials/footer') %>

@@ -1,0 +1,40 @@
+<%- include('partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<div class="tn-page tn-page--narrow">
+  <header class="tn-head">
+    <div class="tn-head-text">
+      <h1 class="tn-h1">Seguimiento de tu pedido</h1>
+      <p class="tn-intro">Escribe el número de pedido que te llegó por correo y los últimos 4 dígitos de tu celular.</p>
+    </div>
+  </header>
+  <form class="tn-track" method="post" action="/tienda/pedido">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="tn-row tn-row--end">
+      <div class="tn-field"><label for="tr-code">Número de pedido</label><input id="tr-code" name="code" placeholder="GZ-XXXXXX" required autocomplete="off" value="<%= form.code || '' %>" /></div>
+      <div class="tn-field tn-field--short"><label for="tr-tel">Últimos 4 del celular</label><input id="tr-tel" name="tel4" inputmode="numeric" pattern="\d{4}" maxlength="4" required autocomplete="off" /></div>
+      <button class="tn-btn tn-btn--primary" type="submit">Consultar</button>
+    </div>
+    <% if (error) { %><p class="tn-alert" role="alert"><%= error %></p><% } %>
+  </form>
+
+  <% if (result) { %>
+  <section class="tn-track-result" aria-live="polite">
+    <h2 class="tn-h2">Pedido <%= result.code %></h2>
+    <p class="tn-muted">Hecho el <%= fechaCO(result.createdAt) %> · <%= result.payment %> · <%= result.deliveryLabel %></p>
+    <% if (result.cancelled) { %>
+      <p class="tn-alert">Este pedido fue cancelado. Si tienes dudas, escríbenos por WhatsApp.</p>
+    <% } else { %>
+    <ol class="tn-steps">
+      <% result.steps.forEach(function (s) { %><li class="<%= s.done ? 'is-done' : '' %> <%= s.current ? 'is-current' : '' %>"><%= s.label %></li><% }) %>
+    </ol>
+    <% } %>
+    <ul class="tn-sum-lines">
+      <% result.items.forEach(function (i) { %><li><span><%= i.qty %> x <%= i.name %><%= i.install ? ' (con instalación)' : '' %></span></li><% }) %>
+    </ul>
+    <p><strong>Total: <%= fmtCOP(result.total) %></strong></p>
+    <% if (result.installation && result.installation.date) { %><p>Instalación solicitada: <%= result.installation.date %><%= result.installation.time ? ' a las ' + result.installation.time : '' %>.</p><% } %>
+    <a class="tn-btn tn-btn--wa" href="<%= waLink(waMsg.order({ code: result.code, url: siteUrl + '/tienda/pedido' })) %>" target="_blank" rel="noopener">Preguntar por este pedido</a>
+  </section>
+  <% } %>
+  <p class="tn-muted">¿Buscas el estado de tu moto en el taller? <a href="/mi-orden">Consulta tu orden de servicio</a>.</p>
+</div>
+<%- include('partials/footer') %>

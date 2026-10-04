@@ -1,0 +1,40 @@
+<%- include('partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<div class="tn-page">
+  <%- include('partials/tienda/crumbs', { crumbs: [{ name: 'Inicio', path: '/' }, { name: 'Tienda', path: '/tienda' }, { name: 'Combos y kits', path: '/tienda/combos' }] }) %>
+  <header class="tn-head">
+    <div class="tn-head-text">
+      <h1 class="tn-h1">Combos y kits</h1>
+      <p class="tn-intro">Arma tu combo: entre más productos del grupo lleves, más descuento. O toma un kit completo para tu moto. El descuento se aplica solo en el carrito.</p>
+    </div>
+  </header>
+  <% if (!combos.length) { %>
+    <div class="tn-empty"><h2>Pronto publicaremos combos y kits</h2><p>Mientras tanto, mira la tienda o pregúntanos por WhatsApp.</p>
+      <div class="tn-empty-actions"><a class="tn-btn tn-btn--primary" href="/tienda">Ir a la tienda</a></div></div>
+  <% } %>
+  <% combos.forEach(function (c) {
+       var full = c.products.reduce(function (s, it) { return s + priceOf(it.product).final * (it.qty || 1); }, 0); %>
+  <section class="tn-combo" id="<%= c.slug %>">
+    <header class="tn-combo-head">
+      <h2 class="tn-h2"><%= c.name %></h2>
+      <% if (c.bike) { %><a class="tn-chip" href="/tienda/moto/<%= c.bike.slug %>">Para <%= c.bike.brand %> <%= c.bike.model %></a><% } %>
+    </header>
+    <% if (c.description) { %><p><%= c.description %></p><% } %>
+    <% if (c.kind === 'kit') { var saving = Math.round(full * c.kitDiscount / 100); %>
+      <p class="tn-savings">Kit completo: <s><%= fmtCOP(full) %></s> <strong><%= fmtCOP(full - saving) %></strong>. Ahorras <%= fmtCOP(saving) %> (<%= c.kitDiscount %>%).</p>
+      <form method="post" action="/tienda/combos/<%= c.slug %>/agregar" class="tn-combo-cta">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button class="tn-btn tn-btn--primary" type="submit">Agregar el kit al carrito</button>
+      </form>
+    <% } else { %>
+      <ul class="tn-tiers">
+        <% c.tiers.slice().sort(function (a, b) { return a.min - b.min; }).forEach(function (t) { %><li><strong><%= t.pct %>%</strong> llevando <%= t.min %> o más</li><% }) %>
+      </ul>
+    <% } %>
+    <div class="tn-grid tn-grid--row">
+      <% c.products.forEach(function (it) { %><%- include('partials/tienda/card', { p: it.product, price: priceOf(it.product) }) %><% }) %>
+    </div>
+  </section>
+  <% }) %>
+</div>
+<script defer src="/static/js/tienda.js?v=<%= assetV('js/tienda.js') %>"></script>
+<%- include('partials/footer') %>
