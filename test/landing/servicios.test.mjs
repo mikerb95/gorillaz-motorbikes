@@ -44,25 +44,43 @@ test('rotuladora: un salto por carácter, con topes de duración', () => {
 });
 
 test('/servicios: cada servicio tiene herramienta y lo que incluye sale de su texto real', () => {
-  // routes/services.js exporta el router; los datos se leen del archivo fuente.
-  const src = read('routes/services.js');
   const tools = read('views/partials/servicios/tools.ejs');
   const services = require('../../data/landing-services.js');
+  const detail = require('../../data/services-detail.js');
   const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   for (const { slug } of services) {
     assert.match(tools, new RegExp(`<symbol id="sv-t-${slug}"`), `falta la herramienta de ${slug}`);
-    const entry = src.slice(src.indexOf(`slug: '${slug}'`), src.indexOf('}', src.indexOf(`slug: '${slug}'`) + 400) + 1);
-    const m = entry.match(/includes: \[([^\]]+)\]/);
-    assert.ok(m, `${slug} sin includes`);
-    const tags = [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]);
-    // Texto fuente: details/desc de la ruta y, si existe, su página propia.
-    let source = entry;
-    try { source += read(`views/services/${slug}.ejs`); } catch {}
-    const words = norm(source);
-    for (const tag of tags) {
+    const entry = detail.find((d) => d.slug === slug);
+    assert.ok(entry, `${slug} sin ficha en data/services-detail.js`);
+    assert.ok(entry.includes?.length, `${slug} sin includes`);
+    assert.ok([].concat(entry.details || []).length, `${slug} sin details (la ficha ampliada quedaría vacía)`);
+    const words = norm([entry.title, entry.desc, ...[].concat(entry.details)].join(' '));
+    for (const tag of entry.includes) {
       const stems = norm(tag).split(/\s+/).filter((w) => w.length >= 4).map((w) => w.slice(0, 5));
       assert.ok(stems.some((st) => words.includes(st)), `"${tag}" (${slug}) no aparece en el texto del servicio`);
     }
+  }
+});
+
+test('ficha ampliada: una sola plantilla, agenda con ?servicio= y nombres de transición solo por JS', () => {
+  const view = read('views/services/service-detail.ejs');
+  assert.match(view, /agendar\?servicio=<%= encodeURIComponent\(service\.name\) %>/);
+  assert.doesNotMatch(view, /images\/services\//, 'sin fotos de banco');
+  assert.doesNotMatch(view.replace(/<%#[\s\S]*?%>/g, ''), /<main/, 'head.ejs ya abre <main>');
+  for (const v of ['lavado-motos', 'lavado-cascos', 'detailing-motos']) {
+    assert.throws(() => read(`views/services/${v}.ejs`), `${v} debe usar la ficha común`);
+  }
+  // Once fichas con el mismo view-transition-name anulan la transición: los
+  // nombres los pone vt.js en la ficha implicada, nunca el CSS.
+  const css = read('public/css/servicios.css');
+  assert.doesNotMatch(css, /view-transition-name/);
+  const vt = read('public/js/servicios/vt.js');
+  for (const n of ['sv-card', 'sv-board', 'sv-tool', 'sv-title', 'sv-tool-back']) {
+    assert.ok(vt.includes(`'${n}'`), `vt.js no nombra ${n}`);
+    assert.match(css, new RegExp(`::view-transition-group\\(${n}\\)`), `servicios.css no anima ${n}`);
+  }
+  for (const f of ['views/services/service-detail.ejs', 'views/partials/servicios/board.ejs', 'public/js/servicios/vt.js', 'public/js/servicios/detail.mjs']) {
+    assert.ok(!read(f).includes(EM_DASH), `${f} tiene una raya`);
   }
 });
 
