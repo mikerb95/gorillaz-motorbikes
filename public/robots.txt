@@ -1,8 +1,20 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /club/panel
+Disallow: /club/
+Disallow: /taller/
+Disallow: /kds/
+Disallow: /liquidador
 Disallow: /carrito
 Disallow: /checkout
+Disallow: /pagar
+Disallow: /payment/
+Disallow: /cart/
+Disallow: /mi-orden
+Disallow: /cotizacion/
+Disallow: /factura/
+Disallow: /tienda/mi-moto
+Disallow: /*?*q=
+Disallow: /*?*sort=
 
 Sitemap: https://gorillazmotorbikes.com/sitemap.xml

@@ -6,6 +6,9 @@ const { getActiveClassifieds } = require('../db');
 const { courses } = require('../helpers/content');
 const landingServices = require('../data/landing-services');
 const servicesData = require('../data/services-detail');
+const { catalog, refreshIfStale, publicProducts, visibleCategories, bikeModelsWithProducts } = require('../helpers/catalog');
+const { LEGAL_PAGES } = require('../helpers/legal');
+const { publishedGuides } = require('../helpers/guides');
 
 const SITE = 'https://gorillazmotorbikes.com';
 
@@ -68,8 +71,24 @@ router.get('/sitemap.xml', async (req, res, next) => {
       console.error('[sitemap] clasificados:', e.message);
     }
 
-    // Las fichas de /tienda/:id no entran todavía: el catálogo actual es de
-    // demostración. Agregarlas cuando se cargue el catálogo real.
+    // Tienda: categorías con productos, fichas publicadas (los productos demo
+    // nunca son públicos en producción), landings por moto indexables y combos.
+    await refreshIfStale();
+    for (const c of visibleCategories()) {
+      entries.push({ path: `/tienda/c/${c.slug}`, changefreq: 'weekly', priority: '0.7' });
+    }
+    for (const p of publicProducts()) {
+      entries.push({ path: `/tienda/${p.slug}`, lastmod: p.updatedAt, changefreq: 'weekly', priority: '0.6' });
+    }
+    for (const m of bikeModelsWithProducts()) {
+      if (m.intro) entries.push({ path: `/tienda/moto/${m.slug}`, changefreq: 'weekly', priority: '0.7' });
+    }
+    if (catalog.combos.some((c) => c.active)) entries.push({ path: '/tienda/combos', changefreq: 'weekly', priority: '0.5' });
+    entries.push({ path: '/tienda/pedido', changefreq: 'yearly', priority: '0.2' });
+    for (const path of LEGAL_PAGES) entries.push({ path, changefreq: 'yearly', priority: '0.2' });
+    for (const g of publishedGuides()) {
+      entries.push({ path: `/guias/${g.slug}`, lastmod: g.updatedAt, changefreq: 'monthly', priority: '0.6' });
+    }
 
     const xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
       + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
