@@ -814,6 +814,16 @@ body.has-subbar .nav-bar .header-inner {
   margin-left: -8px
 }
 
+/* Eventos y Carrito van juntos como grupo de utilidades: menos aire entre ellos
+   (además equilibra el ancho del lado derecho con el izquierdo) */
+.header-right>.nav-icon-link+.nav-item {
+  margin-left: -16px
+}
+
+.nav-squeeze .header-right>.nav-icon-link+.nav-item {
+  margin-left: -10px
+}
+
 /* CTA principal: pill blanca que cierra el lado derecho */
 .site-header .header-right>a.nav-cta-pill {
   display: inline-block;

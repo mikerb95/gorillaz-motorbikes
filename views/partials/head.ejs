@@ -142,13 +142,13 @@
                   <% } %>
                 </div>
               </div>
-              <a class="cart-link nav-icon-link" href="<%= navEventsHref %>" aria-label="Eventos">
+            </div>
+            <div class="nav-cta">
+              <a class="cart-link" href="<%= navEventsHref %>" aria-label="Eventos">
                 <svg class="ni" width="22" height="22" aria-hidden="true"><use href="#ni-calendar"/></svg>
                 <span class="nav-mobile-label">Eventos</span>
                 <span class="cart-badge" data-count="events"><%= navEvents %></span>
               </a>
-            </div>
-            <div class="nav-cta">
               <a class="btn-ghost btn-sm btn-square cart-link" href="/carrito" aria-label="Carrito">
                 <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
                   <path d="M3 4h2l2.5 12h9l2-8H7.2" fill="none" stroke="currentColor" stroke-width="2"
@@ -192,6 +192,25 @@
           </a>
         </div>
         <div class="header-right">
+          <div class="nav-item has-submenu" data-panel="wide-right">
+            <a class="nav-link" href="/tienda" aria-haspopup="true" aria-expanded="false">Tienda<svg class="ni nav-chev" aria-hidden="true"><use href="#ni-chev"/></svg></a>
+            <div class="nav-submenu nav-panel nav-panel--shop" aria-label="Categorías de tienda">
+              <div class="nav-panel-cols">
+                <div class="nav-panel-col">
+                  <strong class="nav-panel-heading">Categorías</strong>
+                  <% nav.shop.categories.forEach(function (l) { %><a class="nav-sub" href="<%= l.href %>"><span class="nav-sub-text"><span class="nav-sub-title"><%= l.label %></span></span></a><% }) %>
+                </div>
+                <div class="nav-panel-col">
+                  <strong class="nav-panel-heading">Acceso rápido</strong>
+                  <% nav.shop.quick.forEach(function (l) { %><a class="nav-sub" href="<%= l.href %>"><span class="nav-sub-text"><span class="nav-sub-title"><%= l.label %></span></span></a><% }) %>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a class="cart-link nav-icon-link" href="<%= navEventsHref %>" aria-label="Eventos">
+            <svg class="ni" width="22" height="22" aria-hidden="true"><use href="#ni-calendar"/></svg>
+            <span class="cart-badge" data-count="events"><%= navEvents %></span>
+          </a>
           <div class="nav-item has-submenu" data-panel="item-right">
             <a class="cart-link nav-icon-link" href="/carrito" aria-label="Carrito" aria-haspopup="true" aria-expanded="false">
               <svg class="ni" width="22" height="22" aria-hidden="true"><use href="#ni-cart"/></svg>
@@ -214,21 +233,6 @@
               <p class="nav-cart-empty"><svg class="ni" aria-hidden="true"><use href="#ni-cart"/></svg>Tu carrito está vacío</p>
               <a class="nav-feature-btn" href="/tienda">Ir a la tienda<svg class="ni" aria-hidden="true"><use href="#ni-arrow"/></svg></a>
               <% } %>
-            </div>
-          </div>
-          <div class="nav-item has-submenu" data-panel="wide-right">
-            <a class="nav-link" href="/tienda" aria-haspopup="true" aria-expanded="false">Tienda<svg class="ni nav-chev" aria-hidden="true"><use href="#ni-chev"/></svg></a>
-            <div class="nav-submenu nav-panel nav-panel--shop" aria-label="Categorías de tienda">
-              <div class="nav-panel-cols">
-                <div class="nav-panel-col">
-                  <strong class="nav-panel-heading">Categorías</strong>
-                  <% nav.shop.categories.forEach(function (l) { %><a class="nav-sub" href="<%= l.href %>"><span class="nav-sub-text"><span class="nav-sub-title"><%= l.label %></span></span></a><% }) %>
-                </div>
-                <div class="nav-panel-col">
-                  <strong class="nav-panel-heading">Acceso rápido</strong>
-                  <% nav.shop.quick.forEach(function (l) { %><a class="nav-sub" href="<%= l.href %>"><span class="nav-sub-text"><span class="nav-sub-title"><%= l.label %></span></span></a><% }) %>
-                </div>
-              </div>
             </div>
           </div>
           <a class="nav-cta-pill" href="/servicios/agendar" aria-label="Agendar servicio">Agendar</a>
