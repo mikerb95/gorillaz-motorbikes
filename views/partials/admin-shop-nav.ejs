@@ -1,0 +1,28 @@
+<%# Subnavegación del admin de la tienda. `current` = clave de la sección activa. %>
+<style>
+  .ash-nav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
+  .ash-nav a{padding:7px 12px;border-radius:999px;background:#fff;border:1px solid #e4e4e7;font-weight:700;font-size:.82rem;color:#18181b}
+  .ash-nav a.on{background:#18181b;color:#fff;border-color:#18181b}
+  .ash-help{font-size:.82rem;color:#71717a;margin:4px 0 0}
+  .ash-row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+  .ash-pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:800;background:#f4f4f5;color:#3f3f46}
+  .ash-pill.ok{background:#dcfce7;color:#166534}.ash-pill.warn{background:#fef3c7;color:#92400e}.ash-pill.demo{background:#ede9fe;color:#5b21b6}
+  .ash-err{background:#fef2f2;color:#991b1b;border-radius:10px;padding:10px 14px;margin-bottom:14px}
+  .ash-err ul{margin:4px 0 0;padding-left:18px}
+  .ash-check{display:flex;gap:8px;align-items:center;font-weight:600;font-size:.88rem}
+  .ash-checks{display:flex;flex-wrap:wrap;gap:6px 14px}
+  .ash-table input,.ash-table select{width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid #e4e4e7;border-radius:8px;font:inherit;font-size:.85rem}
+  .ash-imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .ash-img{border:1px solid #e4e4e7;border-radius:10px;padding:8px;display:grid;gap:6px;background:#fafafa}
+  .ash-img img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#f4f4f5}
+  .ash-img input{padding:6px 8px;border:1px solid #e4e4e7;border-radius:8px;font-size:.8rem}
+  .ash-img-actions{display:flex;gap:4px}
+  .ash-img-actions button{flex:1;padding:4px;border:1px solid #e4e4e7;background:#fff;border-radius:6px;cursor:pointer}
+  .ash-preview{font-size:.85rem;background:#fff7ed;border-radius:10px;padding:10px 12px}
+  .ash-mono{font-family:ui-monospace,monospace;font-size:.8rem}
+</style>
+<nav class="ash-nav" aria-label="Secciones de la tienda">
+  <% [['productos','/admin/tienda','Productos'],['categorias','/admin/tienda/categorias','Categorías'],['motos','/admin/tienda/motos','Modelos de moto'],['combos','/admin/tienda/combos','Combos y kits'],['entregas','/admin/tienda/entregas','Entregas'],['cupones','/admin/tienda/cupones','Cupones'],['ajustes','/admin/tienda/ajustes','Ajustes'],['importar','/admin/tienda/importar','Importar CSV'],['pedidos','/admin/pedidos','Pedidos'],['resenas','/admin/resenas-tienda','Reseñas']].forEach(function (l) { %>
+    <a href="<%= l[1] %>" class="<%= current === l[0] ? 'on' : '' %>"><%= l[2] %></a>
+  <% }) %>
+</nav>
