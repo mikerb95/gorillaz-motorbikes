@@ -45,8 +45,16 @@
   <div class="kds-wrap kds-checkin-wrap">
 
     <% if (ok) { %>
-      <div class="card kds-checkin-success">
-        <div class="icon">✅</div>
+      <div class="card kds-checkin-success" data-kds-success>
+        <% if (typeof plate !== 'undefined' && plate) { %>
+          <%# La ficha de su moto, sellada: la prueba de que el registro entró. %>
+          <div class="kds-ok-ticket" aria-hidden="true">
+            <span class="plate-badge kds-ok-plate"><%= plate %></span>
+            <span class="kds-ok-stamp" data-m>Registrado</span>
+          </div>
+        <% } else { %>
+          <div class="icon">✅</div>
+        <% } %>
         <h2>¡Listo, quedaste registrado!</h2>
         <p>Un mecánico tomará tus datos en unos minutos. Puedes esperar en el taller.</p>
       </div>
@@ -54,13 +62,16 @@
 
       <% if (error) { %><div class="kds-error"><%= error %></div><% } %>
 
-      <div class="card kds-checkin-success" id="cwSuccess" style="display:none">
-        <div class="icon">✅</div>
+      <div class="card kds-checkin-success" id="cwSuccess" style="display:none" data-kds-success>
+        <div class="kds-ok-ticket" aria-hidden="true">
+          <span class="plate-badge kds-ok-plate" id="cwSuccessPlate"></span>
+          <span class="kds-ok-stamp" data-m>Confirmado</span>
+        </div>
         <h2 id="cwSuccessTitle">¡Listo, quedaste registrado!</h2>
         <p id="cwSuccessText">Un mecánico tomará tus datos en unos minutos. Puedes esperar en el taller.</p>
       </div>
 
-      <div class="card" id="cwCard" data-csrf="<%= csrfToken %>">
+      <div class="card" id="cwCard" data-csrf="<%= csrfToken %>" data-kds-checkin>
         <div class="cw-progress" id="cwProgress" style="display:none">
           <div class="cw-progress__bar" id="cwProgressBar"></div>
         </div>
@@ -146,6 +157,10 @@
 
   <script src="/static/js/motorcycle-brands.js?v=<%= assetV('js/motorcycle-brands.js') %>"></script>
   <script src="/static/js/kds-keyboard.js?v=<%= assetV('js/kds-keyboard.js') %>"></script>
+  <%# Motion del check-in (pasos que se deslizan, sello de la ficha). Solo
+      acompaña: el formulario funciona igual si GSAP o el módulo no cargan. %>
+  <script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
+  <script type="module" src="/static/js/kds/checkin.mjs?v=<%= assetV('js/kds/checkin.mjs') %>"></script>
   <% if (!ok) { %>
   <script>
   (function () {
@@ -277,6 +292,7 @@
       card.style.display = 'none';
       document.getElementById('cwSuccessTitle').textContent = title;
       document.getElementById('cwSuccessText').textContent = text;
+      document.getElementById('cwSuccessPlate').textContent = normPlate();
       successBox.style.display = '';
     }
 

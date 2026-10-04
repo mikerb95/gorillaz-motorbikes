@@ -167,6 +167,8 @@ body {
 }
 
 @media (max-width: 900px) { .kds-board { grid-template-columns: repeat(2, minmax(220px,1fr)); } }
+/* En celular, una columna: dos de 220px no caben y el tablero se salía por la derecha. */
+@media (max-width: 560px) { .kds-board { grid-template-columns: minmax(0, 1fr); } .kds-col { min-height: 0; } }
 
 /* ── Insignias de estado ─────────────────────────────────────────────────*/
 
@@ -213,7 +215,11 @@ label.k { display: block; margin-bottom: 4px; }
 input[type=text], input[type=tel], input[type=number], textarea {
   width: 100%; padding: 13px; border: 1.5px solid var(--kds-hair); border-radius: 10px; font-size: 15px;
   font-family: inherit; outline: none; box-sizing: border-box; margin-bottom: 12px; background: #fff;
+  /* Las páginas declaran color-scheme: dark, así que sin esto el navegador
+     pinta el texto escrito en blanco sobre el fondo blanco del campo. */
+  color: var(--kds-ink);
 }
+input::placeholder, textarea::placeholder { color: #a8a190; }
 input:focus, textarea:focus { border-color: var(--kds-brand); }
 
 .kds-error {
@@ -267,49 +273,149 @@ body.kds-login {
 
 /* ── Pantalla principal (cara al cliente, reposo permanente) ─────────────*/
 
-body.kds-home-body { min-height: 100vh; margin: 0; background: var(--kds-brand); }
+/* Columna de una pantalla: reloj, taller en vivo y CTA en el flujo normal.
+   (Antes el reloj iba fijo y en una tablet vertical tapaba el botón.) */
+body.kds-home-body {
+  min-height: 100vh; min-height: 100dvh; margin: 0; background: var(--kds-brand);
+  display: flex; flex-direction: column;
+}
 
 .kds-topbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: center; gap: 16px;
-  padding: 18px 20px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 12px 20px 4px;
   background: var(--kds-brand);
 }
-.kds-topbar .kds-clock {
-  font-family: var(--kds-mono); font-size: 180px; font-weight: 900; letter-spacing: -.06em;
-  color: var(--kds-ink); font-variant-numeric: tabular-nums;
-  -webkit-text-stroke: 4px var(--kds-ink); text-stroke: 4px var(--kds-ink);
+.kds-clock {
+  display: inline-flex; align-items: baseline; gap: .12em;
+  font-family: var(--kds-mono); font-weight: 900; line-height: 1;
+  /* Lo que sea menor: ancho o alto de la pantalla. Así cabe en horizontal
+     (manda el alto) y en vertical o celular (manda el ancho). */
+  font-size: min(15vw, 22vh, 180px);
+  color: var(--kds-ink); white-space: nowrap; font-variant-numeric: tabular-nums;
+  letter-spacing: -.06em;
+  -webkit-text-stroke: .022em var(--kds-ink);
+}
+.kds-clock-hm { display: inline-flex; }
+.kds-clock-colon { padding: 0 .02em; }
+.kds-clock-ampm { font-size: .3em; letter-spacing: 0; -webkit-text-stroke: 0; }
+
+/* Odómetro: cada dígito es una ventana de 1em sobre una tira 0-9 doble. */
+.kds-dg { display: inline-block; width: .6em; text-align: center; }
+.kds-dg.is-odo { height: 1em; overflow: hidden; position: relative; }
+.kds-dg-strip { display: block; will-change: transform; }
+.kds-dg-strip > span { display: block; height: 1em; }
+
+/* ── Taller en vivo (conteo por etapa, sin datos de clientes) ──────────── */
+
+.kds-live {
+  margin: 4px auto 0; width: min(100% - 32px, 1100px);
+  background: var(--kds-ink); color: #fff;
+  border-radius: var(--kds-radius-lg); padding: 12px 14px 14px;
+  box-shadow: 0 10px 0 var(--kds-brand-deep), 0 20px 40px rgba(0,0,0,.25);
+}
+.kds-live-title {
+  margin: 0 0 10px; display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; color: #ffd9c2;
+}
+.kds-live-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34,197,94,.6);
+}
+.motion-ok .kds-live-dot { animation: kds-live-dot 2.4s ease-out infinite; }
+@keyframes kds-live-dot {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,.55); }
+  70%, 100% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
 }
 
+.kds-live-track {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;
+  position: relative;
+}
+.kds-live-stage {
+  position: relative; min-width: 0;
+  background: rgba(255,255,255,.06); border-radius: 12px;
+  padding: 12px 14px 14px; border-top: 4px solid var(--kds-s-wait-edge);
+  display: grid; grid-template-columns: auto minmax(0,1fr); grid-template-rows: auto auto;
+  column-gap: 10px; align-items: center;
+}
+.kds-live-stage.st-trabajo_en_curso { border-top-color: var(--kds-s-prog-edge); }
+.kds-live-stage.st-en_pausa         { border-top-color: var(--kds-s-pause-edge); }
+.kds-live-stage.st-trabajo_completo { border-top-color: var(--kds-s-done-edge); }
+.kds-live-count {
+  grid-row: 1; font-family: var(--kds-mono); font-weight: 900; font-size: 46px; line-height: 1;
+  font-variant-numeric: tabular-nums; display: inline-block; min-width: 1.2ch;
+}
+.kds-live-label {
+  grid-row: 1; font-size: 15px; font-weight: 800; line-height: 1.2; color: #c9ced6;
+  text-wrap: balance;
+}
+.kds-live-tokens {
+  grid-column: 1 / -1; grid-row: 2; margin-top: 12px; min-height: 24px;
+  display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+}
+/* Ficha = una placa en blanco (mismo lenguaje que .plate-badge). */
+.kds-live-token {
+  display: block; width: 36px; height: 24px; border-radius: 5px;
+  background: #fff; border: 2px solid #fff; box-shadow: inset 0 0 0 1.5px var(--kds-ink);
+}
+.kds-live-more { font-family: var(--kds-mono); font-size: 12px; font-weight: 900; color: #c9ced6; }
+/* Las motos en trabajo "laten" suave: la etapa que está viva. */
+.motion-ok .st-trabajo_en_curso .kds-live-token { animation: kds-working 2.8s ease-in-out infinite; }
+.motion-ok .st-trabajo_en_curso .kds-live-token:nth-child(2n) { animation-delay: -1.4s; }
+@keyframes kds-working {
+  0%, 100% { box-shadow: inset 0 0 0 1.5px var(--kds-ink), 0 0 0 0 rgba(37,99,235,0); }
+  50% { box-shadow: inset 0 0 0 1.5px var(--kds-ink), 0 0 0 4px rgba(37,99,235,.55); }
+}
+.kds-live-flyer { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; margin: 0; }
+
+/* Antes de que el módulo monte, las fichas esperan arriba (ver kiosk.ejs). */
+.kds-intro-pending .kds-live-token,
+.kds-intro-pending .kds-live-more { opacity: 0; }
+
 @media (max-width: 700px) {
-  .kds-topbar .kds-clock { font-size: 132px; }
+  .kds-live { padding: 10px; }
+  .kds-live-track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kds-live-count { font-size: 30px; }
+  .kds-live-label { font-size: 13px; }
+  .kds-live-token { width: 28px; height: 18px; }
 }
 
 /* ── CTA de check-in del cliente en la pantalla principal ────────────────*/
 
 .kds-kiosk-main {
-  min-height: calc(100vh - 96px);
+  flex: 1;
   display: flex; align-items: center; justify-content: center;
   gap: 40px;
-  padding: 32px 20px;
+  padding: 28px 20px 32px;
 }
 .kds-checkin-cta {
+  position: relative; overflow: hidden;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   background: #fff; color: var(--kds-brand-deep); text-decoration: none;
   border-radius: 28px; padding: 56px 64px;
   box-shadow: 0 10px 0 var(--kds-brand-deep), 0 20px 40px rgba(0,0,0,.25);
-  transition: transform .1s ease;
+  transition: transform .1s ease, box-shadow .1s ease;
 }
 .kds-checkin-cta:active { transform: translateY(6px); box-shadow: 0 4px 0 var(--kds-brand-deep), 0 10px 20px rgba(0,0,0,.2); }
-.kds-checkin-cta-icon { font-size: 72px; line-height: 1; }
+/* Brillo que cruza el botón cada pocos segundos: invita a tocar sin moverlo. */
+.motion-ok .kds-checkin-cta::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(242,92,5,.16) 50%, transparent 65%);
+  transform: translateX(-110%);
+  animation: kds-cta-shine 6s ease-in-out 1.5s infinite;
+}
+@keyframes kds-cta-shine { 0%, 70% { transform: translateX(-110%); } 100% { transform: translateX(110%); } }
+.kds-checkin-cta-icon { font-size: 72px; line-height: 1; display: inline-block; }
 .kds-checkin-cta-text { font-size: 34px; font-weight: 900; letter-spacing: .01em; }
 .kds-checkin-cta-sub { font-size: 16px; font-weight: 700; color: var(--kds-muted-2); }
 
 @media (max-width: 700px) {
-  .kds-checkin-cta { padding: 40px 36px; }
+  .kds-kiosk-main { padding-top: 22px; }
+  .kds-checkin-cta { padding: 34px 28px; width: 100%; max-width: 420px; }
   .kds-checkin-cta-icon { font-size: 56px; }
   .kds-checkin-cta-text { font-size: 26px; }
-  .kds-checkin-cta-sub { font-size: 14px; }
+  .kds-checkin-cta-sub { font-size: 14px; text-align: center; }
 }
 
 /* ── Roll de productos de la tienda (costado de la pantalla principal) ───*/
@@ -466,7 +572,11 @@ body.kds-checkin-body .kds-wrap {
 .kds-checkin-wrap .save { padding: 20px; font-size: 32px; border-radius: 18px; margin-top: 4px; }
 .kds-checkin-success { text-align: center; padding: 48px 32px; display: grid; gap: 16px; }
 .kds-checkin-success .icon { font-size: 88px; }
-.kds-checkin-success h2 { margin: 0; font-size: 42px; font-weight: 900; }
+.kds-checkin-success h2 {
+  margin: 0; font-size: 42px; font-weight: 900; color: var(--kds-ink);
+  /* Sin esto heredaba el rótulo de .card h2 (mayúsculas grises con raya). */
+  text-transform: none; letter-spacing: normal; border: 0; padding: 0; display: block;
+}
 .kds-checkin-success p { margin: 0; color: var(--kds-muted-2); font-size: 28px; }
 
 /* ── Banner de instalación PWA ──────────────────────────────────────────*/
@@ -498,3 +608,57 @@ body.kds-checkin-body .kds-wrap {
 }
 .brand-suggest-list li { padding: 11px 10px; border-radius: 7px; font-size: 15px; cursor: pointer; }
 .brand-suggest-list li:hover, .brand-suggest-list li:active { background: var(--kds-paper-2); }
+
+/* ── Motion del tablero: llegada de una orden a su columna nueva ─────────── */
+
+.kds-card.is-arrived { animation: kds-arrive 1.6s ease-out; }
+.kds-card.st-ingreso_taller.is-arrived   { --kds-arrive: var(--kds-s-wait-edge); }
+.kds-card.st-trabajo_en_curso.is-arrived { --kds-arrive: var(--kds-s-prog-edge); }
+.kds-card.st-en_pausa.is-arrived         { --kds-arrive: var(--kds-s-pause-edge); }
+.kds-card.st-trabajo_completo.is-arrived { --kds-arrive: var(--kds-s-done-edge); }
+@keyframes kds-arrive {
+  0%   { box-shadow: 0 0 0 0 transparent; }
+  15%  { box-shadow: 0 0 0 3px var(--kds-arrive, var(--kds-brand)), 0 10px 24px rgba(0,0,0,.18); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* ── Respuesta al toque (todas las pantallas del KDS) ───────────────────────
+   En una tablet no hay hover: la única confirmación de que el toque llegó es
+   que la tecla se hunda. Transiciones cortas, sin retrasar la acción. */
+
+.kds-key, .plate-key, .kds-btn, .save, .status-btn, .cat-btn, .qty-btn, .plate-actions button, .kds-card {
+  transition: transform .08s ease, background-color .12s ease;
+}
+.kds-key:active, .plate-key:active, .kds-btn:active, .save:active, .status-btn:active,
+.cat-btn:active, .qty-btn:active, .plate-actions button:active { transform: scale(.95); }
+.kds-card:active { transform: scale(.98); }
+.kds-dot { transition: background-color .12s ease, border-color .12s ease, transform .18s cubic-bezier(.3,1.8,.5,1); }
+.kds-dot.filled { transform: scale(1.18); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kds-card.is-arrived { animation: none; }
+  .kds-key, .plate-key, .kds-btn, .save, .status-btn, .cat-btn, .qty-btn, .plate-actions button, .kds-card, .kds-dot { transition: none; }
+  .kds-dot.filled { transform: none; }
+}
+
+/* ── Check-in: ficha de la moto sellada al terminar ──────────────────────── */
+
+.kds-ok-ticket {
+  position: relative; justify-self: center; display: inline-block;
+  padding: 18px 34px 26px; margin-bottom: 6px;
+}
+.kds-ok-plate { font-size: 54px; padding: 6px 22px; border-width: 4px; border-radius: 12px; }
+.kds-ok-stamp {
+  position: absolute; right: -6px; bottom: -4px;
+  font-size: 22px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--kds-s-done-edge); border: 4px solid currentColor; border-radius: 10px;
+  padding: 4px 12px; background: rgba(247,245,240,.85);
+  transform: rotate(-10deg);
+  /* Tinta irregular: un sello de caucho no imprime parejo. */
+  -webkit-mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.78) 61%, #000 75%);
+          mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.78) 61%, #000 75%);
+}
+@media (max-width: 700px) {
+  .kds-ok-plate { font-size: 34px; }
+  .kds-ok-stamp { font-size: 15px; }
+}

@@ -13,6 +13,7 @@ const settings = require('../helpers/settings');
 const { catalog } = require('../helpers/catalog');
 const { classes: classesData } = require('../helpers/content');
 const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
+const { boardMarkup } = require('../public/js/kds/board-markup');
 const {
   getActiveEmployees, getEmployeeById,
   isThrottleLocked, recordThrottleFailure,
@@ -74,7 +75,7 @@ async function loadKdsEmployee(req, res, next) {
 router.use(loadKdsEmployee);
 // El polling automático (board → /orders.json, TV → /tv/estado) no debe contar
 // como interacción: si deslizara la ventana de PIN, la sesión nunca expiraría.
-router.use(touchPinSession(['/orders.json', '/tv/estado']));
+router.use(touchPinSession(['/orders.json', '/tv/estado', '/en-vivo.json']));
 
 // Throttle por IP además del global de 'action_pin': así una IP que aporree el
 // PIN no puede, por sí sola, agotar el contador global y bloquear las acciones
@@ -152,29 +153,66 @@ router.post('/logout', (req, res) => {
 
 // ── Pantalla principal: siempre la cara al cliente (naranja + logo + reloj).
 // El panel de taller ya no vive aquí, se accede aparte vía /kds/board.
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   // Solo lo que el roll necesita mostrar: sin sku/tags/descripcion, que no
   // aportan nada a un cliente mirando la tablet desde lejos.
   const rollProducts = catalog.products
     .filter(p => p.stock > 0)
     .map(p => ({ name: p.name, price: p.price, image: p.image, discount: p.discount || 0 }));
-  res.render('kds/kiosk', { classesData, rollProducts });
+  res.render('kds/kiosk', { classesData, rollProducts, EMP_STATUS, liveCounts: await getLiveCounts() });
+});
+
+// "Taller en vivo" de la pantalla del cliente: cuántas motos hay en cada
+// etapa. Solo conteos, nunca placas ni nombres: la tablet está a la vista de
+// cualquiera que entre al taller y este feed es público.
+async function getLiveCounts() {
+  try {
+    const orders = await getActiveServiceOrders();
+    return EMP_STATUS.map(s => orders.filter(o => o.status === s.v).length);
+  } catch (e) {
+    console.error('kds getLiveCounts error:', e.message);
+    return null;
+  }
+}
+
+// Público y con consulta a la BD: el kiosco pide uno cada 20 s (45 por
+// ventana); el tope deja margen para varias pestañas sin permitir martillarlo.
+const liveFeedLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 180,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas consultas. Espera unos minutos.' },
+});
+
+router.get('/en-vivo.json', liveFeedLimiter, async (req, res) => {
+  const counts = await getLiveCounts();
+  if (!counts) return res.status(503).json({ error: 'No disponible.' });
+  res.set('Cache-Control', 'no-store');
+  res.json({ stages: EMP_STATUS.map(s => s.v), counts });
 });
 
 // ── Tablero de órdenes (solo con sesión de mecánico activa) ────────────────
 router.get('/board', requireKdsEmployee, async (req, res) => {
-  const orders = await getActiveServiceOrders();
-  res.render('kds/board', { orders, EMP_STATUS, flash: req.query.flash || null });
+  const orders = (await getActiveServiceOrders()).map(boardOrder);
+  // El servidor pinta el tablero con el mismo marcado que usa el navegador al
+  // repintarlo (public/js/kds/board-markup.js): sin JS se ve completo.
+  const boardHtml = boardMarkup(orders, EMP_STATUS, Date.now());
+  res.render('kds/board', { orders, boardHtml, EMP_STATUS, flash: req.query.flash || null });
 });
+
+function boardOrder(o) {
+  return {
+    id: o.id, label: o.label, motorcycle: o.motorcycle, mechanic: o.mechanic,
+    status: o.status, total: o.total, itemCount: o.items.length, createdAt: o.createdAt,
+  };
+}
 
 // Solo el board (que ya exige sesión) consume este feed. Sin el gate, exponía
 // placas, mecánicos, totales y los UUID de todas las órdenes activas a internet.
 router.get('/orders.json', requireKdsEmployee, async (req, res) => {
   const orders = await getActiveServiceOrders();
-  res.json(orders.map(o => ({
-    id: o.id, label: o.label, motorcycle: o.motorcycle, mechanic: o.mechanic,
-    status: o.status, total: o.total, itemCount: o.items.length, createdAt: o.createdAt,
-  })));
+  res.json(orders.map(boardOrder));
 });
 
 // ── Check-in de clientes desde la tablet (mismo formulario público de
@@ -237,7 +275,8 @@ router.post('/checkin', kdsCheckinLimiter, async (req, res) => {
     reference: reference.slice(0, 60),
   });
 
-  res.render('kds/checkin', { error: null, ok: true, values: {} });
+  // La placa vuelve a la pantalla como la ficha sellada de la confirmación.
+  res.render('kds/checkin', { error: null, ok: true, values: {}, plate: plate.slice(0, 20) });
 });
 
 // Normaliza la placa igual que el agendar/check-in público.
@@ -501,7 +540,7 @@ router.post('/orden/:id/items/reorden', requireKdsEmployee, requirePin('/kds'), 
 // Estado leído directo de BD (ver getTvState en db.js) para que la pantalla
 // del TV vea los comandos del remoto sin depender de que ambas peticiones
 // caigan en la misma instancia serverless. El polling de la pantalla no
-// expone nada sensible, así que queda público (igual que /kds/orders.json).
+// expone nada sensible, así que queda público (igual que /kds/en-vivo.json).
 router.get('/tv/estado', async (req, res) => {
   try {
     res.json(await getTvState());
