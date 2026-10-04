@@ -856,26 +856,6 @@ body.has-subbar .nav-bar .header-inner {
   display: inline
 }
 
-.nav-toggle {
-  display: none;
-  background: transparent;
-  border: 0;
-  font-size: 22px;
-  color: #fff;
-  padding: 10px 12px;
-  min-width: 44px;
-  min-height: 44px;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  line-height: 1
-}
-
-/* Text label for icon-only links (Eventos, Carrito); only shown in the mobile overlay */
-.nav-mobile-label {
-  display: none
-}
-
 /* Orange blob background under brand and menu items */
 .nav-blob {
   position: absolute;
@@ -2474,116 +2454,16 @@ main.schedule-full {
   }
 }
 
-/* Compact mode is the JS-measured overflow path for WIDE screens only (>900px).
-   At <=900px the mobile media query below is the single source of truth, so we
-   scope these rules to min-width:901px to keep the two systems mutually exclusive. */
-@media (min-width:901px) {
-  .nav-compact .nav-bar {
-    margin: 12px auto 0
-  }
-
-  .nav-compact .header-inner {
-    grid-template-columns: auto auto;
-    column-gap: 12px
-  }
-
-  .nav-compact .header-right {
-    display: none
-  }
-
-  .nav-compact .nav {
-    position: fixed;
-    inset: var(--header-offset) 12px auto 12px;
-    max-height: calc(100dvh - var(--header-offset) - 24px);
-    background: #fff;
-    display: none;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    padding: 12px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
-    border-radius: var(--radius-lg);
-    overflow-y: auto
-  }
-
-  .nav-compact .nav-links {
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch
-  }
-
-  .nav-compact .nav-links a,
-  .nav-compact .nav-cta a,
-  .nav-compact .nav-cta form button {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: #f8f8f8 !important;
-    border: 1px solid #eee !important;
-    color: #111 !important;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .6px
-  }
-
-  .nav-compact .nav-links a:hover,
-  .nav-compact .nav-cta a:hover,
-  .nav-compact .nav-cta form button:hover {
-    background: #f3f4f6 !important;
-    text-decoration: none
-  }
-
-  .nav-compact .nav .cart-link {
-    display: flex;
-    align-items: center;
-    gap: 10px
-  }
-
-  .nav-compact .nav .nav-mobile-label {
-    display: inline-block
-  }
-
-  .nav-compact .nav[data-open="true"] .cart-badge {
-    display: none
-  }
-
-  .nav-compact .nav a,
-  .nav-compact .nav-cta a,
-  .nav-compact .nav-cta form button {
-    color: #111 !important;
-  }
-
-  .nav-compact .nav-cta {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    width: 100%
-  }
-
-  .nav-compact .nav-cta form {
-    width: 100%
-  }
-
-  .nav-compact .nav-cta form button {
-    width: 100%;
-    text-align: left
-  }
-
-  .nav-compact .nav[data-open="true"] {
-    display: flex
-  }
-
-  .nav-compact .nav-toggle {
-    display: inline-flex
-  }
-
-  .nav-compact .nav-center {
-    display: none
-  }
+/* ========================================
+   BARRA Y PANEL MÓVIL
+   <=900px y modo compact (>900px cuando la barra no cabe, lo decide main.js):
+   logo a la izquierda, carrito y menú a la derecha; el panel (.mnav) es la
+   misma barra naranja que se expande hacia abajo.
+   ======================================== */
+.mbar-actions,
+.mnav,
+.mnav-backdrop {
+  display: none
 }
 
 @media (max-width:900px) {
@@ -2591,176 +2471,471 @@ main.schedule-full {
     margin: 12px auto 0
   }
 
-  /* Left = hamburger, Center = logo truly centered across the full navbar.
-     3 columns (1fr auto 1fr): hamburger sits in the left 1fr, logo in the
-     centered auto column, the right 1fr stays empty (header-right is hidden). */
-  .header-inner {
-    grid-template-columns: 1fr auto 1fr;
-    column-gap: 12px
+  .site-header .header-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: 12px;
+    padding: 10px 10px 10px 18px
   }
 
-  .header-right {
+  .nav-left,
+  .header-right,
+  .sub-embed {
     display: none
   }
 
-  /* Keep the hamburger pinned to the far left of its column */
-  .nav-left {
+  .nav-center {
+    grid-column: 1;
+    grid-row: 1;
     justify-content: flex-start
   }
 
-  /* Show logo on mobile, centered in its middle column */
-  .nav-center {
-    display: flex;
-    justify-content: center;
-    align-items: center
+  .site-header .logo {
+    justify-items: start
   }
 
-  .nav {
-    position: fixed;
-    /* Hug content: bottom auto so the card is only as tall as its items, scroll if it overflows */
-    inset: var(--header-offset) 12px auto 12px;
-    max-height: calc(100dvh - var(--header-offset) - 24px);
-    background: #fff;
-    display: none;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    padding: 12px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
-    border-radius: var(--radius-lg);
-    overflow-y: auto
+  .site-header .logo .logo-name {
+    transform-origin: left center
   }
 
-  .nav-links {
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch
-  }
-
-  /* Mobile links unified like “Inicio”.
-     Prefixed with .site-header so these beat the desktop rule
-     `.site-header .nav-cta a` (0,2,1, white text) that otherwise renders
-     the CTA links white-on-white inside the panel. */
-  .site-header .nav-links a,
-  .site-header .nav-cta a,
-  .site-header .nav-cta form button {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: #f8f8f8 !important;
-    border: 1px solid #eee !important;
-    color: #111 !important;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .6px
-  }
-
-  .site-header .nav-links a:hover,
-  .site-header .nav-cta a:hover,
-  .site-header .nav-cta form button:hover {
-    background: #f3f4f6 !important;
-    text-decoration: none
-  }
-
-  /* Ensure cart item looks like others in the mobile list */
-  .nav .cart-link {
+  .mbar-actions {
     display: flex;
     align-items: center;
-    gap: 10px
+    gap: 2px;
+    grid-column: 3;
+    grid-row: 1
   }
 
-  /* Show text labels next to the icon-only Eventos/Carrito rows */
-  .nav .nav-mobile-label {
-    display: inline-block
+  .mnav {
+    display: grid
   }
 
-  /* Hide floating badge in the mobile panel to keep rows uniform */
-  .nav[data-open="true"] .cart-badge {
+  .mnav-backdrop {
+    display: block
+  }
+
+  .nav-bar.mnav-open .header-inner {
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .22)
+  }
+}
+
+@media (min-width:901px) {
+  .nav-compact .nav-bar {
+    margin: 12px auto 0
+  }
+
+  .nav-compact .site-header .header-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: 12px;
+    padding: 10px 10px 10px 18px
+  }
+
+  .nav-compact .nav-left,
+  .nav-compact .header-right,
+  .nav-compact .sub-embed {
     display: none
   }
 
-  /* On mobile overlay, restore dark text for contrast (high specificity to win) */
-  .site-header .nav a,
-  .site-header .nav-cta a,
-  .site-header .nav-cta form button {
-    color: #111 !important;
+  .nav-compact .nav-center {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: flex-start
   }
 
-  .nav-cta {
+  .nav-compact .site-header .logo {
+    justify-items: start
+  }
+
+  .nav-compact .site-header .logo .logo-name {
+    transform-origin: left center
+  }
+
+  .nav-compact .mbar-actions {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    width: 100%
+    align-items: center;
+    gap: 2px;
+    grid-column: 3;
+    grid-row: 1
   }
 
-  .nav-cta form {
-    width: 100%
+  .nav-compact .mnav {
+    display: grid
   }
 
-  .nav-cta form button {
-    width: 100%;
-    text-align: left
+  .nav-compact .mnav-backdrop {
+    display: block
   }
 
-  .nav[data-open="true"] {
-    display: flex
+  .nav-compact .nav-bar.mnav-open .header-inner {
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .22)
   }
 
-  .nav-toggle {
-    display: inline-flex
+  .nav-compact .site-header .logo img {
+    height: 40px
   }
 
-  /* Submenus (incl. Tienda megamenu) stay collapsed until the parent is tapped */
-  .nav-item.has-submenu>.nav-submenu {
-    display: none
+  /* Con la barra de usuario oculta, su contenido vive al pie del panel */
+}
+
+.site-header .mbar-cart {
+  width: 44px;
+  height: 44px;
+  color: #fff;
+  border-radius: 10px
+}
+
+.mbar-cart .ni {
+  width: 22px;
+  height: 22px
+}
+
+.site-header .mbar-cart .cart-badge {
+  top: 3px;
+  right: 1px
+}
+
+/* Hamburguesa: tres líneas que se cruzan en X al abrir */
+.mnav-toggle {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer
+}
+
+.mnav-toggle span {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform .28s cubic-bezier(.2, .8, .2, 1), opacity .2s ease
+}
+
+.mnav-toggle span:nth-child(1) { top: 15px }
+.mnav-toggle span:nth-child(2) { top: 21px }
+.mnav-toggle span:nth-child(3) { top: 27px }
+
+.nav-bar.mnav-open .mnav-toggle span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg)
+}
+
+.nav-bar.mnav-open .mnav-toggle span:nth-child(2) {
+  opacity: 0
+}
+
+.nav-bar.mnav-open .mnav-toggle span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg)
+}
+
+.mnav-toggle:focus-visible,
+.site-header .mbar-cart:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px
+}
+
+/* Fondo oscuro detrás del panel abierto */
+.mnav-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease
+}
+
+.mnav-backdrop.is-on {
+  opacity: 1;
+  pointer-events: auto
+}
+
+html.mnav-lock,
+html.mnav-lock body {
+  overflow: hidden
+}
+
+/* Panel: la fila crece de 0fr a 1fr (altura real, sin números mágicos) */
+.mnav {
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .32s cubic-bezier(.2, .8, .2, 1)
+}
+
+.mnav.is-open {
+  grid-template-rows: 1fr
+}
+
+.mnav-inner {
+  min-height: 0;
+  max-height: calc(100dvh - var(--mbar-h, 76px) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 14px;
+  color: #fff
+}
+
+/* Aire al final del panel (en un hijo, para que el panel cerrado mida 0) */
+.mnav-inner::after {
+  content: "";
+  display: block;
+  height: 16px
+}
+
+.site-header .mnav-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 0 4px;
+  padding: 14px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: var(--nav-cta-ink);
+  font-size: .9rem;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .14)
+}
+
+.mnav-cta .ni,
+.mnav-all .ni {
+  width: 16px;
+  height: 16px
+}
+
+.mnav-heading {
+  margin: 18px 4px 2px;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: .72
+}
+
+.site-header .mnav-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 50px;
+  padding: 10px 6px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .15s ease
+}
+
+.site-header .mnav-row:active {
+  background: rgba(255, 255, 255, .08)
+}
+
+.site-header .mnav-row:focus-visible,
+.site-header .mnav-chip:focus-visible,
+.site-header .mnav-cta:focus-visible,
+.site-header .mnav-mini:focus-visible,
+.site-header .mnav-btn:focus-visible,
+.site-header .mnav-all:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px
+}
+
+.mnav-icon {
+  width: 20px;
+  height: 20px;
+  opacity: .92
+}
+
+.mnav-label {
+  flex: 1
+}
+
+.mnav-go,
+.mnav-chev {
+  width: 16px;
+  height: 16px;
+  opacity: .7;
+  transition: transform .25s ease
+}
+
+.mnav-row[aria-expanded="true"] .mnav-chev {
+  transform: rotate(180deg)
+}
+
+.mnav-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: var(--nav-cta-ink);
+  font-size: .74rem;
+  font-weight: 800
+}
+
+/* Acordeones (Servicios, Tienda) */
+.mnav-sub {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .28s cubic-bezier(.2, .8, .2, 1)
+}
+
+.mnav-acc.is-open .mnav-sub {
+  grid-template-rows: 1fr
+}
+
+.mnav-sub-inner {
+  min-height: 0;
+  overflow: hidden
+}
+
+.mnav-subhead {
+  margin: 12px 4px 6px;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: .75
+}
+
+.mnav-chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px
+}
+
+.site-header .mnav-chip {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+  font-size: .86rem;
+  font-weight: 600;
+  line-height: 1.2;
+  -webkit-tap-highlight-color: transparent
+}
+
+.site-header .mnav-chip:active {
+  background: rgba(255, 255, 255, .26)
+}
+
+.site-header .mnav-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 4px 14px;
+  color: #fff;
+  font-size: .88rem;
+  font-weight: 700
+}
+
+/* Pie: sesión */
+.mnav-foot {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, .22)
+}
+
+.mnav-foot.mnav-user {
+  display: block
+}
+
+.site-header .mnav-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: var(--nav-cta-ink);
+  font-size: .82rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-align: center;
+  text-transform: uppercase
+}
+
+.site-header .mnav-btn--ghost {
+  background: transparent;
+  color: #fff;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .75)
+}
+
+.mnav-hello {
+  margin: 0 4px 10px
+}
+
+.mnav-foot-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px
+}
+
+.mnav-foot-links form {
+  margin: 0
+}
+
+.site-header .mnav-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .14);
+  color: #fff;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer
+}
+
+.mnav-mini .ni {
+  width: 16px;
+  height: 16px
+}
+
+/* Entrada escalonada de las filas al abrir */
+.mnav.is-open .mnav-inner>* {
+  animation: nav-panel-in .32s cubic-bezier(.2, .8, .2, 1) both
+}
+
+.mnav.is-open .mnav-inner>:nth-child(n+2) { animation-delay: 30ms }
+.mnav.is-open .mnav-inner>:nth-child(n+5) { animation-delay: 60ms }
+.mnav.is-open .mnav-inner>:nth-child(n+8) { animation-delay: 90ms }
+.mnav.is-open .mnav-inner>:nth-child(n+11) { animation-delay: 120ms }
+
+@media (prefers-reduced-motion: reduce) {
+
+  .mnav,
+  .mnav-sub,
+  .mnav-backdrop,
+  .mnav-toggle span,
+  .mnav-chev {
+    transition: none
   }
 
-  /* Touch-accessible submenus on mobile */
-  .nav-item.has-submenu.submenu-touch-open>.nav-submenu {
-    display: flex;
-    flex-direction: column;
-    position: static;
-    background: #f0f0f0;
-    border-radius: 8px;
-    padding: 8px 0;
-    margin-top: 4px;
-    box-shadow: none
-  }
-
-  .nav-item.has-submenu.submenu-touch-open>.nav-submenu a {
-    background: #f0f0f0 !important;
-    border: none !important;
-    padding-left: 24px;
-    font-size: .85rem
-  }
-
-  /* Provisional hasta el panel móvil nuevo: el contenido de los paneles de escritorio
-     se ve como la lista simple de antes */
-  .nav .nav-sub-desc,
-  .nav .nav-sub-icon,
-  .nav .nav-chev,
-  .site-header .nav a.nav-feature,
-  .nav .nav-panel-heading {
-    display: none
-  }
-
-  .nav .nav-panel-cols,
-  .nav .nav-panel-col {
-    display: contents
-  }
-
-  .nav-item.has-submenu>a::after {
-    content: ' ›';
-    font-size: .8em;
-    opacity: .6
-  }
-
-  .nav-item.has-submenu.submenu-touch-open>a::after {
-    content: ' ↓'
+  .mnav.is-open .mnav-inner>* {
+    animation: none
   }
 }
 
