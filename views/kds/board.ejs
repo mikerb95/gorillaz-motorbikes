@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Panel de Taller — Gorillaz</title>
   <link rel="icon" href="/favicons/favicon.ico" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="/static/fonts/barlow/barlow-500-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/barlow/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/kds.css?v=<%= assetV('css/kds.css') %>">
   <link rel="manifest" href="/manifest-kds.webmanifest">
   <meta name="theme-color" content="#15181d">
@@ -36,85 +37,19 @@
     <div class="kds-flash">✓ Orden facturada correctamente.</div>
   <% } %>
 
-  <div class="kds-board" id="board"></div>
+  <div class="kds-board" id="board" data-kds-board><%- boardHtml %></div>
 
   <a class="kds-fab" href="/kds/placa">+ Placa</a>
 
-  <script>
-  const EMP_STATUS = <%- JSON.stringify(EMP_STATUS) %>;
-  let initialOrders = <%- JSON.stringify(orders.map(o => ({
-    id: o.id, label: o.label, motorcycle: o.motorcycle, mechanic: o.mechanic,
-    status: o.status, total: o.total, itemCount: o.items.length, createdAt: o.createdAt,
-  }))) %>;
+  <%# Datos iniciales para el módulo (firma de cambios y estados). El reemplazo
+      de "<" evita que un dato cierre la etiqueta <script>. %>
+  <script type="application/json" id="kdsBoardData"><%- JSON.stringify({ statuses: EMP_STATUS, orders: orders }).replace(/</g, '\\u003c') %></script>
 
-  const board = document.getElementById('board');
-
-  function elapsed(iso) {
-    const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-    if (mins < 60) return mins + ' min';
-    const hrs = Math.floor(mins / 60);
-    return hrs + 'h ' + (mins % 60) + 'min';
-  }
-
-  function renderBoard(orders) {
-    board.innerHTML = '';
-    EMP_STATUS.forEach(st => {
-      const col = document.createElement('div');
-      col.className = 'kds-col';
-      const inCol = orders.filter(o => o.status === st.v);
-      col.innerHTML = '<h2><span>' + st.l + '</span><span>' + inCol.length + '</span></h2>';
-      if (!inCol.length) {
-        col.innerHTML += '<div class="kds-empty">Sin órdenes</div>';
-      } else {
-        inCol.forEach(o => {
-          const a = document.createElement('a');
-          a.className = 'kds-card st-' + o.status;
-          a.href = '/kds/orden/' + encodeURIComponent(o.id);
-          // textContent (no innerHTML): placa y mecánico son datos de usuario;
-          // interpolarlos como HTML permitiría inyectar markup en el tablero.
-          const mk = (cls, text) => {
-            const d = document.createElement('div');
-            d.className = cls;
-            d.textContent = text;
-            return d;
-          };
-          a.appendChild(mk('label', o.label));
-          a.appendChild(mk('moto', o.motorcycle || 'Sin placa'));
-          a.appendChild(mk('meta', o.itemCount + ' ítem(s) · ' + (o.mechanic || 'Sin asignar') + ' · ' + elapsed(o.createdAt)));
-          col.appendChild(a);
-        });
-      }
-      board.appendChild(col);
-    });
-  }
-
-  renderBoard(initialOrders);
-
-  // Firma de los datos que afectan al DOM (el "elapsed" cambia solo/minuto, así
-  // que no lo incluimos: no queremos repintar todo el tablero cada 8s por eso).
-  function signature(orders) {
-    return orders.map(o => [o.id, o.label, o.motorcycle, o.mechanic, o.status, o.itemCount].join('')).join('');
-  }
-  let lastSig = signature(initialOrders);
-
-  // Pausa breve tras un toque: si el refresh cae justo cuando el mecánico va a
-  // tocar una tarjeta, repintar el tablero se la movería bajo el dedo.
-  let lastTouch = 0;
-  board.addEventListener('pointerdown', () => { lastTouch = Date.now(); });
-
-  setInterval(async () => {
-    try {
-      const res = await fetch('/kds/orders.json');
-      const fresh = await res.json();
-      initialOrders = fresh;
-      const sig = signature(fresh);
-      // Solo repintamos si algo relevante cambió y no se acaba de tocar el board.
-      if (sig === lastSig) return;
-      if (Date.now() - lastTouch < 2500) return;
-      lastSig = sig;
-      renderBoard(fresh);
-    } catch { /* red intermitente: se reintenta en el próximo ciclo */ }
-  }, 8000);
-  </script>
+  <%# El tablero se actualiza solo (polling) y anima los cambios con Flip. El
+      repintado funciona aunque GSAP no cargue; solo se pierde la animación. %>
+  <script defer src="/static/js/kds/board-markup.js?v=<%= assetV('js/kds/board-markup.js') %>"></script>
+  <script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
+  <script defer src="/static/vendor/gsap-3.15.0/Flip.min.js"></script>
+  <script type="module" src="/static/js/kds/board.mjs?v=<%= assetV('js/kds/board.mjs') %>"></script>
 </body>
 </html>

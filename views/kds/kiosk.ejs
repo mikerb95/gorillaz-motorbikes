@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Gorillaz Motorbikes — Taller</title>
   <link rel="icon" href="/favicons/favicon.ico" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="/static/fonts/barlow/barlow-500-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/barlow/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/kds.css?v=<%= assetV('css/kds.css') %>">
   <link rel="manifest" href="/manifest-kds.webmanifest">
   <meta name="theme-color" content="#F25C05">
@@ -15,22 +16,64 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="/static/js/kds-pwa.js?v=<%= assetV('js/kds-pwa.js') %>" defer></script>
   <script src="/static/js/kds-fullscreen.js?v=<%= assetV('js/kds-fullscreen.js') %>"></script>
+  <%# Las fichas del "taller en vivo" se esconden antes del primer pintado para
+      que caigan sin parpadeo. Si el módulo no llega a montar en 2,5 s, se
+      devuelven: el marcado del servidor es el estado final. %>
+  <script>
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.documentElement.classList.add('kds-intro-pending');
+      setTimeout(function () { document.documentElement.classList.remove('kds-intro-pending'); }, 2500);
+    }
+  </script>
 </head>
 <body class="kds-home-body">
+  <%
+    // Hora inicial del servidor (Bogotá): sin JS el reloj ya muestra algo real.
+    var clockFmt = new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit' }).formatToParts(new Date());
+    var clockGet = function (t) { var p = clockFmt.find(function (x) { return x.type === t; }); return p ? p.value : ''; };
+    var clockDigits = (clockGet('hour').padStart(2, '0') + clockGet('minute').padStart(2, '0')).split('');
+    var clockAmpm = clockGet('dayPeriod').replace(/\s+/g, ' ').trim();
+  %>
   <header class="kds-topbar">
-    <span class="kds-clock" id="kdsClock">--:--</span>
+    <time class="kds-clock" id="kdsClock" data-kds-clock aria-label="<%= clockDigits[0] + clockDigits[1] + ':' + clockDigits[2] + clockDigits[3] + ' ' + clockAmpm %>">
+      <span class="kds-clock-hm" aria-hidden="true"><span class="kds-dg"><%= clockDigits[0] %></span><span class="kds-dg"><%= clockDigits[1] %></span><span class="kds-clock-colon">:</span><span class="kds-dg"><%= clockDigits[2] %></span><span class="kds-dg"><%= clockDigits[3] %></span></span>
+      <span class="kds-clock-ampm" aria-hidden="true"><%= clockAmpm %></span>
+    </time>
   </header>
 
+  <% if (liveCounts) { %>
+    <%# Taller en vivo: una ficha (placa en blanco) por moto en cada etapa. Solo
+        conteos: nada aquí identifica a un cliente. %>
+    <section class="kds-live" data-kds-live aria-labelledby="kdsLiveTitle">
+      <p class="kds-live-title" id="kdsLiveTitle"><span class="kds-live-dot" aria-hidden="true"></span>El taller ahora</p>
+      <ol class="kds-live-track">
+        <% EMP_STATUS.forEach(function (s, i) {
+             var c = liveCounts[i] || 0;
+             var shown = c <= 8 ? c : 7; %>
+          <li class="kds-live-stage st-<%= s.v %>" data-stage="<%= i %>">
+            <span class="kds-live-count" data-count><%= c %></span>
+            <span class="kds-live-label"><%= s.l %></span>
+            <span class="kds-live-tokens" aria-hidden="true"><% for (var t = 0; t < shown; t++) { %><i class="kds-live-token" data-m></i><% } %><% if (c > shown) { %><b class="kds-live-more" data-m>+<%= c - shown %></b><% } %></span>
+          </li>
+        <% }) %>
+      </ol>
+    </section>
+  <% } %>
+
   <main class="kds-kiosk-main">
-    <a class="kds-checkin-cta" href="/kds/checkin">
-      <span class="kds-checkin-cta-icon">🏍️</span>
-      <span class="kds-checkin-cta-text">Registrar mi llegada</span>
-      <span class="kds-checkin-cta-sub">Toca aquí para hacer check-in de tu moto</span>
+    <a class="kds-checkin-cta" href="/kds/checkin" data-kds-cta>
+      <span>
+        <span class="kds-checkin-cta-text">Registrar mi llegada</span>
+        <span class="kds-checkin-cta-sub">Toca aquí para hacer check-in de tu moto</span>
+      </span>
+      <span class="kds-checkin-cta-go" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
     </a>
 
     <% if ((rollProducts || []).length) { %>
       <aside class="kds-product-roll" id="kdsProductRoll" data-products='<%- JSON.stringify(rollProducts) %>'>
-        <div class="kds-product-roll-title">🛒 Visita nuestra tienda</div>
+        <div class="kds-product-roll-title">Visita nuestra tienda</div>
         <div class="kds-product-roll-items" id="kdsProductRollItems"></div>
       </aside>
     <% } %>
@@ -99,12 +142,30 @@
 
   <script src="/static/js/kds-fab-menu.js?v=<%= assetV('js/kds-fab-menu.js') %>" defer></script>
   <script src="/static/js/kds-product-roll.js?v=<%= assetV('js/kds-product-roll.js') %>" defer></script>
+  <%# Motion de la pantalla del cliente. GSAP va como script clásico (vendor
+      fijado, npm run vendor:gsap); los defer y el módulo corren en orden tras
+      el parseo, así que kiosk.mjs ya encuentra window.gsap. %>
+  <script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
+  <script type="module" src="/static/js/kds/kiosk.mjs?v=<%= assetV('js/kds/kiosk.mjs') %>"></script>
 
   <script>
+  // Reloj de respaldo: escribe la hora en los dígitos del servidor. Cuando el
+  // módulo de motion monta el odómetro marca <html class="kds-clock-live"> y
+  // este respaldo deja de tocar el reloj.
   (function () {
     const clock = document.getElementById('kdsClock');
+    const digits = clock.querySelectorAll('.kds-dg');
+    const ampm = clock.querySelector('.kds-clock-ampm');
+    const fmt = new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit' });
     function tick() {
-      clock.textContent = new Date().toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit' });
+      if (document.documentElement.classList.contains('kds-clock-live')) return;
+      const parts = fmt.formatToParts(new Date());
+      const get = t => (parts.find(p => p.type === t) || {}).value || '';
+      const d = (get('hour').padStart(2, '0') + get('minute').padStart(2, '0')).split('');
+      const ap = get('dayPeriod').replace(/\s+/g, ' ').trim();
+      digits.forEach((el, i) => { el.textContent = d[i]; });
+      ampm.textContent = ap;
+      clock.setAttribute('aria-label', d[0] + d[1] + ':' + d[2] + d[3] + ' ' + ap);
     }
     tick();
     setInterval(tick, 1000);

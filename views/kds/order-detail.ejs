@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title><%= order.label %> — Panel de Taller</title>
   <link rel="icon" href="/favicons/favicon.ico" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="/static/fonts/barlow/barlow-500-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/barlow/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/kds.css?v=<%= assetV('css/kds.css') %>">
   <link rel="manifest" href="/manifest-kds.webmanifest">
   <meta name="theme-color" content="#15181d">
@@ -37,14 +38,14 @@
     <div class="card">
       <h2>Información</h2>
       <div class="row">
-        <div><div class="k">Moto / Placa</div><div class="v"><span class="plate-badge"><%= order.motorcycle || '—' %></span></div></div>
+        <div><div class="k">Moto / Placa</div><div class="v"><% if (order.motorcycle) { %><span class="plate-badge"><%= formatPlate(order.motorcycle) %></span><% } else { %><span class="kds-plate is-empty">Sin placa</span><% } %></div></div>
         <div><div class="k">Ingreso</div><div class="v"><%= fechaCO(order.createdAt, {day:'2-digit',month:'short',year:'numeric'}) %></div></div>
         <div><div class="k">Mecánico asignado</div><div class="v"><%= order.mechanic || '—' %></div></div>
       </div>
       <% if (order.notes) { %>
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6">
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--kds-line)">
           <div class="k">Notas</div>
-          <div style="font-size:14px;color:#374151"><%= order.notes %></div>
+          <div style="font-size:17px;color:var(--kds-text)"><%= order.notes %></div>
         </div>
       <% } %>
     </div>
@@ -116,7 +117,7 @@
       </div>
 
       <% if (order.invoiceId) { %>
-        <div class="card" style="text-align:center;color:#166534;font-weight:800">✓ Factura proforma generada. El admin la cierra al entregar la moto.</div>
+        <div class="card" style="text-align:center;color:#86efac;font-weight:600">Factura proforma generada. El admin la cierra al entregar la moto.</div>
       <% } %>
 
     <% } else { %>
