@@ -46,7 +46,7 @@ const jwtCart = (req, res, next) => {
 const PRIVATE_PATHS = [
   /^\/club\/./, /^\/admin/, /^\/taller/, /^\/kds/, /^\/liquidador/,
   /^\/cotizacion\//, /^\/factura\//, /^\/mi-orden/, /^\/historial/, /^\/checkin/,
-  /^\/carrito/, /^\/checkout/, /^\/payment\//, /^\/control/, /^\/clases\//,
+  /^\/carrito/, /^\/checkout/, /^\/payment\//, /^\/pagar/, /^\/tienda\/pedido/, /^\/control/, /^\/clases\//,
   /^\/clasificados\/(mios|nuevo)$/, /^\/clasificados\/[^/]+\/editar$/,
   /^\/newsletter\//, /^\/resenas$/,
 ];
@@ -116,9 +116,6 @@ const templateLocals = async (req, res, next) => {
   res.locals.waMsg = waMsg;
   res.locals.siteUrl = SITE_URL;
   res.locals.toJsonLd = jsonLd;
-  // Canonical por defecto: la ruta propia sin query (nunca el home). Las vistas
-  // que necesitan otro (filtros, paginación) lo sobreescriben.
-  res.locals.canonicalPath = req.path;
   try { res.locals.shopNavCategories = visibleCategories(); } catch { res.locals.shopNavCategories = []; }
 
   try {
