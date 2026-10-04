@@ -1860,25 +1860,132 @@ main.schedule-full {
   color: rgba(255, 255, 255, .85)
 }
 
-.footer-bottom .attribution {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-start;
-  margin-top: 6px;
-  font-size: .625rem
-}
-
-.footer-bottom .attribution a {
+/* Crédito del desarrollador: firma tipo chip, tinta sobre el naranja */
+.site-footer .dev-credit {
+  position: relative;
   display: inline-flex;
-  gap: 6px;
   align-items: center;
+  gap: 10px;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 6px 14px 6px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(13, 13, 13, .22);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16);
   color: #fff;
-  text-decoration: none
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  transition: background .35s ease, box-shadow .35s ease, transform .35s cubic-bezier(.2, .8, .2, 1)
 }
 
-.footer-bottom .attribution a:hover {
-  opacity: .9
+/* Brillo que cruza el chip al pasar el cursor */
+.site-footer .dev-credit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .14) 50%, transparent 65%);
+  transform: translateX(-100%);
+  transition: transform .8s ease
+}
+
+.dev-credit-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--brand);
+  flex-shrink: 0;
+  transition: transform .5s cubic-bezier(.2, .8, .2, 1), background .35s ease, color .35s ease
+}
+
+.dev-credit-text {
+  display: grid;
+  line-height: 1.1;
+  text-align: left
+}
+
+.dev-credit-eyebrow {
+  font-size: .5625rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .7)
+}
+
+.dev-credit-name {
+  font-size: .875rem;
+  font-weight: 800;
+  letter-spacing: -.01em
+}
+
+.dev-credit-tld {
+  font-weight: 400;
+  color: rgba(255, 255, 255, .65);
+  transition: color .35s ease
+}
+
+.dev-credit-arrow {
+  opacity: .6;
+  transition: transform .35s cubic-bezier(.2, .8, .2, 1), opacity .35s ease
+}
+
+.site-footer .dev-credit:hover,
+.site-footer .dev-credit:focus-visible {
+  background: var(--ink);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1), 0 10px 24px -12px rgba(13, 13, 13, .7);
+  transform: translateY(-1px)
+}
+
+.site-footer .dev-credit:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px
+}
+
+.site-footer .dev-credit:hover::after,
+.site-footer .dev-credit:focus-visible::after {
+  transform: translateX(100%)
+}
+
+.dev-credit:hover .dev-credit-mark,
+.dev-credit:focus-visible .dev-credit-mark {
+  background: var(--brand);
+  color: var(--ink);
+  transform: rotate(-12deg)
+}
+
+.dev-credit:hover .dev-credit-tld,
+.dev-credit:focus-visible .dev-credit-tld {
+  color: var(--brand)
+}
+
+.dev-credit:hover .dev-credit-arrow,
+.dev-credit:focus-visible .dev-credit-arrow {
+  opacity: 1;
+  transform: translate(2px, -2px)
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-footer .dev-credit,
+  .site-footer .dev-credit::after,
+  .dev-credit-mark,
+  .dev-credit-arrow {
+    transition: none
+  }
+
+  .site-footer .dev-credit:hover,
+  .site-footer .dev-credit:focus-visible,
+  .dev-credit:hover .dev-credit-mark,
+  .dev-credit:hover .dev-credit-arrow {
+    transform: none
+  }
+
+  .site-footer .dev-credit:hover::after {
+    transform: translateX(-100%)
+  }
 }
 
 @media (max-width:900px) {

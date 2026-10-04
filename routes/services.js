@@ -42,17 +42,20 @@ const servicesData = require('../data/services-detail');
 // de la moto por sistemas) y el nombre corto de cada servicio, que es el valor
 // que entiende el selector de /servicios/agendar.
 const landingServices = require('../data/landing-services');
-router.get('/servicios', (req, res) => {
+function boardServices() {
   const bySlug = Object.fromEntries(servicesData.map(s => [s.slug, s]));
-  const services = landingServices
+  return landingServices
     .filter(l => bySlug[l.slug])
     .map(l => ({ ...bySlug[l.slug], name: l.name, detailHref: `/servicios/${l.slug}` }));
+}
+router.get('/servicios', (req, res) => {
   res.render('services', {
-    services,
+    services: boardServices(),
     title: 'Servicios | Gorillaz Motorbikes',
     description: 'Mecánica, electricidad, escaneo, torno, prensa, pintura, lavado y detailing de motos en Bogotá. Mira qué incluye cada servicio y agenda en línea.',
     canonicalPath: '/servicios',
     bodyClass: 'page-servicios',
+    vtExpect: 'sv-cards-end',
   });
 });
 
@@ -94,14 +97,22 @@ router.post('/servicios/agendar', async (req, res) => {
   }
 });
 
-router.get('/servicios/lavado-motos', (req, res) => res.render('services/lavado-motos'));
-router.get('/servicios/lavado-cascos', (req, res) => res.render('services/lavado-cascos'));
-router.get('/servicios/detailing-motos', (req, res) => res.render('services/detailing-motos'));
-
+// Ficha ampliada de un servicio: la misma ficha de /servicios, en grande y con
+// el tablero debajo. Entre las dos páginas hay una transición de vista que
+// lleva la herramienta de un sitio al otro (public/js/servicios/vt.js).
 router.get('/servicios/:slug', (req, res, next) => {
-  const service = servicesData.find(s => s.slug === req.params.slug);
-  if (!service) return next(); // Not found, move to 404 handler
-  res.render('services/service-detail', { service, title: `${service.title} — Gorillaz Motorbikes` });
+  const services = boardServices();
+  const index = services.findIndex(s => s.slug === req.params.slug);
+  if (index < 0) return next(); // Not found, move to 404 handler
+  const service = services[index];
+  res.render('services/service-detail', {
+    service, services, index,
+    title: `${service.title} | Gorillaz Motorbikes`,
+    description: service.desc,
+    canonicalPath: `/servicios/${service.slug}`,
+    bodyClass: 'page-servicios page-servicio',
+    vtExpect: 'sv-detail-end',
+  });
 });
 
 router.get(['/agendar-servicio', '/servicios/agenda', '/agenda-servicio', '/agenda'], (req, res) => res.redirect('/servicios/agendar'));

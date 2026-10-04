@@ -2,8 +2,7 @@
 // Ficha pública de cada servicio del taller: /servicios, /servicios/:slug y el
 // asesor con IA (helpers/asesor/conocimiento.js) la leen de aquí.
 //
-// `includes` resume en etiquetas lo que ya dicen `details` (o, para lavado,
-// cascos y detailing, sus páginas en views/services/): /servicios las muestra
+// `includes` resume en etiquetas lo que ya dicen `details`: /servicios las muestra
 // como cintas de rotuladora. `realPhoto` solo existe donde hay foto propia del
 // taller; el resto de /servicios usa la herramienta ilustrada, no fotos de banco.
 module.exports = [
@@ -63,8 +62,36 @@ module.exports = [
     img: '/images/services/scaneo.webp',
     details: 'Contamos con escáneres multimarca para apagar testigos de motor, chequear valores en tiempo real de inyectores, sensores TPS y módulos ABS.'
   },
-  // Servicios que usan sus propias vistas personalizadas
-  { slug: 'lavado-motos', includes: ['Cuida la pintura', 'Plásticos', 'Componentes electrónicos'], title: 'Lavado de motos', desc: 'Limpieza profunda con productos especializados para cuidar la pintura y componentes de tu máquina.', img: '/images/services/lavado-motos.png' },
-  { slug: 'lavado-cascos', includes: ['Ozono', 'Hipoalergénico', 'Tapizado', 'Sin malos olores'], title: 'Lavado de cascos', desc: 'Desinfección y limpieza interna y externa para mantener tu seguridad y confort al rodar.', img: '/images/services/lavado-cascos.webp' },
-  { slug: 'detailing-motos', includes: ['Corrección de barniz', 'Pulido de metales', 'Sellador cerámico', 'Plásticos negros'], title: 'Detailing de motos', desc: 'Restauración estética detallada, polichado y protección cerámica para un brillo único.', img: '/images/services/detailing-motos.webp' }
+  // Lavado, cascos y detailing tenían vistas propias; su texto vive ahora aquí
+  // y usan la misma ficha ampliada. `details` admite una lista de párrafos.
+  {
+    slug: 'lavado-motos', includes: ['Cuida la pintura', 'Plásticos', 'Componentes electrónicos'],
+    title: 'Lavado de motos',
+    desc: 'Limpieza profunda con productos especializados para cuidar la pintura y componentes de tu máquina.',
+    img: '/images/services/lavado-motos.png',
+    details: [
+      'Contamos con un espacio dedicado exclusivamente al cuidado estético de tu motocicleta. Nuestro servicio de lavado de motos no es solo manguera y jabón: utilizamos productos especializados que protegen la pintura, plásticos y componentes electrónicos.',
+      'Agenda tu cita y experimenta la diferencia de un lavado profesional en Gorillaz Motorbikes.'
+    ]
+  },
+  {
+    slug: 'lavado-cascos', includes: ['Ozono', 'Hipoalergénico', 'Tapizado', 'Sin malos olores'],
+    title: 'Lavado de cascos',
+    desc: 'Desinfección y limpieza interna y externa para mantener tu seguridad y confort al rodar.',
+    img: '/images/services/lavado-cascos.webp',
+    details: [
+      'El casco es el elemento más importante de tu seguridad y suele acumular sudor, bacterias y polvo. Contamos con nuestro servicio de limpieza profunda para cascos.',
+      'Utilizamos máquinas de ozono y productos hipoalergénicos que dejan el tapizado limpio, fresco y libre de malos olores, sin comprometer los materiales internos y externos.'
+    ]
+  },
+  {
+    slug: 'detailing-motos', includes: ['Corrección de barniz', 'Pulido de metales', 'Sellador cerámico', 'Plásticos negros'],
+    title: 'Detailing de motos',
+    desc: 'Restauración estética detallada, polichado y protección cerámica para un brillo único.',
+    img: '/images/services/detailing-motos.webp',
+    details: [
+      'El detailing va mucho más allá de un lavado tradicional. Ofrecemos corrección de barniz automotriz, pulido de partes metálicas, selladores cerámicos, y restauración de plásticos negros oscuros.',
+      'Si quieres que tu moto brille más que cuando salió del concesionario, este es el servicio ideal para los más exigentes del club Gorillaz.'
+    ]
+  }
 ];

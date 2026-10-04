@@ -1,0 +1,20 @@
+<%#
+  Tablero perforado con las herramientas colgadas (necesita tools.ejs en la página).
+  - services: la lista de boardServices() (routes/services.js).
+  - current: slug del servicio abierto en la ficha ampliada. Su gancho queda
+    vacío (se ve la silueta pintada) porque la herramienta está en uso arriba.
+  - toDetail: true enlaza cada herramienta a su ficha ampliada; si no, al ancla
+    de su ficha en /servicios.
+%>
+<% var cur = typeof current !== 'undefined' ? current : null; %>
+<nav class="sv-board<%= cur ? ' sv-board-wide' : '' %>" aria-label="Tablero de servicios" data-sv="board">
+  <% services.forEach(function (s) { %>
+    <a class="sv-slot<%= s.slug === cur ? ' is-out' : '' %>" href="<%= typeof toDetail !== 'undefined' && toDetail ? s.detailHref : '#' + s.slug %>" data-slug="<%= s.slug %>"<% if (s.slug === cur) { %> aria-current="page"<% } %>>
+      <span class="sv-hook" aria-hidden="true"></span>
+      <svg class="sv-sil" viewBox="0 0 200 120" aria-hidden="true" focusable="false"><use href="#sv-t-<%= s.slug %>"/></svg>
+      <svg class="sv-tool" viewBox="0 0 200 120" aria-hidden="true" focusable="false" data-m><use href="#sv-t-<%= s.slug %>"/></svg>
+      <span class="sv-slot-name"><%= s.name %></span>
+    </a>
+  <% }) %>
+  <span class="sv-slot sv-slot-brand" aria-hidden="true"></span>
+</nav>
