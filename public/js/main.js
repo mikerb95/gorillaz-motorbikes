@@ -17,6 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const headerRight = document.querySelector('.header-right');
     if (!headerInner || !navLeft || !navCenter || !headerRight) return;
     if (updateNavCompact._measuring) return;
+    // En móvil (<=900px) la barra la define el CSS: squeeze/compact no aplican
+    // (squeeze agrandaba el logo y empujaba los botones fuera de la barra).
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      if (body.classList.contains('nav-compact') || body.classList.contains('nav-squeeze')) {
+        body.classList.remove('nav-compact', 'nav-squeeze');
+        document.dispatchEvent(new CustomEvent('navlayoutchange'));
+      }
+      return;
+    }
     updateNavCompact._measuring = true;
 
     const hadCompact = body.classList.contains('nav-compact');

@@ -2456,6 +2456,14 @@ main.schedule-full {
     margin: 12px auto 0
   }
 
+  .site-header .logo .logo-base {
+    height: 44px
+  }
+
+  .site-header .logo .logo-name {
+    height: 25px
+  }
+
   .site-header .header-inner {
     grid-template-columns: auto minmax(0, 1fr) auto;
     column-gap: 12px;
@@ -2556,6 +2564,10 @@ main.schedule-full {
 
   .nav-compact .site-header .logo img {
     height: 40px
+  }
+
+  .nav-compact .site-header .logo .logo-name {
+    height: 28px
   }
 }
 
