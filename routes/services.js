@@ -8,6 +8,8 @@ const { computeDemandMap } = require('../helpers/appointments');
 const { resendClient } = require('../config');
 
 const settings = require('../helpers/settings');
+const { DatosInvalidos, ordenDelCliente } = require('../helpers/asesor/orden');
+const { consultaOrdenLimiter } = require('../middleware/consultaOrden');
 const PARQUEADERO_CONFIG_PATH = path.join(__dirname, '..', 'data', 'parqueadero-config.json');
 // La config canónica vive en app_settings (clave 'parqueadero'); el archivo
 // JSON queda solo como fallback de lectura previo a la primera edición.
@@ -123,39 +125,31 @@ router.get('/mi-orden', (req, res) => {
   res.render('mi-orden');
 });
 
-router.post('/mi-orden', async (req, res) => {
-  const { placa, phone_suffix } = req.body;
-
-  if (!placa || !phone_suffix) {
-    return res.render('mi-orden', { error: 'Por favor completa todos los campos.', placaVal: placa || '', suffixVal: phone_suffix || '' });
-  }
-
-  const suffix = phone_suffix.replace(/\D/g, '').slice(-3);
-  if (suffix.length !== 3) {
-    return res.render('mi-orden', { error: 'Ingresa exactamente los últimos 3 dígitos de tu celular.', placaVal: placa, suffixVal: phone_suffix });
-  }
+// Placa + últimos 4 dígitos del celular, con la misma búsqueda y el mismo
+// límite de intentos que el chat del asesor (helpers/asesor/orden.js,
+// middleware/consultaOrden.js). Los errores responden 400/404 para que
+// cuenten en el límite, y "no hay orden" y "el celular no coincide" dicen lo
+// mismo: el formulario no sirve para averiguar qué placas tienen orden.
+router.post('/mi-orden', consultaOrdenLimiter, async (req, res) => {
+  const { placa, phone_suffix } = req.body || {};
+  const vista = (status, datos) => res.status(status).render('mi-orden', { placaVal: placa || '', suffixVal: phone_suffix || '', ...datos });
 
   try {
-    const orders = await getServiceOrdersByPlate(placa.trim());
-
-    if (orders.length === 0) {
-      return res.render('mi-orden', { error: 'No encontramos ninguna orden para esa placa. Verifica que esté bien escrita o consulta en el taller.', placaVal: placa, suffixVal: phone_suffix });
-    }
-
-    const order = orders.find(o => {
-      const phone = (o.clientPhone || '').replace(/\D/g, '');
-      return phone.slice(-3) === suffix;
-    });
-
+    const order = await ordenDelCliente({ placa, digitos: phone_suffix }, getServiceOrdersByPlate);
     if (!order) {
-      return res.render('mi-orden', { error: 'Los datos no coinciden. Verifica la placa y los últimos 3 dígitos de tu celular.', placaVal: placa, suffixVal: phone_suffix });
+      return vista(404, { error: 'No encontramos una orden con esa placa y esos dígitos. Verifícalos o consulta en el taller.' });
     }
-
-    const parking = calcParking(order, loadParqueaderoConfig());
-    res.render('mi-orden', { order, parking, placaVal: placa, suffixVal: phone_suffix });
+    vista(200, { order, parking: calcParking(order, loadParqueaderoConfig()) });
   } catch (e) {
+    if (e instanceof DatosInvalidos) {
+      return vista(400, {
+        error: e.message === 'placa'
+          ? 'Revisa la placa: son 3 letras y 3 caracteres, por ejemplo ABC12D.'
+          : 'Ingresa exactamente los últimos 4 dígitos de tu celular.',
+      });
+    }
     console.error('POST /mi-orden error:', e.message);
-    res.render('mi-orden', { error: 'Error al consultar. Por favor intenta de nuevo.', placaVal: placa, suffixVal: phone_suffix });
+    vista(500, { error: 'Error al consultar. Por favor intenta de nuevo.' });
   }
 });
 

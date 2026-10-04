@@ -215,7 +215,7 @@
   <div class="orden-wrap">
     <div class="orden-header">
       <h1>Consulta tu orden</h1>
-      <p>Ingresa la placa de tu moto y los últimos 3 dígitos de tu celular para ver el estado y el valor total.</p>
+      <p>Ingresa la placa de tu moto y los últimos 4 dígitos de tu celular para ver el estado y el valor total.</p>
     </div>
 
     <% if (typeof error !== 'undefined' && error) { %>
@@ -229,17 +229,17 @@
       <div class="orden-field">
         <label for="placa">Placa de la moto</label>
         <input id="placa" name="placa" type="text" required
-          maxlength="7" placeholder="ABC123"
+          maxlength="7" placeholder="ABC12D"
           style="text-transform:uppercase"
           oninput="this.value=this.value.toUpperCase()"
           value="<%= typeof placaVal !== 'undefined' ? placaVal : '' %>" />
-        <div class="hint">Ingresa la placa tal como está registrada (ej. ABC123)</div>
+        <div class="hint">Ingresa la placa tal como está registrada (ej. ABC12D)</div>
       </div>
 
       <div class="orden-field">
-        <label for="phone_suffix">Últimos 3 dígitos de tu celular</label>
+        <label for="phone_suffix">Últimos 4 dígitos de tu celular</label>
         <input id="phone_suffix" name="phone_suffix" type="text" required
-          inputmode="numeric" pattern="\d{3}" maxlength="3" placeholder="000"
+          inputmode="numeric" pattern="\d{4}" maxlength="4" placeholder="0000"
           style="letter-spacing: 4px; font-size: 20px; text-align: center;"
           value="<%= typeof suffixVal !== 'undefined' ? suffixVal : '' %>" />
         <div class="hint">El número de celular con el que se registró la orden en el taller</div>

@@ -4,7 +4,8 @@
 // El límite por IP lo pone este router; el tope de gasto diario, el motor.
 
 const express = require('express');
-const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+const { rateLimit } = require('express-rate-limit');
+const { ipVisitante, consultaOrdenLimiter } = require('../middleware/consultaOrden');
 const { validarEntrada } = require('../helpers/asesor/bucle');
 const { AsesorNoDisponible, disponible, responder } = require('../helpers/asesor/motor');
 const { DatosInvalidos, buscarOrden } = require('../helpers/asesor/orden');
@@ -12,15 +13,6 @@ const { getServiceOrdersByPlate } = require('../db');
 const { calcParking, loadParqueaderoConfig } = require('./services');
 
 const router = express.Router();
-
-// IP del visitante. El sitio no configura `trust proxy`, y detrás del proxy de
-// Vercel req.ip puede ser la del proxy: todos compartirían el mismo cupo. En
-// Vercel, x-real-ip la escribe la plataforma (el visitante no puede
-// falsificarla); fuera de Vercel se usa req.ip.
-function ipVisitante(req) {
-  const real = process.env.VERCEL && req.headers['x-real-ip'];
-  return ipKeyGenerator(typeof real === 'string' && real ? real : req.ip || '');
-}
 
 const preguntaLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
@@ -42,18 +34,6 @@ const estadoLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { disponible: false },
-});
-
-// Placa + 4 dígitos son 10.000 combinaciones por placa: pocos intentos
-// fallidos por IP. Las consultas que encuentran la orden no cuentan.
-const ordenLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 8,
-  keyGenerator: ipVisitante,
-  skipSuccessfulRequests: true,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'limite_ip' },
 });
 
 function sinCache(res) {
@@ -81,7 +61,7 @@ router.post('/', preguntaLimiter, async (req, res) => {
 });
 
 /** Estado de una moto desde el chat. No pasa por la IA (helpers/asesor/orden). */
-router.post('/orden', ordenLimiter, async (req, res) => {
+router.post('/orden', consultaOrdenLimiter, async (req, res) => {
   sinCache(res);
   try {
     const r = await buscarOrden(req.body, {

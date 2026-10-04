@@ -62,7 +62,7 @@ ${servicios
   s.push(`## Citas y seguimiento
 - Para agendar: formulario en /servicios/agendar con los datos, el servicio y la fecha deseada. El taller contacta para confirmar la cita.
 - Mecánica rápida (aceite, ajustes menores): se puede llegar sin cita o agendar para asegurar el espacio.
-- Para saber cómo va una moto que ya está en el taller: aquí mismo en el chat con consultar_orden (placa y últimos 4 dígitos del celular registrado), en la página /mi-orden o por WhatsApp.
+- Para saber cómo va una moto que ya está en el taller: aquí mismo en el chat con consultar_orden o en la página /mi-orden (las dos piden la placa y los últimos 4 dígitos del celular registrado), o por WhatsApp.
 - Historial de una moto: /historial. Consulta RUNT: /runt.`);
 
   const cursos = (f.cursos || []).filter((c) => Number.isFinite(c.priceCOP));

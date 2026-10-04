@@ -3,8 +3,8 @@
 // celular ni la orden: solo llama a consultar_orden, el navegador muestra un
 // formulario y la consulta la responde esta función (POST /asesor/orden).
 //
-// Como /mi-orden, pero con los últimos 4 dígitos del celular en vez de 3, y
-// el mismo error cuando no hay orden y cuando el celular no coincide, para que
+// La misma búsqueda (ordenDelCliente) la usa la página /mi-orden. Quien llama
+// responde igual cuando no hay orden y cuando el celular no coincide, para que
 // el formulario no sirva para averiguar qué placas tienen orden.
 
 const ESTADOS = {
@@ -37,21 +37,31 @@ function ultimos4(telefono) {
 }
 
 /**
- * Devuelve el resumen público de la orden, o null si no hay una que coincida.
+ * La orden de ese cliente: la activa más reciente de esa placa cuyo celular
+ * termina en esos 4 dígitos (si todas están cerradas, la última), o null.
  * Lanza DatosInvalidos si la placa o los dígitos no tienen forma válida.
- * `deps` = { ordenesPorPlaca(placa), parqueadero(orden) }.
+ * La usan el chat y la página /mi-orden.
  */
-async function buscarOrden(entrada, deps) {
+async function ordenDelCliente(entrada, ordenesPorPlaca) {
   const placa = normalizarPlaca(entrada && entrada.placa);
   const digitos = String((entrada && entrada.digitos) || '').trim();
   if (!PLACA.test(placa)) throw new DatosInvalidos('placa');
   if (!/^\d{4}$/.test(digitos)) throw new DatosInvalidos('digitos');
 
-  const ordenes = (await deps.ordenesPorPlaca(placa)).filter((o) => ultimos4(o.clientPhone) === digitos);
+  // Primero el celular: si la moto cambió de dueño, cada uno ve solo lo suyo.
+  const ordenes = (await ordenesPorPlaca(placa)).filter((o) => ultimos4(o.clientPhone) === digitos);
   if (!ordenes.length) return null;
-  // La activa más reciente; si todas están cerradas, la última.
   const recientes = [...ordenes].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  const o = recientes.find((x) => ACTIVOS.has(x.status)) || recientes[0];
+  return recientes.find((x) => ACTIVOS.has(x.status)) || recientes[0];
+}
+
+/**
+ * Resumen público de la orden para el chat, o null si no hay una que coincida.
+ * `deps` = { ordenesPorPlaca(placa), parqueadero(orden) }.
+ */
+async function buscarOrden(entrada, deps) {
+  const o = await ordenDelCliente(entrada, deps.ordenesPorPlaca);
+  if (!o) return null;
 
   const p = deps.parqueadero(o) || { aplica: false };
   return {
@@ -68,4 +78,4 @@ async function buscarOrden(entrada, deps) {
   };
 }
 
-module.exports = { DatosInvalidos, buscarOrden, normalizarPlaca };
+module.exports = { DatosInvalidos, buscarOrden, ordenDelCliente, normalizarPlaca };

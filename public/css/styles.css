@@ -820,8 +820,9 @@ body.has-subbar .nav-bar .header-inner {
   margin-left: -16px
 }
 
+/* En squeeze el gap ya es menor: sin margen negativo las cajas de clic se pisarían */
 .nav-squeeze .header-right>.nav-icon-link+.nav-item {
-  margin-left: -10px
+  margin-left: -4px
 }
 
 /* CTA principal: pill blanca que cierra el lado derecho */
