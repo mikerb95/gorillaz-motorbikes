@@ -39,11 +39,12 @@ function textoPlano(html) {
   return String(html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
-/** Cursos y catálogo vivos (app_settings). Solo servidor. */
+/** Cursos y catálogo vivos (BD). Solo servidor. */
 function fuentesDelSitio() {
   const { courses } = require('../content');
-  const { catalog } = require('../catalog');
-  return { cursos: courses, productos: catalog.products || [], categorias: catalog.categories || [] };
+  const { catalog, publicProducts } = require('../catalog');
+  // Solo lo publicado: ni borradores ni productos demo.
+  return { cursos: courses, productos: publicProducts(), categorias: catalog.categories || [] };
 }
 
 function conocimiento(f) {

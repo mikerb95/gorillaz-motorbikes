@@ -75,7 +75,7 @@ function resultadoParaModelo(productos) {
       categoria: p.categoriaNombre,
       precio: pesos(precioFinal(p)),
       ...(p.discount > 0 ? { precioAntes: pesos(p.price) } : {}),
-      enlace: `/tienda/${p.id}`,
+      enlace: `/tienda/${p.slug || p.id}`,
     })),
     nota: 'Precios publicados en la tienda. La disponibilidad no está confirmada: la confirma el taller por WhatsApp. Copia los precios tal cual.',
   };

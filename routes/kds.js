@@ -10,7 +10,7 @@ const { JWT_SECRET } = require('../config');
 const { requireKdsEmployee, authLimiter } = require('../middleware/auth');
 const { requirePin, verifyPinHandler, touchPinSession, clearPinSessionCookies } = require('../middleware/employeePin');
 const settings = require('../helpers/settings');
-const { catalog } = require('../helpers/catalog');
+const { publicProducts } = require('../helpers/catalog');
 const { classes: classesData } = require('../helpers/content');
 const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
 const {
@@ -155,8 +155,8 @@ router.post('/logout', (req, res) => {
 router.get('/', (req, res) => {
   // Solo lo que el roll necesita mostrar: sin sku/tags/descripcion, que no
   // aportan nada a un cliente mirando la tablet desde lejos.
-  const rollProducts = catalog.products
-    .filter(p => p.stock > 0)
+  const rollProducts = publicProducts()
+    .filter(p => p.image && (p.stock === null || p.stock > 0))
     .map(p => ({ name: p.name, price: p.price, image: p.image, discount: p.discount || 0 }));
   res.render('kds/kiosk', { classesData, rollProducts });
 });
