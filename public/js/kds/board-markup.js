@@ -28,14 +28,38 @@
     return isNaN(t) ? '' : elapsedLabel(now - t);
   }
 
+  /**
+   * Placa como se lee en la lámina: "ABC12D" → "ABC 12D" (moto), "ABC123" →
+   * "ABC 123" (carro). Cualquier otro formato se deja tal cual.
+   */
+  function formatPlate(raw) {
+    var p = String(raw == null ? '' : raw).trim().toUpperCase().replace(/\s+/g, '');
+    var m = p.match(/^([A-Z]{3})(\d{2}[A-Z]|\d{3})$/);
+    return m ? m[1] + ' ' + m[2] : p;
+  }
+
+  function plural(n, one, many) { return n + ' ' + (Number(n) === 1 ? one : many); }
+
+  // Tarjeta de orden: la placa amarilla manda (es lo que se busca con la
+  // mirada), el tiempo en taller a la derecha y abajo quién la tiene.
   function cardMarkup(o, now) {
     var id = String(o.id);
+    var plate = formatPlate(o.motorcycle);
     return '<a class="kds-card st-' + escapeHtml(o.status) + '" href="/kds/orden/' + escapeHtml(encodeURIComponent(id)) + '"' +
       ' data-flip-id="' + escapeHtml(id) + '" data-created="' + escapeHtml(o.createdAt) + '">' +
-      '<div class="label">' + escapeHtml(o.label) + '</div>' +
-      '<div class="moto">' + escapeHtml(o.motorcycle || 'Sin placa') + '</div>' +
-      '<div class="meta">' + escapeHtml(o.itemCount) + ' ítem(s) · ' + escapeHtml(o.mechanic || 'Sin asignar') + ' · ' +
-      '<span data-elapsed>' + escapeHtml(sinceLabel(o.createdAt, now)) + '</span></div>' +
+      '<div class="kds-card-top">' +
+        (plate
+          ? '<span class="kds-plate">' + escapeHtml(plate) + '</span>'
+          : '<span class="kds-plate is-empty">Sin placa</span>') +
+        '<span class="kds-card-time"><small>En taller</small><span data-elapsed>' + escapeHtml(sinceLabel(o.createdAt, now)) + '</span></span>' +
+      '</div>' +
+      '<div class="kds-card-meta">' +
+        (o.mechanic
+          ? '<span class="kds-card-who">' + escapeHtml(o.mechanic) + '</span>'
+          : '<span class="kds-card-who is-none">Sin asignar</span>') +
+        '<span>' + escapeHtml(plural(o.itemCount || 0, 'ítem', 'ítems')) + '</span>' +
+        '<span class="kds-card-id">' + escapeHtml(o.label) + '</span>' +
+      '</div>' +
       '</a>';
   }
 
@@ -52,5 +76,5 @@
     }).join('');
   }
 
-  return { escapeHtml: escapeHtml, elapsedLabel: elapsedLabel, sinceLabel: sinceLabel, boardMarkup: boardMarkup };
+  return { escapeHtml: escapeHtml, elapsedLabel: elapsedLabel, sinceLabel: sinceLabel, formatPlate: formatPlate, boardMarkup: boardMarkup };
 });

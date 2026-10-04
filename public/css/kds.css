@@ -1,371 +1,487 @@
 /* ==========================================================================
    Panel de Producción (KDS) — Gorillaz Motorbikes
-   Identidad: tablero de taller. Fichas de trabajo tipo "orden colgada",
-   franja de peligro (cinta de taller) como único acento decorativo,
-   placas en monoespaciado como en el resto del sitio (cp-plate-badge).
+   Identidad: señalética de taller.
+   - Barlow (texto) y Barlow Condensed (cifras, rótulos, reloj): tipografía
+     pensada para letreros, se lee de lejos y con prisa.
+   - La placa amarilla de la moto es la pieza principal de cada orden: es lo
+     que el mecánico busca con la mirada. Mismo doble borde que la landing.
+   - Fondo grafito con el perforado de un tablero de herramientas, muy tenue.
+   - Sin rayas de color: el estado ya lo dice la columna; donde hace falta,
+     un cuadro pequeño junto al rótulo.
+   Fuentes servidas por el propio sitio (la tablet no depende de Google).
    ========================================================================== */
 
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('../fonts/barlow/barlow-500-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../fonts/barlow/barlow-600-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('../fonts/barlow/barlow-700-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../fonts/barlow/barlow-condensed-600-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('../fonts/barlow/barlow-condensed-700-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 800; font-display: swap;
+  src: url('../fonts/barlow/barlow-condensed-800-latin.woff2') format('woff2'); }
+
 :root {
-  --kds-ink:        #0d0d0d;
-  --kds-bg:         #15181d;   /* fondo de cromo / chasis */
-  --kds-bg-2:       #1b1f26;   /* barra superior, paneles hundidos */
-  --kds-line:       #2a2f38;   /* líneas sobre fondo oscuro */
-  --kds-paper:      #f7f5f0;   /* superficie tipo papel de orden */
-  --kds-paper-2:    #efece3;   /* inset sobre papel */
-  --kds-hair:        #e7e1d2;   /* líneas finas sobre papel */
-  --kds-muted:      #8f97a3;   /* texto secundario sobre oscuro */
-  --kds-muted-2:    #6b7280;   /* texto secundario sobre papel */
+  --kds-font:       'Barlow', system-ui, sans-serif;
+  --kds-cond:       'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+
+  /* Grafito: fondo, superficie, superficie hundida, líneas. */
+  --kds-bg:         #141517;
+  --kds-bg-2:       #1d1f22;
+  --kds-bg-3:       #272a2e;
+  --kds-line:       #2d3035;
+  --kds-line-2:     #3b3f45;
+
+  --kds-text:       #ecebe6;   /* texto sobre grafito (blanco cálido) */
+  --kds-text-2:     #a6a9ae;
+  --kds-text-3:     #73777d;
+
+  --kds-ink:        #141414;   /* texto sobre superficies claras */
+  --kds-paper:      #f3f1eb;   /* campos y paneles claros */
+  --kds-paper-2:    #e6e3da;
+
   --kds-brand:      #F25C05;
   --kds-brand-deep: #401309;
-  --kds-radius:     14px;
-  --kds-radius-lg:  18px;
-  --kds-radius-pill:999px;
-  --kds-mono:       'Courier New', monospace;
+  --kds-brand-text: #ff8a47;   /* naranja legible sobre grafito */
+  --kds-brand-ink:  #b93f00;   /* naranja legible sobre blanco */
 
-  --kds-s-wait-bg:  #fef3c7; --kds-s-wait-fg:  #92400e; --kds-s-wait-edge:  #d97706;
-  --kds-s-prog-bg:  #dbeafe; --kds-s-prog-fg:  #1e40af; --kds-s-prog-edge:  #2563eb;
-  --kds-s-pause-bg: #e9eaec; --kds-s-pause-fg: #4b5563; --kds-s-pause-edge: #9ca3af;
-  --kds-s-done-bg:  #dcfce7; --kds-s-done-fg:  #166534; --kds-s-done-edge:  #16a34a;
+  --kds-plate:      #F6C700;   /* placa de moto colombiana */
+  --kds-plate-ink:  #141414;
+
+  --kds-radius:     10px;
+  --kds-radius-lg:  14px;
+
+  /* Marcas de estado (solo el cuadro junto al rótulo, nunca rayas). */
+  --kds-s-wait:     #f59e0b;
+  --kds-s-prog:     #3b82f6;
+  --kds-s-pause:    #9ca3af;
+  --kds-s-done:     #22c55e;
+
+  /* Compatibilidad con estilos inyectados por JS antiguos. */
+  --kds-muted:      var(--kds-text-2);
+  --kds-muted-2:    var(--kds-text-3);
+  --kds-hair:       var(--kds-line);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
   margin: 0;
-  font-family: Montserrat, system-ui, sans-serif;
-  background: var(--kds-bg);
-  color: var(--kds-ink);
+  font: 500 16px/1.4 var(--kds-font);
+  color: var(--kds-text);
+  background-color: var(--kds-bg);
+  /* Tablero perforado: un punto cada 28 px, apenas visible. */
+  background-image: radial-gradient(circle at 50% 50%, rgba(255,255,255,.045) 1.6px, transparent 2px);
+  background-size: 28px 28px;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Barra superior + cinta de taller ───────────────────────────────────── */
+/* ── Placa: la pieza común a todas las pantallas ────────────────────────── */
+
+.kds-plate, .plate-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 700 26px/1 var(--kds-cond); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--kds-plate-ink); background: var(--kds-plate);
+  padding: 5px 12px 4px; border-radius: 6px; white-space: nowrap;
+  /* Doble borde de lámina, como la placa de la landing. */
+  box-shadow: inset 0 0 0 2px var(--kds-plate), inset 0 0 0 3.5px var(--kds-plate-ink);
+}
+.kds-plate.is-empty {
+  background: transparent; color: var(--kds-text-3); box-shadow: none;
+  border: 1.5px dashed var(--kds-line-2); font-size: 18px; letter-spacing: .04em;
+}
+
+/* ── Barra superior ─────────────────────────────────────────────────────── */
 
 .kds-top {
-  background: var(--kds-bg-2);
-  color: #fff;
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  background: #0f1012;
+  color: var(--kds-text);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 14px;
+  position: sticky; top: 0; z-index: 10;
   border-bottom: 1px solid var(--kds-line);
 }
-.kds-top .brand { font-weight: 900; font-size: 17px; letter-spacing: .2px; }
-.kds-top .who { font-size: 12px; color: var(--kds-muted); margin-top: 2px; }
-.kds-top .label { font-weight: 900; font-size: 16px; }
+.kds-top .brand { font: 700 24px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .02em; }
+.kds-top .who { font-size: 14px; color: var(--kds-text-2); margin-top: 3px; }
+.kds-top .label { font: 700 22px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .03em; }
 .kds-top .actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .kds-back {
-  color: #fff; text-decoration: none; font-weight: 900; font-size: 18px; line-height: 1;
-  width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.08);
-  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  color: var(--kds-text); text-decoration: none; font-size: 20px; line-height: 1;
+  width: 44px; height: 44px; border-radius: var(--kds-radius); flex-shrink: 0;
+  border: 1px solid var(--kds-line-2); background: transparent;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.kds-back:active { background: var(--kds-bg-3); }
+@media (max-width: 560px) {
+  /* En celular las acciones bajan a su propia fila en vez de partirse en tres líneas. */
+  .kds-top { flex-wrap: wrap; }
+  .kds-top .actions { margin-left: 0; width: 100%; }
+  .kds-top .actions > * { flex: 1; }
+  .kds-top .actions .kds-btn { width: 100%; text-align: center; }
 }
 
+/* Cinta de taller: único acento decorativo, bajo la barra. */
 .kds-hazard {
-  height: 5px;
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--kds-brand) 0 10px,
-    var(--kds-ink) 10px 20px
-  );
+  height: 4px;
+  background: repeating-linear-gradient(-45deg, var(--kds-brand) 0 9px, #0f1012 9px 18px);
 }
 
-/* ── Contenedores ───────────────────────────────────────────────────────── */
+/* ── Contenedores y rótulos ─────────────────────────────────────────────── */
 
-.kds-wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 60px; }
+.kds-wrap { max-width: 760px; margin: 0 auto; padding: 22px 16px 64px; }
 
 .card {
-  background: var(--kds-paper);
+  background: var(--kds-bg-2);
+  border: 1px solid var(--kds-line);
   border-radius: var(--kds-radius-lg);
-  padding: 18px;
+  padding: 20px;
   margin-bottom: 14px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 20px rgba(0,0,0,.05);
-  border: 1px solid rgba(0,0,0,.05);
 }
+/* Rótulo de sección: texto condensado, una línea que corre hasta el borde
+   y, en las columnas del tablero, el conteo al final. */
 .card h2, .kds-col h2 {
-  font-size: 11px; font-weight: 800; color: var(--kds-muted-2); text-transform: uppercase;
-  letter-spacing: .8px; margin: 0 0 12px; padding-bottom: 8px;
-  border-bottom: 1.5px dashed var(--kds-hair);
-  display: flex; justify-content: space-between; align-items: baseline;
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 16px;
+  font: 700 15px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .1em;
+  color: var(--kds-text-2);
 }
+.card h2::after, .kds-col h2::after {
+  content: ''; flex: 1; height: 1px; background: var(--kds-line-2); order: 1;
+}
+.kds-col h2 span:last-child { order: 2; }
 
-/* ── Botones ─────────────────────────────────────────────────────────────*/
+/* ── Botones ────────────────────────────────────────────────────────────── */
 
 .kds-btn {
-  border: none; border-radius: 10px; padding: 10px 16px; font-weight: 800; font-size: 13px;
-  cursor: pointer; font-family: inherit; text-decoration: none; display: inline-block;
+  border: 1px solid transparent; border-radius: var(--kds-radius); padding: 11px 18px;
+  font: 600 15px/1.1 var(--kds-font); cursor: pointer; text-decoration: none; display: inline-block;
 }
-.kds-btn.orange { background: var(--kds-brand); color: #fff; }
-.kds-btn.dark   { background: rgba(255,255,255,.1); color: #fff; }
-.kds-btn.dark:active { background: rgba(255,255,255,.18); }
+.kds-btn.orange { background: var(--kds-brand); color: var(--kds-ink); }
+.kds-btn.dark   { background: transparent; color: var(--kds-text); border-color: var(--kds-line-2); }
+.kds-btn.dark:active { background: var(--kds-bg-3); }
 
 .save {
-  width: 100%; margin-top: 6px; padding: 16px; font-size: 16px; font-weight: 800;
-  background: var(--kds-brand); color: #fff; border: none; border-radius: 12px; cursor: pointer;
-  font-family: inherit;
+  width: 100%; margin-top: 6px; padding: 16px; min-height: 58px;
+  font: 700 22px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .05em;
+  background: var(--kds-brand); color: var(--kds-ink); border: none; border-radius: var(--kds-radius);
+  cursor: pointer;
 }
-.save:active { background: var(--kds-brand-deep); }
+.save:active { background: #d94f00; }
+.save:disabled { opacity: .55; }
 
 .invoice-cta {
-  width: 100%; margin-top: 4px; padding: 18px; font-size: 17px; font-weight: 900;
-  background: var(--kds-s-done-edge); color: #fff; text-decoration: none; text-align: center;
-  display: block; border-radius: 14px;
+  display: block; width: 100%; margin-top: 4px; padding: 18px; text-align: center; text-decoration: none;
+  font: 700 22px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .05em;
+  background: var(--kds-s-done); color: var(--kds-ink); border-radius: var(--kds-radius);
 }
 
-/* ── Placa / matrícula (mismo lenguaje que el resto del sitio) ──────────── */
+/* ── Tablero (board.ejs) ────────────────────────────────────────────────── */
 
-.plate-input {
-  font-family: var(--kds-mono); font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+.kds-board {
+  display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)); gap: 16px;
+  padding: 18px; overflow-x: auto; align-items: start;
 }
-
-.plate-badge {
-  font-family: var(--kds-mono); font-weight: 900; letter-spacing: .12em; color: var(--kds-ink);
-  background: #fff; border: 2px solid var(--kds-ink); border-radius: 7px;
-  padding: 3px 10px; display: inline-block;
-}
-
-/* ── Tablero (board.ejs) ─────────────────────────────────────────────────*/
-
-.kds-board { display: grid; grid-template-columns: repeat(4, minmax(240px,1fr)); gap: 14px; padding: 16px; overflow-x: auto; }
 .kds-col {
-  background: var(--kds-paper); border-radius: var(--kds-radius-lg); padding: 12px 12px 6px;
-  min-height: 200px; border: 1px solid rgba(0,0,0,.05);
+  background: rgba(255,255,255,.018);
+  border: 1px solid var(--kds-line);
+  border-radius: var(--kds-radius-lg);
+  padding: 16px 12px 6px; min-height: 220px;
 }
+.kds-col h2 { padding: 0 4px; }
+/* Marca de estado: un cuadro junto al nombre de la columna. */
+.kds-col h2 span:first-child { display: inline-flex; align-items: center; gap: 9px; color: var(--kds-text); }
+.kds-col h2 span:first-child::before {
+  content: ''; width: 10px; height: 10px; border-radius: 2px; background: var(--kds-s-wait);
+}
+.kds-col[data-col="trabajo_en_curso"] h2 span:first-child::before { background: var(--kds-s-prog); }
+.kds-col[data-col="en_pausa"] h2 span:first-child::before         { background: var(--kds-s-pause); }
+.kds-col[data-col="trabajo_completo"] h2 span:first-child::before { background: var(--kds-s-done); }
 .kds-col h2 span:last-child {
-  font-family: var(--kds-mono); background: var(--kds-ink); color: #fff; border-radius: 999px;
-  padding: 1px 8px; font-size: 11px;
+  font: 800 22px/1 var(--kds-cond); color: var(--kds-text); letter-spacing: 0; display: inline-block;
 }
 
 .kds-card {
-  position: relative;
-  display: block; text-decoration: none; color: inherit; background: var(--kds-paper-2);
-  border-radius: 12px; padding: 12px 14px 12px 18px; margin-bottom: 10px; border: 1px solid rgba(0,0,0,.05);
-  overflow: hidden;
+  position: relative; display: block; text-decoration: none; color: inherit;
+  background: var(--kds-bg-2); border: 1px solid var(--kds-line-2); border-radius: 12px;
+  padding: 14px; margin-bottom: 10px;
 }
-.kds-card::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
-  background: var(--kds-s-wait-edge);
+.kds-card:active { background: var(--kds-bg-3); }
+.kds-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.kds-card-time {
+  font: 700 24px/1 var(--kds-cond); color: var(--kds-text); white-space: nowrap; text-align: right;
 }
-.kds-card.st-trabajo_en_curso::before { background: var(--kds-s-prog-edge); }
-.kds-card.st-en_pausa::before         { background: var(--kds-s-pause-edge); }
-.kds-card.st-trabajo_completo::before { background: var(--kds-s-done-edge); }
-.kds-card:active { background: #e7e4da; }
-.kds-card .label { font-weight: 900; font-size: 14px; }
-.kds-card .moto { font-family: var(--kds-mono); font-size: 13px; color: #374151; font-weight: 700; margin-top: 3px; letter-spacing: .04em; }
-.kds-card .meta { font-size: 11px; color: var(--kds-muted-2); margin-top: 6px; }
-.kds-empty { text-align: center; color: #b4ad9c; font-size: 12px; padding: 20px 8px; }
+.kds-card-time small { display: block; font: 600 11px/1 var(--kds-cond); letter-spacing: .1em; text-transform: uppercase; color: var(--kds-text-3); margin-bottom: 4px; }
+.kds-card-meta {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px;
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--kds-line);
+  font-size: 15px; color: var(--kds-text-2);
+}
+.kds-card-who { color: var(--kds-text); font-weight: 600; }
+.kds-card-who.is-none { color: var(--kds-text-3); font-weight: 500; font-style: italic; }
+/* El número de orden siempre en su propia línea: no salta según el largo del nombre. */
+.kds-card-id { flex-basis: 100%; font: 600 13px/1 var(--kds-cond); letter-spacing: .08em; color: var(--kds-text-3); }
+
+.kds-empty {
+  margin: 0 0 10px; padding: 22px 8px; text-align: center;
+  border: 1.5px dashed var(--kds-line); border-radius: 12px;
+  font: 600 14px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .1em; color: var(--kds-text-3);
+}
 
 .kds-fab {
-  position: fixed; right: 20px; bottom: 20px; background: var(--kds-brand); color: #fff; text-decoration: none;
-  font-weight: 800; font-size: 16px; padding: 18px 26px; border-radius: 999px;
-  box-shadow: 0 10px 26px rgba(242,92,5,.45);
+  position: fixed; right: 20px; bottom: 20px; z-index: 20;
+  background: var(--kds-brand); color: var(--kds-ink); text-decoration: none;
+  font: 700 22px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .05em;
+  padding: 18px 26px; border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.45);
 }
 
 .kds-flash {
-  background: #f0fdf4; border-bottom: 1px solid #bbf7d0; color: #166534; text-align: center;
-  font-weight: 700; font-size: 13px; padding: 10px;
+  background: #10261a; border-bottom: 1px solid #1d4d31; color: #86efac; text-align: center;
+  font-weight: 600; font-size: 15px; padding: 10px;
 }
 
-@media (max-width: 900px) { .kds-board { grid-template-columns: repeat(2, minmax(220px,1fr)); } }
+@media (max-width: 900px) { .kds-board { grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
 /* En celular, una columna: dos de 220px no caben y el tablero se salía por la derecha. */
-@media (max-width: 560px) { .kds-board { grid-template-columns: minmax(0, 1fr); } .kds-col { min-height: 0; } }
+@media (max-width: 560px) { .kds-board { grid-template-columns: minmax(0, 1fr); padding: 14px; } .kds-col { min-height: 0; } }
 
-/* ── Insignias de estado ─────────────────────────────────────────────────*/
+/* ── Estado de una orden (detalle) ──────────────────────────────────────── */
 
-.badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
-.b-ingreso_taller   { background: var(--kds-s-wait-bg);  color: var(--kds-s-wait-fg); }
-.b-trabajo_en_curso { background: var(--kds-s-prog-bg);  color: var(--kds-s-prog-fg); }
-.b-en_pausa         { background: var(--kds-s-pause-bg); color: var(--kds-s-pause-fg); }
-.b-trabajo_completo { background: var(--kds-s-done-bg);  color: var(--kds-s-done-fg); }
+.badge {
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+  font: 700 16px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .06em; color: var(--kds-text);
+}
+.badge::before { content: ''; width: 10px; height: 10px; border-radius: 2px; background: var(--kds-s-wait); }
+.b-trabajo_en_curso::before { background: var(--kds-s-prog); }
+.b-en_pausa::before         { background: var(--kds-s-pause); }
+.b-trabajo_completo::before { background: var(--kds-s-done); }
 
-/* ── Filas de datos / ítems ──────────────────────────────────────────────*/
+/* ── Filas de datos / ítems ─────────────────────────────────────────────── */
 
-.row { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 14px; }
-.k { font-size: 11px; font-weight: 700; color: #a8a190; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
-label.k { display: block; margin-bottom: 4px; }
-.v { font-weight: 800; font-size: 14px; }
-.item, .item-row { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--kds-hair); font-size: 14px; }
+.row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+.k {
+  font: 600 14px/1.2 var(--kds-cond); text-transform: uppercase; letter-spacing: .08em;
+  color: var(--kds-text-2); margin-bottom: 6px;
+}
+label.k { display: block; }
+.v { font-weight: 600; font-size: 17px; color: var(--kds-text); }
+.item, .item-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--kds-line); font-size: 17px;
+}
 .item:last-child, .item-row:last-child { border-bottom: none; }
-.item .q { color: var(--kds-muted-2); font-weight: 700; }
-.item-row .del { background: none; border: none; color: #dc2626; font-size: 16px; cursor: pointer; padding: 4px 8px; }
-.total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; margin-top: 8px; border-top: 2px solid var(--kds-ink); font-weight: 900; font-size: 17px; }
-.total-row span:last-child { font-family: var(--kds-mono); color: var(--kds-brand); }
+.item .q, .item-row .q { color: var(--kds-text-2); font-weight: 600; }
+.item-row .del {
+  background: none; border: 1px solid var(--kds-line-2); color: #f87171; font-size: 15px;
+  width: 36px; height: 36px; border-radius: 8px; cursor: pointer; margin-left: 8px;
+}
+.total-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-top: 14px; margin-top: 8px; border-top: 1px solid var(--kds-line-2);
+  font: 700 18px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .08em; color: var(--kds-text-2);
+}
+.total-row span:last-child { font-size: 34px; letter-spacing: 0; color: var(--kds-text); }
 
-/* ── Estado / catálogo (order-detail, order-new) ─────────────────────────*/
+/* ── Estado / catálogo (order-detail, order-new) ────────────────────────── */
 
 .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .status-btn {
-  padding: 18px 10px; font-size: 14px; font-weight: 800; background: var(--kds-paper-2); color: var(--kds-ink);
-  border: 2px solid transparent; border-radius: 12px; cursor: pointer; font-family: inherit;
+  padding: 18px 12px; cursor: pointer; text-align: left;
+  font: 700 19px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .05em;
+  background: var(--kds-bg-3); color: var(--kds-text);
+  border: 1px solid var(--kds-line-2); border-radius: var(--kds-radius);
 }
-.status-btn.active { background: var(--kds-ink); color: #fff; }
+.status-btn.active { background: var(--kds-text); color: var(--kds-ink); border-color: var(--kds-text); }
 
-.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
-.cat-btn { padding: 16px 10px; font-size: 13px; font-weight: 800; background: var(--kds-paper-2); color: var(--kds-ink); border: none; border-radius: 12px; cursor: pointer; font-family: inherit; text-align: center; }
-.cat-btn:active { background: #e2ded2; }
-.cat-btn.other { background: #fff7ed; color: #9a3412; border: 1.5px dashed #fdba74; }
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.cat-btn {
+  padding: 14px 12px; min-height: 58px; cursor: pointer; text-align: left;
+  font: 600 16px/1.2 var(--kds-font); background: var(--kds-bg-3); color: var(--kds-text);
+  border: 1px solid var(--kds-line); border-radius: var(--kds-radius);
+}
+.cat-btn:active { background: #31353a; }
+.cat-btn.other { background: transparent; color: var(--kds-brand-text); border: 1.5px dashed rgba(242,92,5,.6); }
 
-.quick-add { display: none; margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed var(--kds-hair); }
+.quick-add { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--kds-line-2); }
 .qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.qty-btn { width: 48px; height: 48px; font-size: 22px; font-weight: 900; background: var(--kds-paper-2); border: none; border-radius: 10px; cursor: pointer; font-family: inherit; }
-.qty-row input { margin: 0; text-align: center; font-size: 18px; font-weight: 800; }
+.qty-btn {
+  width: 54px; height: 54px; font: 700 26px/1 var(--kds-cond); cursor: pointer;
+  background: var(--kds-bg-3); color: var(--kds-text); border: 1px solid var(--kds-line-2); border-radius: var(--kds-radius);
+}
+.qty-row input { margin: 0; text-align: center; font-size: 20px; font-weight: 700; }
 
-/* ── Campos ───────────────────────────────────────────────────────────── */
+/* ── Campos ─────────────────────────────────────────────────────────────── */
 
 input[type=text], input[type=tel], input[type=number], textarea {
-  width: 100%; padding: 13px; border: 1.5px solid var(--kds-hair); border-radius: 10px; font-size: 15px;
-  font-family: inherit; outline: none; box-sizing: border-box; margin-bottom: 12px; background: #fff;
+  width: 100%; padding: 14px; margin-bottom: 14px; box-sizing: border-box;
+  border: 2px solid transparent; border-radius: var(--kds-radius); outline: none;
+  font: 500 18px/1.3 var(--kds-font);
   /* Las páginas declaran color-scheme: dark, así que sin esto el navegador
-     pinta el texto escrito en blanco sobre el fondo blanco del campo. */
-  color: var(--kds-ink);
+     pinta el texto escrito en blanco sobre el fondo claro del campo. */
+  background: var(--kds-paper); color: var(--kds-ink);
 }
-input::placeholder, textarea::placeholder { color: #a8a190; }
+input::placeholder, textarea::placeholder { color: #9b968a; }
 input:focus, textarea:focus { border-color: var(--kds-brand); }
 
+/* El campo de placa ES una placa: amarilla, condensada, con su doble borde. */
+input.plate-input {
+  background: var(--kds-plate); color: var(--kds-plate-ink);
+  font: 700 30px/1 var(--kds-cond); letter-spacing: .1em; text-transform: uppercase;
+  box-shadow: inset 0 0 0 3px var(--kds-plate), inset 0 0 0 5px var(--kds-plate-ink);
+}
+input.plate-input::placeholder { color: rgba(20,20,20,.35); }
+
 .kds-error {
-  background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b;
-  border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 700; margin-bottom: 14px;
+  background: #2a1414; border: 1px solid #6b2121; color: #fecaca;
+  border-radius: var(--kds-radius); padding: 14px 16px; font-size: 15px; font-weight: 600; margin-bottom: 14px;
 }
 
-.login-note { text-align: center; color: var(--kds-muted); font-size: 13px; padding: 20px; }
-.login-note a { color: var(--kds-brand); font-weight: 800; text-decoration: none; }
+.login-note { text-align: center; color: var(--kds-text-2); font-size: 16px; padding: 20px; }
+.login-note a { color: var(--kds-brand-text); font-weight: 700; text-decoration: none; }
 
-/* ── Login (PIN) ─────────────────────────────────────────────────────────*/
+/* ── Login (PIN) ────────────────────────────────────────────────────────── */
 
-body.kds-login {
-  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
-}
+body.kds-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .kds-login-card {
-  width: 100%; max-width: 420px; background: var(--kds-paper); border-radius: 22px;
-  padding: 30px 26px; box-shadow: 0 24px 70px rgba(0,0,0,.5); border-top: 5px solid var(--kds-brand);
+  width: 100%; max-width: 400px; background: var(--kds-bg-2);
+  border: 1px solid var(--kds-line); border-radius: 18px; padding: 28px 24px 24px;
 }
-.kds-logo { text-align: center; margin-bottom: 14px; }
-.kds-logo img { height: 56px; }
-.kds-title { text-align: center; font-size: 19px; font-weight: 900; margin: 0 0 4px; color: var(--kds-ink); }
-.kds-sub { text-align: center; font-size: 13px; color: var(--kds-muted-2); margin: 0 0 20px; }
-.kds-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 22px; }
-.kds-dot { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #d8d2c3; }
+.kds-logo { text-align: center; margin-bottom: 12px; }
+.kds-logo img {
+  /* El logo es negro: va sobre un disco claro para que no se pierda en el grafito. */
+  height: 72px; width: 72px; object-fit: contain; padding: 8px;
+  background: var(--kds-paper); border-radius: 50%;
+}
+.kds-title { text-align: center; margin: 0 0 6px; font: 800 32px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .02em; color: var(--kds-text); }
+.kds-sub { text-align: center; font-size: 15px; color: var(--kds-text-2); margin: 0 0 22px; }
+.kds-dots { display: flex; justify-content: center; gap: 14px; margin-bottom: 24px; }
+.kds-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--kds-line-2); }
 .kds-dot.filled { background: var(--kds-brand); border-color: var(--kds-brand); }
 .kds-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .kds-key {
-  padding: 15px 0; font-size: 18px; font-weight: 800; background: var(--kds-paper-2); color: var(--kds-ink);
-  border: none; border-radius: 11px; cursor: pointer; font-family: inherit;
+  padding: 16px 0; cursor: pointer; font: 700 30px/1 var(--kds-cond);
+  background: var(--kds-bg-3); color: var(--kds-text); border: 1px solid var(--kds-line); border-radius: var(--kds-radius);
 }
-.kds-key:active { background: #e2ded2; }
-.kds-key.action { background: var(--kds-ink); color: #fff; font-size: 11px; }
-.kds-key.enter { background: var(--kds-brand); color: #fff; }
+.kds-key:active { background: #31353a; }
+.kds-key.action { background: transparent; color: var(--kds-text-2); font: 600 16px/1 var(--kds-font); }
+.kds-key.enter { background: var(--kds-brand); color: var(--kds-ink); border-color: var(--kds-brand); font-size: 22px; text-transform: uppercase; letter-spacing: .04em; }
 
-/* ── Placa (búsqueda) ────────────────────────────────────────────────────*/
+/* ── Placa (búsqueda) ───────────────────────────────────────────────────── */
 
 .plate-display {
-  background: #fff; border: 3px solid var(--kds-ink); border-radius: 14px; padding: 22px;
-  text-align: center; font-size: 38px; font-weight: 900; letter-spacing: 6px; margin-bottom: 20px; min-height: 84px;
-  display: flex; align-items: center; justify-content: center; font-family: var(--kds-mono);
+  min-height: 112px; margin-bottom: 20px; padding: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font: 800 76px/1 var(--kds-cond); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--kds-plate-ink); background: var(--kds-plate); border-radius: 14px;
+  box-shadow: inset 0 0 0 5px var(--kds-plate), inset 0 0 0 8px var(--kds-plate-ink);
 }
-.plate-display.empty { color: #b4ad9c; font-size: 18px; letter-spacing: normal; font-weight: 700; font-family: Montserrat, sans-serif; }
-.plate-keypad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }
-.plate-key { padding: 16px 0; font-size: 18px; font-weight: 800; background: var(--kds-paper); color: var(--kds-ink); border: 1.5px solid var(--kds-hair); border-radius: 12px; cursor: pointer; font-family: inherit; }
-.plate-key:active { background: var(--kds-paper-2); }
-.plate-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.plate-actions button { padding: 18px 0; font-size: 16px; font-weight: 800; border: none; border-radius: 14px; cursor: pointer; font-family: inherit; }
-.plate-clear { background: var(--kds-paper-2); color: #374151; }
-.plate-go { background: var(--kds-brand); color: #fff; }
+.plate-display.empty {
+  background: transparent; box-shadow: none; border: 2px dashed var(--kds-line-2);
+  color: var(--kds-text-3); font: 600 22px/1 var(--kds-font); letter-spacing: 0; text-transform: none;
+}
+.plate-keypad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 16px; }
+.plate-key {
+  padding: 16px 0; cursor: pointer; font: 700 28px/1 var(--kds-cond);
+  background: var(--kds-bg-2); color: var(--kds-text); border: 1px solid var(--kds-line-2); border-radius: var(--kds-radius);
+}
+.plate-key:active { background: var(--kds-bg-3); }
+.plate-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.plate-actions button {
+  padding: 18px 0; cursor: pointer; border-radius: var(--kds-radius);
+  font: 700 22px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .05em;
+}
+.plate-clear { background: transparent; color: var(--kds-text-2); border: 1px solid var(--kds-line-2); }
+.plate-go { background: var(--kds-brand); color: var(--kds-ink); border: none; }
 
-/* ── Pantalla principal (cara al cliente, reposo permanente) ─────────────*/
+/* ── Pantalla principal (cara al cliente, reposo permanente) ────────────── */
 
 /* Columna de una pantalla: reloj, taller en vivo y CTA en el flujo normal.
    (Antes el reloj iba fijo y en una tablet vertical tapaba el botón.) */
 body.kds-home-body {
-  min-height: 100vh; min-height: 100dvh; margin: 0; background: var(--kds-brand);
+  min-height: 100vh; min-height: 100dvh; margin: 0;
+  background: var(--kds-brand); background-image: none; color: var(--kds-ink);
   display: flex; flex-direction: column;
 }
 
 .kds-topbar {
   display: flex; align-items: center; justify-content: center;
-  padding: 12px 20px 4px;
-  background: var(--kds-brand);
+  padding: 10px 20px 0;
 }
 .kds-clock {
-  display: inline-flex; align-items: baseline; gap: .12em;
-  font-family: var(--kds-mono); font-weight: 900; line-height: 1;
+  display: inline-flex; align-items: baseline; gap: .06em;
+  font-family: var(--kds-cond); font-weight: 800; line-height: .9;
   /* Lo que sea menor: ancho o alto de la pantalla. Así cabe en horizontal
      (manda el alto) y en vertical o celular (manda el ancho). */
-  font-size: min(15vw, 22vh, 180px);
+  font-size: min(21vw, 27vh, 250px);
   color: var(--kds-ink); white-space: nowrap; font-variant-numeric: tabular-nums;
-  letter-spacing: -.06em;
-  -webkit-text-stroke: .022em var(--kds-ink);
+  letter-spacing: -.01em;
 }
 .kds-clock-hm { display: inline-flex; }
-.kds-clock-colon { padding: 0 .02em; }
-.kds-clock-ampm { font-size: .3em; letter-spacing: 0; -webkit-text-stroke: 0; }
+.kds-clock-colon { padding: 0 .03em; position: relative; top: -.06em; }
+.kds-clock-ampm { font-size: .24em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 
 /* Odómetro: cada dígito es una ventana de 1em sobre una tira 0-9 doble. */
-.kds-dg { display: inline-block; width: .6em; text-align: center; }
-.kds-dg.is-odo { height: 1em; overflow: hidden; position: relative; }
+.kds-dg { display: inline-block; width: .5em; text-align: center; }
+.kds-dg.is-odo { height: 1em; line-height: 1; overflow: hidden; position: relative; }
 .kds-dg-strip { display: block; will-change: transform; }
 .kds-dg-strip > span { display: block; height: 1em; }
 
-/* ── Taller en vivo (conteo por etapa, sin datos de clientes) ──────────── */
+/* ── Taller en vivo (conteo por etapa, sin datos de clientes) ───────────── */
 
 .kds-live {
-  margin: 4px auto 0; width: min(100% - 32px, 1100px);
-  background: var(--kds-ink); color: #fff;
-  border-radius: var(--kds-radius-lg); padding: 12px 14px 14px;
-  box-shadow: 0 10px 0 var(--kds-brand-deep), 0 20px 40px rgba(0,0,0,.25);
+  margin: 6px auto 0; width: min(100% - 32px, 1100px);
+  background: var(--kds-ink); color: var(--kds-text);
+  border-radius: 16px; padding: 14px 16px 16px;
 }
 .kds-live-title {
-  margin: 0 0 10px; display: flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; color: #ffd9c2;
+  margin: 0 0 12px; display: flex; align-items: center; gap: 10px;
+  font: 700 15px/1 var(--kds-cond); letter-spacing: .14em; text-transform: uppercase; color: var(--kds-text-2);
 }
-.kds-live-dot {
-  width: 9px; height: 9px; border-radius: 50%; background: #22c55e;
-  box-shadow: 0 0 0 0 rgba(34,197,94,.6);
-}
+.kds-live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--kds-s-done); }
 .motion-ok .kds-live-dot { animation: kds-live-dot 2.4s ease-out infinite; }
 @keyframes kds-live-dot {
   0% { box-shadow: 0 0 0 0 rgba(34,197,94,.55); }
   70%, 100% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
 }
 
+/* Las etapas se leen como un recorrido: cada una lleva un "›" a la siguiente. */
 .kds-live-track {
   list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;
-  position: relative;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;
 }
 .kds-live-stage {
-  position: relative; min-width: 0;
-  background: rgba(255,255,255,.06); border-radius: 12px;
-  padding: 12px 14px 14px; border-top: 4px solid var(--kds-s-wait-edge);
-  display: grid; grid-template-columns: auto minmax(0,1fr); grid-template-rows: auto auto;
-  column-gap: 10px; align-items: center;
+  position: relative; min-width: 0; padding: 4px 22px 2px 4px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto;
+  column-gap: 12px; align-items: center;
 }
-.kds-live-stage.st-trabajo_en_curso { border-top-color: var(--kds-s-prog-edge); }
-.kds-live-stage.st-en_pausa         { border-top-color: var(--kds-s-pause-edge); }
-.kds-live-stage.st-trabajo_completo { border-top-color: var(--kds-s-done-edge); }
+.kds-live-stage + .kds-live-stage { padding-left: 22px; border-left: 1px solid #2a2a2a; }
 .kds-live-count {
-  grid-row: 1; font-family: var(--kds-mono); font-weight: 900; font-size: 46px; line-height: 1;
-  font-variant-numeric: tabular-nums; display: inline-block; min-width: 1.2ch;
+  grid-row: 1; font: 800 60px/.9 var(--kds-cond); color: var(--kds-text);
+  display: inline-block; min-width: .6em;
 }
 .kds-live-label {
-  grid-row: 1; font-size: 15px; font-weight: 800; line-height: 1.2; color: #c9ced6;
-  text-wrap: balance;
+  grid-row: 1; font: 700 18px/1.05 var(--kds-cond); text-transform: uppercase; letter-spacing: .05em;
+  color: var(--kds-text-2); text-wrap: balance;
 }
 .kds-live-tokens {
-  grid-column: 1 / -1; grid-row: 2; margin-top: 12px; min-height: 24px;
-  display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+  grid-column: 1 / -1; grid-row: 2; margin-top: 12px; min-height: 22px;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
 }
-/* Ficha = una placa en blanco (mismo lenguaje que .plate-badge). */
+/* Ficha = una placa en miniatura, sin número: nada identifica al cliente. */
 .kds-live-token {
-  display: block; width: 36px; height: 24px; border-radius: 5px;
-  background: #fff; border: 2px solid #fff; box-shadow: inset 0 0 0 1.5px var(--kds-ink);
+  display: block; width: 32px; height: 20px; border-radius: 4px; background: var(--kds-plate);
+  box-shadow: inset 0 0 0 1.5px var(--kds-plate), inset 0 0 0 2.5px var(--kds-plate-ink);
 }
-.kds-live-more { font-family: var(--kds-mono); font-size: 12px; font-weight: 900; color: #c9ced6; }
+.kds-live-more { font: 700 16px/1 var(--kds-cond); color: var(--kds-text-2); }
 /* Las motos en trabajo "laten" suave: la etapa que está viva. */
 .motion-ok .st-trabajo_en_curso .kds-live-token { animation: kds-working 2.8s ease-in-out infinite; }
 .motion-ok .st-trabajo_en_curso .kds-live-token:nth-child(2n) { animation-delay: -1.4s; }
 @keyframes kds-working {
-  0%, 100% { box-shadow: inset 0 0 0 1.5px var(--kds-ink), 0 0 0 0 rgba(37,99,235,0); }
-  50% { box-shadow: inset 0 0 0 1.5px var(--kds-ink), 0 0 0 4px rgba(37,99,235,.55); }
+  0%, 100% { box-shadow: inset 0 0 0 1.5px var(--kds-plate), inset 0 0 0 2.5px var(--kds-plate-ink), 0 0 0 0 rgba(242,92,5,0); }
+  50% { box-shadow: inset 0 0 0 1.5px var(--kds-plate), inset 0 0 0 2.5px var(--kds-plate-ink), 0 0 0 4px rgba(242,92,5,.75); }
 }
 .kds-live-flyer { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; margin: 0; }
 
@@ -374,141 +490,129 @@ body.kds-home-body {
 .kds-intro-pending .kds-live-more { opacity: 0; }
 
 @media (max-width: 700px) {
-  .kds-live { padding: 10px; }
-  .kds-live-track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .kds-live-count { font-size: 30px; }
-  .kds-live-label { font-size: 13px; }
-  .kds-live-token { width: 28px; height: 18px; }
+  .kds-live { padding: 12px; }
+  .kds-live-track { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 14px; }
+  .kds-live-stage, .kds-live-stage + .kds-live-stage { padding: 4px 10px; border-left: 0; }
+  .kds-live-stage:nth-child(2n) { border-left: 1px solid #2a2a2a; }
+  .kds-live-count { font-size: 42px; }
+  .kds-live-label { font-size: 15px; }
+  .kds-live-token { width: 26px; height: 16px; }
 }
 
-/* ── CTA de check-in del cliente en la pantalla principal ────────────────*/
+/* ── CTA de check-in del cliente ────────────────────────────────────────── */
 
 .kds-kiosk-main {
   flex: 1;
-  display: flex; align-items: center; justify-content: center;
-  gap: 40px;
-  padding: 28px 20px 32px;
+  display: flex; align-items: center; justify-content: center; gap: 24px;
+  padding: 24px 20px 32px;
 }
 .kds-checkin-cta {
   position: relative; overflow: hidden;
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-  background: #fff; color: var(--kds-brand-deep); text-decoration: none;
-  border-radius: 28px; padding: 56px 64px;
-  box-shadow: 0 10px 0 var(--kds-brand-deep), 0 20px 40px rgba(0,0,0,.25);
-  transition: transform .1s ease, box-shadow .1s ease;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 28px;
+  width: min(100%, 620px); padding: 34px 34px 34px 40px;
+  background: #fff; color: var(--kds-ink); text-decoration: none; border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(64,19,9,.35);
+  transition: transform .1s ease;
 }
-.kds-checkin-cta:active { transform: translateY(6px); box-shadow: 0 4px 0 var(--kds-brand-deep), 0 10px 20px rgba(0,0,0,.2); }
+.kds-checkin-cta:active { transform: scale(.985); }
+.kds-checkin-cta-text { display: block; font: 800 54px/.95 var(--kds-cond); text-transform: uppercase; letter-spacing: .01em; }
+.kds-checkin-cta-sub { display: block; margin-top: 12px; font: 500 20px/1.3 var(--kds-font); color: #5f5a52; }
+/* Botón redondo con la flecha: dice "toca aquí" sin necesitar un emoji. */
+.kds-checkin-cta-go {
+  width: 96px; height: 96px; border-radius: 50%; background: var(--kds-ink); color: var(--kds-brand);
+  display: flex; align-items: center; justify-content: center;
+}
+.kds-checkin-cta-go svg { width: 46px; height: 46px; }
 /* Brillo que cruza el botón cada pocos segundos: invita a tocar sin moverlo. */
 .motion-ok .kds-checkin-cta::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(105deg, transparent 35%, rgba(242,92,5,.16) 50%, transparent 65%);
+  background: linear-gradient(105deg, transparent 35%, rgba(242,92,5,.14) 50%, transparent 65%);
   transform: translateX(-110%);
   animation: kds-cta-shine 6s ease-in-out 1.5s infinite;
 }
 @keyframes kds-cta-shine { 0%, 70% { transform: translateX(-110%); } 100% { transform: translateX(110%); } }
-.kds-checkin-cta-icon { font-size: 72px; line-height: 1; display: inline-block; }
-.kds-checkin-cta-text { font-size: 34px; font-weight: 900; letter-spacing: .01em; }
-.kds-checkin-cta-sub { font-size: 16px; font-weight: 700; color: var(--kds-muted-2); }
 
 @media (max-width: 700px) {
-  .kds-kiosk-main { padding-top: 22px; }
-  .kds-checkin-cta { padding: 34px 28px; width: 100%; max-width: 420px; }
-  .kds-checkin-cta-icon { font-size: 56px; }
-  .kds-checkin-cta-text { font-size: 26px; }
-  .kds-checkin-cta-sub { font-size: 14px; text-align: center; }
+  .kds-kiosk-main { padding-top: 18px; }
+  .kds-checkin-cta { padding: 24px; gap: 16px; }
+  .kds-checkin-cta-text { font-size: 38px; }
+  .kds-checkin-cta-sub { font-size: 16px; }
+  .kds-checkin-cta-go { width: 68px; height: 68px; }
+  .kds-checkin-cta-go svg { width: 32px; height: 32px; }
 }
 
-/* ── Roll de productos de la tienda (costado de la pantalla principal) ───*/
+/* ── Roll de productos de la tienda (costado de la pantalla principal) ──── */
 
 .kds-product-roll {
-  width: 300px; flex: 0 0 300px;
-  background: var(--kds-paper);
-  border-radius: var(--kds-radius-lg);
-  padding: 20px;
-  box-shadow: 0 10px 0 var(--kds-brand-deep), 0 20px 40px rgba(0,0,0,.25);
+  width: 320px; flex: 0 0 320px;
+  background: #fff; color: var(--kds-ink);
+  border-radius: 20px; padding: 20px;
+  box-shadow: 0 24px 60px rgba(64,19,9,.3);
 }
 .kds-product-roll-title {
-  font-size: 15px; font-weight: 900; color: var(--kds-brand-deep);
-  text-transform: uppercase; letter-spacing: .04em;
-  padding-bottom: 12px; margin-bottom: 12px;
-  border-bottom: 1.5px dashed var(--kds-hair);
+  font: 700 16px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .12em; color: #5f5a52;
+  padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid #e6e2d8;
 }
-.kds-product-roll-items {
-  display: flex; flex-direction: column; gap: 14px;
-  opacity: 0; transition: opacity .25s ease;
-}
+.kds-product-roll-items { display: flex; flex-direction: column; gap: 14px; opacity: 0; transition: opacity .25s ease; }
 .kds-product-roll-items.is-visible { opacity: 1; }
-.kds-product-roll-card {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--kds-paper-2); border-radius: 14px; padding: 10px;
-}
-.kds-product-roll-img {
-  width: 56px; height: 56px; object-fit: cover; border-radius: 10px; flex: 0 0 56px;
-  background: #fff;
-}
+.kds-product-roll-card { display: flex; align-items: center; gap: 14px; }
+.kds-product-roll-img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; flex: 0 0 64px; background: #f3f1eb; }
 .kds-product-roll-info { min-width: 0; }
-.kds-product-roll-name {
-  font-size: 14px; font-weight: 800; color: var(--kds-ink);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+.kds-product-roll-name { font-size: 17px; font-weight: 600; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kds-product-roll-price {
-  font-family: var(--kds-mono); font-weight: 900; font-size: 13px; color: var(--kds-brand);
-  margin-top: 2px; display: flex; align-items: center; gap: 6px;
+  margin-top: 4px; display: flex; align-items: center; gap: 8px;
+  font: 700 22px/1 var(--kds-cond); color: var(--kds-brand-ink);
 }
 .kds-product-roll-discount {
-  font-family: inherit; font-size: 11px; font-weight: 800; color: #fff;
-  background: var(--kds-brand-deep); border-radius: 999px; padding: 1px 7px;
+  font: 700 13px/1 var(--kds-cond); letter-spacing: .04em; color: #fff;
+  background: var(--kds-ink); border-radius: 4px; padding: 3px 6px;
 }
 
 @media (max-width: 1000px) {
   .kds-kiosk-main { flex-direction: column; }
-  .kds-product-roll { width: 100%; max-width: 420px; }
+  .kds-product-roll { width: 100%; max-width: 620px; flex-basis: auto; }
 }
 
-/* ── Menú flotante del panel de taller ───────────────────────────────────*/
+/* ── Menú flotante del panel de taller ──────────────────────────────────── */
 
-.kds-fab-wrap { position: fixed; right: 24px; bottom: 24px; z-index: 200; }
-
+.kds-fab-wrap { position: fixed; right: 24px; bottom: 24px; z-index: 200; font-family: var(--kds-font); }
 .kds-fab-backdrop {
-  position: fixed; inset: 0; background: rgba(13,13,13,.35);
+  position: fixed; inset: 0; background: rgba(13,13,13,.45);
   opacity: 0; pointer-events: none; transition: opacity .2s ease;
 }
 .kds-fab-wrap.open .kds-fab-backdrop { opacity: 1; pointer-events: auto; }
-
 .kds-fab-main {
   position: relative; width: 64px; height: 64px; border-radius: 50%; border: none;
-  background: var(--kds-bg-2); color: #fff; cursor: pointer;
-  box-shadow: 0 10px 26px rgba(13,13,13,.45);
+  background: var(--kds-ink); color: #fff; cursor: pointer;
+  box-shadow: 0 8px 24px rgba(13,13,13,.4);
   display: flex; align-items: center; justify-content: center;
-  transition: transform .25s ease;
 }
-.kds-fab-main-icon { font-size: 26px; line-height: 1; transition: transform .25s ease; }
-.kds-fab-wrap.open .kds-fab-main-icon { transform: rotate(75deg); }
-
+.kds-fab-main-icon { display: flex; transition: transform .25s ease; }
+.kds-fab-main-icon svg { width: 28px; height: 28px; }
+.kds-fab-wrap.open .kds-fab-main-icon { transform: rotate(-45deg); }
 .kds-fab-menu {
   position: absolute; right: 4px; bottom: 78px;
-  display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
 }
-
 .kds-fab-item {
-  display: flex; align-items: center; gap: 10px;
-  border: none; border-radius: 999px; background: var(--kds-bg-2); color: #fff;
-  padding: 10px 18px 10px 10px; cursor: pointer; font-family: inherit;
-  opacity: 0; transform: translateY(12px) scale(.9); pointer-events: none;
+  display: flex; align-items: center; gap: 12px;
+  border: none; border-radius: 999px; background: var(--kds-ink); color: #fff;
+  padding: 8px 20px 8px 8px; cursor: pointer;
+  opacity: 0; transform: translateY(12px); pointer-events: none;
   transition: opacity .2s ease, transform .2s ease;
 }
-.kds-fab-wrap.open .kds-fab-item { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-
+.kds-fab-wrap.open .kds-fab-item { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .kds-fab-icon {
-  width: 40px; height: 40px; border-radius: 50%; background: var(--kds-brand);
-  display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
+  width: 42px; height: 42px; border-radius: 50%; background: var(--kds-brand); color: var(--kds-ink);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.kds-fab-label { font-size: 14px; font-weight: 800; white-space: nowrap; }
+.kds-fab-icon svg { width: 22px; height: 22px; }
+.kds-fab-label { font: 700 18px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
 
 .kds-fab-toast {
   position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%) translateY(10px);
-  background: var(--kds-ink); color: #fff; font-weight: 800; font-size: 14px;
-  padding: 12px 22px; border-radius: 999px; z-index: 300;
+  background: var(--kds-ink); color: #fff; font: 600 16px/1.3 var(--kds-font);
+  padding: 12px 22px; border-radius: 10px; z-index: 300;
   opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
 }
 .kds-fab-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -516,109 +620,140 @@ body.kds-home-body {
 @media (max-width: 700px) {
   .kds-fab-main { width: 56px; height: 56px; }
   .kds-fab-label { display: none; }
-  .kds-fab-icon { width: 44px; height: 44px; }
-  .kds-fab-item { padding: 6px; border-radius: 50%; }
+  .kds-fab-icon { width: 46px; height: 46px; }
+  .kds-fab-item { padding: 5px; border-radius: 50%; }
 }
 
-/* ── Modal genérico a pantalla completa (iframe: cotización, TV, clases) ──*/
+/* ── Modal genérico a pantalla completa (iframe: cotización, TV, clases) ── */
 
 .kds-modal {
   position: fixed; inset: 0; z-index: 400;
   display: none; flex-direction: column;
-  background: var(--kds-bg);
+  background: var(--kds-bg); color: var(--kds-text); font-family: var(--kds-font);
 }
 .kds-modal.open { display: flex; }
 .kds-modal-bar {
   flex: none; display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px; background: var(--kds-bg-2); color: #fff;
-  font-weight: 800; font-size: 15px; border-bottom: 1px solid var(--kds-line);
+  padding: 12px 18px; background: #0f1012; color: var(--kds-text);
+  font: 700 22px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .03em;
+  border-bottom: 1px solid var(--kds-line);
 }
 .kds-modal-close {
-  border: none; background: rgba(255,255,255,.1); color: #fff; width: 34px; height: 34px;
-  border-radius: 10px; font-size: 16px; cursor: pointer; line-height: 1;
+  border: 1px solid var(--kds-line-2); background: transparent; color: var(--kds-text);
+  width: 44px; height: 44px; border-radius: var(--kds-radius); font-size: 18px; cursor: pointer; line-height: 1;
 }
-.kds-modal iframe { flex: 1; border: none; width: 100%; }
+.kds-modal iframe { flex: 1; border: none; width: 100%; background: #fff; }
 
 .kds-tv-remote {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 16px; padding: 24px;
+  gap: 12px; padding: 24px;
 }
-.kds-tv-remote .kds-btn { width: 100%; max-width: 320px; padding: 18px; font-size: 16px; }
+.kds-tv-remote .kds-btn { width: 100%; max-width: 360px; padding: 18px; font: 700 22px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .04em; }
 
 .kds-cap-picker { flex: 1; overflow-y: auto; padding: 20px; }
-.kds-cap-course { margin-bottom: 22px; }
-.kds-cap-course h3 { color: #fff; font-size: 15px; font-weight: 900; margin: 0 0 10px; }
+.kds-cap-course { margin-bottom: 24px; }
+.kds-cap-course h3 { color: var(--kds-text); font: 700 22px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .03em; margin: 0 0 12px; }
 .kds-cap-topics { display: flex; flex-wrap: wrap; gap: 10px; }
 .kds-cap-topic-btn { padding: 14px 18px; }
-.kds-cap-empty { color: var(--kds-muted); text-align: center; padding: 40px 20px; }
+.kds-cap-empty { color: var(--kds-text-2); text-align: center; padding: 40px 20px; }
 
-/* ── Check-in de clientes (kiosco, misma lógica que /checkin) ───────────*/
+/* ── Check-in de clientes (kiosco, misma lógica que /checkin) ───────────── */
 
 body.kds-checkin-body { min-height: 100vh; display: flex; flex-direction: column; }
 body.kds-checkin-body .kds-wrap {
   flex: 1; min-height: 0; display: flex; flex-direction: column;
   justify-content: center; overflow-y: auto; padding-top: 12px; padding-bottom: 12px;
 }
-
-.kds-checkin-wrap { max-width: 1120px; width: 100%; margin: auto; }
-.kds-checkin-wrap .card { padding: 24px; }
-.kds-checkin-wrap label.k { font-size: 22px; margin-bottom: 6px; }
+.kds-checkin-wrap { max-width: 1080px; width: 100%; margin: auto; }
+.kds-checkin-wrap .card { padding: 30px 32px; }
+/* La pregunta de cada paso: grande y en minúsculas normales, se lee como una
+   frase y no como un rótulo. */
+.kds-checkin-wrap label.k {
+  font: 700 42px/1.05 var(--kds-cond); text-transform: none; letter-spacing: 0;
+  color: var(--kds-text); margin-bottom: 18px;
+}
 .kds-checkin-wrap input[type=text], .kds-checkin-wrap input[type=tel] {
-  font-size: 30px; padding: 18px; margin-bottom: 14px; border-radius: 16px;
+  font-size: 34px; padding: 18px 20px; margin-bottom: 14px; border-radius: 12px;
 }
+.kds-checkin-wrap input.plate-input { font-size: 52px; padding: 16px 22px; }
 .kds-checkin-wrap .row { gap: 18px; }
-.kds-checkin-phone { display: flex; gap: 16px; }
-.kds-checkin-phone input:first-child { width: 152px; text-align: center; flex: none; }
-.kds-checkin-wrap .save { padding: 20px; font-size: 32px; border-radius: 18px; margin-top: 4px; }
-.kds-checkin-success { text-align: center; padding: 48px 32px; display: grid; gap: 16px; }
-.kds-checkin-success .icon { font-size: 88px; }
-.kds-checkin-success h2 {
-  margin: 0; font-size: 42px; font-weight: 900; color: var(--kds-ink);
-  /* Sin esto heredaba el rótulo de .card h2 (mayúsculas grises con raya). */
-  text-transform: none; letter-spacing: normal; border: 0; padding: 0; display: block;
-}
-.kds-checkin-success p { margin: 0; color: var(--kds-muted-2); font-size: 28px; }
+.kds-checkin-phone { display: flex; gap: 14px; }
+.kds-checkin-phone input:first-child { width: 150px; text-align: center; flex: none; }
+.kds-checkin-wrap .save { min-height: 76px; font-size: 32px; border-radius: 12px; margin-top: 4px; }
 
-/* ── Banner de instalación PWA ──────────────────────────────────────────*/
+.kds-checkin-success { text-align: center; padding: 48px 32px; display: grid; gap: 16px; }
+.kds-checkin-success .icon { color: var(--kds-s-done); display: flex; justify-content: center; }
+.kds-checkin-success .icon svg { width: 84px; height: 84px; }
+.kds-checkin-success h2 {
+  margin: 0; font: 800 50px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .01em; color: var(--kds-text);
+  /* Sin esto heredaba el rótulo de .card h2 (texto pequeño con raya). */
+  display: block;
+}
+.kds-checkin-success h2::after { content: none; }
+.kds-checkin-success p { margin: 0; color: var(--kds-text-2); font-size: 24px; }
+
+/* Ficha de la moto sellada al terminar el check-in. */
+.kds-ok-ticket { position: relative; justify-self: center; display: inline-block; padding: 18px 34px 28px; margin-bottom: 4px; }
+.kds-ok-plate { font-size: 64px; padding: 10px 26px 8px; border-radius: 12px;
+  box-shadow: inset 0 0 0 4px var(--kds-plate), inset 0 0 0 7px var(--kds-plate-ink); }
+.kds-ok-stamp {
+  position: absolute; right: -10px; bottom: -2px;
+  font: 800 26px/1 var(--kds-cond); letter-spacing: .14em; text-transform: uppercase;
+  color: #4ade80; border: 4px solid currentColor; border-radius: 10px;
+  padding: 6px 14px 4px; background: rgba(29,31,34,.88);
+  transform: rotate(-10deg);
+  /* Tinta irregular: un sello de caucho no imprime parejo. */
+  -webkit-mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.78) 61%, #000 75%);
+          mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.78) 61%, #000 75%);
+}
+@media (max-width: 700px) {
+  .kds-checkin-wrap label.k { font-size: 30px; }
+  .kds-checkin-wrap input[type=text], .kds-checkin-wrap input[type=tel] { font-size: 24px; }
+  .kds-checkin-wrap input.plate-input { font-size: 38px; }
+  .kds-checkin-wrap .save { font-size: 24px; min-height: 64px; }
+  .kds-checkin-success h2 { font-size: 36px; }
+  .kds-checkin-success p { font-size: 18px; }
+  .kds-ok-plate { font-size: 40px; }
+  .kds-ok-stamp { font-size: 17px; }
+}
+
+/* ── Banner de instalación PWA ──────────────────────────────────────────── */
 
 .kds-pwa-banner {
   position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 999;
   display: flex; align-items: center; gap: 12px;
-  background: var(--kds-bg-2); color: #fff;
-  border: 1px solid var(--kds-line); border-radius: var(--kds-radius);
+  background: var(--kds-bg-2); color: var(--kds-text); font-family: var(--kds-font);
+  border: 1px solid var(--kds-line-2); border-radius: var(--kds-radius-lg);
   padding: 12px 14px; box-shadow: 0 8px 28px rgba(0,0,0,.35);
 }
-.kds-pwa-banner-text { flex: 1; font-size: 13px; line-height: 1.4; }
+.kds-pwa-banner-text { flex: 1; font-size: 15px; line-height: 1.4; }
 .kds-pwa-banner-btn {
-  flex: none; background: var(--kds-brand); color: #fff; border: none;
-  border-radius: var(--kds-radius-pill); padding: 9px 16px; font-weight: 800;
-  font-size: 13px; cursor: pointer;
+  flex: none; background: var(--kds-brand); color: var(--kds-ink); border: none;
+  border-radius: var(--kds-radius); padding: 10px 16px; font: 700 17px/1 var(--kds-cond);
+  text-transform: uppercase; letter-spacing: .04em; cursor: pointer;
 }
-.kds-pwa-banner-btn:active { background: var(--kds-brand-deep); }
-.kds-pwa-banner-close {
-  flex: none; background: transparent; color: var(--kds-muted); border: none;
-  font-size: 15px; line-height: 1; cursor: pointer; padding: 6px;
-}
+.kds-pwa-banner-close { flex: none; background: transparent; color: var(--kds-text-2); border: none; font-size: 16px; line-height: 1; cursor: pointer; padding: 8px; }
 
 .brand-suggest { position: relative; }
 .brand-suggest-list {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0; margin: 0 0 12px; padding: 6px;
-  list-style: none; background: #fff; border: 1.5px solid var(--kds-hair); border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 20; max-height: 220px; overflow-y: auto;
+  list-style: none; background: var(--kds-paper); color: var(--kds-ink);
+  border-radius: var(--kds-radius); box-shadow: 0 12px 30px rgba(0,0,0,.4);
+  z-index: 20; max-height: 260px; overflow-y: auto;
 }
-.brand-suggest-list li { padding: 11px 10px; border-radius: 7px; font-size: 15px; cursor: pointer; }
+.brand-suggest-list li { padding: 13px 12px; border-radius: 7px; font-size: 20px; cursor: pointer; }
 .brand-suggest-list li:hover, .brand-suggest-list li:active { background: var(--kds-paper-2); }
 
-/* ── Motion del tablero: llegada de una orden a su columna nueva ─────────── */
+/* ── Motion del tablero: llegada de una orden a su columna nueva ────────── */
 
 .kds-card.is-arrived { animation: kds-arrive 1.6s ease-out; }
-.kds-card.st-ingreso_taller.is-arrived   { --kds-arrive: var(--kds-s-wait-edge); }
-.kds-card.st-trabajo_en_curso.is-arrived { --kds-arrive: var(--kds-s-prog-edge); }
-.kds-card.st-en_pausa.is-arrived         { --kds-arrive: var(--kds-s-pause-edge); }
-.kds-card.st-trabajo_completo.is-arrived { --kds-arrive: var(--kds-s-done-edge); }
+.kds-card.st-ingreso_taller.is-arrived   { --kds-arrive: var(--kds-s-wait); }
+.kds-card.st-trabajo_en_curso.is-arrived { --kds-arrive: var(--kds-s-prog); }
+.kds-card.st-en_pausa.is-arrived         { --kds-arrive: var(--kds-s-pause); }
+.kds-card.st-trabajo_completo.is-arrived { --kds-arrive: var(--kds-s-done); }
 @keyframes kds-arrive {
   0%   { box-shadow: 0 0 0 0 transparent; }
-  15%  { box-shadow: 0 0 0 3px var(--kds-arrive, var(--kds-brand)), 0 10px 24px rgba(0,0,0,.18); }
+  15%  { box-shadow: 0 0 0 3px var(--kds-arrive, var(--kds-brand)); }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 
@@ -641,24 +776,21 @@ body.kds-checkin-body .kds-wrap {
   .kds-dot.filled { transform: none; }
 }
 
-/* ── Check-in: ficha de la moto sellada al terminar ──────────────────────── */
+/* ── Modal de PIN (pin-gate.js) en el sistema del KDS ───────────────────────
+   pin-gate.js inyecta su propio estilo claro; aquí se reviste con "body"
+   delante para ganarle en especificidad sin tocar su lógica. */
 
-.kds-ok-ticket {
-  position: relative; justify-self: center; display: inline-block;
-  padding: 18px 34px 26px; margin-bottom: 6px;
-}
-.kds-ok-plate { font-size: 54px; padding: 6px 22px; border-width: 4px; border-radius: 12px; }
-.kds-ok-stamp {
-  position: absolute; right: -6px; bottom: -4px;
-  font-size: 22px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--kds-s-done-edge); border: 4px solid currentColor; border-radius: 10px;
-  padding: 4px 12px; background: rgba(247,245,240,.85);
-  transform: rotate(-10deg);
-  /* Tinta irregular: un sello de caucho no imprime parejo. */
-  -webkit-mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.78) 61%, #000 75%);
-          mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,.78) 61%, #000 75%);
-}
-@media (max-width: 700px) {
-  .kds-ok-plate { font-size: 34px; }
-  .kds-ok-stamp { font-size: 15px; }
-}
+body .pin-gate-card { background: var(--kds-bg-2); border: 1px solid var(--kds-line-2); color: var(--kds-text); border-radius: 18px; }
+body .pin-gate-ic { background: rgba(242,92,5,.14); color: var(--kds-brand-text); }
+body .pin-gate-title { font: 800 28px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .02em; color: var(--kds-text); margin-bottom: 8px; }
+body .pin-gate-msg { font-size: 15px; color: var(--kds-text-2); }
+body .pin-gate-input { background: var(--kds-paper); color: var(--kds-ink); border: 2px solid transparent; font: 700 30px/1 var(--kds-cond); }
+body .pin-gate-input:focus { border-color: var(--kds-brand); }
+body .pin-gate-err { color: #fca5a5; font-size: 14px; }
+body .pin-gate-key { background: var(--kds-bg-3); color: var(--kds-text); border: 1px solid var(--kds-line); font: 700 26px/1 var(--kds-cond); }
+body .pin-gate-key:active { background: #31353a; }
+body .pin-gate-key.wide { background: transparent; color: var(--kds-text-2); font: 600 15px/1 var(--kds-font); }
+body .pin-gate-key.enter { background: var(--kds-brand); color: var(--kds-ink); border-color: var(--kds-brand); font: 700 20px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .04em; }
+body .pin-gate-btn { font: 700 18px/1 var(--kds-cond); text-transform: uppercase; letter-spacing: .05em; padding: 15px; }
+body .pin-gate-cancel { background: transparent; color: var(--kds-text-2); border: 1px solid var(--kds-line-2); }
+body .pin-gate-ok { background: var(--kds-brand); color: var(--kds-ink); }

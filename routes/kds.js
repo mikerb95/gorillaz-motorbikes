@@ -13,7 +13,7 @@ const settings = require('../helpers/settings');
 const { catalog } = require('../helpers/catalog');
 const { classes: classesData } = require('../helpers/content');
 const { EMP_STATUS, ALLOWED_STATUS } = require('../helpers/service-order-status');
-const { boardMarkup } = require('../public/js/kds/board-markup');
+const { boardMarkup, formatPlate } = require('../public/js/kds/board-markup');
 const {
   getActiveEmployees, getEmployeeById,
   isThrottleLocked, recordThrottleFailure,
@@ -73,6 +73,8 @@ async function loadKdsEmployee(req, res, next) {
   next();
 }
 router.use(loadKdsEmployee);
+// Las vistas escriben la placa como en la lámina ("ABC 12D").
+router.use((req, res, next) => { res.locals.formatPlate = formatPlate; next(); });
 // El polling automático (board → /orders.json, TV → /tv/estado) no debe contar
 // como interacción: si deslizara la ventana de PIN, la sesión nunca expiraría.
 router.use(touchPinSession(['/orders.json', '/tv/estado', '/en-vivo.json']));

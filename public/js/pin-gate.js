@@ -26,7 +26,7 @@
     '.pin-gate-wrap{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .18s ease}' +
     '.pin-gate-wrap.open{opacity:1;pointer-events:auto}' +
     '.pin-gate-bd{position:absolute;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}' +
-    '.pin-gate-card{position:relative;background:#fff;border-radius:18px;padding:26px 24px 22px;width:100%;max-width:360px;box-shadow:0 24px 60px rgba(0,0,0,.25);transform:scale(.94) translateY(8px);opacity:0;transition:transform .2s cubic-bezier(.34,1.3,.64,1),opacity .18s ease;font-family:Montserrat,system-ui,sans-serif}' +
+    '.pin-gate-card{position:relative;background:#fff;border-radius:18px;padding:26px 24px 22px;width:100%;max-width:360px;box-shadow:0 24px 60px rgba(0,0,0,.25);transform:scale(.94) translateY(8px);opacity:0;transition:transform .2s cubic-bezier(.34,1.3,.64,1),opacity .18s ease;font-family:var(--kds-font,inherit)}' +
     '.pin-gate-wrap.open .pin-gate-card{transform:scale(1) translateY(0);opacity:1}' +
     '.pin-gate-ic{width:46px;height:46px;border-radius:50%;background:#fff7ed;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:#F25C05}' +
     '.pin-gate-title{font-size:16px;font-weight:800;color:#111827;text-align:center;margin:0 0 6px}' +

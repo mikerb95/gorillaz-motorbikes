@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Gorillaz Motorbikes — Taller</title>
   <link rel="icon" href="/favicons/favicon.ico" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="/static/fonts/barlow/barlow-500-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/barlow/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/kds.css?v=<%= assetV('css/kds.css') %>">
   <link rel="manifest" href="/manifest-kds.webmanifest">
   <meta name="theme-color" content="#F25C05">
@@ -61,14 +62,18 @@
 
   <main class="kds-kiosk-main">
     <a class="kds-checkin-cta" href="/kds/checkin" data-kds-cta>
-      <span class="kds-checkin-cta-icon">🏍️</span>
-      <span class="kds-checkin-cta-text">Registrar mi llegada</span>
-      <span class="kds-checkin-cta-sub">Toca aquí para hacer check-in de tu moto</span>
+      <span>
+        <span class="kds-checkin-cta-text">Registrar mi llegada</span>
+        <span class="kds-checkin-cta-sub">Toca aquí para hacer check-in de tu moto</span>
+      </span>
+      <span class="kds-checkin-cta-go" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
     </a>
 
     <% if ((rollProducts || []).length) { %>
       <aside class="kds-product-roll" id="kdsProductRoll" data-products='<%- JSON.stringify(rollProducts) %>'>
-        <div class="kds-product-roll-title">🛒 Visita nuestra tienda</div>
+        <div class="kds-product-roll-title">Visita nuestra tienda</div>
         <div class="kds-product-roll-items" id="kdsProductRollItems"></div>
       </aside>
     <% } %>
