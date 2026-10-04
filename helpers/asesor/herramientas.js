@@ -36,9 +36,12 @@ function precioFinal(p) {
 function buscarProductos(pedido, catalogo) {
   const consulta = typeof pedido?.consulta === 'string' ? pedido.consulta.trim() : '';
   if (consulta.length < 2 || consulta.length > 60) throw new EntradaInvalida('"consulta" debe tener entre 2 y 60 letras');
+  // Singular aproximado: "cascos" tiene que encontrar "Casco Pro Naked" y
+  // "guantes" a "Guante...". Basta con la raíz porque se compara con includes.
   const palabras = normalizar(consulta)
     .split(/[^a-z0-9ñ]+/)
-    .filter((w) => w.length >= 2);
+    .filter((w) => w.length >= 2)
+    .map((w) => (w.length > 5 && w.endsWith('es') ? w.slice(0, -2) : w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w));
   if (!palabras.length) throw new EntradaInvalida('"consulta" no tiene palabras para buscar');
   const nombresCat = Object.fromEntries((catalogo.categorias || []).map((c) => [c.slug, c.name]));
   return (catalogo.productos || [])

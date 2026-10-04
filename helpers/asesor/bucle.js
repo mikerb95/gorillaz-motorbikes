@@ -148,8 +148,10 @@ async function atender(e, catalogo, deps) {
 
     const usos = (r.content || []).filter((b) => b.type === 'tool_use');
     if (usos.length) {
+      // Lo dicho antes de buscar_producto es solo un anuncio ("déjame buscar")
+      // y la respuesta real llega con los resultados: no se suma.
       const dicho = textoDe(r);
-      if (dicho) previo.push(dicho);
+      if (dicho && !usos.some((u) => u.name === 'buscar_producto')) previo.push(dicho);
       mensajes.push({ role: 'assistant', content: r.content });
       const resultados = usos.map((u) => {
         const salida = ejecutarHerramienta(u, catalogo, encontrados, busquedas);

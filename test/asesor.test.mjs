@@ -88,6 +88,12 @@ test('buscar_producto encuentra por nombre, tilde o etiqueta y no expone stock',
   assert.throws(() => h.buscarProductos({ consulta: 'a' }, FUENTES), h.EntradaInvalida);
 });
 
+test('buscar_producto encuentra en singular lo que piden en plural', () => {
+  assert.equal(h.buscarProductos({ consulta: 'cascos motos' }, FUENTES)[0].id, 'nk-helmet-pro');
+  assert.equal(h.buscarProductos({ consulta: 'cascos' }, FUENTES)[0].id, 'nk-helmet-pro');
+  assert.equal(h.buscarProductos({ consulta: 'guantes' }, FUENTES)[0].id, 'guante-inv');
+});
+
 test('el mensaje de WhatsApp lo arma el servidor y descarta cifras coladas', () => {
   const encontrados = h.buscarProductos({ consulta: 'casco' }, FUENTES);
   const m = h.mensajeWhatsapp(h.pedidoWhatsapp({ necesidad: 'Quiero el casco naked', producto_id: 'nk-helmet-pro' }), encontrados);
@@ -235,6 +241,15 @@ test('el texto escrito junto a preparar_whatsapp se conserva si el cierre viene 
   assert.match(r.whatsapp, /^Hola, vengo de gorillazmotorbikes\.com/);
   assert.match(r.whatsapp, /Necesito alistar mi moto/);
   assert.equal(r.uso.entrada, 200);
+});
+
+test('el anuncio escrito antes de buscar_producto no llega al visitante', async () => {
+  const m = modelo([
+    herramienta('buscar_producto', { consulta: 'casco' }, 'Sí, tenemos cascos. Déjame buscar.'),
+    texto('El Casco Pro Naked cuesta $320.000 en la tienda.'),
+  ]);
+  const r = await b.atender(pregunta('¿tienen cascos?'), FUENTES, m);
+  assert.equal(r.texto, 'El Casco Pro Naked cuesta $320.000 en la tienda.');
 });
 
 test('los teléfonos del historial no llegan al modelo', async () => {
