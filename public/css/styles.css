@@ -2819,6 +2819,12 @@ html.mnav-lock .asesor-globo {
   gap: 6px
 }
 
+@media (min-width:600px) {
+  .mnav-chips {
+    grid-template-columns: repeat(3, minmax(0, 1fr))
+  }
+}
+
 .site-header .mnav-chip {
   display: flex;
   align-items: center;
