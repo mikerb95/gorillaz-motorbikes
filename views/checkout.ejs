@@ -1,180 +1,138 @@
-<%- include('partials/head', { title: 'Checkout' }) %>
+<%- include('partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<%
+  var v = function (name, fallback) { return form && form[name] !== undefined ? form[name] : (fallback || ''); };
+  var plateDefault = user && user.vehicles && user.vehicles[0] ? user.vehicles[0].plate : '';
+  var method = v('delivery_method', methods.length === 1 ? methods[0] : '');
+%>
+<div class="tn-page tn-page--narrow">
+  <header class="tn-head tn-head--row">
+    <h1 class="tn-h1">Finalizar compra</h1>
+    <a class="tn-link" href="/carrito">Volver al carrito</a>
+  </header>
 
-<div class="co-page">
+  <% if (typeof errors !== 'undefined' && errors && errors.length) { %>
+    <div class="tn-alert" role="alert">
+      <strong>Revisa estos datos:</strong>
+      <ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul>
+    </div>
+  <% } %>
 
-  <!-- Progress steps -->
-  <div class="co-steps-wrap">
-    <ol class="co-steps">
-      <li class="co-step co-step--done">
-        <span class="co-step__dot">✓</span>
-        <span class="co-step__label">Carrito</span>
-      </li>
-      <div class="co-step__line co-step__line--done"></div>
-      <li class="co-step co-step--active">
-        <span class="co-step__dot">2</span>
-        <span class="co-step__label">Datos &amp; Pago</span>
-      </li>
-      <div class="co-step__line"></div>
-      <li class="co-step">
-        <span class="co-step__dot">3</span>
-        <span class="co-step__label">Confirmación</span>
-      </li>
-    </ol>
-  </div>
+  <form class="tn-checkout" method="post" action="/pagar" data-checkout novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="tn-checkout-main">
 
-  <div class="co-layout">
+      <section class="tn-step">
+        <h2 class="tn-step-title"><span>1</span>Tus datos</h2>
+        <% if (!user) { %><p class="tn-muted">No necesitas cuenta. <a href="/club/login?return=/checkout">Si eres del club, inicia sesión</a> para sumar puntos y ver tu precio club.</p><% } %>
+        <div class="tn-field"><label for="co-name">Nombre completo</label><input id="co-name" name="customer_name" autocomplete="name" required value="<%= v('customer_name', user ? user.name : '') %>" /></div>
+        <div class="tn-row">
+          <div class="tn-field"><label for="co-email">Correo</label><input id="co-email" name="customer_email" type="email" autocomplete="email" required value="<%= v('customer_email', user ? user.email : '') %>" /><small>Te enviamos la confirmación y el número de pedido.</small></div>
+          <div class="tn-field"><label for="co-phone">Celular (WhatsApp)</label><input id="co-phone" name="customer_phone" type="tel" autocomplete="tel" inputmode="tel" required value="<%= v('customer_phone', user && user.phone ? user.phone : '') %>" /></div>
+        </div>
+      </section>
 
-    <!-- LEFT: form -->
-    <div class="co-main">
+      <section class="tn-step">
+        <h2 class="tn-step-title"><span>2</span>Entrega</h2>
+        <% if (!methods.length) { %>
+          <p class="tn-alert">Por ahora no tenemos métodos de entrega configurados. <a href="<%= waLink(waMsg.shop()) %>" target="_blank" rel="noopener">Escríbenos por WhatsApp</a> para completar tu compra.</p>
+        <% } %>
+        <div class="tn-choices" role="radiogroup" aria-label="Método de entrega">
+          <% methods.forEach(function (m) { %>
+          <label class="tn-choice">
+            <input type="radio" name="delivery_method" value="<%= m %>" <%= method === m ? 'checked' : '' %> required data-delivery />
+            <span>
+              <strong><%= METHOD_LABELS[m] %></strong>
+              <% if (m === 'pickup') { %><small>Gratis. <%= biz.address.street %>, <%= biz.address.locality %>.<%= deliveryCfg.pickup.note ? ' ' + deliveryCfg.pickup.note : '' %></small><% } %>
+              <% if (m === 'local') { %><small>Según la localidad.<%= deliveryCfg.local.eta ? ' ' + deliveryCfg.local.eta : '' %><%= deliveryCfg.local.freeOver ? ' Gratis desde ' + fmtCOP(deliveryCfg.local.freeOver) + '.' : '' %></small><% } %>
+              <% if (m === 'national') { %><small><%= fmtCOP(deliveryCfg.national.fee) %>.<%= deliveryCfg.national.eta ? ' ' + deliveryCfg.national.eta : '' %><%= deliveryCfg.national.freeOver ? ' Gratis desde ' + fmtCOP(deliveryCfg.national.freeOver) + '.' : '' %></small><% } %>
+            </span>
+          </label>
+          <% }) %>
+        </div>
 
-      <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-error"><%= error %></div>
+        <div class="tn-ship" data-ship="local" <%= method === 'local' ? '' : 'hidden' %>>
+          <div class="tn-field">
+            <label for="co-zone">Localidad</label>
+            <select id="co-zone" name="delivery_zone">
+              <option value="">Elige tu localidad</option>
+              <% zones.forEach(function (z) { %><option value="<%= z.slug %>" <%= v('delivery_zone') === z.slug ? 'selected' : '' %>><%= z.name %> (<%= fmtCOP(z.fee) %>)</option><% }) %>
+            </select>
+            <small>¿Tu localidad no aparece? Por ahora no llegamos ahí: puedes recoger en el taller.</small>
+          </div>
+        </div>
+        <div class="tn-ship" data-ship="national" <%= method === 'national' ? '' : 'hidden' %>>
+          <div class="tn-row">
+            <div class="tn-field">
+              <label for="co-dept">Departamento</label>
+              <select id="co-dept" name="customer_dept" class="dept-select" data-location-group="checkout" data-current-dept="<%= v('customer_dept', user && user.department ? user.department : '') %>"><option value="">Elige</option></select>
+            </div>
+            <div class="tn-field">
+              <label for="co-city">Ciudad o municipio</label>
+              <select id="co-city" name="customer_city" class="city-select" data-location-group="checkout" data-current="<%= v('customer_city', user && user.city ? user.city : '') %>"><option value="">Elige un departamento</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="tn-ship" data-ship="address" <%= method === 'local' || method === 'national' ? '' : 'hidden' %>>
+          <div class="tn-field"><label for="co-address">Dirección de entrega</label><input id="co-address" name="customer_address" autocomplete="street-address" value="<%= v('customer_address') %>" placeholder="Calle, número, apartamento o barrio" /></div>
+        </div>
+      </section>
+
+      <% if (priced.hasInstallation) { %>
+      <section class="tn-step">
+        <h2 class="tn-step-title"><span>3</span>Instalación en el taller</h2>
+        <p class="tn-muted">Elige cuándo traer tu moto. Te confirmamos la cita por WhatsApp.<% if (priced.installationPending) { %> El valor de la instalación de algunos productos se confirma en el taller y no se cobra ahora.<% } %></p>
+        <div class="tn-row">
+          <div class="tn-field">
+            <label for="co-idate">Fecha</label>
+            <select id="co-idate" name="install_date" required data-install-date>
+              <option value="">Elige un día</option>
+              <% installDates.forEach(function (d) { %><option value="<%= d.date %>" data-slots="<%= d.slots.join(',') %>" <%= v('install_date') === d.date ? 'selected' : '' %>><%= d.label %></option><% }) %>
+            </select>
+          </div>
+          <div class="tn-field">
+            <label for="co-itime">Hora</label>
+            <select id="co-itime" name="install_time" data-install-time data-current="<%= v('install_time') %>"><option value="">A cualquier hora</option></select>
+          </div>
+        </div>
+        <div class="tn-field tn-field--short"><label for="co-plate">Placa de la moto</label><input id="co-plate" name="install_plate" autocomplete="off" maxlength="10" value="<%= v('install_plate', plateDefault) %>" placeholder="ABC12D" required /></div>
+      </section>
       <% } %>
 
-      <form method="post" action="/pagar">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
-        <!-- Section 1: Shipping info -->
-        <div class="co-card">
-          <div class="co-card__header">
-            <span class="co-section-num">1</span>
-            <h2 class="co-card__title">Información de envío</h2>
-          </div>
-
-          <% if (!user) { %>
-            <p class="co-login-hint">
-              ¿Tienes cuenta? <a href="/club/login?return=/checkout">Inicia sesión</a> para autocompletar tus datos.
-            </p>
-          <% } %>
-
-          <div class="co-field">
-            <label for="customer_name">Nombre completo <span class="co-required">*</span></label>
-            <input id="customer_name" name="customer_name" type="text" required
-              value="<%= user ? user.name : '' %>" placeholder="Juan García" />
-          </div>
-
-          <div class="co-row">
-            <div class="co-field">
-              <label for="customer_email">Correo electrónico <span class="co-required">*</span></label>
-              <input id="customer_email" name="customer_email" type="email" required
-                value="<%= user ? user.email : '' %>" placeholder="tu@correo.com" />
-            </div>
-            <div class="co-field">
-              <label for="customer_phone">Teléfono <span class="co-required">*</span></label>
-              <input id="customer_phone" name="customer_phone" type="tel" required
-                value="<%= user && user.phone ? user.phone : '' %>" placeholder="300 000 0000" />
-            </div>
-          </div>
-
-          <div class="co-field">
-            <label for="customer_address">Dirección de entrega <span class="co-required">*</span></label>
-            <input id="customer_address" name="customer_address" type="text" required
-              value="" placeholder="Calle 123 # 45-67, Apto 8" />
-          </div>
-
-          <div class="co-row">
-            <div class="co-field">
-              <label for="customer_dept">Departamento <span class="co-required">*</span></label>
-              <select id="customer_dept" name="customer_dept" class="dept-select" data-location-group="checkout"
-                data-current-dept="<%= user && user.department ? user.department : '' %>" required>
-                <option value="">— Seleccione —</option>
-              </select>
-            </div>
-            <div class="co-field">
-              <label for="customer_city">Ciudad / Municipio <span class="co-required">*</span></label>
-              <select id="customer_city" name="customer_city" class="city-select" data-location-group="checkout"
-                data-current="<%= user && user.city ? user.city : '' %>" required>
-                <option value="">— Seleccione un departamento —</option>
-              </select>
-            </div>
-          </div>
+      <section class="tn-step">
+        <h2 class="tn-step-title"><span><%= priced.hasInstallation ? 4 : 3 %></span>Pago</h2>
+        <div class="tn-row tn-row--end">
+          <div class="tn-field"><label for="co-coupon">Cupón (opcional)</label><input id="co-coupon" name="coupon" autocomplete="off" value="<%= v('coupon') %>" data-coupon /></div>
+          <button type="button" class="tn-btn tn-btn--ghost" data-apply-coupon>Aplicar</button>
         </div>
-
-        <!-- Section 2: Payment -->
-        <div class="co-card">
-          <div class="co-card__header">
-            <span class="co-section-num">2</span>
-            <h2 class="co-card__title">Método de pago</h2>
-          </div>
-
-          <div class="co-payment-option co-payment-option--selected">
-            <span class="co-payment-radio"></span>
-            <div class="co-payment-info">
-              <strong>Bold</strong>
-              <span class="co-payment-desc">Tarjeta, PSE, Nequi, Daviplata</span>
-            </div>
-            <div class="co-payment-badges">
-              <span class="co-badge">PSE</span>
-              <span class="co-badge">Visa</span>
-              <span class="co-badge">MC</span>
-              <span class="co-badge">Nequi</span>
-            </div>
-          </div>
-        </div>
-
-        <button class="co-pay-btn" type="submit">
-          Confirmar y pagar
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-        </button>
-        <p class="co-secure-note">
-          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-          Pago cifrado y seguro. Al continuar aceptas nuestros <a href="/terminos" class="co-terms-link">Términos y Condiciones</a>.
-        </p>
-
-      </form>
+        <p class="tn-coupon-msg" data-coupon-msg aria-live="polite"></p>
+        <div class="tn-field"><label for="co-notes">Notas para el pedido (opcional)</label><textarea id="co-notes" name="notes" rows="2" maxlength="500"><%= v('notes') %></textarea></div>
+        <p class="tn-muted">Pagas con tarjeta, PSE, Nequi o Daviplata en la pasarela segura de Bold. Volverás aquí al terminar.</p>
+        <label class="tn-check">
+          <input type="checkbox" name="accept_terms" value="1" required <%= v('accept_terms') ? 'checked' : '' %> />
+          <span>Acepto los <a href="/terminos" target="_blank">términos y condiciones</a>, la <a href="/envios" target="_blank">política de envíos</a>, la de <a href="/cambios-y-devoluciones" target="_blank">cambios y devoluciones</a> y el <a href="/privacidad" target="_blank">tratamiento de datos</a>. Conozco mi <a href="/derecho-de-retracto" target="_blank">derecho de retracto</a>.</span>
+        </label>
+      </section>
     </div>
 
-    <!-- RIGHT: order summary -->
-    <aside class="co-summary">
-      <h2 class="co-summary__title">Tu pedido</h2>
-
-      <ul class="co-summary-items">
-        <% items.forEach(item => { %>
-        <li class="co-summary-item">
-          <div class="co-summary-img-wrap">
-            <img src="<%= item.image || '/images/download.png' %>" alt="<%= item.name %>"
-              class="co-summary-thumb" width="56" height="56" loading="lazy">
-            <span class="co-summary-qty"><%= item.qty %></span>
-          </div>
-          <span class="co-summary-name"><%= item.name %></span>
-          <span class="co-summary-price">$<%= item.total.toLocaleString('es-CO') %></span>
-        </li>
+    <aside class="tn-summary" aria-label="Resumen del pedido">
+      <h2 class="tn-h2">Tu pedido</h2>
+      <ul class="tn-sum-lines">
+        <% priced.lines.forEach(function (l) { %>
+          <li><span><%= l.qty %> x <%= l.name %><%= l.variantLabel ? ' (' + l.variantLabel + ')' : '' %><% if (l.install) { %><small>Con instalación</small><% } %></span><strong><%= fmtCOP(l.lineTotal) %></strong></li>
         <% }) %>
       </ul>
-
-      <div class="co-summary-totals">
-        <div class="co-totals-row">
-          <span>Subtotal</span>
-          <span>$<%= cart.subtotal.toLocaleString('es-CO') %></span>
-        </div>
-        <div class="co-totals-row">
-          <span>Envío</span>
-          <span class="co-shipping-note">Calculado al confirmar</span>
-        </div>
-        <div class="co-totals-divider"></div>
-        <div class="co-totals-row co-totals-row--total">
-          <span>Total</span>
-          <strong>$<%= cart.subtotal.toLocaleString('es-CO') %> <small>COP</small></strong>
-        </div>
-      </div>
-
-      <ul class="co-trust-list">
-        <li>
-          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
-          Pago 100% seguro con SSL
-        </li>
-        <li>
-          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
-          Devolución garantizada
-        </li>
-        <li>
-          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
-          Procesado por <strong>Bold</strong> — pasarela certificada
-        </li>
-      </ul>
+      <dl class="tn-totals" data-totals>
+        <div><dt>Productos</dt><dd data-t="items"><%= fmtCOP(priced.itemsSubtotal) %></dd></div>
+        <div data-t="discounts-wrap" class="is-discount" <%= priced.discounts.length ? '' : 'hidden' %>><dt>Descuentos</dt><dd data-t="discounts">- <%= fmtCOP(priced.discountTotal) %></dd></div>
+        <% if (priced.hasInstallation) { %><div><dt>Instalación</dt><dd data-t="install"><%= priced.installationTotal ? fmtCOP(priced.installationTotal) : '' %><%= priced.installationPending ? (priced.installationTotal ? ' + ' : '') + 'a confirmar' : '' %></dd></div><% } %>
+        <div><dt>Entrega</dt><dd data-t="delivery">Elige un método</dd></div>
+        <div class="is-total"><dt>Total a pagar</dt><dd data-t="total"><%= fmtCOP(priced.total) %></dd></div>
+      </dl>
+      <p class="tn-savings" data-t="savings" <%= priced.savings > 0 ? '' : 'hidden' %>>Ahorras <%= fmtCOP(priced.savings) %></p>
+      <button class="tn-btn tn-btn--primary tn-btn--lg tn-btn--block" type="submit" <%= methods.length ? '' : 'disabled' %>>Ir a pagar</button>
+      <p class="tn-muted tn-center">Pago procesado por Bold. Nunca vemos los datos de tu tarjeta.</p>
     </aside>
-
-  </div>
+  </form>
 </div>
-
+<script defer src="/static/js/tienda.js?v=<%= assetV('js/tienda.js') %>"></script>
 <%- include('partials/footer') %>
