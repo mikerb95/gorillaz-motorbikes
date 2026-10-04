@@ -1,4 +1,4 @@
-<%- include('../partials/head', { title: topicTitle + ' — ' + courseTitle, user }) %>
+<%- include('../partials/head', { title: topicTitle + ' | ' + courseTitle, user }) %>
 
 <main class="presentation" data-slides='<%- JSON.stringify(slides || []) %>' data-course="<%= courseKey %>" data-topic="<%= topicKey %>" style="padding-top:0">
   <header class="presentation-bar">

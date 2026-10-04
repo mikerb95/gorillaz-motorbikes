@@ -1,4 +1,4 @@
-<%- include('partials/head', { title: product.name + ' — Tienda' }) %>
+<%- include('partials/head', { title: product.name + ' | Tienda', description: product.description || undefined, ogImage: product.image && product.image.indexOf('download.png') === -1 ? product.image : undefined }) %>
 
     <main class="container pdp">
         <!-- Breadcrumb -->

@@ -1,4 +1,4 @@
-<%- include('../partials/head', { title: listing.title }) %>
+<%- include('../partials/head', { title: listing.title + ' | Clasificados', description: listing.description ? String(listing.description).replace(/\s+/g, ' ').slice(0, 155) : undefined, ogImage: (listing.images && listing.images[0]) || undefined }) %>
 
 <%
   // Construye el enlace de WhatsApp: solo dígitos, anteponiendo 57 (Colombia)
