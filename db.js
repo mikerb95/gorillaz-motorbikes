@@ -21,7 +21,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 16;
+const SCHEMA_VERSION = 19;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -350,6 +350,160 @@ async function initDb() {
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
       updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    // ── v17: catálogo de la tienda en tablas propias ──────────────────────
+    // Antes era un blob JSON en app_settings('catalog'). La compatibilidad con
+    // motos, las variantes, el stock atómico y los slugs necesitan filas. El
+    // blob se conserva como respaldo en app_settings('catalog_backup_v16').
+    `CREATE TABLE IF NOT EXISTS shop_categories (
+      slug TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      position INTEGER NOT NULL DEFAULT 0,
+      intro TEXT NOT NULL DEFAULT '',
+      seo_title TEXT NOT NULL DEFAULT '',
+      seo_description TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL UNIQUE,
+      legacy_id TEXT,
+      name TEXT NOT NULL,
+      brand TEXT NOT NULL DEFAULT '',
+      sku TEXT NOT NULL DEFAULT '',
+      category TEXT NOT NULL DEFAULT '',
+      bike_types TEXT NOT NULL DEFAULT '[]',
+      tags TEXT NOT NULL DEFAULT '[]',
+      description TEXT NOT NULL DEFAULT '',
+      specs TEXT NOT NULL DEFAULT '[]',
+      includes TEXT NOT NULL DEFAULT '',
+      warranty TEXT NOT NULL DEFAULT '',
+      delivery_time TEXT NOT NULL DEFAULT '',
+      price INTEGER NOT NULL DEFAULT 0,
+      discount INTEGER NOT NULL DEFAULT 0,
+      club_discount INTEGER NOT NULL DEFAULT 0,
+      stock INTEGER,
+      featured INTEGER NOT NULL DEFAULT 0,
+      installable INTEGER NOT NULL DEFAULT 0,
+      install_price INTEGER,
+      install_minutes INTEGER,
+      related_services TEXT NOT NULL DEFAULT '[]',
+      seo_title TEXT NOT NULL DEFAULT '',
+      seo_description TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'draft',
+      is_demo INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS product_variants (
+      id TEXT PRIMARY KEY,
+      product_id TEXT NOT NULL,
+      sku TEXT NOT NULL DEFAULT '',
+      color TEXT NOT NULL DEFAULT '',
+      size TEXT NOT NULL DEFAULT '',
+      price INTEGER,
+      stock INTEGER,
+      position INTEGER NOT NULL DEFAULT 0
+    )`,
+    `CREATE TABLE IF NOT EXISTS product_images (
+      id TEXT PRIMARY KEY,
+      product_id TEXT NOT NULL,
+      url TEXT NOT NULL,
+      alt TEXT NOT NULL DEFAULT '',
+      position INTEGER NOT NULL DEFAULT 0
+    )`,
+    `CREATE TABLE IF NOT EXISTS bike_models (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL UNIQUE,
+      brand TEXT NOT NULL,
+      model TEXT NOT NULL,
+      cc INTEGER,
+      bike_type TEXT NOT NULL DEFAULT '',
+      year_from INTEGER,
+      year_to INTEGER,
+      intro TEXT NOT NULL DEFAULT '',
+      seo_title TEXT NOT NULL DEFAULT '',
+      seo_description TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS product_compat (
+      product_id TEXT NOT NULL,
+      bike_model_id TEXT NOT NULL,
+      year_from INTEGER,
+      year_to INTEGER,
+      PRIMARY KEY (product_id, bike_model_id)
+    )`,
+    `CREATE TABLE IF NOT EXISTS url_redirects (
+      from_path TEXT PRIMARY KEY,
+      to_path TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    // ── v18: conversión (combos, carritos guardados, cupones) ─────────────
+    `CREATE TABLE IF NOT EXISTS combos (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      kind TEXT NOT NULL DEFAULT 'armable',
+      description TEXT NOT NULL DEFAULT '',
+      tiers TEXT NOT NULL DEFAULT '[]',
+      kit_discount INTEGER NOT NULL DEFAULT 0,
+      bike_model_id TEXT,
+      active INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS combo_items (
+      combo_id TEXT NOT NULL,
+      product_id TEXT NOT NULL,
+      qty INTEGER NOT NULL DEFAULT 1,
+      PRIMARY KEY (combo_id, product_id)
+    )`,
+    `CREATE TABLE IF NOT EXISTS saved_carts (
+      user_id TEXT PRIMARY KEY,
+      items TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      reminded_at TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS coupons (
+      code TEXT PRIMARY KEY,
+      kind TEXT NOT NULL DEFAULT 'pct',
+      value INTEGER NOT NULL DEFAULT 0,
+      min_subtotal INTEGER NOT NULL DEFAULT 0,
+      max_uses INTEGER NOT NULL DEFAULT 1,
+      uses INTEGER NOT NULL DEFAULT 0,
+      email TEXT,
+      source TEXT NOT NULL DEFAULT '',
+      expires_at TEXT,
+      active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
+    // ── v19: confianza (reseñas verificadas y PQRS) ───────────────────────
+    `CREATE TABLE IF NOT EXISTS reviews (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL,
+      target TEXT NOT NULL,
+      order_id TEXT,
+      service_order_id TEXT,
+      user_id TEXT,
+      author_name TEXT NOT NULL,
+      rating INTEGER NOT NULL,
+      body TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'pendiente',
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      moderated_at TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS pqrs (
+      id TEXT PRIMARY KEY,
+      radicado TEXT NOT NULL UNIQUE,
+      kind TEXT NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      order_ref TEXT,
+      message TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'recibida',
+      admin_notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
 
   for (const sql of tables) {
@@ -407,6 +561,24 @@ async function initDb() {
     // con solo la placa y ofrezca "confirmar asistencia" sin volver a pedir sus
     // datos. Las citas antiguas quedan con plate NULL (simplemente no matchean).
     `ALTER TABLE appointments ADD COLUMN plate TEXT`,
+    // v18: pedido de tienda con entrega, instalación, descuentos y seguimiento.
+    // public_code es el número corto que ve el cliente (seguimiento sin cuenta).
+    // stock_decremented ya existía: ahora marca la RESERVA hecha al pagar.
+    `ALTER TABLE orders ADD COLUMN public_code TEXT`,
+    `ALTER TABLE orders ADD COLUMN subtotal INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN discount_total INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN discounts TEXT NOT NULL DEFAULT '[]'`,
+    `ALTER TABLE orders ADD COLUMN delivery_method TEXT`,
+    `ALTER TABLE orders ADD COLUMN delivery_zone TEXT`,
+    `ALTER TABLE orders ADD COLUMN delivery_fee INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN customer_dept TEXT`,
+    `ALTER TABLE orders ADD COLUMN installation TEXT`,
+    `ALTER TABLE orders ADD COLUMN appointment_id TEXT`,
+    `ALTER TABLE orders ADD COLUMN coupon_code TEXT`,
+    `ALTER TABLE orders ADD COLUMN points_awarded INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN fulfillment_status TEXT NOT NULL DEFAULT 'nuevo'`,
+    `ALTER TABLE orders ADD COLUMN notes TEXT`,
+    `ALTER TABLE orders ADD COLUMN paid_at TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
@@ -444,6 +616,15 @@ async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_pres_sessions_expires ON presentation_sessions(expires_at)`,
     `CREATE INDEX IF NOT EXISTS idx_plate_requests_status  ON plate_duplicate_requests(status)`,
     `CREATE INDEX IF NOT EXISTS idx_plate_requests_created ON plate_duplicate_requests(created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_products_category   ON products(category)`,
+    `CREATE INDEX IF NOT EXISTS idx_products_legacy     ON products(legacy_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_variants_product    ON product_variants(product_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_images_product      ON product_images(product_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_compat_model        ON product_compat(bike_model_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_combo_items_product ON combo_items(product_id)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_public_code ON orders(public_code)`,
+    `CREATE INDEX IF NOT EXISTS idx_reviews_target      ON reviews(kind, target, status)`,
+    `CREATE INDEX IF NOT EXISTS idx_pqrs_created        ON pqrs(created_at)`,
   ];
   for (const sql of indexes) {
     try { await db.execute(sql); } catch { /* index already exists */ }
@@ -452,6 +633,8 @@ async function initDb() {
   await ensureNewsletterTokens();
   await reconcileAnnulledInvoices();
   await reconcileOrderInvoiceLinks();
+  // Se requiere aquí (y no arriba) porque el módulo de la tienda importa db.js.
+  await require('./helpers/shop/migrate').migrateCatalogToTables(db);
 
   // Marca el esquema como migrado para que los próximos cold starts salgan
   // temprano en la comprobación de versión de arriba.

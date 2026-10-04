@@ -36,6 +36,16 @@ const jwtCart = (req, res, next) => {
   next();
 };
 
+// Páginas personales o de uso interno: se marcan noindex para que no compitan
+// con las públicas ni expongan órdenes, facturas o cotizaciones en Google.
+const PRIVATE_PATHS = [
+  /^\/club\/./, /^\/admin/, /^\/taller/, /^\/kds/, /^\/liquidador/,
+  /^\/cotizacion\//, /^\/factura\//, /^\/mi-orden/, /^\/historial/, /^\/checkin/,
+  /^\/carrito/, /^\/checkout/, /^\/payment\//, /^\/control/, /^\/clases\//,
+  /^\/clasificados\/(mios|nuevo)$/, /^\/clasificados\/[^/]+\/editar$/,
+  /^\/newsletter\//, /^\/resenas$/,
+];
+
 const templateLocals = async (req, res, next) => {
   if (req.userId) {
     try {
@@ -54,6 +64,13 @@ const templateLocals = async (req, res, next) => {
   } else {
     res.locals.user = null;
   }
+
+  // SEO: cada página declara su propia URL canónica (sin query ni barra final).
+  // Antes las rutas que no pasaban canonicalPath apuntaban a la home y Google
+  // las trataba como duplicados. Una ruta puede sobrescribirlo al renderizar.
+  const p = req.path.length > 1 ? req.path.replace(/\/+$/, '') : '/';
+  res.locals.canonicalPath = p;
+  res.locals.noIndex = PRIVATE_PATHS.some(re => re.test(p));
 
   // Disponible para todas las plantillas; el widget solo se pinta si hay clave.
   res.locals.recaptchaSiteKey = RECAPTCHA_SITE_KEY;
