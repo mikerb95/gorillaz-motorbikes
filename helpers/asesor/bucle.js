@@ -209,7 +209,7 @@ function ejecutarHerramienta(u, catalogo, encontrados, busquedas) {
       return {
         contenido:
           'Listo: debajo de tu respuesta el visitante ya ve el formulario de placa y últimos 4 dígitos del celular. ' +
-          'Dile en una frase que lo llene ahí. No le pidas esos datos en el chat ni inventes el estado.',
+          'Dile en una frase que escriba esos dos datos en el formulario de abajo (no es un botón). No le pidas los datos en el chat ni inventes el estado.',
         error: false,
         orden: true,
       };
