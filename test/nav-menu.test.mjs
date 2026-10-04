@@ -61,3 +61,16 @@ test('el sprite de íconos va después de la etiqueta <body> completa, no dentro
   assert.match(bodyTag, /<% } %>>\n$/, 'la etiqueta <body> quedó partida');
   assert.ok(head.indexOf('class="ni-sprite"') > head.indexOf(bodyTag) + bodyTag.length - 1);
 });
+
+test('panel móvil: accesible y sin restos del panel viejo', () => {
+  assert.doesNotMatch(head, /class="nav-toggle"/, 'quedó el toggle viejo');
+  assert.doesNotMatch(head, /class="nav-cta"/, 'quedó el bloque duplicado .nav-cta');
+  assert.match(head, /<nav class="mnav" id="mnav"[^>]*\binert\b/, 'el panel debe nacer cerrado (inert)');
+  assert.match(head, /class="mnav-toggle"[^>]*aria-controls="mnav"[^>]*aria-expanded="false"/);
+  for (const id of head.matchAll(/aria-controls="(mnav-[a-z]+)"/g)) {
+    assert.match(head, new RegExp(`id="${id[1]}"`), `falta el contenido de ${id[1]}`);
+  }
+  // Cerrar sesión sigue siendo POST (con el CSRF global del formulario)
+  assert.match(head, /<form action="\/club\/logout" method="post">\s*<button class="mnav-mini"/);
+  assert.doesNotMatch(mainJs, /submenu-touch-open|\.nav-toggle/, 'main.js conserva lógica del panel viejo');
+});
