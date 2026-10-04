@@ -2653,6 +2653,13 @@ html.mnav-lock body {
   overflow: hidden
 }
 
+/* La burbuja de WhatsApp/asesor no tapa el panel abierto */
+html.mnav-lock .whatsapp-fab,
+html.mnav-lock .asesor-globo {
+  opacity: 0;
+  pointer-events: none
+}
+
 /* Panel: la fila crece de 0fr a 1fr (altura real, sin números mágicos) */
 .mnav {
   grid-template-rows: 0fr;
@@ -2841,12 +2848,11 @@ html.mnav-lock body {
 }
 
 /* Pie: sesión */
+/* Sin línea propia: la última fila ya trae su separador */
 .mnav-foot {
   display: flex;
   gap: 10px;
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, .22)
+  margin-top: 18px
 }
 
 .mnav-foot.mnav-user {
