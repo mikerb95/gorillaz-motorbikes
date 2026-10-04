@@ -28,12 +28,12 @@ app.use(medidorDesdeEnv().express());
 let dbReady = null;
 function ensureDb() {
   if (!dbReady) {
-    // Tras migrar el esquema, cargamos la config editable (app_settings) a la
-    // caché en memoria y luego el catálogo (que también vive en app_settings),
-    // para que las lecturas síncronas funcionen desde el primer request.
+    // Tras migrar el esquema, cargamos la config editable (app_settings) y el
+    // catálogo de la tienda (tablas propias) a memoria, para que las lecturas
+    // síncronas funcionen desde el primer request.
     dbReady = initDb()
       .then(() => settings.loadAll())
-      .then(() => { catalogStore.loadCatalog(); contentStore.loadContent(); })
+      .then(() => { contentStore.loadContent(); return catalogStore.loadCatalog(); })
       .catch(err => {
       console.error('❌ DB init error:', err);
       dbReady = null; // permite reintentar en la próxima petición
