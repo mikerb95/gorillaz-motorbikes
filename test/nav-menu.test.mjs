@@ -32,7 +32,10 @@ test('cada ítem tiene destino, nombre, ícono del sprite y descripción corta',
     assert.ok(it.desc && it.desc.length <= 28, `${it.label}: descripción larga o vacía`);
     assert.match(head, new RegExp(`<symbol id="ni-${it.icon}"`), `falta el símbolo ni-${it.icon}`);
   }
-  for (const l of [...shop.categories, ...shop.quick]) assert.match(l.href, /^\/tienda/);
+  for (const l of shop.quick) assert.match(l.href, /^\/tienda/);
+  // Las categorías salen del catálogo con URL limpia, nunca con ?cat=.
+  assert.match(head, /'\/tienda\/c\/' \+ c\.slug/);
+  assert.doesNotMatch(head, /\?cat=/);
 });
 
 test('el badge del carrito y el de eventos tienen marcador propio', () => {

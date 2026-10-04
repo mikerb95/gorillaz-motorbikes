@@ -46,18 +46,13 @@ const serviceGroups = [
   },
 ];
 
+// Las categorías de la tienda no viven aquí: salen del catálogo (solo las que
+// tienen productos publicados, ver middleware/locals.js → shopNavCategories).
 const shop = {
-  categories: [
-    { href: '/tienda?cat=naked', label: 'Naked' },
-    { href: '/tienda?cat=adventure', label: 'Adventure' },
-    { href: '/tienda?cat=sport', label: 'Sport' },
-    { href: '/tienda?cat=scooter', label: 'Scooter' },
-    { href: '/tienda?cat=enduro', label: 'Enduro' },
-  ],
   quick: [
-    { href: '/tienda?sort=price-asc', label: 'Más baratos' },
-    { href: '/tienda?sort=price-desc', label: 'Más caros' },
-    { href: '/tienda', label: 'Ver todo' },
+    { href: '/tienda', label: 'Ver toda la tienda' },
+    { href: '/tienda/combos', label: 'Combos y kits' },
+    { href: '/tienda/pedido', label: 'Seguir mi pedido' },
   ],
 };
 

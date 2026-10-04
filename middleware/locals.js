@@ -8,7 +8,7 @@ const { visibleCategories } = require('../helpers/catalog');
 const { getBusiness, openStatus, hoursSummary } = require('../helpers/business');
 const { fmtCOP, fmtPesos } = require('../helpers/money');
 const { waLink, waShareLink, messages: waMsg } = require('../helpers/whatsapp');
-const { SITE_URL } = require('../helpers/seo');
+const { SITE_URL, jsonLd } = require('../helpers/seo');
 const { readFlash } = require('../helpers/flash');
 const { fechaCO, horaCO, fechaHoraCO } = require('../helpers/datetime');
 const { assetVersion } = require('../helpers/assets');
@@ -115,6 +115,7 @@ const templateLocals = async (req, res, next) => {
   res.locals.waShareLink = waShareLink;
   res.locals.waMsg = waMsg;
   res.locals.siteUrl = SITE_URL;
+  res.locals.toJsonLd = jsonLd;
   // Canonical por defecto: la ruta propia sin query (nunca el home). Las vistas
   // que necesitan otro (filtros, paginación) lo sobreescriben.
   res.locals.canonicalPath = req.path;

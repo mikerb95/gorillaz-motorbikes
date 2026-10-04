@@ -579,6 +579,8 @@ async function initDb() {
     `ALTER TABLE orders ADD COLUMN fulfillment_status TEXT NOT NULL DEFAULT 'nuevo'`,
     `ALTER TABLE orders ADD COLUMN notes TEXT`,
     `ALTER TABLE orders ADD COLUMN paid_at TEXT`,
+    // "Mi moto" en la tienda: slug del modelo (bike_models) que el miembro eligió.
+    `ALTER TABLE users ADD COLUMN shop_bike TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
@@ -700,6 +702,7 @@ function rowToUser(row) {
     appleId: row.apple_id || null,
     avatarUrl: row.avatar_url || null,
     tokenVersion: Number(row.token_version) || 0,
+    shopBike: row.shop_bike || null,
     createdAt: row.created_at,
   };
 }
@@ -873,6 +876,7 @@ async function updateUser(id, fields) {
   if (fields.googleId !== undefined)         { set.push('google_id = ?');           args.push(fields.googleId); }
   if (fields.appleId !== undefined)          { set.push('apple_id = ?');            args.push(fields.appleId); }
   if (fields.avatarUrl !== undefined)        { set.push('avatar_url = ?');          args.push(fields.avatarUrl); }
+  if (fields.shopBike !== undefined)         { set.push('shop_bike = ?');           args.push(fields.shopBike || null); }
   if (set.length === 0) return;
   args.push(id);
   await db.execute({ sql: `UPDATE users SET ${set.join(', ')} WHERE id = ?`, args });
