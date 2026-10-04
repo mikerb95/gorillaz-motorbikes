@@ -35,13 +35,6 @@
       }
     },
     {
-      "src": "/sitemap.xml",
-      "dest": "/public/sitemap.xml",
-      "headers": {
-        "cache-control": "public, max-age=86400"
-      }
-    },
-    {
       "src": "/static/(.*)",
       "dest": "/public/$1",
       "headers": {

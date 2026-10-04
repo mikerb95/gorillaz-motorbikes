@@ -93,6 +93,7 @@ app.use(validateCsrf);
 // Garantiza que el esquema y las migraciones estén listos antes de cualquier ruta.
 app.use((req, res, next) => { ensureDb().then(() => next()).catch(next); });
 
+app.use('/',       require('./routes/seo'));
 app.use('/',       require('./routes/home'));
 app.use('/',       require('./routes/liquidador'));
 app.use('/',       require('./routes/services'));
