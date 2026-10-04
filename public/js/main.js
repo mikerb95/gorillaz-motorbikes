@@ -906,7 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (data.ok) {
-          document.querySelectorAll('.cart-badge').forEach(b => b.textContent = data.cartCount);
+          document.querySelectorAll('[data-count="cart"]').forEach(b => b.textContent = data.cartCount);
           openCartDrawer({
             name: this.dataset.name,
             image: this.dataset.image,

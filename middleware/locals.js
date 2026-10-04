@@ -3,6 +3,7 @@ const jwt     = require('jsonwebtoken');
 const { JWT_SECRET, RECAPTCHA_SITE_KEY } = require('../config');
 const { getUserById, getAllEvents } = require('../db');
 const catalog = require('../data/catalog');
+const navMenu = require('../data/nav-menu');
 const { readFlash } = require('../helpers/flash');
 const { fechaCO, horaCO, fechaHoraCO } = require('../helpers/datetime');
 const { assetVersion } = require('../helpers/assets');
@@ -59,6 +60,9 @@ const templateLocals = async (req, res, next) => {
 
   // Cache-busting para /static/* (servido con cache-control immutable de 1 año).
   res.locals.assetV = assetVersion;
+
+  // Menú de la navbar (escritorio y móvil salen de la misma lista).
+  res.locals.navMenu = navMenu;
 
   // Formateadores de fecha/hora en hora Colombia para todas las vistas EJS.
   // Convierten los timestamps UTC de la BD a America/Bogota (UTC−5).
