@@ -1,290 +1,237 @@
-<%- include('partials/head', { title: product.name + ' | Tienda', description: product.description || undefined, ogImage: product.image && product.image.indexOf('download.png') === -1 ? product.image : undefined }) %>
+<%- include('partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<%
+  var images = product.images || [];
+  var soldOut = product.stock === 0;
+  var hasVariants = variants.length > 0;
+  var stockText = product.stock === null ? 'Disponible' : (product.stock === 0 ? 'Agotado' : (product.stock <= 3 ? 'Últimas ' + product.stock + ' unidades' : 'Disponible'));
+%>
+<div class="tn-page">
+  <%- include('partials/tienda/crumbs', { crumbs: crumbs }) %>
+  <% if (product.status !== 'active' || (product.isDemo)) { %>
+    <p class="tn-admin-note">Vista previa de administrador: este producto <%= product.isDemo ? 'es de demostración y' : '' %> no está publicado.</p>
+  <% } %>
 
-    <main class="container pdp">
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb">
-            <a href="/">Inicio</a>
-            <span class="breadcrumb-sep">›</span>
-            <a href="/tienda">Tienda</a>
-            <% if (category) { %>
-                <span class="breadcrumb-sep">›</span>
-                <a href="/tienda?cat=<%= category.slug %>">
-                    <%= category.name %>
-                </a>
-                <% } %>
-                    <span class="breadcrumb-sep">›</span>
-                    <span>
-                        <%= product.name %>
-                    </span>
-        </nav>
+  <div class="tn-pdp">
+    <div class="tn-gallery" data-gallery>
+      <div class="tn-gallery-main">
+        <% if (images.length) { %>
+          <img src="<%= images[0].url %>" alt="<%= images[0].alt || product.name %>" width="800" height="800" fetchpriority="high" data-gallery-main />
+        <% } else { %>
+          <span class="tn-nophoto tn-nophoto--lg"><svg class="ni" aria-hidden="true"><use href="#ni-bike"/></svg><span>Foto del producto en preparación</span></span>
+        <% } %>
+        <% if (price.pct > 0) { %><span class="tn-tag tn-tag--off">-<%= price.pct %>%</span><% } %>
+      </div>
+      <% if (images.length > 1) { %>
+      <ul class="tn-thumbs" role="list">
+        <% images.forEach(function (img, i) { %>
+          <li><button type="button" class="tn-thumb<%= i === 0 ? ' is-active' : '' %>" data-src="<%= img.url %>" data-alt="<%= img.alt || product.name %>" aria-label="Ver imagen <%= i + 1 %> de <%= images.length %>">
+            <img src="<%= img.url %>" alt="" width="96" height="96" loading="lazy" decoding="async" />
+          </button></li>
+        <% }) %>
+      </ul>
+      <% } %>
+    </div>
 
-        <div class="pdp-layout">
-            <!-- Gallery Column -->
-            <% const pdpGallery = (product.gallery && product.gallery.length > 0) ? product.gallery : [product.image || '/images/download.png']; %>
-            <div class="pdp-gallery">
-                <div class="pdp-main-image" id="pdpMainImage">
-                    <img src="<%= pdpGallery[0] %>" alt="<%= product.name %>" id="pdpMainImg" />
-                    <% if (product.discount > 0) { %>
-                        <span class="pdp-discount-badge">-<%= product.discount %>%</span>
-                    <% } %>
-                    <% if (typeof product.stock === 'number' && product.stock === 0) { %>
-                        <span class="pdp-soldout-badge">Agotado</span>
-                    <% } %>
-                    <% if (pdpGallery.length > 1) { %>
-                        <button type="button" class="pdp-nav-btn pdp-prev" id="pdpPrev" aria-label="Imagen anterior">&#8249;</button>
-                        <button type="button" class="pdp-nav-btn pdp-next" id="pdpNext" aria-label="Imagen siguiente">&#8250;</button>
-                    <% } %>
-                </div>
-                <% if (pdpGallery.length > 1) { %>
-                    <div class="pdp-thumbs" id="pdpThumbs">
-                        <% pdpGallery.forEach((img, i) => { %>
-                            <button type="button" class="pdp-thumb <%= i === 0 ? 'is-active' : '' %>" data-idx="<%= i %>">
-                                <img src="<%= img %>" alt="Imagen <%= i + 1 %>" loading="lazy" />
-                            </button>
-                        <% }) %>
-                    </div>
-                <% } %>
-            </div>
+    <div class="tn-info">
+      <% if (product.brand) { %><p class="tn-card-brand"><%= product.brand %></p><% } %>
+      <h1 class="tn-pdp-title"><%= product.name %></h1>
+      <p class="tn-pdp-meta">
+        <% if (product.sku) { %><span>Ref. <%= product.sku %></span><% } %>
+        <% if (reviews.count) { %><a href="#resenas"><span class="tn-stars" style="--r:<%= reviews.average %>" aria-hidden="true"></span><%= reviews.average.toString().replace('.', ',') %> (<%= reviews.count %> reseña<%= reviews.count === 1 ? '' : 's' %>)</a><% } %>
+      </p>
 
-            <!-- Info Column -->
-            <div class="pdp-info">
-                <% if (product.brand) { %>
-                    <span class="pdp-brand">
-                        <%= product.brand %>
-                    </span>
-                    <% } %>
-                        <h1 class="pdp-title">
-                            <%= product.name %>
-                        </h1>
-                        <% if (product.sku) { %>
-                            <span class="muted" style="font-size:.85rem">SKU: <%= product.sku %></span>
-                            <% } %>
+      <% if (myBike) { %>
+        <p class="tn-fit <%= myBikeFits ? 'is-yes' : 'is-unknown' %>">
+          <% if (myBikeFits) { %><svg class="ni" aria-hidden="true"><use href="#ni-check"/></svg>Compatible con tu <%= myBike.brand %> <%= myBike.model %>
+          <% } else { %>No confirmado para tu <%= myBike.brand %> <%= myBike.model %>. <a href="<%= waProduct %>" target="_blank" rel="noopener">Pregúntanos</a><% } %>
+        </p>
+      <% } %>
 
-                                <!-- Price -->
-                                <div class="pdp-price-block">
-                                    <% if (product.discount> 0) { %>
-                                        <span class="pdp-price">$<%= Math.round(product.price * (1 - product.discount /
-                                                100)).toLocaleString('es-CO') %></span>
-                                        <span class="pdp-price-original">$<%= product.price.toLocaleString('es-CO') %>
-                                        </span>
-                                        <span class="pdp-discount-tag">
-                                            <%= product.discount %>% OFF
-                                        </span>
-                                        <% } else { %>
-                                            <span class="pdp-price">$<%= product.price.toLocaleString('es-CO') %></span>
-                                            <% } %>
-                                </div>
+      <div class="tn-pdp-price" data-price-block>
+        <strong class="tn-price-now" data-price-now><%= fmtCOP(price.final) %></strong>
+        <% if (price.final < price.base) { %><s class="tn-price-was" data-price-was><%= fmtCOP(price.base) %></s><% } %>
+        <% if (price.club && !price.isClubApplied) { %>
+          <p class="tn-price-club"><strong>Precio club <%= fmtCOP(price.club) %></strong> <% if (!user) { %><a href="/club/registro">Únete gratis al club</a><% } %></p>
+        <% } else if (price.isClubApplied) { %>
+          <p class="tn-price-club"><strong>Estás viendo tu precio club</strong></p>
+        <% } %>
+      </div>
+      <p class="tn-stock <%= soldOut ? 'is-out' : '' %>" data-stock><%= stockText %></p>
 
-                                <!-- Stock -->
-                                <div class="pdp-stock">
-                                    <% if (typeof product.stock==='number' && product.stock===0) { %>
-                                        <span class="chip chip-danger">Agotado</span>
-                                        <% } else if (typeof product.stock==='number' && product.stock <=5) { %>
-                                            <span class="chip chip-warning">Últimas <%= product.stock %> unidades</span>
-                                            <% } else if (typeof product.stock==='number' ) { %>
-                                                <span class="chip chip-success">En stock</span>
-                                                <% } %>
-                                </div>
+      <form class="tn-buy" data-buy-form data-product="<%= product.id %>" data-name="<%= product.name %>" data-image="<%= product.image || '' %>" action="/cart/add" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <input type="hidden" name="id" value="<%= product.id %>" />
+        <% if (hasVariants) { %>
+          <input type="hidden" name="variant" value="" data-variant-input />
+          <script type="application/json" data-variants><%- toJsonLd(variants.map(function (v) { return { id: v.id, color: v.color, size: v.size, final: v.price.final, base: v.price.base, finalText: fmtCOP(v.price.final), baseText: fmtCOP(v.price.base), stock: v.stock }; })) %></script>
+          <% if (colors.length) { %>
+          <fieldset class="tn-opts">
+            <legend>Color</legend>
+            <% colors.forEach(function (c, i) { %>
+              <label class="tn-opt"><input type="radio" name="opt_color" value="<%= c %>" required /><span><%= c %></span></label>
+            <% }) %>
+          </fieldset>
+          <% } %>
+          <% if (sizes.length) { %>
+          <fieldset class="tn-opts">
+            <legend>Talla</legend>
+            <% sizes.forEach(function (s) { %>
+              <label class="tn-opt"><input type="radio" name="opt_size" value="<%= s %>" required /><span><%= s %></span></label>
+            <% }) %>
+          </fieldset>
+          <% } %>
+          <p class="tn-opts-hint" data-variant-hint>Elige <%= colors.length && sizes.length ? 'color y talla' : (colors.length ? 'un color' : 'una talla') %>.</p>
+        <% } %>
 
-                                <!-- Add to Cart -->
-                                <div class="pdp-actions">
-                                    <div class="pdp-qty">
-                                        <button type="button" class="pdp-qty-btn" onclick="changeQty(-1)">−</button>
-                                        <input type="number" id="pdpQty" value="1" min="1"
-                                            max="<%= typeof product.stock === 'number' ? product.stock : 99 %>" />
-                                        <button type="button" class="pdp-qty-btn" onclick="changeQty(1)">+</button>
-                                    </div>
-                                    <button type="button" class="btn btn-primary pdp-add-btn" id="pdpAddCart"
-                                        <%=(typeof product.stock==='number' && product.stock===0) ? 'disabled' : '' %>
-                                        data-id="<%= product.id %>"
-                                        data-name="<%= product.name %>"
-                                        data-image="<%= pdpGallery[0] %>"
-                                        data-price="$<%= (product.discount > 0 ? Math.round(product.price * (1 - product.discount / 100)) : product.price).toLocaleString('es-CO') %>">
-                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <path d="M3 4h2l2.5 12h9l2-8H7.2" />
-                                                <circle cx="9" cy="20" r="1.5" />
-                                                <circle cx="17" cy="20" r="1.5" />
-                                            </svg>
-                                            Agregar al carrito
-                                    </button>
-                                </div>
-
-                                <!-- Description -->
-                                <% if (product.description) { %>
-                                    <div class="pdp-description">
-                                        <h3>Descripción</h3>
-                                        <p>
-                                            <%= product.description %>
-                                        </p>
-                                    </div>
-                                    <% } %>
-
-                                        <!-- Tags -->
-                                        <% if (product.tags && product.tags.length> 0) { %>
-                                            <div class="pdp-tags">
-                                                <% product.tags.forEach(tag=> { %>
-                                                    <a href="/tienda?q=<%= encodeURIComponent(tag) %>" class="chip">
-                                                        <%= tag %>
-                                                    </a>
-                                                    <% }) %>
-                                            </div>
-                                            <% } %>
-
-                                                <!-- Share -->
-                                                <div class="pdp-share">
-                                                    <span class="muted">Compartir:</span>
-                                                    <a href="https://wa.me/?text=<%= encodeURIComponent(product.name + ' — $' + product.price.toLocaleString('es-CO') + ' en Gorillaz Motorbikes') %>"
-                                                        target="_blank" rel="noopener" class="pdp-share-btn"
-                                                        title="WhatsApp">
-                                                        <svg viewBox="0 0 24 24" width="18" height="18"
-                                                            fill="currentColor">
-                                                            <path
-                                                                d="M17.47 14.38c-.3-.15-1.73-.85-2-.94-.27-.1-.47-.15-.67.15-.2.3-.77.94-.94 1.14-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.48-1.77-1.65-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.92-2.2-.24-.58-.48-.5-.67-.5H8.1c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.5 1.69.64.71.23 1.35.2 1.86.12.57-.09 1.73-.71 1.98-1.4.24-.69.24-1.28.17-1.4-.07-.12-.27-.2-.57-.35z" />
-                                                        </svg>
-                                                    </a>
-                                                </div>
-            </div>
+        <div class="tn-qty">
+          <label for="tn-qty">Cantidad</label>
+          <div class="tn-qty-ctrl">
+            <button type="button" data-qty="-1" aria-label="Quitar una unidad">-</button>
+            <input id="tn-qty" name="qty" type="number" inputmode="numeric" min="1" max="<%= product.stock === null ? 99 : Math.max(1, product.stock) %>" value="1" />
+            <button type="button" data-qty="1" aria-label="Agregar una unidad">+</button>
+          </div>
         </div>
 
-        <!-- Related Products -->
-        <% if (related && related.length> 0) { %>
-            <section class="pdp-related">
-                <h2 class="section-title">Productos relacionados</h2>
-                <div class="grid products-grid">
-                    <% related.forEach(p=> { %>
-                        <article class="card product-card">
-                            <a href="/tienda/<%= p.id %>" class="product-card-link">
-                                <div class="card-media" aria-hidden="true"
-                                    style="background-image:url('<%= p.image %>');background-size:cover;background-position:center">
-                                    <% if (p.discount> 0) { %>
-                                        <span class="product-discount-chip">-<%= p.discount %>%</span>
-                                        <% } %>
-                                            <% if (typeof p.stock==='number' && p.stock===0) { %>
-                                                <span class="product-soldout-chip">Agotado</span>
-                                                <% } %>
-                                </div>
-                                <div class="card-body">
-                                    <% if (p.brand) { %><span class="product-brand">
-                                            <%= p.brand %>
-                                        </span>
-                                        <% } %>
-                                            <h3 class="card-title">
-                                                <%= p.name %>
-                                            </h3>
-                                            <div class="price-row">
-                                                <% if (p.discount> 0) { %>
-                                                    <span class="price">$<%= Math.round(p.price * (1 - p.discount /
-                                                            100)).toLocaleString('es-CO') %></span>
-                                                    <span class="price-old">$<%= p.price.toLocaleString('es-CO') %>
-                                                    </span>
-                                                    <% } else { %>
-                                                        <span class="price">$<%= p.price.toLocaleString('es-CO') %>
-                                                        </span>
-                                                        <% } %>
-                                            </div>
-                                </div>
-                            </a>
-                        </article>
-                        <% }) %>
-                </div>
-            </section>
-            <% } %>
-    </main>
+        <% if (product.installable) { %>
+        <label class="tn-addon">
+          <input type="checkbox" name="install" value="1" />
+          <span class="tn-addon-body">
+            <strong>Instalarlo en el taller</strong>
+            <span><%= typeof product.installPrice === 'number' ? 'Instalación: ' + fmtCOP(product.installPrice) + ' por unidad.' : 'El valor de la instalación se confirma en el taller.' %><% if (product.installMinutes) { %> Tiempo estimado: <%= product.installMinutes %> min.<% } %> Eliges la fecha al pagar.</span>
+          </span>
+        </label>
+        <% } %>
 
-    <script>
-        const pdpImgs = <%- JSON.stringify(pdpGallery) %>;
-        let pdpCur = 0;
+        <div class="tn-cta">
+          <button type="submit" name="buyNow" value="1" class="tn-btn tn-btn--primary tn-btn--lg" data-buy-now <%= soldOut ? 'disabled' : '' %>>Comprar ahora</button>
+          <button type="submit" class="tn-btn tn-btn--ghost tn-btn--lg" data-add-cart <%= soldOut ? 'disabled' : '' %>><svg class="ni" aria-hidden="true"><use href="#ni-cart"/></svg>Agregar al carrito</button>
+        </div>
+      </form>
 
-        function pdpGoTo(idx) {
-            pdpCur = (idx + pdpImgs.length) % pdpImgs.length;
-            const mainImg = document.getElementById('pdpMainImg');
-            mainImg.classList.add('fade-out');
-            setTimeout(() => {
-                mainImg.src = pdpImgs[pdpCur];
-                mainImg.classList.remove('fade-out');
-            }, 150);
-            document.querySelectorAll('.pdp-thumb').forEach((t, i) => {
-                t.classList.toggle('is-active', i === pdpCur);
-            });
-            // Scroll thumb into view
-            const activeThumb = document.querySelectorAll('.pdp-thumb')[pdpCur];
-            activeThumb?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
+      <ul class="tn-assure">
+        <% if (deliveryMethods.length) { %><li><svg class="ni" aria-hidden="true"><use href="#ni-bike"/></svg><span><strong>Entrega:</strong> <%= deliveryMethods.join(', ') %>. <a href="/envios">Ver envíos</a></span></li><% } %>
+        <% if (product.deliveryTime) { %><li><svg class="ni" aria-hidden="true"><use href="#ni-clock"/></svg><span><strong>Tiempo de entrega:</strong> <%= product.deliveryTime %></span></li><% } %>
+        <li><svg class="ni" aria-hidden="true"><use href="#ni-shield"/></svg><span><strong>Garantía:</strong> <%= product.warranty || 'garantía legal según la Ley 1480 de 2011.' %> <a href="/garantias">Cómo funciona</a></span></li>
+        <li><svg class="ni" aria-hidden="true"><use href="#ni-check"/></svg><span><a href="/cambios-y-devoluciones">Cambios y devoluciones</a> · <a href="/derecho-de-retracto">Derecho de retracto</a></span></li>
+      </ul>
 
-        document.querySelectorAll('.pdp-thumb').forEach(btn => {
-            btn.addEventListener('click', () => pdpGoTo(parseInt(btn.dataset.idx)));
-        });
+      <div class="tn-wa-row">
+        <a class="tn-btn tn-btn--wa" href="<%= waProduct %>" target="_blank" rel="noopener">Preguntar por WhatsApp</a>
+        <a class="tn-link" href="<%= waShare %>" target="_blank" rel="noopener">Compartir</a>
+      </div>
+    </div>
+  </div>
 
-        document.getElementById('pdpPrev')?.addEventListener('click', () => pdpGoTo(pdpCur - 1));
-        document.getElementById('pdpNext')?.addEventListener('click', () => pdpGoTo(pdpCur + 1));
+  <div class="tn-details">
+    <% if (product.description) { %>
+    <section class="tn-detail">
+      <h2 class="tn-h2">Descripción</h2>
+      <% product.description.split(/\n{2,}/).forEach(function (para) { %><p><%= para %></p><% }) %>
+    </section>
+    <% } %>
 
-        // Keyboard navigation
-        document.addEventListener('keydown', e => {
-            if (e.key === 'ArrowLeft') pdpGoTo(pdpCur - 1);
-            if (e.key === 'ArrowRight') pdpGoTo(pdpCur + 1);
-        });
+    <% if (product.specs && product.specs.length) { %>
+    <section class="tn-detail">
+      <h2 class="tn-h2">Especificaciones</h2>
+      <dl class="tn-specs">
+        <% product.specs.forEach(function (s) { %><div><dt><%= s.label %></dt><dd><%= s.value %></dd></div><% }) %>
+      </dl>
+    </section>
+    <% } %>
 
-        // Touch / swipe
-        let pdpTx = 0;
-        const pdpMainEl = document.getElementById('pdpMainImage');
-        pdpMainEl?.addEventListener('touchstart', e => { pdpTx = e.touches[0].clientX; }, { passive: true });
-        pdpMainEl?.addEventListener('touchend', e => {
-            const dx = e.changedTouches[0].clientX - pdpTx;
-            if (Math.abs(dx) > 40) pdpGoTo(pdpCur + (dx < 0 ? 1 : -1));
-        });
+    <% if (product.includes) { %>
+    <section class="tn-detail">
+      <h2 class="tn-h2">Qué incluye</h2>
+      <ul class="tn-list"><% product.includes.split(/\n+/).filter(Boolean).forEach(function (l) { %><li><%= l.replace(/^[-*]\s*/, '') %></li><% }) %></ul>
+    </section>
+    <% } %>
 
-        function changeQty(delta) {
-            const input = document.getElementById('pdpQty');
-            const max = parseInt(input.max) || 99;
-            const val = Math.max(1, Math.min(max, parseInt(input.value || '1') + delta));
-            input.value = val;
-        }
-        // AJAX Add to cart
-        document.getElementById('pdpAddCart')?.addEventListener('click', async function () {
-            const id = this.dataset.id;
-            const qty = document.getElementById('pdpQty').value;
-            const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-            try {
-                const res = await fetch('/cart/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': csrf },
-                    body: JSON.stringify({ id, qty: parseInt(qty), _csrf: csrf })
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    document.querySelectorAll('[data-count="cart"]').forEach(b => b.textContent = data.cartCount);
-                    if (typeof openCartDrawer === 'function') {
-                        openCartDrawer({
-                            name: this.dataset.name,
-                            image: this.dataset.image,
-                            price: this.dataset.price,
-                            count: data.cartCount,
-                        });
-                    } else {
-                        showToast(data.message || 'Añadido al carrito');
-                    }
-                } else {
-                    showToast(data.message || 'Error', true);
-                }
-            } catch (e) {
-                showToast('Error de conexión', true);
-            }
-        });
+    <% if (compat.length || bikeTypeNames.length) { %>
+    <section class="tn-detail">
+      <h2 class="tn-h2">Compatibilidad</h2>
+      <% if (compat.length) { %>
+        <ul class="tn-compat">
+          <% compat.forEach(function (c) { %><li><a href="<%= c.href %>"><strong><%= c.label %></strong><% if (c.model.cc) { %> <%= c.model.cc %> cc<% } %><% if (c.years) { %><span><%= c.years %></span><% } %></a></li><% }) %>
+        </ul>
+      <% } %>
+      <% if (bikeTypeNames.length) { %><p class="tn-muted">Pensado para motos tipo <%= bikeTypeNames.join(', ').toLowerCase() %>.</p><% } %>
+      <p class="tn-muted">¿Tu moto no aparece? <a href="<%= waProduct %>" target="_blank" rel="noopener">Pregúntanos antes de comprar</a>.</p>
+    </section>
+    <% } %>
+  </div>
 
-        function showToast(msg, isError) {
-            let toast = document.getElementById('toast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'toast';
-                toast.className = 'toast';
-                document.body.appendChild(toast);
-            }
-            toast.textContent = msg;
-            toast.className = 'toast ' + (isError ? 'toast-error' : 'toast-success') + ' toast-show';
-            clearTimeout(toast._timer);
-            toast._timer = setTimeout(() => { toast.classList.remove('toast-show'); }, 3000);
-        }
-    </script>
+  <% if (combos.length) { %>
+  <section class="tn-section">
+    <h2 class="tn-h2">Ahorra en combo</h2>
+    <ul class="tn-combo-links">
+      <% combos.forEach(function (c) { %><li><a href="/tienda/combos#<%= c.slug %>"><strong><%= c.name %></strong><span><%= c.kind === 'kit' ? 'Kit con ' + c.kitDiscount + '% de descuento' : 'Descuento escalonado al combinar productos' %></span></a></li><% }) %>
+    </ul>
+  </section>
+  <% } %>
 
-    <%- include('partials/footer') %>
+  <% if (together.length) { %>
+  <section class="tn-section">
+    <h2 class="tn-h2">Se compran junto con este</h2>
+    <div class="tn-grid tn-grid--row"><% together.forEach(function (p) { %><%- include('partials/tienda/card', { p: p, price: priceOf(p) }) %><% }) %></div>
+  </section>
+  <% } %>
+
+  <% if (services.length) { %>
+  <section class="tn-section">
+    <h2 class="tn-h2">Servicios relacionados</h2>
+    <ul class="tn-services">
+      <% services.forEach(function (s) { %><li><a href="<%= s.href %>"><strong><%= s.name %></strong><span>Ver servicio y agendar</span></a></li><% }) %>
+    </ul>
+  </section>
+  <% } %>
+
+  <% if (related.length) { %>
+  <section class="tn-section">
+    <h2 class="tn-h2">También te puede servir</h2>
+    <div class="tn-grid tn-grid--row"><% related.forEach(function (p) { %><%- include('partials/tienda/card', { p: p, price: priceOf(p) }) %><% }) %></div>
+  </section>
+  <% } %>
+
+  <section class="tn-section tn-reviews" id="resenas">
+    <h2 class="tn-h2">Reseñas de compradores</h2>
+    <% if (reviews.count) { %>
+      <p class="tn-reviews-sum"><span class="tn-stars" style="--r:<%= reviews.average %>" aria-hidden="true"></span><strong><%= reviews.average.toString().replace('.', ',') %> de 5</strong> · <%= reviews.count %> reseña<%= reviews.count === 1 ? '' : 's' %> verificada<%= reviews.count === 1 ? '' : 's' %></p>
+      <ul class="tn-review-list">
+        <% reviews.items.forEach(function (r) { %>
+          <li>
+            <p class="tn-review-head"><span class="tn-stars" style="--r:<%= r.rating %>" aria-label="<%= r.rating %> de 5"></span><strong><%= r.authorName %></strong> <span class="tn-muted"><%= fechaCO(r.createdAt) %></span></p>
+            <p><%= r.body %></p>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="tn-muted">Este producto aún no tiene reseñas. Solo publicamos opiniones de personas que lo compraron.</p>
+    <% } %>
+    <details class="tn-review-form">
+      <summary>¿Lo compraste? Cuéntanos qué tal</summary>
+      <form method="post" action="<%= product.url %>/resena">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <div class="tn-row">
+          <div class="tn-field"><label for="rv-code">Número de pedido</label><input id="rv-code" name="orderCode" placeholder="GZ-XXXXXX" required autocomplete="off" /></div>
+          <div class="tn-field"><label for="rv-email">Correo de la compra</label><input id="rv-email" name="email" type="email" required /></div>
+        </div>
+        <div class="tn-field"><label for="rv-name">Nombre que se mostrará</label><input id="rv-name" name="name" maxlength="60" required /></div>
+        <fieldset class="tn-field tn-rate">
+          <legend>Calificación</legend>
+          <% [5,4,3,2,1].forEach(function (n) { %><label><input type="radio" name="rating" value="<%= n %>" required /><span><%= n %></span></label><% }) %>
+        </fieldset>
+        <div class="tn-field"><label for="rv-body">Tu opinión</label><textarea id="rv-body" name="body" rows="4" maxlength="1500" required></textarea></div>
+        <button class="tn-btn tn-btn--primary" type="submit">Enviar reseña</button>
+        <p class="tn-muted">Verificamos la compra con el número de pedido y el correo. La reseña se publica después de revisarla.</p>
+      </form>
+    </details>
+  </section>
+</div>
+
+<div class="tn-sticky-buy" data-sticky-buy hidden>
+  <span><strong><%= fmtCOP(price.final) %></strong></span>
+  <button type="button" class="tn-btn tn-btn--primary" data-sticky-go <%= soldOut ? 'disabled' : '' %>><%= hasVariants ? 'Elegir opción' : 'Comprar ahora' %></button>
+</div>
+
+<script defer src="/static/js/tienda.js?v=<%= assetV('js/tienda.js') %>"></script>
+<%- include('partials/footer') %>
