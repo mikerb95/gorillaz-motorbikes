@@ -1,0 +1,45 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'combos' }) %>
+<% var c = edit || { kind: 'armable', tiers: [], items: [], active: false }; var tiers = c.tiers.length ? c.tiers : [{ min: 2, pct: '' }, { min: 3, pct: '' }]; %>
+<div class="crm-card">
+  <div class="crm-card-title"><%= edit ? 'Editar combo' : 'Nuevo combo o kit' %></div>
+  <p class="ash-help">Armable: el cliente elige productos del grupo y el descuento sube con la cantidad. Kit: todas las piezas juntas con un descuento fijo. El descuento se calcula solo en el carrito y en el pago.</p>
+  <form method="post" action="/admin/tienda/combos">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% if (edit) { %><input type="hidden" name="id" value="<%= c.id %>" /><% } %>
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Nombre *</label><input name="name" required value="<%= c.name || '' %>" /></div>
+      <div class="crm-form-group"><label>Tipo</label><select name="kind"><option value="armable" <%= c.kind === 'armable' ? 'selected' : '' %>>Armable (escalonado)</option><option value="kit" <%= c.kind === 'kit' ? 'selected' : '' %>>Kit prearmado</option></select></div>
+      <div class="crm-form-group"><label>Moto (opcional, para kits por modelo)</label><select name="bikeModelId"><option value="">Ninguna</option><% bikeModels.forEach(function (m) { %><option value="<%= m.id %>" <%= c.bikeModelId === m.id ? 'selected' : '' %>><%= m.brand %> <%= m.model %></option><% }) %></select></div>
+      <div class="crm-form-group crm-form-full"><label>Descripción</label><input name="description" value="<%= c.description || '' %>" /></div>
+      <div class="crm-form-group"><label>Escalones (armable)</label>
+        <% tiers.forEach(function (t, i) { %><div class="ash-row" style="margin-bottom:6px">Desde <input name="tiers[<%= i %>][min]" type="number" min="2" value="<%= t.min %>" style="width:70px" /> unidades: <input name="tiers[<%= i %>][pct]" type="number" min="0" max="100" value="<%= t.pct %>" style="width:70px" /> %</div><% }) %>
+        <div class="ash-row">Desde <input name="tiers[9][min]" type="number" min="2" style="width:70px" /> unidades: <input name="tiers[9][pct]" type="number" min="0" max="100" style="width:70px" /> %</div>
+      </div>
+      <div class="crm-form-group"><label>Descuento del kit (%)</label><input name="kitDiscount" type="number" min="0" max="100" value="<%= c.kitDiscount || '' %>" /></div>
+      <div class="crm-form-group crm-form-full"><label>Productos del grupo (y cantidad para kits)</label>
+        <div style="max-height:280px;overflow:auto;border:1px solid #e4e4e7;border-radius:10px;padding:8px">
+          <% products.forEach(function (p) { var it = c.items.find(function (x) { return x.productId === p.id; }); %>
+            <div class="ash-row" style="justify-content:space-between;padding:4px 0"><label class="ash-check"><input type="checkbox" name="products" value="<%= p.id %>" <%= it ? 'checked' : '' %> /> <%= p.name %> <span class="muted"><%= fmtCOP(p.price) %></span></label><input name="qty[<%= p.id %>]" type="number" min="1" value="<%= it ? it.qty : 1 %>" style="width:64px" aria-label="Cantidad en el kit" /></div>
+          <% }) %>
+        </div>
+      </div>
+      <div class="crm-form-group"><label class="ash-check"><input type="checkbox" name="active" value="1" <%= c.active ? 'checked' : '' %> /> Activo</label></div>
+    </div>
+    <div class="ash-row"><button class="btn btn-primary btn-sm" type="submit">Guardar</button><% if (edit) { %><a class="btn btn-ghost btn-sm" href="/admin/tienda/combos">Cancelar</a><% } %></div>
+  </form>
+</div>
+<div class="crm-table-wrap"><table class="crm-table">
+  <thead><tr><th>Combo</th><th>Tipo</th><th>Descuento</th><th>Productos</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+    <% if (!combos.length) { %><tr><td colspan="6" class="muted">Sin combos todavía.</td></tr><% } %>
+    <% combos.forEach(function (x) { %><tr>
+      <td><strong><%= x.name %></strong></td><td><%= x.kind === 'kit' ? 'Kit' : 'Armable' %></td>
+      <td><%= x.kind === 'kit' ? x.kitDiscount + '%' : x.tiers.map(function (t) { return t.min + '+: ' + t.pct + '%'; }).join(' · ') %></td>
+      <td><%= x.items.map(function (i) { var p = findById(i.productId); return p ? (i.qty > 1 ? i.qty + ' x ' : '') + p.name : ''; }).filter(Boolean).join(', ') %></td>
+      <td><%- x.active ? '<span class="ash-pill ok">Activo</span>' : '<span class="ash-pill">Inactivo</span>' %></td>
+      <td class="crm-table-actions"><a class="btn btn-ghost btn-xs" href="/admin/tienda/combos?id=<%= x.id %>">Editar</a>
+        <form method="post" action="/admin/tienda/combos/eliminar" style="display:inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="id" value="<%= x.id %>" /><button class="btn btn-ghost btn-xs">Eliminar</button></form></td>
+    </tr><% }) %>
+  </tbody></table></div>
+<%- include('../partials/admin-foot') %>

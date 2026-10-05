@@ -1,0 +1,32 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'categorias' }) %>
+<p class="ash-help" style="margin-bottom:14px">Categoría = tipo de producto. Las categorías sin productos publicados no se muestran en la tienda. El texto de introducción aparece arriba del listado y ayuda al SEO.</p>
+<% categories.forEach(function (c) { %>
+<details class="crm-card">
+  <summary style="cursor:pointer;font-weight:800"><%= c.name %> <span class="muted ash-mono">/tienda/c/<%= c.slug %></span> <span class="ash-pill"><%= counts.get(c.slug) || 0 %> productos</span></summary>
+  <form method="post" action="/admin/tienda/categorias" style="margin-top:14px">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="slug" value="<%= c.slug %>" />
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Nombre</label><input name="name" value="<%= c.name %>" required /></div>
+      <div class="crm-form-group"><label>Orden</label><input name="position" type="number" value="<%= c.position %>" /></div>
+      <div class="crm-form-group crm-form-full"><label>Introducción</label><textarea name="intro" rows="3"><%= c.intro %></textarea></div>
+      <div class="crm-form-group"><label>Título SEO</label><input name="seoTitle" maxlength="70" value="<%= c.seoTitle %>" /></div>
+      <div class="crm-form-group"><label>Descripción SEO</label><input name="seoDescription" maxlength="170" value="<%= c.seoDescription %>" /></div>
+    </div>
+    <div class="ash-row"><button class="btn btn-primary btn-sm" type="submit">Guardar</button></div>
+  </form>
+  <% if (!(counts.get(c.slug) > 0)) { %>
+  <form method="post" action="/admin/tienda/categorias/eliminar" style="margin-top:8px"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="slug" value="<%= c.slug %>" /><button class="btn btn-ghost btn-xs" type="submit">Eliminar categoría</button></form>
+  <% } %>
+</details>
+<% }) %>
+<div class="crm-card">
+  <div class="crm-card-title">Nueva categoría</div>
+  <form method="post" action="/admin/tienda/categorias" class="ash-row">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="crm-form-group"><label>Nombre</label><input name="name" required /></div>
+    <div class="crm-form-group"><label>Orden</label><input name="position" type="number" value="<%= categories.length %>" /></div>
+    <button class="btn btn-primary btn-sm" type="submit">Crear</button>
+  </form>
+</div>
+<%- include('../partials/admin-foot') %>

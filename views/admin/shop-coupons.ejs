@@ -1,0 +1,30 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'cupones' }) %>
+<div class="crm-card"><div class="crm-card-title">Crear o editar cupón</div>
+  <form method="post" action="/admin/tienda/cupones">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Código</label><input name="code" required style="text-transform:uppercase" /></div>
+      <div class="crm-form-group"><label>Tipo</label><select name="kind"><option value="pct">Porcentaje</option><option value="amount">Valor fijo (COP)</option></select></div>
+      <div class="crm-form-group"><label>Valor</label><input name="value" inputmode="numeric" required /></div>
+      <div class="crm-form-group"><label>Compra mínima (COP)</label><input name="minSubtotal" inputmode="numeric" /></div>
+      <div class="crm-form-group"><label>Usos máximos</label><input name="maxUses" type="number" min="1" value="1" /></div>
+      <div class="crm-form-group"><label>Solo para este correo</label><input name="email" type="email" /></div>
+      <div class="crm-form-group"><label>Vence</label><input name="expires" type="date" /></div>
+      <div class="crm-form-group"><label class="ash-check"><input type="checkbox" name="active" value="1" checked /> Activo</label></div>
+    </div>
+    <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+  </form></div>
+<div class="crm-table-wrap"><table class="crm-table">
+  <thead><tr><th>Código</th><th>Descuento</th><th>Usos</th><th>Origen</th><th>Vence</th><th>Estado</th></tr></thead>
+  <tbody>
+    <% if (!coupons.length) { %><tr><td colspan="6" class="muted">Sin cupones.</td></tr><% } %>
+    <% coupons.forEach(function (c) { %><tr>
+      <td class="ash-mono"><strong><%= c.code %></strong><% if (c.email) { %><br><span class="muted"><%= c.email %></span><% } %></td>
+      <td><%= c.kind === 'pct' ? c.value + '%' : fmtCOP(c.value) %><%= c.minSubtotal ? ' (mín. ' + fmtCOP(c.minSubtotal) + ')' : '' %></td>
+      <td><%= c.uses %> / <%= c.maxUses %></td><td><%= c.source %></td>
+      <td><%= c.expiresAt ? fechaCO(c.expiresAt) : 'Sin vencimiento' %></td>
+      <td><%- c.active ? '<span class="ash-pill ok">Activo</span>' : '<span class="ash-pill">Inactivo</span>' %></td>
+    </tr><% }) %>
+  </tbody></table></div>
+<%- include('../partials/admin-foot') %>

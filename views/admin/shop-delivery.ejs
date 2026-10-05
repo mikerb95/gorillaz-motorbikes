@@ -1,0 +1,34 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'entregas' }) %>
+<form method="post" action="/admin/tienda/entregas">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <div class="crm-card">
+    <div class="crm-card-title">Recoger en el taller</div>
+    <label class="ash-check"><input type="checkbox" name="pickupEnabled" value="1" <%= cfg.pickup.enabled ? 'checked' : '' %> /> Activo (gratis)</label>
+    <div class="crm-form-group" style="margin-top:10px"><label>Nota para el cliente</label><input name="pickupNote" value="<%= cfg.pickup.note %>" placeholder="Ej: te avisamos por WhatsApp cuando esté listo" /></div>
+  </div>
+  <div class="crm-card">
+    <div class="crm-card-title">Domicilio en Bogotá por localidad</div>
+    <label class="ash-check"><input type="checkbox" name="localEnabled" value="1" <%= cfg.local.enabled ? 'checked' : '' %> /> Activo</label>
+    <p class="ash-help">Solo se ofrecen las localidades marcadas y con tarifa. Las demás no aparecen en el checkout.</p>
+    <table class="crm-table ash-table" style="margin-top:10px"><thead><tr><th>Cubre</th><th>Localidad</th><th>Tarifa (COP)</th></tr></thead><tbody>
+      <% cfg.local.zones.forEach(function (z) { %><tr><td><input type="checkbox" name="zoneEnabled" value="<%= z.slug %>" <%= z.enabled ? 'checked' : '' %> style="width:auto" /></td><td><%= z.name %></td><td><input name="zoneFee[<%= z.slug %>]" inputmode="numeric" value="<%= typeof z.fee === 'number' ? z.fee : '' %>" /></td></tr><% }) %>
+    </tbody></table>
+    <div class="crm-form-grid" style="margin-top:12px">
+      <div class="crm-form-group"><label>Gratis desde (COP)</label><input name="localFreeOver" inputmode="numeric" value="<%= cfg.local.freeOver || '' %>" placeholder="vacío = nunca gratis" /></div>
+      <div class="crm-form-group"><label>Tiempo de entrega</label><input name="localEta" value="<%= cfg.local.eta %>" placeholder="Ej: entrega en 1 a 2 días hábiles" /></div>
+    </div>
+  </div>
+  <div class="crm-card">
+    <div class="crm-card-title">Envío nacional</div>
+    <label class="ash-check"><input type="checkbox" name="nationalEnabled" value="1" <%= cfg.national.enabled ? 'checked' : '' %> /> Activo</label>
+    <div class="crm-form-grid" style="margin-top:10px">
+      <div class="crm-form-group"><label>Tarifa (COP)</label><input name="nationalFee" inputmode="numeric" value="<%= typeof cfg.national.fee === 'number' ? cfg.national.fee : '' %>" /></div>
+      <div class="crm-form-group"><label>Gratis desde (COP)</label><input name="nationalFreeOver" inputmode="numeric" value="<%= cfg.national.freeOver || '' %>" /></div>
+      <div class="crm-form-group"><label>Tiempo de entrega</label><input name="nationalEta" value="<%= cfg.national.eta %>" /></div>
+      <div class="crm-form-group"><label>Nota (transportadora, cobertura)</label><input name="nationalNote" value="<%= cfg.national.note %>" /></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Guardar entregas</button>
+</form>
+<%- include('../partials/admin-foot') %>

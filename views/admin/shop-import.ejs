@@ -1,0 +1,26 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'importar' }) %>
+<div class="crm-card"><div class="crm-card-title">Importar productos desde CSV</div>
+  <p class="ash-help">Usa la <a href="/admin/tienda/plantilla.csv">plantilla</a> o <a href="/admin/tienda/exportar.csv">exporta el catálogo actual</a>, edítalo en Excel y súbelo. Separador coma o punto y coma. Listas con "|". Compatibilidad: <span class="ash-mono">slug-modelo</span> o <span class="ash-mono">slug-modelo:2019-2023</span>. Varias filas con el mismo slug son variantes. Los productos existentes se actualizan por slug o SKU. Primero verás una vista previa; nada se guarda hasta que confirmes.</p>
+  <p class="ash-help ash-mono"><%= headers.join(' ; ') %></p>
+  <form method="post" action="/admin/tienda/importar" enctype="multipart/form-data" class="ash-row" style="margin-top:10px">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <input type="file" name="csv" accept=".csv,text/csv" required />
+    <button class="btn btn-primary btn-sm" type="submit">Ver vista previa</button>
+  </form></div>
+<% if (preview) { %>
+<div class="crm-card"><div class="crm-card-title">Vista previa</div>
+  <% if (preview.errors.length) { %><div class="ash-err"><strong>Corrige el archivo antes de importar:</strong><ul><% preview.errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div><% } %>
+  <table class="crm-table"><thead><tr><th>Línea</th><th>Acción</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Variantes</th><th>Estado</th></tr></thead><tbody>
+    <% preview.items.forEach(function (it) { %><tr><td><%= it.line %></td><td><span class="ash-pill <%= it.action === 'crear' ? 'ok' : 'warn' %>"><%= it.action %></span></td><td><%= it.product.name %><br><span class="muted ash-mono">/tienda/<%= it.product.slug %></span></td><td><%= it.product.category %></td><td><%= fmtCOP(it.product.price) %></td><td><%= (it.product.variants || []).length %></td><td><%= it.product.status %></td></tr><% }) %>
+  </tbody></table>
+  <% if (!preview.errors.length && preview.items.length) { %>
+  <form method="post" action="/admin/tienda/importar" style="margin-top:12px">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="apply" value="1" />
+    <textarea name="csvText" hidden><%= csvText %></textarea>
+    <button class="btn btn-primary" type="submit">Importar <%= preview.items.length %> productos</button>
+  </form>
+  <% } %>
+</div>
+<% } %>
+<%- include('../partials/admin-foot') %>

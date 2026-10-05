@@ -1,0 +1,44 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'motos' }) %>
+<% var m = edit || {}; %>
+<div class="crm-card">
+  <div class="crm-card-title"><%= edit ? 'Editar ' + m.brand + ' ' + m.model : 'Nuevo modelo de moto' %></div>
+  <form method="post" action="/admin/tienda/motos">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% if (edit) { %><input type="hidden" name="id" value="<%= m.id %>" /><% } %>
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Marca *</label><input name="brand" required value="<%= m.brand || '' %>" /></div>
+      <div class="crm-form-group"><label>Modelo *</label><input name="model" required value="<%= m.model || '' %>" /></div>
+      <div class="crm-form-group"><label>Cilindraje (cc)</label><input name="cc" type="number" value="<%= m.cc || '' %>" /></div>
+      <div class="crm-form-group"><label>Tipo</label><select name="bikeType"><option value="">Sin definir</option><% bikeTypes.forEach(function (t) { %><option value="<%= t.slug %>" <%= m.bikeType === t.slug ? 'selected' : '' %>><%= t.name %></option><% }) %></select></div>
+      <div class="crm-form-group"><label>Año desde</label><input name="yearFrom" type="number" value="<%= m.yearFrom || '' %>" /></div>
+      <div class="crm-form-group"><label>Año hasta</label><input name="yearTo" type="number" value="<%= m.yearTo || '' %>" placeholder="vacío = vigente" /></div>
+      <div class="crm-form-group"><label>URL (slug)</label><input name="slug" value="<%= m.slug || '' %>" placeholder="se genera de marca y modelo" /></div>
+      <div class="crm-form-group crm-form-full"><label>Texto de la landing</label><textarea name="intro" rows="5" placeholder="Texto propio sobre este modelo: qué accesorios recomiendan, mantenimiento típico, qué instalan en el taller. Sin este texto la landing no se indexa."><%= m.intro || '' %></textarea></div>
+      <div class="crm-form-group"><label>Título SEO</label><input name="seoTitle" maxlength="70" value="<%= m.seoTitle || '' %>" /></div>
+      <div class="crm-form-group"><label>Descripción SEO</label><input name="seoDescription" maxlength="170" value="<%= m.seoDescription || '' %>" /></div>
+    </div>
+    <div class="ash-row"><button class="btn btn-primary btn-sm" type="submit">Guardar</button><% if (edit) { %><a class="btn btn-ghost btn-sm" href="/admin/tienda/motos">Cancelar</a><% } %></div>
+  </form>
+</div>
+<div class="crm-table-wrap">
+  <table class="crm-table">
+    <thead><tr><th>Modelo</th><th>Landing</th><th>Productos</th><th>Texto</th><th></th></tr></thead>
+    <tbody>
+      <% if (!models.length) { %><tr><td colspan="5" class="muted">Aún no hay modelos. Crea los de las motos que más atiende el taller.</td></tr><% } %>
+      <% models.forEach(function (x) { %>
+      <tr>
+        <td><strong><%= x.brand %> <%= x.model %></strong><%= x.cc ? ' ' + x.cc + ' cc' : '' %><br><span class="muted"><%= x.yearFrom || '' %><%= x.yearFrom || x.yearTo ? ' - ' : '' %><%= x.yearTo || (x.yearFrom ? 'actual' : '') %></span></td>
+        <td><a class="ash-mono" href="/tienda/moto/<%= x.slug %>" target="_blank" rel="noopener">/tienda/moto/<%= x.slug %></a></td>
+        <td><%= counts.get(x.id) || 0 %></td>
+        <td><%- x.intro ? '<span class="ash-pill ok">Indexable</span>' : '<span class="ash-pill warn">Sin texto (noindex)</span>' %></td>
+        <td class="crm-table-actions">
+          <a class="btn btn-ghost btn-xs" href="/admin/tienda/motos?id=<%= x.id %>">Editar</a>
+          <form method="post" action="/admin/tienda/motos/eliminar" style="display:inline" onsubmit="return confirm('¿Eliminar el modelo y sus compatibilidades?')"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="id" value="<%= x.id %>" /><button class="btn btn-ghost btn-xs" type="submit">Eliminar</button></form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/admin-foot') %>

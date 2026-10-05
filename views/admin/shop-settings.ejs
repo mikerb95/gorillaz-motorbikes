@@ -1,0 +1,39 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'ajustes' }) %>
+<form method="post" action="/admin/tienda/ajustes">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <div class="crm-card"><div class="crm-card-title">Banner promocional (home y tienda)</div>
+    <label class="ash-check"><input type="checkbox" name="bannerEnabled" value="1" <%= cfg.banner.enabled ? 'checked' : '' %> /> Mostrar</label>
+    <div class="crm-form-grid" style="margin-top:10px">
+      <div class="crm-form-group crm-form-full"><label>Texto</label><input name="bannerText" maxlength="160" value="<%= cfg.banner.text %>" /></div>
+      <div class="crm-form-group"><label>Texto del botón</label><input name="bannerCta" maxlength="40" value="<%= cfg.banner.cta %>" /></div>
+      <div class="crm-form-group"><label>Enlace</label><input name="bannerHref" value="<%= cfg.banner.href %>" placeholder="/tienda/c/cascos" /></div>
+      <div class="crm-form-group"><label>Visible hasta (inclusive)</label><input name="bannerUntil" type="date" value="<%= cfg.banner.until %>" /></div>
+    </div></div>
+  <div class="crm-card"><div class="crm-card-title">Oferta del mes (home)</div>
+    <select class="crm-select" name="offerProductId"><option value="">Ninguna</option><% products.forEach(function (p) { %><option value="<%= p.id %>" <%= cfg.offerProductId === p.id ? 'selected' : '' %>><%= p.name %> (<%= fmtCOP(p.price) %><%= p.discount ? ', -' + p.discount + '%' : '' %>)</option><% }) %></select>
+    <p class="ash-help">Solo productos publicados. Se muestra con botón directo a la ficha.</p></div>
+  <div class="crm-card"><div class="crm-card-title">Puntos del club por compra</div>
+    <div class="crm-form-group"><label>1 punto por cada (COP pagados)</label><input name="pointsPerAmount" inputmode="numeric" value="<%= cfg.pointsPerAmount || '' %>" placeholder="vacío = sin puntos por compra" /></div></div>
+  <div class="crm-card"><div class="crm-card-title">Cupón de primera compra (checklist gratuito)</div>
+    <label class="ash-check"><input type="checkbox" name="fpEnabled" value="1" <%= cfg.firstPurchaseCoupon.enabled ? 'checked' : '' %> /> Entregar cupón al pedir el checklist</label>
+    <div class="crm-form-grid" style="margin-top:10px">
+      <div class="crm-form-group"><label>Tipo</label><select name="fpKind"><option value="pct" <%= cfg.firstPurchaseCoupon.kind === 'pct' ? 'selected' : '' %>>Porcentaje</option><option value="amount" <%= cfg.firstPurchaseCoupon.kind === 'amount' ? 'selected' : '' %>>Valor fijo (COP)</option></select></div>
+      <div class="crm-form-group"><label>Valor</label><input name="fpValue" inputmode="numeric" value="<%= cfg.firstPurchaseCoupon.value || '' %>" /></div>
+      <div class="crm-form-group"><label>Compra mínima (COP)</label><input name="fpMin" inputmode="numeric" value="<%= cfg.firstPurchaseCoupon.minSubtotal || '' %>" /></div>
+      <div class="crm-form-group"><label>Vigencia (días)</label><input name="fpDays" type="number" min="1" value="<%= cfg.firstPurchaseCoupon.days %>" /></div>
+    </div></div>
+  <div class="crm-card"><div class="crm-card-title">Agenda de instalación en el checkout</div>
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Días de anticipación mínima</label><input name="installLead" type="number" min="0" value="<%= cfg.install.minLeadDays %>" /></div>
+      <div class="crm-form-group"><label>Ventana (días hacia adelante)</label><input name="installDaysAhead" type="number" min="1" max="90" value="<%= cfg.install.daysAhead %>" /></div>
+      <div class="crm-form-group"><label>Nombre del servicio en la cita</label><input name="installServiceName" value="<%= cfg.install.serviceName %>" /></div>
+    </div>
+    <p class="ash-help">Los horarios salen de <a href="/admin/negocio">Datos del negocio</a>.</p></div>
+  <div class="crm-card"><div class="crm-card-title">Carrito abandonado</div>
+    <label class="ash-check"><input type="checkbox" name="acEnabled" value="1" <%= cfg.abandonedCart.enabled ? 'checked' : '' %> /> Enviar un recordatorio por correo a usuarios con sesión</label>
+    <div class="crm-form-group" style="margin-top:10px"><label>Horas sin actividad antes del recordatorio</label><input name="acHours" type="number" min="1" value="<%= cfg.abandonedCart.afterHours %>" /></div>
+    <p class="ash-help">Un solo recordatorio por carrito. Requiere el cron diario configurado en Vercel.</p></div>
+  <button class="btn btn-primary" type="submit">Guardar ajustes</button>
+</form>
+<%- include('../partials/admin-foot') %>
