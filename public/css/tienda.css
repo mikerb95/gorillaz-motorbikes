@@ -15,6 +15,7 @@
   --tn-r: 16px;
 }
 
+.tn-page [hidden] { display: none !important }
 .tn-page { max-width: 1320px; margin: 0 auto; padding: 18px 16px 72px; color: var(--tn-ink) }
 .tn-page--narrow { max-width: 1080px }
 .tn-muted { color: var(--tn-soft); font-size: .92rem }
@@ -330,8 +331,8 @@
   .tn-line-img { width: 64px; height: 64px }
   .tn-line-total { grid-column: 2; }
   .tn-steps { grid-template-columns: 1fr 1fr }
-  .tn-sticky-buy:not([hidden]) { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 150; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -6px 20px rgba(0, 0, 0, .12) }
-  body.page-product .whatsapp-fab { bottom: 84px }
+  .tn-sticky-buy:not([hidden]) { display: flex; position: fixed; left: 0; right: 0; bottom: calc(var(--mbar-h, 0px) + env(safe-area-inset-bottom, 0px)); z-index: 150; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: #fff; box-shadow: 0 -6px 20px rgba(0, 0, 0, .12) }
+  body.page-product .whatsapp-fab { bottom: calc(var(--mbar-h, 0px) + 84px) }
 }
 
 @media (prefers-reduced-motion: reduce) {

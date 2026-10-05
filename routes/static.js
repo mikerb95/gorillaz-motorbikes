@@ -5,9 +5,9 @@ const faq = require('../data/faq');
 
 const router = express.Router();
 
-router.get('/privacidad', (req, res) => res.render('privacy', {}));
+// /terminos, /privacidad y las demás políticas viven en routes/legal.js.
+
 router.get('/licencia',   (req, res) => res.render('license', {}));
-router.get('/terminos',   (req, res) => res.render('terms', {}));
 router.get('/mision',     (req, res) => res.render('mission'));
 router.get('/vision',     (req, res) => res.render('vision'));
 router.get('/faq',        (req, res) => res.render('faq', { faq }));

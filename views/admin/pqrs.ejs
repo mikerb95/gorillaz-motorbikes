@@ -1,0 +1,19 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<p class="ash-help" style="margin-bottom:12px">Plazo legal de respuesta: 15 días hábiles desde la radicación (peticiones, quejas y reclamos). Responde por correo al cliente y registra aquí el estado.</p>
+<% if (!items.length) { %><div class="crm-card muted">No hay PQRS radicadas.</div><% } %>
+<% items.forEach(function (q) { %>
+<details class="crm-card" <%= q.status === 'recibida' ? 'open' : '' %>>
+  <summary style="cursor:pointer"><strong><%= q.radicado %></strong> · <%= q.kind %> · <%= q.name %> · <span class="muted"><%= fechaCO(q.created_at) %></span> <span class="badge <%= q.status === 'cerrada' || q.status === 'respondida' ? 'badge-success' : 'badge-warning' %>"><%= q.status.replace('_', ' ') %></span></summary>
+  <p class="muted"><%= q.email %><%= q.phone ? ' · ' + q.phone : '' %><%= q.order_ref ? ' · Ref: ' + q.order_ref : '' %></p>
+  <p style="white-space:pre-wrap"><%= q.message %></p>
+  <form method="post" action="/admin/pqrs/<%= q.id %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Estado</label><select name="status"><% ['recibida','en_tramite','respondida','cerrada'].forEach(function (s) { %><option value="<%= s %>" <%= q.status === s ? 'selected' : '' %>><%= s.replace('_', ' ') %></option><% }) %></select></div>
+      <div class="crm-form-group crm-form-full"><label>Notas internas</label><textarea name="notes" rows="2"><%= q.admin_notes || '' %></textarea></div>
+    </div>
+    <button class="btn btn-primary btn-sm" type="submit">Guardar</button>
+  </form>
+</details>
+<% }) %>
+<%- include('../partials/admin-foot') %>

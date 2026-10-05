@@ -59,5 +59,11 @@
       "src": "/(.*)",
       "dest": "/api/index.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/tienda",
+      "schedule": "0 14 * * *"
+    }
   ]
 }

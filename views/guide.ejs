@@ -1,0 +1,30 @@
+<%- include('partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<style>
+  .gd{background:#fff;border-radius:20px;box-shadow:var(--tn-shadow);padding:clamp(20px,4vw,44px);line-height:1.75;max-width:780px}
+  .gd h2{font-size:1.3rem;font-weight:900;margin:28px 0 8px}.gd h3{font-size:1.05rem;font-weight:800;margin:20px 0 6px}
+  .gd a{text-decoration:underline;font-weight:600}.gd img.gd-cover{width:100%;height:auto;border-radius:14px;margin:0 0 18px}
+</style>
+<div class="tn-page tn-page--narrow">
+  <%- include('partials/tienda/crumbs', { crumbs: crumbs }) %>
+  <article class="gd">
+    <h1 class="tn-h1"><%= g.title %></h1>
+    <p class="tn-muted">Actualizada el <%= fechaCO(g.updatedAt, { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+    <% if (g.image) { %><img class="gd-cover" src="<%= g.image %>" alt="" width="1200" height="675" fetchpriority="high" /><% } %>
+    <%- html %>
+  </article>
+  <% if (services.length) { %>
+  <section class="tn-section">
+    <h2 class="tn-h2">Te ayudamos en el taller</h2>
+    <ul class="tn-services"><% services.forEach(function (s) { %><li><a href="<%= s.href %>"><strong><%= s.name %></strong><span><%= s.desc %></span></a></li><% }) %></ul>
+    <a class="tn-btn tn-btn--primary" href="/servicios/agendar">Agendar cita</a>
+  </section>
+  <% } %>
+  <% if (products.length) { %>
+  <section class="tn-section">
+    <h2 class="tn-h2">Productos mencionados</h2>
+    <div class="tn-grid tn-grid--row"><% products.forEach(function (p) { %><%- include('partials/tienda/card', { p: p, price: priceOf(p) }) %><% }) %></div>
+  </section>
+  <% } %>
+</div>
+<script defer src="/static/js/tienda.js?v=<%= assetV('js/tienda.js') %>"></script>
+<%- include('partials/footer') %>

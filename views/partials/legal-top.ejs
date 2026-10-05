@@ -1,0 +1,29 @@
+<%- include('head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<style>
+  .lg-wrap{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;align-items:start}
+  .lg-nav{position:sticky;top:calc(var(--header-offset,100px) + 12px);background:#fff;border-radius:16px;box-shadow:var(--tn-shadow);padding:12px}
+  .lg-nav p{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--tn-soft);margin:4px 8px 8px}
+  .lg-nav a{display:block;padding:8px 10px;border-radius:10px;font-weight:700;font-size:.9rem}
+  .lg-nav a:hover{background:var(--tn-tint)}
+  .lg-nav a[aria-current]{background:var(--tn-ink);color:#fff}
+  .lg-doc{background:#fff;border-radius:20px;box-shadow:var(--tn-shadow);padding:clamp(20px,4vw,40px);line-height:1.7;max-width:820px}
+  .lg-doc h2{font-size:1.15rem;font-weight:900;margin:28px 0 8px}
+  .lg-doc h3{font-size:1rem;font-weight:800;margin:18px 0 6px}
+  .lg-doc ul,.lg-doc ol{padding-left:20px}
+  .lg-doc a{text-decoration:underline;font-weight:600}
+  .lg-meta{color:var(--tn-soft);font-size:.9rem;margin:8px 0 20px}
+  .lg-id{background:var(--tn-tint);border-radius:14px;padding:14px 16px;font-size:.92rem;margin:0 0 8px}
+  .lg-note{background:#f6f1ec;border-radius:12px;padding:12px 14px;font-size:.92rem}
+  .lg-table{width:100%;border-collapse:collapse;font-size:.92rem}.lg-table td,.lg-table th{text-align:left;padding:8px;border-bottom:1px solid var(--tn-line)}
+  @media (max-width:860px){.lg-wrap{grid-template-columns:1fr}.lg-nav{position:static;display:flex;gap:6px;overflow-x:auto}.lg-nav p{display:none}.lg-nav a{white-space:nowrap}}
+</style>
+<div class="tn-page">
+  <%- include('tienda/crumbs', { crumbs: [{ name: 'Inicio', path: '/' }, { name: doc.title, path: doc.path }] }) %>
+  <div class="lg-wrap">
+    <nav class="lg-nav" aria-label="Políticas">
+      <p>Políticas</p>
+      <% docs.forEach(function (d) { %><a href="<%= d.path %>" <%- d.path === doc.path ? 'aria-current="page"' : '' %>><%= d.short %></a><% }) %>
+    </nav>
+    <article class="lg-doc">
+      <h1 class="tn-h1"><%= doc.title %></h1>
+      <p class="lg-meta">Última actualización: <%= fechaCO(updated + 'T12:00:00Z', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>

@@ -1,0 +1,54 @@
+<%- include('../partials/legal-top') %>
+<p>En cumplimiento de la Ley 1581 de 2012 y del Decreto 1074 de 2015 (que compila el Decreto 1377 de 2013), esta política explica qué datos personales tratamos, para qué y cómo puedes ejercer tus derechos.</p>
+
+<h2>1. Responsable del tratamiento</h2>
+<p><strong><%= company.razonSocial %></strong>, NIT <%= company.nit %>, con domicilio en <%= biz.address.street %>, <%= company.domicilio %>. Canal para ejercer tus derechos: <a href="/pqrs">formulario de PQRS</a><% if (biz.email) { %> o el correo <a href="mailto:<%= biz.email %>"><%= biz.email %></a><% } %>.</p>
+
+<h2>2. Datos que tratamos</h2>
+<ul>
+  <li><strong>Identificación y contacto:</strong> nombre, documento, celular, correo y dirección de entrega.</li>
+  <li><strong>Datos de tu moto:</strong> placa, marca, modelo, historial de servicios y recomendaciones.</li>
+  <li><strong>Compras y servicios:</strong> pedidos, citas, órdenes de servicio, facturas, garantías y PQRS. No recibimos ni guardamos datos de tarjetas: el pago se hace en la pasarela de pagos.</li>
+  <li><strong>Club:</strong> membresía, puntos, asistencia a eventos y cursos, y la moto que elijas en "Mi moto".</li>
+  <li><strong>Navegación:</strong> cookies necesarias para el carrito, la sesión y la seguridad y, si lo autorizas, de medición de uso.</li>
+  <li><strong>Conversaciones con el asesor del sitio:</strong> los mensajes que escribas al asistente automático para responder tus preguntas.</li>
+</ul>
+<p>No tratamos datos sensibles salvo los que nos entregues voluntariamente para una finalidad específica (por ejemplo, el tipo de sangre para eventos del club), caso en el cual no estás obligado a suministrarlos.</p>
+
+<h2>3. Finalidades</h2>
+<ul>
+  <li>Procesar compras, entregas, instalaciones, cambios, devoluciones y garantías.</li>
+  <li>Agendar, diagnosticar, ejecutar y entregar servicios del taller.</li>
+  <li>Facturar y cumplir obligaciones legales, contables y tributarias.</li>
+  <li>Responder PQRS y verificar las reseñas (solo compradores reales).</li>
+  <li>Gestionar el club, los puntos y los beneficios.</li>
+  <li>Enviar recordatorios de pedidos, citas y vencimientos de tu moto.</li>
+  <li>Con tu autorización, enviarte novedades y promociones. Puedes retirarla en cualquier momento.</li>
+  <li>Prevenir fraude y proteger la seguridad del sitio.</li>
+</ul>
+
+<h2>4. Tus derechos</h2>
+<p>Conocer, actualizar y rectificar tus datos; pedir prueba de la autorización; ser informado del uso dado a tus datos; presentar quejas ante la Superintendencia de Industria y Comercio; revocar la autorización o pedir la supresión cuando no exista un deber legal o contractual de conservarlos; y acceder gratis a tus datos.</p>
+
+<h2>5. Cómo ejercerlos</h2>
+<ul>
+  <li><strong>Consultas:</strong> se responden en máximo 10 días hábiles. Si no es posible, te informamos el motivo y la nueva fecha, que no superará 5 días hábiles adicionales.</li>
+  <li><strong>Reclamos</strong> (corrección, actualización, supresión o incumplimiento): se responden en máximo 15 días hábiles desde que el reclamo esté completo, prorrogables hasta 8 días hábiles informándote el motivo. Si falta información, te la pedimos dentro de los 5 días siguientes; si no la envías en 2 meses, entendemos que desististe.</li>
+</ul>
+<p>Antes de acudir a la Superintendencia debes agotar el trámite de consulta o reclamo ante nosotros.</p>
+
+<h2>6. Encargados y transferencias</h2>
+<p>Compartimos datos solo con proveedores que nos ayudan a operar (alojamiento web y base de datos, pasarela de pagos, envío de correos, mensajería, transporte de pedidos y el asistente automático del sitio), bajo contratos que los obligan a proteger la información y a usarla solo para prestar su servicio. Algunos de estos proveedores están fuera de Colombia; en esos casos adoptamos las garantías exigidas por la ley.</p>
+
+<h2>7. Cookies</h2>
+<p>Usamos cookies propias necesarias para funcionar: carrito, sesión del club, seguridad de los formularios y la moto que elegiste en la tienda. Si activamos medición de uso, solo se carga con tu autorización. Puedes borrar las cookies desde tu navegador; algunas funciones (como el carrito) dejarán de funcionar.</p>
+
+<h2>8. Conservación y seguridad</h2>
+<p>Conservamos los datos mientras sean necesarios para las finalidades descritas y por los plazos legales (la documentación contable se conserva por el término que exige la ley). Aplicamos medidas técnicas y administrativas razonables para protegerlos.</p>
+
+<h2>9. Menores de edad</h2>
+<p>El sitio está dirigido a mayores de edad. Si tratamos datos de menores en actividades específicas, lo hacemos con autorización de su representante legal y respetando su interés superior.</p>
+
+<h2>10. Vigencia</h2>
+<p>Esta política rige desde su publicación. Cualquier cambio sustancial se publicará en esta página.</p>
+<%- include('../partials/legal-bottom') %>

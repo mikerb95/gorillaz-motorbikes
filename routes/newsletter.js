@@ -49,7 +49,25 @@ router.get('/newsletter/confirmar', async (req, res) => {
   const record = await getNewsletterByConfirmToken(token);
   if (!record) return res.render('newsletter-confirm', { status: 'invalid' });
   await confirmNewsletterSubscription(record.id);
-  res.render('newsletter-confirm', { status: 'ok', email: record.email });
+  // Cupón de primera compra (si el dueño lo activó en /admin/tienda/ajustes).
+  // Se emite al confirmar el correo, no al suscribirse, para evitar abusos.
+  let coupon = null;
+  try {
+    const { getShopConfig } = require('../helpers/shop/config');
+    const { issueFirstPurchaseCoupon } = require('../helpers/shop/coupons');
+    coupon = await issueFirstPurchaseCoupon(record.email, getShopConfig().firstPurchaseCoupon);
+    if (coupon) {
+      const { fmtCOP } = require('../helpers/money');
+      const value = coupon.kind === 'amount' ? fmtCOP(coupon.value) : `${coupon.value}%`;
+      resendClient.emails.send({
+        from: FROM,
+        to: record.email,
+        subject: 'Tu cupón de bienvenida | Gorillaz Motorbikes',
+        html: `<p>Gracias por confirmar tu suscripción. Este es tu cupón para tu primera compra en la tienda:</p><p style="font-size:20px"><strong>${coupon.code}</strong> (${value} de descuento${coupon.minSubtotal ? `, compra mínima ${fmtCOP(coupon.minSubtotal)}` : ''}).</p><p>Úsalo en el checkout con este mismo correo antes del ${new Date(coupon.expiresAt).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })}.</p><p><a href="${BASE_URL}/tienda">Ir a la tienda</a></p>`,
+      }).catch(e => console.error('Resend error (cupón):', e.message));
+    }
+  } catch (e) { console.error('[newsletter] cupón:', e.message); }
+  res.render('newsletter-confirm', { status: 'ok', email: record.email, coupon });
 });
 
 // Token-based unsubscribe (link desde email)

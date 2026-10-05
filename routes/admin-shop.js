@@ -402,6 +402,28 @@ router.post('/negocio', guard, async (req, res) => {
   res.redirect(303, '/admin/negocio');
 });
 
+// ── Precio "desde" y duración de los servicios ──────────────────────────
+
+router.get('/servicios-info', guard, (req, res) => {
+  const { allServiceInfo } = require('../helpers/service-info');
+  res.render('admin/service-info', { title: 'Precios y duración de servicios', services: landingServices, info: allServiceInfo() });
+});
+
+router.post('/servicios-info', guard, async (req, res) => {
+  const { saveServiceInfo } = require('../helpers/service-info');
+  const map = {};
+  for (const s of landingServices) {
+    const row = (req.body.svc || {})[s.slug] || {};
+    const priceFrom = intOrNull(row.priceFrom);
+    const duration = str(row.duration, 80);
+    if (priceFrom || duration) map[s.slug] = { priceFrom: priceFrom || null, duration };
+  }
+  await saveServiceInfo(map);
+  audit(req, 'servicios.info', 'Precios desde y duraciones actualizados');
+  setFlash(res, 'success', 'Servicios actualizados.');
+  res.redirect(303, '/admin/servicios-info');
+});
+
 // ── Reseñas ─────────────────────────────────────────────────────────────
 
 router.get('/resenas-tienda', guard, async (req, res) => {

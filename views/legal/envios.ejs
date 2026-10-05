@@ -1,0 +1,42 @@
+<%- include('../partials/legal-top') %>
+<p>Estas son las formas de recibir tu pedido. Los métodos disponibles y su costo exacto se muestran en el checkout antes de pagar, según tu dirección.</p>
+
+<h2>Métodos de entrega</h2>
+<% if (!deliveryMethods.length) { %>
+  <p class="lg-note">Estamos configurando los métodos de entrega. Mientras tanto, escríbenos por <a href="<%= waLink(waMsg.shop()) %>" target="_blank" rel="noopener">WhatsApp</a> y coordinamos tu pedido.</p>
+<% } %>
+<% if (deliveryMethods.indexOf('pickup') >= 0) { %>
+<h3>Recoger en el taller (sin costo)</h3>
+<p>Recoges en <%= biz.address.street %>, <%= biz.address.locality %>, en nuestro horario de atención<% if (bizHours.length) { %> (<%= bizHours.filter(function (h) { return !h.closed; }).map(function (h) { return h.days + ': ' + h.text; }).join('; ') %>)<% } %>. Te avisamos por WhatsApp cuando el pedido esté listo. Lleva tu número de pedido y un documento; si recoge otra persona, envíanos su nombre por WhatsApp.<%= delivery.pickup.note ? ' ' + delivery.pickup.note : '' %></p>
+<% } %>
+<% if (deliveryMethods.indexOf('local') >= 0) { %>
+<h3>Domicilio en Bogotá</h3>
+<p>Llegamos a estas localidades, con la tarifa indicada:</p>
+<table class="lg-table"><thead><tr><th>Localidad</th><th>Tarifa</th></tr></thead><tbody>
+  <% zones.forEach(function (z) { %><tr><td><%= z.name %></td><td><%= fmtCOP(z.fee) %></td></tr><% }) %>
+</tbody></table>
+<% if (delivery.local.freeOver) { %><p>El domicilio es gratis en pedidos desde <%= fmtCOP(delivery.local.freeOver) %> en productos.</p><% } %>
+<% if (delivery.local.eta) { %><p>Tiempo de entrega: <%= delivery.local.eta %></p><% } %>
+<p>Si tu localidad no aparece, por ahora no tenemos cobertura allí: puedes recoger en el taller.</p>
+<% } %>
+<% if (deliveryMethods.indexOf('national') >= 0) { %>
+<h3>Envío nacional</h3>
+<p>Enviamos a otras ciudades por transportadora. Tarifa: <%= fmtCOP(delivery.national.fee) %><%= delivery.national.freeOver ? ', gratis desde ' + fmtCOP(delivery.national.freeOver) + ' en productos' : '' %>.<%= delivery.national.eta ? ' Tiempo estimado: ' + delivery.national.eta + '.' : '' %><%= delivery.national.note ? ' ' + delivery.national.note : '' %> Te enviamos el número de guía cuando despachemos.</p>
+<% } %>
+
+<h2>Plazos</h2>
+<p>Preparamos el pedido después de confirmado el pago. Los tiempos son estimados y empiezan a contar desde esa confirmación; cada ficha puede indicar un tiempo de entrega propio (por ejemplo, productos por encargo). Si un pedido se va a demorar más de lo informado, te avisamos y puedes elegir esperar o recibir la devolución de tu dinero. En ningún caso el plazo superará 30 días calendario sin tu acuerdo.</p>
+
+<h2>Instalación en el taller</h2>
+<p>Si compraste con instalación, el producto queda reservado para tu cita y no necesitas recogerlo antes. Te confirmamos la cita por WhatsApp; si no puedes asistir, avísanos para reprogramarla.</p>
+
+<h2>Al recibir tu pedido</h2>
+<ul>
+  <li>Revisa que el empaque llegue en buen estado y que el contenido corresponda a tu pedido.</li>
+  <li>Si el empaque llega abierto o dañado, déjalo anotado en la guía de la transportadora o recházalo, y avísanos ese mismo día por WhatsApp con fotos.</li>
+  <li>Si llegó un producto equivocado o incompleto, avísanos en los 5 días hábiles siguientes y lo corregimos sin costo para ti.</li>
+</ul>
+
+<h2>Seguimiento</h2>
+<p>Consulta el estado en <a href="/tienda/pedido">seguimiento de pedido</a> con tu número de pedido y los últimos 4 dígitos de tu celular.</p>
+<%- include('../partials/legal-bottom') %>

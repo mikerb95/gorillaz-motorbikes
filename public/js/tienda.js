@@ -53,7 +53,7 @@
     e.preventDefault();
     var btn = buy || add;
     btn.disabled = true;
-    var card = btn.closest('.tn-card');
+    var card = btn.closest('.tn-card, .lp-product');
     var addBtn = card && card.querySelector('[data-add]');
     var meta = { name: addBtn ? addBtn.dataset.name : '', image: addBtn ? addBtn.dataset.image : '', price: addBtn ? addBtn.dataset.price : '' };
     addToCart({ id: buy ? buy.dataset.buy : add.dataset.add, qty: 1, buyNow: !!buy }, meta)

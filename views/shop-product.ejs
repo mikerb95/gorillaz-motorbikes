@@ -7,7 +7,7 @@
 %>
 <div class="tn-page">
   <%- include('partials/tienda/crumbs', { crumbs: crumbs }) %>
-  <% if (product.status !== 'active' || (product.isDemo)) { %>
+  <% if (isPreview) { %>
     <p class="tn-admin-note">Vista previa de administrador: este producto <%= product.isDemo ? 'es de demostración y' : '' %> no está publicado.</p>
   <% } %>
 

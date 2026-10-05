@@ -7,7 +7,15 @@
             <img src="/images/nobg_logo/logo_transp.png" alt="Gorillaz Motorbikes" />
             <span>Gorillaz Motorbikes</span>
           </a>
-          <p class="muted">Taller y club de motos en Bogotá, Colombia.</p>
+          <p class="muted">Taller, tienda y club de motos en Bogotá, Colombia.</p>
+          <% if (typeof biz !== 'undefined' && biz) { %>
+          <address class="footer-nap">
+            <span><%= biz.address.street %>, <%= biz.address.locality %></span>
+            <a href="<%= waLink(waMsg.general()) %>" target="_blank" rel="noopener">WhatsApp <%= biz.phone.replace(/^\+57/, '') %></a>
+            <% bizHours.forEach(function (h) { %><span><%= h.days %>: <%= h.text %></span><% }) %>
+            <span class="footer-open <%= bizOpen.open ? 'is-open' : '' %>"><%= bizOpen.label %></span>
+          </address>
+          <% } %>
         </div>
 
         <div class="footer-col">
@@ -23,9 +31,13 @@
         <div class="footer-col">
           <h4>Legales</h4>
           <ul class="list footer-links">
-            <li><a href="/privacidad">Política de privacidad</a></li>
-            <li><a href="/licencia">Licencia</a></li>
-            <li><a href="/terminos">Términos de uso</a></li>
+            <li><a href="/terminos">Términos y condiciones</a></li>
+            <li><a href="/privacidad">Datos personales</a></li>
+            <li><a href="/envios">Envíos y entregas</a></li>
+            <li><a href="/cambios-y-devoluciones">Cambios y devoluciones</a></li>
+            <li><a href="/garantias">Garantías</a></li>
+            <li><a href="/derecho-de-retracto">Derecho de retracto</a></li>
+            <li><a href="/pqrs">PQRS</a></li>
           </ul>
         </div>
 
@@ -39,12 +51,12 @@
         <div class="footer-col">
           <h4>Síguenos</h4>
           <div class="social-links">
-            <a class="social-btn" href="https://www.facebook.com/gorillazmotorbikes" target="_blank" rel="noopener" aria-label="Facebook">
+            <a class="social-btn" href="<%= (typeof biz !== 'undefined' && biz.social.facebook) || 'https://www.facebook.com/gorillazmotorbikes' %>" target="_blank" rel="noopener" aria-label="Facebook">
               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor">
                 <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06C2 17.06 5.66 21.2 10.44 22v-7.02H7.9V12h2.54V9.8c0-2.5 1.49-3.88 3.77-3.88 1.09 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.98h-2.34V22C18.34 21.2 22 17.06 22 12.06z"/>
               </svg>
             </a>
-            <a class="social-btn" href="https://www.instagram.com/gorillazmotorbikes" target="_blank" rel="noopener" aria-label="Instagram">
+            <a class="social-btn" href="<%= (typeof biz !== 'undefined' && biz.social.instagram) || 'https://www.instagram.com/gorillazmotorbikes' %>" target="_blank" rel="noopener" aria-label="Instagram">
               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor">
                 <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.51 5.51 0 0 1 12 7.5zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zM18 6.2a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/>
               </svg>
@@ -86,5 +98,13 @@
       </div>
     </div>
   </footer>
+  <%# Barra inferior fija en móvil: los cuatro destinos principales. %>
+  <% var cp = typeof currentPath !== 'undefined' ? currentPath : ''; %>
+  <nav class="mbar" aria-label="Accesos rápidos">
+    <a href="/" class="<%= cp === '/' ? 'is-on' : '' %>" <%- cp === '/' ? 'aria-current="page"' : '' %>><svg class="ni" aria-hidden="true"><use href="#ni-gauge"/></svg><span>Inicio</span></a>
+    <a href="/tienda" class="<%= cp.indexOf('/tienda') === 0 || cp === '/carrito' || cp === '/checkout' ? 'is-on' : '' %>"><svg class="ni" aria-hidden="true"><use href="#ni-cart"/></svg><span>Tienda</span><% if (typeof cart !== 'undefined' && cart && cart.count) { %><b class="mbar-badge" data-count="cart"><%= cart.count %></b><% } %></a>
+    <a href="/servicios/agendar" class="mbar-cta<%= cp.indexOf('/servicios/agendar') === 0 ? ' is-on' : '' %>"><svg class="ni" aria-hidden="true"><use href="#ni-calendar"/></svg><span>Agendar</span></a>
+    <a href="/mi-orden" class="<%= cp.indexOf('/mi-orden') === 0 || cp === '/tienda/pedido' ? 'is-on' : '' %>"><svg class="ni" aria-hidden="true"><use href="#ni-wrench"/></svg><span>Mi orden</span></a>
+  </nav>
 </body>
 </html>

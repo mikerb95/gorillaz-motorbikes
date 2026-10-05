@@ -1,0 +1,49 @@
+<%#
+  Analítica de comercio: los eventos (view_item, add_to_cart, begin_checkout,
+  purchase) se encolan siempre en window.dataLayer vía gzTrack(). El script de
+  medición solo se carga si hay ANALYTICS_ID configurado y el visitante lo
+  autorizó (cookie gz_consent=1), como dice la política de datos.
+%>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  window.gzTrack = function (name, params) {
+    window.dataLayer.push({ event: name, ecommerce: params || {} });
+    if (typeof window.gtag === 'function') window.gtag('event', name, params || {});
+  };
+</script>
+<% if (typeof analyticsId !== 'undefined' && analyticsId) { %>
+<script>
+  (function () {
+    var id = <%- JSON.stringify(analyticsId) %>;
+    function load() {
+      if (window.gtag) return;
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date());
+      window.gtag('config', id, { anonymize_ip: true });
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+      document.head.appendChild(s);
+    }
+    var c = document.cookie.match(/(?:^|; )gz_consent=([01])/);
+    if (c && c[1] === '1') { load(); return; }
+    if (c) return;
+    document.addEventListener('DOMContentLoaded', function () {
+      var bar = document.createElement('div');
+      bar.className = 'gz-consent';
+      bar.setAttribute('role', 'region');
+      bar.setAttribute('aria-label', 'Cookies de medición');
+      bar.innerHTML = '<p>Usamos cookies de medición para saber qué partes del sitio sirven más. <a href="/privacidad">Más información</a></p>' +
+        '<div><button type="button" data-c="0">Rechazar</button><button type="button" data-c="1">Aceptar</button></div>';
+      document.body.appendChild(bar);
+      bar.addEventListener('click', function (e) {
+        var v = e.target.getAttribute('data-c');
+        if (v === null) return;
+        document.cookie = 'gz_consent=' + v + '; max-age=' + (180 * 86400) + '; path=/; samesite=lax';
+        bar.remove();
+        if (v === '1') load();
+      });
+    });
+  })();
+</script>
+<% } %>

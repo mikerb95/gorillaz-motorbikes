@@ -1,0 +1,46 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: '' }) %>
+<p class="ash-help" style="margin-bottom:14px"><a href="/admin/servicios-info">Precios desde y duración de los servicios</a> · Única fuente de estos datos: el home (datos estructurados), el footer, el banner de horarios, el estado abierto/cerrado, la agenda de instalación y los botones de WhatsApp leen de aquí. Lo que dejes vacío no se publica.</p>
+<form method="post" action="/admin/negocio">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <div class="crm-card"><div class="crm-card-title">Identificación y contacto</div>
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Nombre comercial</label><input name="name" value="<%= biz.name %>" /></div>
+      <div class="crm-form-group"><label>Teléfono (con +57)</label><input name="phone" value="<%= biz.phone %>" /></div>
+      <div class="crm-form-group"><label>WhatsApp</label><input name="whatsapp" value="<%= biz.whatsapp %>" /><p class="ash-help">Se agrega el indicativo 57 si escribes 10 dígitos.</p></div>
+      <div class="crm-form-group"><label>Correo público</label><input name="email" type="email" value="<%= biz.email %>" /></div>
+    </div></div>
+  <div class="crm-card"><div class="crm-card-title">Dirección y ubicación</div>
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Dirección</label><input name="street" value="<%= biz.address.street %>" /></div>
+      <div class="crm-form-group"><label>Ciudad</label><input name="locality" value="<%= biz.address.locality %>" /></div>
+      <div class="crm-form-group"><label>Región</label><input name="region" value="<%= biz.address.region %>" /></div>
+      <div class="crm-form-group"><label>Código postal</label><input name="postalCode" value="<%= biz.address.postalCode %>" /></div>
+      <div class="crm-form-group"><label>Latitud</label><input name="lat" value="<%= biz.geo.lat === null ? '' : biz.geo.lat %>" placeholder="ej. 4.61" /></div>
+      <div class="crm-form-group"><label>Longitud</label><input name="lng" value="<%= biz.geo.lng === null ? '' : biz.geo.lng %>" placeholder="ej. -74.10" /></div>
+      <div class="crm-form-group crm-form-full"><label>Enlace del mapa (perfil de negocio)</label><input name="mapsUrl" value="<%= biz.mapsUrl %>" /></div>
+    </div>
+    <p class="ash-help">Coordenadas: abre el mapa del taller, clic derecho sobre el punto exacto y copia los dos números.</p></div>
+  <div class="crm-card"><div class="crm-card-title">Horario (hora de Bogotá)</div>
+    <table class="crm-table ash-table"><thead><tr><th>Día</th><th>Cerrado</th><th>Abre</th><th>Cierra</th><th>Abre (2.ª franja)</th><th>Cierra</th></tr></thead><tbody>
+      <% WEEK.forEach(function (d) { var r = biz.hours[d] || []; %><tr>
+        <td><strong><%= DAY_NAMES[d] %></strong></td>
+        <td><input type="checkbox" name="hours[<%= d %>][closed]" value="1" <%= r.length ? '' : 'checked' %> style="width:auto" /></td>
+        <td><input type="time" name="hours[<%= d %>][open1]" value="<%= r[0] ? r[0][0] : '' %>" /></td>
+        <td><input type="time" name="hours[<%= d %>][close1]" value="<%= r[0] ? r[0][1] : '' %>" /></td>
+        <td><input type="time" name="hours[<%= d %>][open2]" value="<%= r[1] ? r[1][0] : '' %>" /></td>
+        <td><input type="time" name="hours[<%= d %>][close2]" value="<%= r[1] ? r[1][1] : '' %>" /></td>
+      </tr><% }) %>
+    </tbody></table>
+    <label class="ash-check" style="margin-top:10px"><input type="checkbox" name="hoursConfirmed" value="1" <%= biz.hoursConfirmed ? 'checked' : '' %> /> El dueño confirmó este horario</label>
+    <% if (!biz.hoursConfirmed) { %><p class="ash-preview" style="margin-top:8px">Horario sin confirmar: se tomó del banner de la página de agendar. El sitio tenía otro horario distinto en los datos estructurados. Verifícalo.</p><% } %>
+  </div>
+  <div class="crm-card"><div class="crm-card-title">Redes</div>
+    <div class="crm-form-grid">
+      <div class="crm-form-group"><label>Facebook</label><input name="facebook" value="<%= biz.social.facebook || '' %>" /></div>
+      <div class="crm-form-group"><label>Instagram</label><input name="instagram" value="<%= biz.social.instagram || '' %>" /></div>
+      <div class="crm-form-group"><label>TikTok</label><input name="tiktok" value="<%= biz.social.tiktok || '' %>" /></div>
+    </div></div>
+  <button class="btn btn-primary" type="submit">Guardar</button>
+</form>
+<%- include('../partials/admin-foot') %>

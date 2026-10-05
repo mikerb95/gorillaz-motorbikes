@@ -1,0 +1,33 @@
+<%- include('../partials/legal-top') %>
+<p>Aquí radicas peticiones, quejas, reclamos, sugerencias, solicitudes de garantía o de retracto. Te enviamos por correo un número de radicado y te respondemos dentro de los <strong>15 días hábiles</strong> siguientes. Si prefieres, también puedes escribirnos por <a href="<%= waLink(waMsg.general()) %>" target="_blank" rel="noopener">WhatsApp</a>, pero el formulario deja constancia formal de tu solicitud.</p>
+<% if (sent) { %>
+  <p class="tn-chip-ok" id="radicado" style="font-size:1rem;padding:12px 14px">Recibimos tu solicitud. Número de radicado: <strong><%= sent %></strong>. Te enviamos una copia por correo.</p>
+<% } %>
+<% if (typeof errors !== 'undefined' && errors && errors.length) { %>
+  <div class="tn-alert" role="alert"><strong>Revisa:</strong><ul><% errors.forEach(function (e) { %><li><%= e %></li><% }) %></ul></div>
+<% } %>
+<form method="post" action="/pqrs" style="margin-top:16px">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <div class="tn-row">
+    <div class="tn-field"><label for="pq-kind">Tipo de solicitud</label>
+      <select id="pq-kind" name="kind" required><option value="">Elige</option><% Object.keys(PQRS_KINDS).forEach(function (k) { %><option value="<%= k %>" <%= form.kind === k ? 'selected' : '' %>><%= PQRS_KINDS[k] %></option><% }) %></select></div>
+    <div class="tn-field"><label for="pq-ref">Número de pedido u orden (opcional)</label><input id="pq-ref" name="orderRef" value="<%= form.orderRef || '' %>" placeholder="GZ-XXXXXX o placa" /></div>
+  </div>
+  <div class="tn-row">
+    <div class="tn-field"><label for="pq-name">Nombre completo</label><input id="pq-name" name="name" required autocomplete="name" value="<%= form.name || '' %>" /></div>
+    <div class="tn-field"><label for="pq-email">Correo</label><input id="pq-email" name="email" type="email" required autocomplete="email" value="<%= form.email || '' %>" /></div>
+    <div class="tn-field"><label for="pq-phone">Celular (opcional)</label><input id="pq-phone" name="phone" type="tel" autocomplete="tel" value="<%= form.phone || '' %>" /></div>
+  </div>
+  <div class="tn-field"><label for="pq-msg">Tu solicitud</label><textarea id="pq-msg" name="message" rows="6" required minlength="10" maxlength="4000"><%= form.message || '' %></textarea></div>
+  <label class="tn-check" style="margin-bottom:14px"><input type="checkbox" name="acepto" value="1" required /> <span>Autorizo el tratamiento de mis datos para tramitar esta solicitud, según la <a href="/privacidad">política de datos</a>.</span></label>
+  <% if (recaptchaSiteKey) { %><div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>" style="margin-bottom:14px"></div><script src="https://www.google.com/recaptcha/api.js" async defer></script><% } %>
+  <button class="tn-btn tn-btn--primary" type="submit">Radicar solicitud</button>
+</form>
+<h2>Tiempos de respuesta</h2>
+<ul>
+  <li>Peticiones, quejas y reclamos: hasta 15 días hábiles desde la radicación.</li>
+  <li>Garantías: hasta 15 días hábiles desde que recibimos el producto para revisión.</li>
+  <li>Consultas sobre datos personales: hasta 10 días hábiles; reclamos sobre datos: hasta 15 días hábiles.</li>
+</ul>
+<p>Si no estás conforme con la respuesta, puedes acudir a la Superintendencia de Industria y Comercio.</p>
+<%- include('../partials/legal-bottom') %>

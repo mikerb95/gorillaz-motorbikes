@@ -1,4 +1,4 @@
-<%- include('../partials/head', { title: title, extraCss: ['/static/css/taller-base.css?v=1', '/static/css/servicios.css?v=2'] }) %>
+<%- include('../partials/head', { title: title, extraCss: ['/static/css/taller-base.css?v=1', '/static/css/servicios.css?v=' + assetV('css/servicios.css')].concat(suggestedProducts.length ? ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] : []) }) %>
 <%#
   /servicios/<slug>: LA FICHA AMPLIADA
   La misma ficha de /servicios, en grande: el retazo de tablero con la
@@ -60,13 +60,30 @@
             <figcaption>Foto del taller</figcaption>
           </figure>
         <% } %>
+        <% if (serviceInfo.priceFrom || serviceInfo.duration) { %>
+          <dl class="sv-facts">
+            <% if (serviceInfo.priceFrom) { %><div><dt>Desde</dt><dd><%= fmtCOP(serviceInfo.priceFrom) %></dd></div><% } %>
+            <% if (serviceInfo.duration) { %><div><dt>Duración estimada</dt><dd><%= serviceInfo.duration %></dd></div><% } %>
+          </dl>
+          <p class="sv-facts-note">El valor final depende del diagnóstico de tu moto y se aprueba contigo antes de empezar.</p>
+        <% } %>
         <div class="sv-card-actions">
           <a class="btn" href="/servicios/agendar?servicio=<%= encodeURIComponent(service.name) %>">Agendar <%= service.name.toLowerCase() %></a>
+          <a class="btn btn-outline" href="<%= waLink(waContext) %>" target="_blank" rel="noopener">Cotizar por WhatsApp</a>
           <a class="lp-link" href="/servicios#<%= service.slug %>">Ver todos los servicios</a>
         </div>
       </div>
     </article>
 
+    <% if (suggestedProducts.length) { %>
+    <section class="sv-detail-more" aria-labelledby="sv-prod-h">
+      <h2 class="sv-more-title" id="sv-prod-h">Productos para este servicio</h2>
+      <p class="sv-facts-note">Cómpralos en la tienda y te los instalamos en la misma cita.</p>
+      <div class="tn-grid tn-grid--row">
+        <% suggestedProducts.forEach(function (p) { %><%- include('../partials/tienda/card', { p: p, price: priceOf(p) }) %><% }) %>
+      </div>
+    </section>
+    <% } %>
     <section class="sv-detail-more" aria-labelledby="sv-more-h">
       <h2 class="sv-more-title" id="sv-more-h">Otros trabajos del taller</h2>
       <%- include('../partials/servicios/board', { services: services, current: service.slug, toDetail: true }) %>
@@ -88,6 +105,7 @@
       url: SITE_URL + '/servicios/' + service.slug,
       image: SITE_URL + ((service.realPhoto && service.realPhoto.src) || service.img),
       areaServed: { '@type': 'City', name: 'Bogotá' },
+      offers: serviceInfo.priceFrom ? { '@type': 'Offer', priceCurrency: 'COP', priceSpecification: { '@type': 'PriceSpecification', minPrice: serviceInfo.priceFrom, priceCurrency: 'COP' } } : undefined,
       provider: { '@type': 'MotorcycleRepair', '@id': SITE_URL + '/#negocio', name: 'Gorillaz Motorbikes', url: SITE_URL + '/' }
     },
     {

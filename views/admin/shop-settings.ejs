@@ -36,4 +36,30 @@
     <p class="ash-help">Un solo recordatorio por carrito. Requiere el cron diario configurado en Vercel.</p></div>
   <button class="btn btn-primary" type="submit">Guardar ajustes</button>
 </form>
+<div class="crm-card" style="margin-top:18px"><div class="crm-card-title">Enlaces con UTM para redes</div>
+  <p class="ash-help">Usa estos enlaces al publicar en redes para saber cuántas visitas y compras llegan de cada una.</p>
+  <div class="crm-form-grid">
+    <div class="crm-form-group crm-form-full"><label>Página del sitio</label><input id="utmUrl" value="<%= siteUrl %>/tienda" /></div>
+    <div class="crm-form-group"><label>Red</label><select id="utmSource"><option>instagram</option><option>facebook</option><option>tiktok</option><option>whatsapp</option><option>youtube</option></select></div>
+    <div class="crm-form-group"><label>Campaña</label><input id="utmCampaign" placeholder="oferta-octubre" /></div>
+    <div class="crm-form-group crm-form-full"><label>Enlace para publicar</label><input id="utmOut" readonly onclick="this.select()" /></div>
+  </div>
+  <script>
+    (function () {
+      var f = ['utmUrl', 'utmSource', 'utmCampaign'].map(function (id) { return document.getElementById(id); });
+      function go() {
+        try {
+          var u = new URL(f[0].value);
+          u.searchParams.set('utm_source', f[1].value);
+          u.searchParams.set('utm_medium', f[1].value === 'whatsapp' ? 'mensaje' : 'social');
+          var c = f[2].value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+          if (c) u.searchParams.set('utm_campaign', c); else u.searchParams.delete('utm_campaign');
+          document.getElementById('utmOut').value = u.toString();
+        } catch (e) { document.getElementById('utmOut').value = 'Escribe una URL completa'; }
+      }
+      f.forEach(function (el) { el.addEventListener('input', go); el.addEventListener('change', go); });
+      go();
+    })();
+  </script>
+</div>
 <%- include('../partials/admin-foot') %>

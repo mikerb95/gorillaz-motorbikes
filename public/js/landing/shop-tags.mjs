@@ -20,7 +20,8 @@ export default function initShopTags(root) {
     .map((card) => {
       const tag = card.querySelector('.lp-tag');
       if (!tag) return null;
-      const id = card.querySelector('.btn-add-cart')?.dataset.id || card.textContent.slice(0, 20);
+      const btn = card.querySelector('[data-add], [data-buy]');
+      const id = (btn && (btn.dataset.add || btn.dataset.buy)) || card.textContent.slice(0, 20);
       const rand = mulberry32(hashString(id));
       return {
         card, tag,

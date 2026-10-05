@@ -115,7 +115,9 @@ const templateLocals = async (req, res, next) => {
   res.locals.waShareLink = waShareLink;
   res.locals.waMsg = waMsg;
   res.locals.siteUrl = SITE_URL;
+  res.locals.currentPath = req.path;
   res.locals.toJsonLd = jsonLd;
+  res.locals.analyticsId = process.env.ANALYTICS_ID || '';
   try { res.locals.shopNavCategories = visibleCategories(); } catch { res.locals.shopNavCategories = []; }
 
   try {

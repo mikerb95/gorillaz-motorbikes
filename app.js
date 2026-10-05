@@ -54,7 +54,7 @@ app.use(helmet({
     useDefaults: true,
     directives: {
       'default-src': ["'self'"],
-      'script-src': ["'self'", "'unsafe-inline'", 'https://www.google.com', 'https://www.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net', 'https://www.youtube.com'],
+      'script-src': ["'self'", "'unsafe-inline'", 'https://www.google.com', 'https://www.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net', 'https://www.youtube.com', 'https://www.googletagmanager.com'],
       // Helmet's defaults split script-src into script-src-attr (defaults to
       // 'none') as of CSP3. useDefaults:true pulls that in even though it's
       // not listed here, silently blocking every onclick="" in the templates
@@ -63,7 +63,7 @@ app.use(helmet({
       'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
       'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
       'img-src': ["'self'", 'data:', 'blob:', 'https:'],
-      'connect-src': ["'self'", 'https://nominatim.openstreetmap.org', 'https://www.google.com', 'https://www.gstatic.com'],
+      'connect-src': ["'self'", 'https://nominatim.openstreetmap.org', 'https://www.google.com', 'https://www.gstatic.com', 'https://*.google-analytics.com', 'https://*.analytics.google.com', 'https://www.googletagmanager.com'],
       'frame-src': ["'self'", 'https://www.google.com', 'https://maps.google.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
       'frame-ancestors': ["'self'"],
       'object-src': ["'none'"],
@@ -94,6 +94,8 @@ app.use(templateLocals);
 app.use(validateCsrf);
 
 app.use('/',       require('./routes/seo'));
+app.use('/',       require('./routes/feeds'));
+app.use('/',       require('./routes/cron'));
 app.use('/',       require('./routes/home'));
 app.use('/',       require('./routes/liquidador'));
 app.use('/',       require('./routes/services'));
@@ -105,6 +107,8 @@ app.use('/',       require('./routes/courses'));
 app.use('/',       require('./routes/events'));
 app.use('/',       require('./routes/newsletter'));
 app.use('/',       require('./routes/jobs'));
+app.use('/',       require('./routes/legal'));
+app.use('/',       require('./routes/guides'));
 app.use('/',       require('./routes/static'));
 app.use('/',       require('./routes/classes'));
 app.use('/',       require('./routes/checkin'));

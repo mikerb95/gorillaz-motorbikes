@@ -25,6 +25,7 @@ const { activeBanner } = require('../helpers/shop/config');
 const { isClubMember } = require('../helpers/cart');
 const { BIKE_TYPES, BIKE_TYPE_SLUGS } = require('../helpers/shop/taxonomy');
 const { abs, breadcrumbLd } = require('../helpers/seo');
+const { withUtm } = require('../helpers/utm');
 const { updateUser } = require('../db');
 const { setFlash } = require('../helpers/flash');
 
@@ -267,13 +268,14 @@ router.get('/tienda/:slug', async (req, res, next) => {
     deliveryMethods: availableMethods(deliveryCfg).map((m) => METHOD_LABELS[m]),
     priceOf: (p) => unitPrice(p, null, { member }),
     waProduct: res.locals.waLink(res.locals.waMsg.product({ name: product.name, price: price.final, url })),
-    waShare: res.locals.waShareLink(res.locals.waMsg.productShare({ name: product.name, price: price.final, url })),
+    waShare: res.locals.waShareLink(res.locals.waMsg.productShare({ name: product.name, price: price.final, url: withUtm(url, { source: 'whatsapp', medium: 'share', campaign: 'ficha' }) })),
     waInstall: res.locals.waLink(res.locals.waMsg.install({ name: product.name, url })),
     waContext: res.locals.waMsg.product({ name: product.name, price: price.final, url }),
     title: shopSeo.productTitle(product),
     description: shopSeo.productDescription(product),
     canonicalPath: product.url,
     robots: isPublic(product) ? '' : 'noindex, nofollow',
+    isPreview: !isPublic(product),
     ogType: 'product',
     ogImage: product.image || undefined,
     ogExtra: [

@@ -1,0 +1,16 @@
+<%- include('partials/head', { extraCss: ['/static/css/tienda.css?v=' + assetV('css/tienda.css')] }) %>
+<div class="tn-page tn-page--narrow">
+  <header class="tn-head"><div class="tn-head-text">
+    <h1 class="tn-h1">Guías del taller</h1>
+    <p class="tn-intro">Lo que vemos todos los días en el taller, explicado para que cuides mejor tu moto.</p>
+  </div></header>
+  <% if (!guides.length) { %>
+    <div class="tn-empty"><h2>Pronto publicaremos las primeras guías</h2><p>Mientras tanto, si tienes una duda sobre tu moto, pregúntanos.</p>
+      <div class="tn-empty-actions"><a class="tn-btn tn-btn--primary" href="<%= waLink(waMsg.general()) %>" target="_blank" rel="noopener">Preguntar por WhatsApp</a></div></div>
+  <% } else { %>
+  <ul class="tn-services">
+    <% guides.forEach(function (g) { %><li><a href="/guias/<%= g.slug %>"><strong><%= g.title %></strong><span><%= g.excerpt %></span></a></li><% }) %>
+  </ul>
+  <% } %>
+</div>
+<%- include('partials/footer') %>

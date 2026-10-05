@@ -7,11 +7,10 @@
       <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:5px" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       Horario del taller
     </span>
-    <span class="schedule-hours-item"><strong>Lun &mdash; Vie:</strong> 9:00 am &ndash; 6:00 pm</span>
+    <% bizHours.forEach(function (h, i) { %><% if (i) { %><span class="schedule-hours-sep" aria-hidden="true">&middot;</span><% } %>
+    <span class="schedule-hours-item<%= h.closed ? ' schedule-hours-closed' : '' %>"><strong><%= h.days %>:</strong> <%= h.text %></span><% }) %>
     <span class="schedule-hours-sep" aria-hidden="true">&middot;</span>
-    <span class="schedule-hours-item"><strong>Sábados:</strong> 10:00 am &ndash; 4:00 pm</span>
-    <span class="schedule-hours-sep" aria-hidden="true">&middot;</span>
-    <span class="schedule-hours-item schedule-hours-closed"><strong>Domingos:</strong> Cerrado</span>
+    <span class="schedule-hours-item"><strong><%= bizOpen.label %></strong></span>
   </div>
 </div>
 

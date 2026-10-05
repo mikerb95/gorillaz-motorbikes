@@ -115,8 +115,17 @@ router.get('/servicios/:slug', (req, res, next) => {
   const index = services.findIndex(s => s.slug === req.params.slug);
   if (index < 0) return next(); // Not found, move to 404 handler
   const service = services[index];
+  const { getServiceInfo } = require('../helpers/service-info');
+  const { productsForService } = require('../helpers/shop/crosssell');
+  const { unitPrice } = require('../helpers/shop/pricing');
+  const { isClubMember } = require('../helpers/cart');
+  const member = isClubMember(res.locals.user);
   res.render('services/service-detail', {
     service, services, index,
+    serviceInfo: getServiceInfo(service.slug),
+    suggestedProducts: productsForService(service.slug),
+    priceOf: (p) => unitPrice(p, null, { member }),
+    waContext: res.locals.waMsg.service({ name: service.name, url: `${res.locals.siteUrl}/servicios/${service.slug}` }),
     title: `${seoServiceTitle(service.name)} | Gorillaz Motorbikes`,
     description: `${service.desc} Taller de motos en Bogotá, agenda en línea.`,
     canonicalPath: `/servicios/${service.slug}`,

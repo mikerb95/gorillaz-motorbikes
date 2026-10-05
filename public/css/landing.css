@@ -397,3 +397,17 @@ section .lp-product-name { max-width: none }
 .lp-level-list li.is-lit { background: rgba(20, 13, 8, .1); padding-left: 8px; padding-right: 8px }
 .lp-level-list li.is-lit .lp-level-name::after { content: "" }
 .lp-level-list li.is-lit .lp-level-name::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #140d08; margin-right: 8px; vertical-align: .1em }
+
+/* ─── Tienda en el home: compra directa, oferta del mes y banner ─────────── */
+.lp-product-price { margin: -4px 0 8px; font-weight: 900 }
+.lp-add + .lp-add { margin-top: 8px }
+.lp-add--ghost { background: transparent; color: #140d08; box-shadow: inset 0 0 0 1.5px #d9c9b8 }
+.lp-add--ghost:hover { background: #fff1e8; color: #140d08 }
+.lp-promo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; background: #140d08; color: #fff; border-radius: 18px; padding: 16px 20px; margin-bottom: 24px }
+.lp-promo p { margin: 0; font-weight: 800 }
+.lp-offer { display: flex; align-items: center; gap: 18px; background: #fff; border-radius: 18px; padding: 14px 18px; margin-bottom: 24px; color: inherit; box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 12px 32px rgba(60, 30, 10, .08) }
+.lp-offer img { width: 96px; height: 96px; object-fit: cover; border-radius: 12px; flex: none }
+.lp-offer-body { display: grid; gap: 2px; flex: 1 }
+.lp-offer-body .lp-label { margin: 0 }
+.lp-offer-body s { opacity: .6; font-size: .9em }
+@media (max-width: 560px) { .lp-offer { flex-wrap: wrap } .lp-offer .btn { width: 100%; text-align: center } }

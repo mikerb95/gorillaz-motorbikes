@@ -270,3 +270,10 @@ section .sv-more-title { max-width: none }
 @keyframes sv-vt-swing {
   45% { rotate: -14deg; translate: 0 -6% }
 }
+
+/* Precio "desde" y duración (solo si el dueño los configuró) */
+.sv-facts { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 6px }
+.sv-facts div { background: #fff1e8; border-radius: 12px; padding: 10px 14px }
+.sv-facts dt { font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #8a4b1d }
+.sv-facts dd { margin: 2px 0 0; font-weight: 900; font-size: 1.1rem }
+.sv-facts-note { font-size: .88rem; color: #6b6159; margin: 0 0 14px }

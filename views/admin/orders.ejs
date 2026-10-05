@@ -1,4 +1,5 @@
 <%- include('../partials/admin-head', { title: 'Pedidos' }) %>
+<%- include('../partials/admin-shop-nav', { current: 'pedidos' }) %>
 
 <%
 const STATUS_MAP = {
@@ -10,6 +11,8 @@ const STATUS_MAP = {
 // `stats` (agregados en SQL) y `status`/`page`/`pages`/`total` llegan del servidor.
 const st_ = typeof stats !== 'undefined' ? stats : { pending:0, pending_confirmation:0, paid:0, totalRecaudado:0 };
 const activeStatus = typeof status !== 'undefined' ? status : '';
+const DELIVERY = { pickup: 'Recoge en taller', local: 'Domicilio Bogotá', national: 'Envío nacional' };
+const FULFILL = { nuevo: 'Nuevo', confirmado: 'Confirmado', preparando: 'Preparando', listo: 'Listo / en camino', entregado: 'Entregado', cancelado: 'Cancelado' };
 const KPI = [
   { k:'pending',              l:'Pendientes' },
   { k:'pending_confirmation', l:'En confirmación' },
@@ -29,7 +32,7 @@ const KPI = [
     </a>
   <% }) %>
   <div class="crm-kpi-card" style="cursor:default">
-    <div class="crm-kpi-value">$<%= (st_.totalRecaudado || 0).toLocaleString('es-CO') %></div>
+    <div class="crm-kpi-value"><%= fmtCOP(st_.totalRecaudado || 0) %></div>
     <div class="crm-kpi-label">Total recaudado</div>
   </div>
 </div>
@@ -65,7 +68,7 @@ const KPI = [
           const st = STATUS_MAP[o.status] || { label: o.status, cls: 'badge-warning' };
         %>
         <tr>
-          <td><code style="font-size:.8rem"><%= o.id.slice(0,8).toUpperCase() %></code></td>
+          <td><code style="font-size:.8rem"><%= o.publicCode || o.id.slice(0,8).toUpperCase() %></code></td>
           <td>
             <strong><%= o.customerName %></strong>
           </td>
@@ -73,14 +76,17 @@ const KPI = [
             <span class="muted" style="font-size:.85rem"><%= o.customerEmail %><br><%= o.customerPhone %></span>
           </td>
           <td>
-            <span class="muted" style="font-size:.85rem"><%= o.customerAddress %><br><%= o.customerCity %></span>
+            <span style="font-size:.85rem"><strong><%= DELIVERY[o.deliveryMethod] || 'Sin definir' %></strong><% if (o.deliveryZone) { %> (<%= o.deliveryZone %>)<% } %><% if (o.deliveryFee) { %> · <%= fmtCOP(o.deliveryFee) %><% } %></span>
+            <% if (o.customerAddress) { %><br><span class="muted" style="font-size:.82rem"><%= o.customerAddress %>, <%= o.customerCity %></span><% } %>
+            <% if (o.installation && o.installation.date) { %><br><span class="badge badge-orange">Instalación <%= o.installation.date %> <%= o.installation.time || '' %> · <%= o.installation.plate || '' %></span><% } %>
+            <% if (o.notes) { %><br><span class="muted" style="font-size:.8rem">Nota: <%= o.notes %></span><% } %>
           </td>
           <td style="font-size:.85rem">
             <% o.items.forEach(item => { %>
-              <div><%= item.qty %> × <%= item.name %></div>
+              <div><%= item.qty %> x <%= item.name %><%= item.install ? ' (instalar)' : '' %></div>
             <% }) %>
           </td>
-          <td><strong>$<%= o.total.toLocaleString('es-CO') %></strong></td>
+          <td><strong><%= fmtCOP(o.total) %></strong><% (o.discounts || []).forEach(function (d) { %><br><span class="muted" style="font-size:.78rem"><%= d.label %>: - <%= fmtCOP(d.amount) %></span><% }) %></td>
           <td><span class="badge <%= st.cls %>"><%= st.label %></span></td>
           <td class="muted" style="font-size:.82rem;white-space:nowrap"><%= fechaCO(o.createdAt, { day:'2-digit', month:'short', year:'numeric' }) %></td>
           <td>
@@ -91,6 +97,14 @@ const KPI = [
                 <% Object.entries(STATUS_MAP).forEach(([val, info]) => { %>
                   <option value="<%= val %>" <%= o.status === val ? 'selected' : '' %>><%= info.label %></option>
                 <% }) %>
+              </select>
+              <button class="btn btn-ghost btn-sm" type="submit">OK</button>
+            </form>
+            <form method="post" action="/admin/pedidos/logistica" style="display:flex;gap:4px;align-items:center;margin-top:4px">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <input type="hidden" name="id" value="<%= o.id %>" />
+              <select name="fulfillment" class="crm-select-inline" aria-label="Estado logístico">
+                <% Object.entries(FULFILL).forEach(([val, label]) => { %><option value="<%= val %>" <%= o.fulfillmentStatus === val ? 'selected' : '' %>><%= label %></option><% }) %>
               </select>
               <button class="btn btn-ghost btn-sm" type="submit">OK</button>
             </form>

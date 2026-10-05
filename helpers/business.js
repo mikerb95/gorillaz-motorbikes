@@ -132,10 +132,10 @@ function localBusinessJsonLd(siteUrl, biz = getBusiness()) {
   const a = biz.address;
   const ld = {
     '@context': 'https://schema.org',
-    '@type': 'AutoRepair',
+    '@type': 'MotorcycleRepair',
     '@id': `${siteUrl}/#negocio`,
     name: biz.name,
-    url: siteUrl,
+    url: `${siteUrl}/`,
     logo: `${siteUrl}/images/nobg_logo/logo_transp.png`,
     image: `${siteUrl}/images/og-default.jpg`,
     description: 'Taller de motos en Bogotá: mecánica, electricidad, escaneo, pintura, alistamiento para la revisión técnico-mecánica y tienda de accesorios con instalación.',
@@ -150,6 +150,8 @@ function localBusinessJsonLd(siteUrl, biz = getBusiness()) {
     telephone: biz.phone,
     areaServed: { '@type': 'City', name: 'Bogotá' },
     sameAs: Object.values(biz.social || {}).filter(Boolean),
+    knowsAbout: ['Mecánica de motos', 'Electricidad de motos', 'Escaneo de motos', 'Pintura de motos',
+      'Alistamiento para revisión técnico-mecánica', 'Lavado y detailing de motos', 'Accesorios y repuestos para moto'],
   };
   if (Number.isFinite(biz.geo.lat) && Number.isFinite(biz.geo.lng)) {
     ld.geo = { '@type': 'GeoCoordinates', latitude: biz.geo.lat, longitude: biz.geo.lng };

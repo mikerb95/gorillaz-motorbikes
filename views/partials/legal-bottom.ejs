@@ -1,0 +1,9 @@
+      <h2>Contacto</h2>
+      <p class="lg-id"><strong><%= company.razonSocial %></strong> (<%= company.marca %>) · NIT <%= company.nit %><br>
+        <%= biz.address.street %>, <%= biz.address.locality %>, Colombia<br>
+        WhatsApp y teléfono: <a href="<%= waLink(waMsg.general()) %>" target="_blank" rel="noopener"><%= biz.phone %></a><% if (biz.email) { %> · Correo: <a href="mailto:<%= biz.email %>"><%= biz.email %></a><% } %><br>
+        Solicitudes formales: <a href="/pqrs">formulario de PQRS</a></p>
+    </article>
+  </div>
+</div>
+<%- include('footer') %>

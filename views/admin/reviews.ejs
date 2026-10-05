@@ -1,0 +1,19 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<%- include('../partials/admin-shop-nav', { current: 'resenas' }) %>
+<nav class="ash-nav"><% ['pendiente','aprobada','rechazada'].forEach(function (s) { %><a href="?estado=<%= s %>" class="<%= status === s ? 'on' : '' %>"><%= s.charAt(0).toUpperCase() + s.slice(1) + 's' %></a><% }) %></nav>
+<p class="ash-help" style="margin-bottom:12px">Solo llegan reseñas de compras pagadas o servicios entregados (verificadas). Publica las reales aunque sean negativas; rechaza solo las ofensivas, con datos personales o sin relación con el producto o servicio.</p>
+<% if (!reviews.length) { %><div class="crm-card muted">No hay reseñas en este estado.</div><% } %>
+<% reviews.forEach(function (r) {
+     var target = r.kind === 'producto' ? (findById(r.target) || {}).name : (services.find(function (s) { return s.slug === r.target; }) || {}).name; %>
+<div class="crm-card">
+  <div class="ash-row" style="justify-content:space-between"><strong><%= '★'.repeat(r.rating) %><%= '☆'.repeat(5 - r.rating) %> · <%= r.authorName %></strong><span class="muted"><%= fechaCO(r.createdAt) %></span></div>
+  <p class="muted" style="margin:4px 0"><%= r.kind === 'producto' ? 'Producto' : 'Servicio' %>: <%= target || r.target %></p>
+  <p><%= r.body %></p>
+  <form method="post" action="/admin/resenas-tienda/<%= r.id %>" class="ash-row">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="back" value="<%= status %>" />
+    <% if (r.status !== 'aprobada') { %><button class="btn btn-primary btn-sm" name="status" value="aprobada">Publicar</button><% } %>
+    <% if (r.status !== 'rechazada') { %><button class="btn btn-ghost btn-sm" name="status" value="rechazada">Rechazar</button><% } %>
+  </form>
+</div>
+<% }) %>
+<%- include('../partials/admin-foot') %>

@@ -86,6 +86,7 @@ router.get('/sitemap.xml', async (req, res, next) => {
     if (catalog.combos.some((c) => c.active)) entries.push({ path: '/tienda/combos', changefreq: 'weekly', priority: '0.5' });
     entries.push({ path: '/tienda/pedido', changefreq: 'yearly', priority: '0.2' });
     for (const path of LEGAL_PAGES) entries.push({ path, changefreq: 'yearly', priority: '0.2' });
+    if (publishedGuides().length) entries.push({ path: '/guias', changefreq: 'weekly', priority: '0.5' });
     for (const g of publishedGuides()) {
       entries.push({ path: `/guias/${g.slug}`, lastmod: g.updatedAt, changefreq: 'monthly', priority: '0.6' });
     }

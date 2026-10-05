@@ -213,7 +213,17 @@ function checkoutLocals(req, res, priced, extra = {}) {
   };
 }
 
+// El cron corre una vez al día: entre corridas, las reservas vencidas se
+// liberan de forma oportunista (como mucho cada 10 minutos por instancia).
+let lastRelease = 0;
+function releaseExpiredSoon() {
+  if (Date.now() - lastRelease < 600_000) return;
+  lastRelease = Date.now();
+  require('../helpers/shop/orders').releaseExpired().catch((e) => console.error('[checkout] reservas:', e.message));
+}
+
 router.get('/checkout', (req, res) => {
+  releaseExpiredSoon();
   const priced = priceCart(getCart(req), { user: res.locals.user });
   if (!priced.count) return res.redirect('/carrito');
   res.render('checkout', checkoutLocals(req, res, priced));

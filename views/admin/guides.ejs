@@ -1,0 +1,26 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<% var g = edit || { status: 'draft', productIds: [], serviceSlugs: [] }; %>
+<p class="ash-help" style="margin-bottom:12px">Guías propias que enlazan productos y servicios (mantenimiento, preparación para la revisión técnico-mecánica, cuidado por tipo de moto). Escribe textos originales: no copies de otros sitios.</p>
+<div class="crm-card"><div class="crm-card-title"><%= edit ? 'Editar guía' : 'Nueva guía' %></div>
+<form method="post" action="/admin/guias">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <input type="hidden" name="prevSlug" value="<%= g.slug || '' %>" />
+  <div class="crm-form-grid">
+    <div class="crm-form-group crm-form-full"><label>Título</label><input name="title" required value="<%= g.title || '' %>" /></div>
+    <div class="crm-form-group"><label>URL (slug)</label><input name="slug" value="<%= g.slug || '' %>" /></div>
+    <div class="crm-form-group"><label>Estado</label><select name="status"><option value="draft" <%= g.status !== 'published' ? 'selected' : '' %>>Borrador</option><option value="published" <%= g.status === 'published' ? 'selected' : '' %>>Publicada</option></select></div>
+    <div class="crm-form-group crm-form-full"><label>Resumen (descripción para buscadores)</label><input name="excerpt" maxlength="200" value="<%= g.excerpt || '' %>" /></div>
+    <div class="crm-form-group crm-form-full"><label>Imagen de portada (URL propia)</label><input name="image" value="<%= g.image || '' %>" /></div>
+    <div class="crm-form-group crm-form-full"><label>Contenido</label><textarea name="body" rows="16" class="ash-mono"><%= g.body || '' %></textarea>
+      <p class="ash-help">Formato: <span class="ash-mono">## Título</span>, <span class="ash-mono">### Subtítulo</span>, párrafos separados por línea en blanco, listas con <span class="ash-mono">- </span> o <span class="ash-mono">1. </span>, <span class="ash-mono">**negrita**</span> y enlaces <span class="ash-mono">[texto](/servicios/mecanica)</span>.</p></div>
+    <div class="crm-form-group"><label>Productos enlazados</label><select name="productIds" multiple size="8"><% products.forEach(function (p) { %><option value="<%= p.id %>" <%= g.productIds.indexOf(p.id) >= 0 ? 'selected' : '' %>><%= p.name %></option><% }) %></select></div>
+    <div class="crm-form-group"><label>Servicios enlazados</label><div class="ash-checks"><% services.forEach(function (s) { %><label class="ash-check"><input type="checkbox" name="serviceSlugs" value="<%= s.slug %>" <%= g.serviceSlugs.indexOf(s.slug) >= 0 ? 'checked' : '' %> /> <%= s.name %></label><% }) %></div></div>
+  </div>
+  <div class="ash-row"><button class="btn btn-primary btn-sm" type="submit">Guardar</button><% if (edit) { %><a class="btn btn-ghost btn-sm" href="/guias/<%= g.slug %>" target="_blank" rel="noopener">Ver</a><a class="btn btn-ghost btn-sm" href="/admin/guias">Nueva</a><% } %></div>
+</form></div>
+<div class="crm-table-wrap"><table class="crm-table"><thead><tr><th>Guía</th><th>Estado</th><th>Actualizada</th><th></th></tr></thead><tbody>
+  <% if (!guides.length) { %><tr><td colspan="4" class="muted">Sin guías.</td></tr><% } %>
+  <% guides.forEach(function (x) { %><tr><td><strong><%= x.title %></strong><br><span class="muted ash-mono">/guias/<%= x.slug %></span></td><td><%- x.status === 'published' ? '<span class="ash-pill ok">Publicada</span>' : '<span class="ash-pill warn">Borrador</span>' %></td><td><%= fechaCO(x.updatedAt) %></td>
+  <td class="crm-table-actions"><a class="btn btn-ghost btn-xs" href="/admin/guias?slug=<%= x.slug %>">Editar</a><form method="post" action="/admin/guias/eliminar" style="display:inline" onsubmit="return confirm('¿Eliminar la guía?')"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="slug" value="<%= x.slug %>" /><button class="btn btn-ghost btn-xs">Eliminar</button></form></td></tr><% }) %>
+</tbody></table></div>
+<%- include('../partials/admin-foot') %>

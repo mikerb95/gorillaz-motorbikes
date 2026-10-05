@@ -1,0 +1,16 @@
+<%- include('../partials/admin-head', { title: title }) %>
+<p class="ash-help" style="margin-bottom:12px">Lo que definas aquí aparece en la ficha de cada servicio como "Desde $ X COP" y "Duración estimada". Si lo dejas vacío, no se muestra nada (nunca se inventa un precio).</p>
+<form method="post" action="/admin/servicios-info">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+  <div class="crm-table-wrap"><table class="crm-table ash-table">
+    <thead><tr><th>Servicio</th><th>Precio desde (COP)</th><th>Duración estimada</th></tr></thead>
+    <tbody>
+      <% services.forEach(function (s) { var i = info[s.slug] || {}; %><tr>
+        <td><strong><%= s.name %></strong></td>
+        <td><input name="svc[<%= s.slug %>][priceFrom]" inputmode="numeric" value="<%= i.priceFrom || '' %>" /></td>
+        <td><input name="svc[<%= s.slug %>][duration]" value="<%= i.duration || '' %>" placeholder="Ej: 1 a 2 horas" /></td>
+      </tr><% }) %>
+    </tbody></table></div>
+  <button class="btn btn-primary" type="submit" style="margin-top:12px">Guardar</button>
+</form>
+<%- include('../partials/admin-foot') %>
