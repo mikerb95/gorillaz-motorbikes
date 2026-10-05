@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Panel de Taller — Gorillaz</title>
   <link rel="icon" href="/favicons/favicon.ico" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="/static/fonts/barlow/barlow-500-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/barlow/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/kds.css?v=<%= assetV('css/kds.css') %>">
   <link rel="manifest" href="/manifest-kds.webmanifest">
   <meta name="theme-color" content="#15181d">
@@ -15,6 +16,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="/static/js/kds-pwa.js?v=<%= assetV('js/kds-pwa.js') %>" defer></script>
   <script src="/static/js/kds-fullscreen.js?v=<%= assetV('js/kds-fullscreen.js') %>"></script>
+  <script src="/static/js/kds-csrf.js?v=<%= assetV('js/kds-csrf.js') %>" defer></script>
 </head>
 <body class="kds-login">
   <a class="kds-back" href="/kds" title="Inicio" aria-label="Inicio" style="position:fixed;top:16px;left:16px">⌂</a>

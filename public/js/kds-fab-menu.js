@@ -12,12 +12,24 @@
     toast('Próximamente');
   }
 
+  // Iconos de trazo propios (los emojis cambian de dibujo según la tablet y
+  // se ven de juguete). Todos en una rejilla de 24 px con el mismo trazo.
+  const svg = (d) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  const ICONS = {
+    search: svg('<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>'),
+    receipt: svg('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>'),
+    tv: svg('<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/>'),
+    cap: svg('<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.4 2.7 3 6 3s6-1.6 6-3v-5"/>'),
+    expand: svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+    wrench: svg('<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3.5 17.5a1.4 1.4 0 0 0 0 2l1 1a1.4 1.4 0 0 0 2 0l5.8-5.8a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.3-.5-.5-2.3z"/>'),
+  };
+
   const ACTIONS = [
-    { icon: '🔎', label: 'Buscar Placa', run: () => { window.location.href = '/kds/placa'; } },
-    { icon: '🧾', label: 'Crear Cotización', run: () => runHook('cotizacion') },
-    { icon: '📺', label: 'Control remoto TV', run: () => runHook('tv') },
-    { icon: '🎓', label: 'Capacitaciones', run: () => runHook('capacitaciones') },
-    { icon: '⛶', label: 'Pantalla completa', run: () => { if (window.KdsFullscreen) window.KdsFullscreen.toggle(); } },
+    { icon: ICONS.search, label: 'Buscar Placa', run: () => { window.location.href = '/kds/placa'; } },
+    { icon: ICONS.receipt, label: 'Crear Cotización', run: () => runHook('cotizacion') },
+    { icon: ICONS.tv, label: 'Control remoto TV', run: () => runHook('tv') },
+    { icon: ICONS.cap, label: 'Capacitaciones', run: () => runHook('capacitaciones') },
+    { icon: ICONS.expand, label: 'Pantalla completa', run: () => { if (window.KdsFullscreen) window.KdsFullscreen.toggle(); } },
   ];
 
   let toastTimer = null;
@@ -65,7 +77,7 @@
     fab.type = 'button';
     fab.className = 'kds-fab-main';
     fab.setAttribute('aria-label', 'Panel de taller');
-    fab.innerHTML = '<span class="kds-fab-main-icon">🔧</span>';
+    fab.innerHTML = '<span class="kds-fab-main-icon">' + ICONS.wrench + '</span>';
 
     function open() { wrap.classList.add('open'); }
     function close() { wrap.classList.remove('open'); }
