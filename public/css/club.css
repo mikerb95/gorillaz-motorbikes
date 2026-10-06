@@ -1,0 +1,200 @@
+/* ════════════════════════════════════════════════════════════════════════
+   CLUB GORILLAZ · "COSE TU CHALECO"
+
+   Landing /club y panel del miembro /club/panel. Extiende el lenguaje
+   "Taller a la vista" (taller-base.css): grafito, naranja de marca, amarillo
+   de placa, papel de ficha y azul del piso del taller. La pieza común es la
+   espalda de un chaleco de club (views/partials/club/vest.ejs).
+
+   Todo lo de aquí es el ESTADO FINAL (sin JS o con movimiento reducido). Lo
+   que se esconde para animarlo vive bajo `.motion-ok … .is-armed`.
+   No toca la navbar.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.page-club,
+.page-club-panel {
+  --cl-leather: #1d1a18;
+  --cl-chalk: #cfc6b4;
+  --cl-stage: #17181b;
+  --cl-line: rgba(255, 255, 255, .12);
+  --cl-concrete: #eef0f2;
+}
+
+/* ─── Chaleco ─────────────────────────────────────────────────────────── */
+.cl-vest { display: block; width: 100%; height: auto; overflow: visible }
+.cl-vest-leather { filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .45)) }
+.cl-vest-seam { fill: none; stroke: #5a524b; stroke-width: 1.2; stroke-dasharray: 4 4 }
+.cl-stitch { fill: none; stroke: #f3ead9; stroke-width: 1.4; stroke-dasharray: 3 2.6; stroke-linecap: round }
+
+.cl-rk-edge { fill: none; stroke: #0e0f11; stroke-width: 44 }
+.cl-rk-fill { fill: none; stroke: #F25C05; stroke-width: 38 }
+.cl-rk-stitch { fill: none; stroke: #0e0f11; stroke-width: 34; stroke-dasharray: 3 2.6; opacity: .0 }
+.cl-rk-text { font: 900 23px/1 "Montserrat", system-ui, sans-serif; letter-spacing: .14em; fill: #0e0f11 }
+
+.cl-lvl-edge { fill: #0e0f11 }
+.cl-lvl-fill { fill: var(--lvl, #F25C05) }
+.cl-lvl-text { font: 900 13px/1 "Montserrat", system-ui, sans-serif; letter-spacing: .12em; fill: #fff; text-transform: uppercase }
+.cl-vest-level .cl-lvl-fill { transition: fill .35s ease }
+
+/* Tiza: dónde irá cada parche. Debajo del parche, visible si no se ganó. */
+.cl-chalk { fill: rgba(255, 255, 255, .03); stroke: var(--cl-chalk); stroke-width: 1.3; stroke-dasharray: 1.5 3.5; opacity: .55 }
+.cl-chalk-icon { fill: none; stroke: var(--cl-chalk); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: .35 }
+.cl-patch-body { transform-box: fill-box; transform-origin: center }
+.cl-patch:not(.is-earned) .cl-patch-body { display: none }
+.cl-patch-icon { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
+.cl-patch-stitch { stroke-width: 1.2; stroke-dasharray: 2 2 }
+.cl-patch-cover { fill: none; stroke-width: 2.6 }
+
+/* ─── Landing: escenario oscuro con el chaleco fijo ───────────────────── */
+.page-club main.page-root { padding-top: 0; background: var(--lp-cream) }
+
+.clb-stage {
+  background:
+    radial-gradient(1200px 600px at 75% 10%, rgba(242, 92, 5, .10), transparent 60%),
+    var(--cl-stage);
+  color: #f1ece4;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: calc(var(--header-offset) + 12px) var(--lp-gutter) 72px;
+  gap: 8px;
+}
+.clb-vest-col { order: -1; max-width: 340px; width: 72%; margin: 0 auto }
+.clb-vest { margin: 0 }
+.clb-vest-caption { font-size: .78rem; text-align: center; color: rgba(241, 236, 228, .6); margin-top: 6px }
+.clb-steps { display: grid; grid-template-columns: minmax(0, 1fr); gap: 72px; max-width: 640px; margin: 0 auto }
+
+.clb-h1 {
+  font-size: clamp(2.3rem, 5.6vw, 4.6rem); line-height: .98; letter-spacing: -.03em; font-weight: 900;
+  margin: 18px 0 18px; text-wrap: balance; max-width: 14ch;
+}
+.clb-h2 {
+  font-size: clamp(1.8rem, 3.6vw, 3rem); line-height: 1.02; letter-spacing: -.02em; font-weight: 900;
+  margin: 0 0 14px; text-wrap: balance; max-width: 18ch;
+}
+.clb-lead { font-size: clamp(1rem, 1.25vw, 1.12rem); line-height: 1.6; max-width: 52ch; margin: 0 0 24px; opacity: .85 }
+.clb-muted { opacity: .65; font-size: .9em }
+.clb-stage .btn-outline { color: #fff; border-color: rgba(255, 255, 255, .55); background: transparent }
+.clb-stage a { color: inherit }
+
+.clb-next {
+  display: inline-flex; align-items: center; gap: 14px; margin-top: 30px; padding: 10px 18px 10px 10px;
+  border-radius: 14px; background: rgba(255, 255, 255, .06); text-decoration: none; line-height: 1.35; font-size: .92rem;
+}
+.clb-next:hover { background: rgba(255, 255, 255, .1); text-decoration: none }
+.clb-next-date {
+  display: grid; place-items: center; width: 52px; height: 56px; border-radius: 10px;
+  background: var(--lp-plate); color: #0e0f11; font-size: .7rem; font-weight: 800; line-height: 1;
+}
+.clb-next-date strong { font-size: 1.5rem; font-weight: 900 }
+
+/* Puntos: la cifra grande es el dato; el texto explica cómo se registra. */
+.clb-earn { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px }
+.clb-earn li {
+  display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 16px; align-items: baseline;
+  padding: 16px 0; border-top: 1px solid var(--cl-line);
+}
+.clb-earn-pts { font-size: 2.3rem; font-weight: 900; color: var(--lp-orange); letter-spacing: -.03em; font-variant-numeric: tabular-nums }
+.clb-earn-body { display: grid; gap: 4px }
+.clb-earn-body span { opacity: .72; line-height: 1.5; font-size: .95rem }
+
+.clb-levels { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px }
+.clb-levels > li {
+  display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 6px 14px; align-items: center;
+  padding: 14px 12px; border-radius: 10px; transition: background .3s ease;
+}
+.clb-levels > li.is-on { background: rgba(255, 255, 255, .07) }
+.clb-level-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--lvl); box-shadow: 0 0 0 3px rgba(255, 255, 255, .08) }
+.clb-level-name { font-weight: 800; font-size: 1.1rem }
+.clb-level-pts { font-size: .88rem; opacity: .7; font-variant-numeric: tabular-nums }
+.clb-level-benefits { grid-column: 2 / -1; margin: 2px 0 0; padding-left: 18px; font-size: .92rem; opacity: .85; line-height: 1.5 }
+.clb-note { font-size: .9rem; opacity: .7; margin: 16px 0 0; max-width: 52ch }
+
+.clb-badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px }
+.clb-badges li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 0 }
+.clb-badges li > span { display: grid; gap: 2px; line-height: 1.4 }
+.clb-badges li > span span { opacity: .7; font-size: .92rem }
+.clb-badge-icon {
+  width: 36px; height: 36px; padding: 7px; box-sizing: border-box; border-radius: 50%;
+  background: rgba(255, 255, 255, .06); fill: none; stroke: var(--lp-plate); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ─── Bandas claras ───────────────────────────────────────────────────── */
+.clb-band { padding: clamp(56px, 8vw, 104px) var(--lp-gutter) }
+.clb-wrap { max-width: 1120px; margin: 0 auto }
+.clb-events { background: var(--lp-paper) }
+.clb-event-list { list-style: none; margin: 0 0 22px; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px }
+.clb-event {
+  display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 18px; align-items: center;
+  background: #fffdf8; border-radius: 14px; padding: 14px 18px 14px 14px;
+  box-shadow: 0 1px 0 rgba(64, 19, 9, .08);
+}
+.clb-event-date {
+  display: grid; justify-items: center; gap: 2px; padding: 8px 0; border-radius: 10px;
+  background: #0e0f11; color: #fff; font-size: .72rem; font-weight: 700; line-height: 1;
+}
+.clb-event-date strong { font-size: 1.7rem; font-weight: 900; color: var(--lp-plate) }
+.clb-event-body { display: grid; gap: 3px; min-width: 0 }
+.clb-event-type { font-size: .8rem; font-weight: 800; color: var(--lp-floor) }
+.clb-event[data-type="encuentro"] .clb-event-type,
+.clb-event[data-type="caminata"] .clb-event-type,
+.clb-event[data-type="actividad"] .clb-event-type { color: var(--lp-orange-text) }
+.clb-event-title { font-size: 1.08rem; font-weight: 800 }
+
+.clb-tools { background: #fff }
+.clb-tools-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 40px; align-items: center }
+.clb-tools-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; max-width: 56ch }
+.clb-tools-list li { line-height: 1.55; padding-left: 22px; position: relative }
+.clb-tools-list li::before { content: ""; position: absolute; left: 0; top: .5em; width: 9px; height: 9px; border-radius: 50%; background: var(--lp-orange) }
+.clb-card-demo { margin: 0; display: grid; justify-items: center; gap: 12px }
+
+.clb-faq { background: var(--lp-cream) }
+.clb-faq-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px }
+.clb-faq-item { border-top: 1px solid rgba(0, 0, 0, .12); padding: 4px 0 }
+.clb-faq-item:last-child { border-bottom: 1px solid rgba(0, 0, 0, .12) }
+.clb-faq-item summary { cursor: pointer; font-weight: 800; padding: 16px 0; list-style: none; display: flex; justify-content: space-between; gap: 12px }
+.clb-faq-item summary::-webkit-details-marker { display: none }
+.clb-faq-item summary::after { content: "+"; font-weight: 900; color: var(--lp-orange-text); transition: transform .2s ease }
+.clb-faq-item[open] summary::after { transform: rotate(45deg) }
+.clb-faq-item p { margin: 0 0 16px; line-height: 1.6; max-width: 60ch; opacity: .85 }
+
+.clb-cta { background: var(--cl-stage); color: #f1ece4; text-align: left }
+.clb-cta .btn-outline { color: #fff; border-color: rgba(255, 255, 255, .55); background: transparent }
+
+@media (min-width: 720px) {
+  .clb-event-list { grid-template-columns: repeat(3, minmax(0, 1fr)) }
+  .clb-event { grid-template-columns: minmax(0, 1fr); align-items: start; padding: 16px }
+  .clb-event-date { grid-auto-flow: column; justify-content: start; align-items: baseline; gap: 8px; padding: 8px 12px; width: max-content }
+  .clb-badges { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px }
+  .clb-tools-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) }
+  .clb-faq-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) }
+}
+
+/* Escritorio: dos columnas, el chaleco fijo a la derecha mientras pasan los
+   pasos. Cada paso ocupa casi una pantalla para que el scroll marque el ritmo. */
+@media (min-width: 1024px) {
+  .clb-stage { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); column-gap: clamp(32px, 5vw, 96px); padding-bottom: 0 }
+  .clb-vest-col { order: 2; max-width: none; width: auto; margin: 0 }
+  .clb-vest { position: sticky; top: calc(var(--header-offset) + 10px); height: calc(100vh - var(--header-offset) - 30px); display: grid; align-content: center }
+  .clb-vest .cl-vest { max-height: calc(100vh - var(--header-offset) - 80px) }
+  .clb-steps { max-width: 600px; margin: 0 0 0 auto; gap: 0 }
+  .clb-steps > section { min-height: calc(100vh - var(--header-offset)); display: grid; align-content: center; padding: 48px 0 }
+  .clb-hero { min-height: calc(100vh - var(--header-offset) - 40px) }
+}
+
+/* ─── Credencial del miembro (landing de ejemplo y panel) ─────────────── */
+.cl-cred {
+  --lvl: #F25C05;
+  position: relative; width: min(100%, 360px); aspect-ratio: 85.6 / 54; box-sizing: border-box;
+  border-radius: 16px; padding: 18px 20px; color: #f1ece4; overflow: hidden;
+  background:
+    linear-gradient(115deg, transparent 0 62%, color-mix(in srgb, var(--lvl) 85%, #000) 62% 100%),
+    #1d1a18;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .28), inset 0 0 0 1px rgba(255, 255, 255, .06);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto 1fr auto auto; column-gap: 12px;
+}
+.cl-cred-club { font-size: .72rem; font-weight: 800; letter-spacing: .08em; opacity: .7 }
+.cl-cred-name { grid-row: 3; font-size: 1.35rem; font-weight: 900; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.cl-cred-level { grid-row: 4; font-size: .88rem; font-weight: 800; color: color-mix(in srgb, var(--lvl) 55%, #fff) }
+.cl-cred-code { grid-column: 2; grid-row: 4; align-self: end; font-size: .8rem; font-weight: 800; letter-spacing: .08em; font-variant-numeric: tabular-nums }
+.cl-cred-qr { grid-column: 2; grid-row: 1 / 4; justify-self: end; width: 74px; height: 74px; padding: 6px; background: #fff; border-radius: 8px; box-sizing: border-box }
+.cl-cred-qr svg { width: 100%; height: 100%; fill: #0e0f11; display: block }
