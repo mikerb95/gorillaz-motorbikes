@@ -198,3 +198,7 @@
 .cl-cred-code { grid-column: 2; grid-row: 4; align-self: end; font-size: .8rem; font-weight: 800; letter-spacing: .08em; font-variant-numeric: tabular-nums }
 .cl-cred-qr { grid-column: 2; grid-row: 1 / 4; justify-self: end; width: 74px; height: 74px; padding: 6px; background: #fff; border-radius: 8px; box-sizing: border-box }
 .cl-cred-qr svg { width: 100%; height: 100%; fill: #0e0f11; display: block }
+
+/* Fila de puntos que se está contando en la pestaña del chaleco. */
+.clb-earn-pts { transition: color .25s ease }
+.clb-earn li.is-on .clb-earn-pts { color: var(--lp-plate) }
