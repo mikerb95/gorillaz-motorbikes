@@ -32,9 +32,9 @@
     flame:    ['#F25C05', '#b8460b', '#fff9f5'],
     calendar: ['#401309', '#250a04', '#f3ead9'],
   };
-  const cols = 6, gap = 54, x0 = 210 - (gap * (cols - 1)) / 2;
+  const cols = 6, gap = 50, x0 = 210 - (gap * (cols - 1)) / 2;
 %>
-<svg class="cl-vest" viewBox="0 0 420 500" aria-hidden="true" focusable="false" data-vest="<%= vid %>">
+<svg class="cl-vest" viewBox="0 0 420 540" aria-hidden="true" focusable="false" data-vest="<%= vid %>">
   <defs>
     <symbol id="<%= vid %>-i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.5"/></symbol>
     <symbol id="<%= vid %>-i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></symbol>
@@ -45,50 +45,56 @@
     <symbol id="<%= vid %>-i-flame" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.1 0-3.9 3.4-6.1 3.9-10.4 2.7 1.6 4.2 4 4.4 6.4.9-.6 1.5-1.7 1.7-2.9 1.9 1.6 3 4 3 6.9 0 3.5-2.6 6.1-6.5 6.1z"/></symbol>
     <symbol id="<%= vid %>-i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M9.5 15l2 2 3.5-4"/></symbol>
 
-    <path id="<%= vid %>-rk-top" d="M88 116 Q210 46 332 116" />
-    <path id="<%= vid %>-rk-bot" d="M88 410 Q210 478 332 410" />
+    <path id="<%= vid %>-rk-top" d="M84 172 Q210 104 336 172" />
+    <path id="<%= vid %>-rk-bot" d="M104 468 Q210 524 316 468" />
+    <%# Bordes de cada rocker (la curva desplazada) para la costura. %>
+    <path id="<%= vid %>-rk-top-a" d="M75 155 Q210 85 345 155" />
+    <path id="<%= vid %>-rk-top-b" d="M93 189 Q210 123 327 189" />
+    <path id="<%= vid %>-rk-bot-a" d="M113 451 Q210 505 307 451" />
+    <path id="<%= vid %>-rk-bot-b" d="M95 485 Q210 543 325 485" />
     <radialGradient id="<%= vid %>-leather" cx="50%" cy="38%" r="70%">
-      <stop offset="0" stop-color="#2c2724" />
-      <stop offset="1" stop-color="#151311" />
+      <stop offset="0" stop-color="#3d3631" />
+      <stop offset="1" stop-color="#211c19" />
     </radialGradient>
-    <clipPath id="<%= vid %>-logo-clip"><circle cx="210" cy="196" r="55" /></clipPath>
+    <clipPath id="<%= vid %>-logo-clip"><circle cx="210" cy="250" r="53" /></clipPath>
   </defs>
 
   <!-- Cuero: espalda del chaleco con sus costuras -->
   <path class="cl-vest-leather" fill="url(#<%= vid %>-leather)"
-    d="M128 14 Q210 52 292 14 L356 26 Q368 92 344 150 Q390 184 394 252 L398 470 Q210 496 22 470 L26 252 Q30 184 76 150 Q52 92 64 26 Z" />
+    d="M150 12 Q210 42 270 12 L324 22 C312 72 324 128 390 152 L396 506 Q210 534 24 506 L30 152 C96 128 108 72 96 22 Z" />
   <path class="cl-vest-seam"
-    d="M131 24 Q210 62 289 24 L346 34 Q356 94 333 152 Q378 186 383 252 L387 461 Q210 485 33 461 L37 252 Q42 186 87 152 Q64 94 74 34 Z" />
-  <path class="cl-vest-seam" d="M210 60 V472" opacity=".35" />
+    d="M152 22 Q210 52 268 22 L313 30 C303 80 316 136 380 160 L385 496 Q210 522 35 496 L40 160 C104 136 117 80 107 30 Z" />
+  <path class="cl-vest-seam" d="M210 50 V512" opacity=".35" />
 
   <!-- Rocker superior -->
   <g class="cl-vest-rocker" data-part="top">
     <use href="#<%= vid %>-rk-top" class="cl-rk-edge" />
     <use href="#<%= vid %>-rk-top" class="cl-rk-fill" />
-    <use href="#<%= vid %>-rk-top" class="cl-rk-stitch" />
+    <use href="#<%= vid %>-rk-top-a" class="cl-rk-stitch" />
+    <use href="#<%= vid %>-rk-top-b" class="cl-rk-stitch" />
     <text class="cl-rk-text"><textPath href="#<%= vid %>-rk-top" startOffset="50%" text-anchor="middle" dominant-baseline="central">GORILLAZ</textPath></text>
   </g>
 
   <!-- Parche central: el logo del taller -->
   <g class="cl-vest-center" data-part="center">
-    <circle cx="210" cy="196" r="62" fill="#0e0f11" />
-    <circle cx="210" cy="196" r="57" fill="#F25C05" />
-    <circle cx="210" cy="196" r="59.5" class="cl-stitch" />
-    <image href="/images/club/logo-parche.webp" x="160" y="146" width="100" height="100" clip-path="url(#<%= vid %>-logo-clip)" />
+    <circle cx="210" cy="250" r="60" fill="#0e0f11" />
+    <circle cx="210" cy="250" r="55" fill="#F25C05" />
+    <circle cx="210" cy="250" r="57.5" class="cl-stitch" />
+    <image href="/images/club/logo-parche.webp" x="162" y="202" width="96" height="96" clip-path="url(#<%= vid %>-logo-clip)" />
   </g>
 
   <!-- Pestaña del nivel -->
   <g class="cl-vest-level" data-part="level" style="--lvl: <%= lvlColor %>">
-    <rect x="140" y="270" width="140" height="28" rx="3" class="cl-lvl-edge" />
-    <rect x="143" y="273" width="134" height="22" rx="2" class="cl-lvl-fill" />
-    <rect x="141.5" y="271.5" width="137" height="25" rx="2.5" class="cl-stitch" />
-    <text x="210" y="285" class="cl-lvl-text" text-anchor="middle" dominant-baseline="central"><%= lvlName %></text>
+    <rect x="136" y="320" width="148" height="28" rx="3" class="cl-lvl-edge" />
+    <rect x="139" y="323" width="142" height="22" rx="2" class="cl-lvl-fill" />
+    <rect x="137.5" y="321.5" width="145" height="25" rx="2.5" class="cl-stitch" />
+    <text x="210" y="335" class="cl-lvl-text" text-anchor="middle" dominant-baseline="central"><%= lvlName %></text>
   </g>
 
   <!-- Insignias: tiza donde va cada parche y el parche cosido si se ganó -->
   <g class="cl-vest-patches">
     <% list.forEach((b, i) => {
-         const cx = x0 + (i % cols) * gap, cy = 330 + Math.floor(i / cols) * 52;
+         const cx = x0 + (i % cols) * gap, cy = 377 + Math.floor(i / cols) * 50;
          const [fill, edge, ink] = tone[b.icon] || tone.flag; %>
       <g class="cl-patch<%= b.earned ? ' is-earned' : '' %>" data-badge="<%= b.id %>" transform="translate(<%= cx %> <%= cy %>)">
         <circle r="22" class="cl-chalk" />
@@ -99,7 +105,7 @@
           <circle r="21.5" class="cl-stitch cl-patch-stitch" style="stroke: <%= ink %>" />
           <%# Tapa de la puntada: del color del parche; al animarse se recorre y
               destapa las puntadas en sentido horario (ver vest.mjs). %>
-          <circle r="21.5" class="cl-patch-cover" style="stroke: <%= fill %>" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="-100" transform="rotate(-90)" />
+          <circle r="21.5" class="cl-patch-cover" data-m style="stroke: <%= fill %>" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="-100" transform="rotate(-90)" />
           <use href="#<%= vid %>-i-<%= b.icon %>" x="-10" y="-10" width="20" height="20" class="cl-patch-icon" style="stroke: <%= ink %>" />
         </g>
       </g>
@@ -110,7 +116,8 @@
   <g class="cl-vest-rocker" data-part="bottom">
     <use href="#<%= vid %>-rk-bot" class="cl-rk-edge" />
     <use href="#<%= vid %>-rk-bot" class="cl-rk-fill" />
-    <use href="#<%= vid %>-rk-bot" class="cl-rk-stitch" />
+    <use href="#<%= vid %>-rk-bot-a" class="cl-rk-stitch" />
+    <use href="#<%= vid %>-rk-bot-b" class="cl-rk-stitch" />
     <text class="cl-rk-text"><textPath href="#<%= vid %>-rk-bot" startOffset="50%" text-anchor="middle" dominant-baseline="central"><%= bottom %></textPath></text>
   </g>
 </svg>
