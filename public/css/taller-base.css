@@ -1,12 +1,14 @@
 /* ════════════════════════════════════════════════════════════════════════
    BASE COMPARTIDA DEL LENGUAJE "TALLER A LA VISTA"
-   Tokens y piezas comunes de las páginas con motion (home y /servicios).
+   Tokens y piezas comunes de las páginas con motion (home, /servicios y el club).
    Cada página agrega su propia hoja (landing.css, servicios.css). No toca la
    navbar: todo cuelga de clases lp-* y de las clases de página.
    ════════════════════════════════════════════════════════════════════════ */
 
 .page-home,
-.page-servicios {
+.page-servicios,
+.page-club,
+.page-club-panel {
   --lp-orange: #F25C05;
   --lp-orange-hot: #ff7a1f;
   --lp-ink: #0e0f11;
@@ -23,7 +25,9 @@
 
 /* ─── Piezas comunes ───────────────────────────────────────────────────── */
 .page-home,
-.page-servicios { --lp-orange-text: #b8460b }
+.page-servicios,
+.page-club,
+.page-club-panel { --lp-orange-text: #b8460b }
 .lp-wrap { max-width: var(--lp-max); margin: 0 auto; padding: 0 12px }
 .lp-label {
   font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;

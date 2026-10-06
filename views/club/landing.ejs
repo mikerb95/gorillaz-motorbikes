@@ -1,255 +1,210 @@
-<%- include('../partials/head', { title: 'Club de motos en Bogotá', description: 'Únete al club de moteros de Gorillaz Motorbikes: rodadas, eventos, puntos por servicios, clasificados y beneficios en el taller en Bogotá.' }) %>
+<%- include('../partials/head') %>
+<%#
+  LANDING DEL CLUB: "COSE TU CHALECO"
+  Extiende el lenguaje "Taller a la vista" de la home. La pieza central es la
+  espalda de un chaleco de club: empieza con los parches marcados con tiza y,
+  al bajar por la página, recibe los puntos, el nivel y las insignias reales
+  del sistema (helpers/club/lib.js y la configuración de puntos del admin).
 
-  <%
-    const icons = {
-      wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/>',
-      route: '<path d="M3 11l19-9-9 19-2-8-8-2z"/>',
-      book: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
-      calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M9 16l2 2 4-4"/>',
-      trophy: '<circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/>',
-      users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-      pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
-      chevron: 'M6 9l6 6 6-6',
-    };
-    function icon(name) {
-      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
-    }
-    const benefits = [
-      ['wrench', 'Descuentos en el taller', 'Hasta 15% en mecánica rápida y beneficios adicionales según tu nivel de membresía.'],
-      ['route', 'Rodadas y eventos', 'Rodadas organizadas, paseos de fin de semana y eventos exclusivos en Bogotá y alrededores.'],
-      ['book', 'Cursos y formación', 'Acceso prioritario y precios especiales en cursos técnicos de mecánica, seguridad vial y más.'],
-      ['calendar', 'Prioridad en agenda', 'Reserva de citas preferencial para miembros activos y recordatorios automáticos de SOAT y tecno.'],
-      ['trophy', 'Sistema de puntos', 'Acumula puntos con cada visita, rodada o evento y desbloquea beneficios exclusivos por nivel.'],
-      ['users', 'Comunidad activa', 'Red de motociclistas en Bogotá. Comparte experiencias, rutas y conocimiento con la hermandad Gorillaz.'],
-    ];
-    const earnLabels = {
-      rodada:       ['route',    'Rodada',            'Participa en una rodada organizada por el club.'],
-      evento:       ['calendar', 'Evento del club',   'Asiste a eventos, reuniones y actividades del club.'],
-      mantenimiento:['wrench',   'Mantenimiento',     'Realiza un mantenimiento o servicio en el taller.'],
-      visita:       ['pin',      'Visita al taller',  'Cualquier visita o consulta en Gorillaz Motorbikes.'],
-    };
-    const earnKeys = ['rodada', 'evento', 'mantenimiento', 'visita'].filter(k => puntos.points[k] != null);
-    const levels = [...puntos.levels].sort((a, b) => a.min - b.min);
-    const typeLabel = { rodada: '🏍️ Rodada', encuentro: '⚽ Encuentro', caminata: '🥾 Caminata', actividad: '🎉 Actividad', evento: '🎉 Actividad' };
-  %>
+  Todo lo de este marcado es el estado final y legible. El motion
+  (public/js/club/landing.mjs) solo lo realza; si falla, devuelve lo que
+  escondió (contrato fail-open de public/js/motion/core.mjs).
+%>
+<%
+  const fmt = (n) => Number(n || 0).toLocaleString('es-CO');
+  const P = puntos.points;
+  const earn = [
+    { key: 'rodada',        icon: 'route',  pts: P.rodada,        title: 'Rodadas del club',        how: 'Te confirman la asistencia con el QR de tu credencial al llegar.' },
+    { key: 'encuentro',     icon: 'flag',   pts: P.encuentro,     title: 'Encuentros y actividades', how: 'Caminatas, encuentros y actividades del club, también con tu credencial.' },
+    { key: 'mantenimiento', icon: 'wrench', pts: P.mantenimiento, title: 'Servicios en el taller',  how: 'Se suman solos cuando el taller te entrega la moto registrada en tu garaje.' },
+    { key: 'visita',        icon: 'pin',    pts: P.visita,        title: 'Visitas al taller',       how: 'Muestra tu credencial en el mostrador. Una por día.' },
+  ].filter(e => Number(e.pts) > 0);
+  // Recorrido de ejemplo del contador: suma acumulada de las actividades.
+  let acc = 0;
+  const earnSteps = earn.map(e => (acc += Number(e.pts)));
+  const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+  const evDate = (ymd) => {
+    const d = new Date(String(ymd).slice(0, 10) + 'T12:00:00Z');
+    return isNaN(d) ? { day: '', mon: '', wd: '' } : { day: d.getUTCDate(), mon: MESES[d.getUTCMonth()], wd: DIAS[d.getUTCDay()] };
+  };
+  const typeName = { rodada: 'Rodada', encuentro: 'Encuentro', caminata: 'Caminata', actividad: 'Actividad', evento: 'Evento' };
+  const first = levels[0] || { name: 'Prospecto', color: '#6b7280' };
+  const anyBenefits = levels.some(l => l.benefits && l.benefits.length);
+  const next = events[0];
+%>
 
-  <main>
+<main class="clb" data-club="landing">
 
-    <section class="hero clp-hero" data-slideshow='<%- JSON.stringify(slidesClub||[]) %>'>
-      <div class="hero-slides" aria-hidden="true"></div>
-      <div class="hero-content">
-        <span class="clp-hero-badge"><span class="dot" aria-hidden="true"></span> Club Gorillaz · Bogotá</span>
-        <h1>Vive la moto con la <em>manada</em></h1>
-        <p>Rutas exclusivas, descuentos en el taller, cursos y una comunidad que vive la moto. Acumula puntos con cada actividad y escala de nivel.</p>
+  <!-- ═══ Escenario: el chaleco queda fijo (escritorio) mientras pasan los pasos ═══ -->
+  <div class="clb-stage">
+
+    <div class="clb-vest-col">
+      <figure class="clb-vest" data-vest-stage>
+        <%- include('../partials/club/vest', {
+          vid: 'lv', badges: badges.map(b => ({ ...b, earned: true })),
+          levelName: first.name, levelColor: first.color || '#6b7280', bottomText: 'Bogotá',
+        }) %>
+        <figcaption class="clb-vest-caption">Así se ve un chaleco con todas las insignias del club.</figcaption>
+      </figure>
+    </div>
+
+    <div class="clb-steps">
+
+      <section class="clb-hero" aria-labelledby="clb-title" data-step="hero">
+        <h1 id="clb-title" class="clb-h1">Rueda con la manada. Cose tu chaleco.</h1>
+        <p class="clb-lead">El club de Gorillaz Motorbikes es gratis. Sumas puntos en cada rodada, en cada encuentro y en cada servicio del taller, subes de nivel y ganas insignias que se cosen en tu chaleco.</p>
         <div class="btn-row">
-          <a class="btn" href="/club/registro">Quiero ser miembro</a>
+          <a class="btn" href="/club/registro">Unirme gratis</a>
           <a class="btn btn-outline" href="/club/login">Ya tengo cuenta</a>
         </div>
-      </div>
-      <button class="scroll-cue" aria-label="Desplázate para ver el contenido" title="Desplázate"
-        onclick="(function(){var next=document.querySelector('.clp-benefits-section'); if(next){next.scrollIntoView({behavior:'smooth'});} else {window.scrollTo({top: window.innerHeight, behavior:'smooth'});} })()">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M12 16.5c-.3 0-.6-.1-.8-.3l-6-6a1.1 1.1 0 0 1 1.6-1.6L12 13.8l5.2-5.2a1.1 1.1 0 0 1 1.6 1.6l-6 6c-.2.2-.5.3-.8.3Z" />
-        </svg>
-      </button>
-    </section>
+        <% if (next) { const d = evDate(next.date); %>
+          <a class="clb-next" href="/eventos">
+            <span class="clb-next-date"><strong><%= d.day %></strong><%= d.mon %></span>
+            <span>Próxima <%= (typeName[next.type] || 'actividad').toLowerCase() %>: <strong><%= next.title %></strong><% if (next.location) { %><br><span class="clb-muted"><%= next.location %></span><% } %></span>
+          </a>
+        <% } %>
+      </section>
 
-    <section class="stats-strip" aria-label="El club en números">
-      <div class="stats-inner cols-3">
-        <div class="stat-item">
-          <span class="stat-num"><%= memberCount %>+</span>
-          <span class="stat-label">Miembros activos</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num"><%= events.length %></span>
-          <span class="stat-label">Eventos y rodadas</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-num"><%= levels.length %></span>
-          <span class="stat-label">Niveles por escalar</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Beneficios -->
-    <section class="container clp-benefits-section">
-      <h2 class="section-title">Beneficios del club</h2>
-      <div class="grid clp-benefits">
-        <% benefits.forEach(([ic, title, desc]) => { %>
-          <div class="clp-benefit">
-            <div class="clp-icon"><%- icon(ic) %></div>
-            <h3><%= title %></h3>
-            <p><%= desc %></p>
-          </div>
-        <% }) %>
-      </div>
-    </section>
-
-    <!-- Sistema de puntos y niveles -->
-    <section class="clp-points">
-      <div class="container">
-        <h2 class="section-title">Sistema de puntos</h2>
-        <p class="section-subtitle" style="text-align:center;max-width:600px;margin:0 auto 28px">
-          Cada actividad con Gorillaz suma puntos a tu perfil. Mientras más activo seas, más alto será tu nivel y mayores tus beneficios.
-        </p>
-
-        <div class="clp-earn-grid">
-          <% earnKeys.forEach(k => { const [ic, label, desc] = earnLabels[k]; %>
-            <div class="clp-earn-card">
-              <div class="clp-earn-icon"><%- icon(ic) %></div>
-              <div class="clp-earn-pts">+<%= puntos.points[k] %> pts</div>
-              <div class="clp-earn-label"><%= label %></div>
-              <p class="clp-earn-desc"><%= desc %></p>
-            </div>
+      <section class="clb-step" aria-labelledby="clb-earn-title" data-step="earn" data-steps='<%- JSON.stringify(earnSteps) %>'>
+        <h2 id="clb-earn-title" class="clb-h2">Cada salida suma</h2>
+        <p class="clb-lead">Los puntos los registra el taller, no tú: no hay formularios que llenar ni fotos que subir.</p>
+        <ol class="clb-earn">
+          <% earn.forEach((e, i) => { %>
+            <li data-earn="<%= i %>">
+              <span class="clb-earn-pts">+<%= e.pts %></span>
+              <span class="clb-earn-body"><strong><%= e.title %></strong><span><%= e.how %></span></span>
+            </li>
           <% }) %>
-        </div>
+        </ol>
+      </section>
 
-        <h3 class="clp-ladder-title">Niveles del club</h3>
-        <div class="clp-ladder">
-          <% levels.forEach((lvl, i) => { const next = levels[i+1]; %>
-            <div class="clp-ladder-node" style="--lvl-color: <%= lvl.color %>">
-              <div class="clp-ladder-badge"><%= lvl.icon %></div>
-              <div class="clp-ladder-name"><%= lvl.name %></div>
-              <div class="clp-ladder-range"><%= next ? `${lvl.min} – ${next.min - 1} pts` : `${lvl.min}+ pts` %></div>
-            </div>
+      <section class="clb-step" aria-labelledby="clb-levels-title" data-step="levels">
+        <h2 id="clb-levels-title" class="clb-h2">Tu nivel va en la espalda</h2>
+        <p class="clb-lead">Los puntos no vencen. Cada nivel se borda en tu chaleco y en tu credencial.</p>
+        <ol class="clb-levels">
+          <% levels.forEach((l, i) => { const nx = levels[i + 1]; %>
+            <li data-level="<%= i %>" data-name="<%= l.name %>" data-color="<%= l.color || '#6b7280' %>" style="--lvl: <%= l.color || '#6b7280' %>">
+              <span class="clb-level-dot" aria-hidden="true"></span>
+              <span class="clb-level-name"><%= l.name %></span>
+              <span class="clb-level-pts"><%= nx ? `${fmt(l.min)} a ${fmt(nx.min - 1)} pts` : `${fmt(l.min)} pts o más` %></span>
+              <% if (l.benefits && l.benefits.length) { %>
+                <ul class="clb-level-benefits"><% l.benefits.forEach(b => { %><li><%= b %></li><% }) %></ul>
+              <% } %>
+            </li>
           <% }) %>
-        </div>
+        </ol>
+        <% if (!anyBenefits) { %>
+          <p class="clb-note">Los beneficios de cada nivel los anuncia el taller. Cuando estén definidos, aparecerán aquí.</p>
+        <% } %>
+      </section>
 
-        <div class="clp-points-cta">
-          <a class="btn btn-outline" href="/club/tabla">Ver tabla de posiciones</a>
-        </div>
-      </div>
-    </section>
+      <section class="clb-step" aria-labelledby="clb-badges-title" data-step="badges">
+        <h2 id="clb-badges-title" class="clb-h2">Insignias que se ganan rodando</h2>
+        <p class="clb-lead">Cada una se cose cuando cumples lo que pide. Ninguna se compra.</p>
+        <ul class="clb-badges">
+          <% badges.forEach((b, i) => { %>
+            <li data-badge-row="<%= b.id %>">
+              <svg class="clb-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#lv-i-<%= b.icon %>" /></svg>
+              <span><strong><%= b.name %></strong><span><%= b.desc %></span></span>
+            </li>
+          <% }) %>
+        </ul>
+      </section>
 
-    <!-- Próximos eventos -->
-    <section class="container">
-      <h2 class="section-title">Próximos eventos</h2>
-      <% if (!events || events.length===0) { %>
-        <p class="muted" style="text-align:center">Muy pronto anunciaremos nuevas actividades del club.</p>
+    </div>
+  </div>
+
+  <!-- ═══ Próximas salidas (datos reales) ═══ -->
+  <section class="clb-band clb-events" aria-labelledby="clb-events-title">
+    <div class="clb-wrap">
+      <h2 id="clb-events-title" class="clb-h2">Próximas salidas</h2>
+      <% if (!events.length) { %>
+        <p class="clb-lead">No hay salidas programadas todavía. Las nuevas se publican en <a class="lp-link" href="/eventos">eventos</a>.</p>
       <% } else { %>
-        <div class="events-grid clp-events-grid">
-          <% events.slice(0,3).forEach(ev => { %>
-            <article class="ev-card ev-card--club">
-              <div class="ev-card-accent"></div>
-              <div class="ev-card-content">
-                <div class="ev-card-body">
-                  <div class="ev-card-meta">
-                    <span class="ev-type-chip club"><%= typeLabel[ev.type] || '📅 Evento' %></span>
-                  </div>
-                  <h3 class="ev-card-title"><%= ev.title %></h3>
-                  <% if (ev.description) { %><p class="ev-card-desc"><%= ev.description %></p><% } %>
-                  <div class="ev-card-footer">
-                    <div class="ev-card-info">
-                      <span class="ev-info-item">
-                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                          <line x1="16" y1="2" x2="16" y2="6" />
-                          <line x1="8" y1="2" x2="8" y2="6" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                        <%= ev.date %>
-                      </span>
-                      <% if (ev.location) { %>
-                        <span class="ev-info-item">
-                          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                            <circle cx="12" cy="10" r="3" />
-                          </svg>
-                          <%= ev.location %>
-                        </span>
-                      <% } %>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </article>
+        <ul class="clb-event-list">
+          <% events.forEach(ev => { const d = evDate(ev.date); %>
+            <li class="clb-event" data-type="<%= ev.type %>">
+              <span class="clb-event-date" aria-hidden="true"><span><%= d.wd %></span><strong><%= d.day %></strong><span><%= d.mon %></span></span>
+              <span class="clb-event-body">
+                <span class="clb-event-type"><%= typeName[ev.type] || 'Evento' %><% if (P[ev.type]) { %>, +<%= P[ev.type] %> pts<% } %></span>
+                <strong class="clb-event-title"><%= ev.title %></strong>
+                <span class="sr-only"><%= d.wd %> <%= d.day %> de <%= d.mon %>.</span>
+                <% if (ev.location) { %><span class="clb-muted"><%= ev.location %></span><% } %>
+              </span>
+            </li>
           <% }) %>
-        </div>
-        <div class="btn-row" style="margin-top:20px;justify-content:center">
-          <a class="btn btn-outline" href="/eventos">Ver todos los eventos</a>
-          <a class="btn" href="/club/registro">Únete para apuntarte</a>
-        </div>
+        </ul>
+        <p><a class="lp-link" href="/eventos">Ver todos los eventos</a></p>
       <% } %>
-    </section>
+    </div>
+  </section>
 
-    <!-- Cómo funciona -->
-    <section class="container">
-      <h2 class="section-title">¿Cómo funciona?</h2>
-      <div class="clp-how-track">
-        <% [
-          ['Regístrate gratis', 'Crea tu cuenta en minutos con tus datos básicos y el de tu moto.'],
-          ['Participa en actividades', 'Asiste a rodadas, eventos del club, lleva tu moto al taller.'],
-          ['Acumula puntos', 'Cada actividad suma puntos automáticamente a tu perfil.'],
-          ['Sube de nivel y gana beneficios', 'Más nivel = más descuentos, prioridad y reconocimiento en la comunidad.'],
-        ].forEach(([t,d], i) => { %>
-          <div class="clp-how-step">
-            <div class="clp-how-num"><%= i+1 %></div>
-            <div class="clp-how-text">
-              <h3><%= t %></h3>
-              <p><%= d %></p>
-            </div>
-          </div>
-        <% }) %>
+  <!-- ═══ Lo que trae la cuenta ═══ -->
+  <section class="clb-band clb-tools" aria-labelledby="clb-tools-title">
+    <div class="clb-wrap clb-tools-grid">
+      <div>
+        <h2 id="clb-tools-title" class="clb-h2">Tu credencial y tu garaje</h2>
+        <ul class="clb-tools-list">
+          <li><strong>Credencial con QR.</strong> La muestras en la rodada o en el mostrador y los puntos quedan en el momento.</li>
+          <li><strong>Garaje.</strong> Tus motos con el historial de servicios del taller y el estado de la que esté en reparación.</li>
+          <li><strong>SOAT y tecnomecánica.</strong> Anotas las fechas y el panel te avisa cuando falta un mes o ya vencieron.</li>
+          <li><strong>Reto del mes.</strong> Un objetivo nuevo cada mes y una racha que cuenta los meses seguidos que sales.</li>
+        </ul>
       </div>
-    </section>
+      <figure class="clb-card-demo">
+        <div class="cl-cred" style="--lvl: #0891b2">
+          <span class="cl-cred-club">Club Gorillaz</span>
+          <span class="cl-cred-name">Tu apodo</span>
+          <span class="cl-cred-level">Rider</span>
+          <span class="cl-cred-code">GZ·7K3P9Q</span>
+          <span class="cl-cred-qr" aria-hidden="true">
+            <svg viewBox="0 0 21 21"><path d="M0 0h7v7H0zM14 0h7v7h-7zM0 14h7v7H0zM2 2v3h3V2zM16 2v3h3V2zM2 16v3h3v-3zM9 1h2v2H9zM9 5h3v2H9zM8 9h2v3H8zM12 8h2v2h-2zM15 9h3v2h-3zM10 13h3v2h-3zM14 13h2v3h-2zM17 15h3v2h-3zM9 17h2v3H9zM13 18h3v2h-3zM19 19h2v2h-2zM1 9h3v2H1zM5 10h2v2H5z" /></svg>
+          </span>
+        </div>
+        <figcaption><span class="lp-example-tag">Ejemplo ilustrativo</span></figcaption>
+      </figure>
+    </div>
+  </section>
 
-    <!-- Testimonios -->
-    <section class="container">
-      <h2 class="section-title">Lo que dicen nuestros miembros</h2>
-      <ul class="grid">
-        <li class="card clp-testimonial">
-          <span class="clp-quote-mark" aria-hidden="true">&ldquo;</span>
-          <p>Llegué como prospecto y en 3 meses ya soy Gorilla. Las rodadas del club son lo máximo, ambiente increíble.</p>
-          <strong>— Ana R., nivel Gorilla 🏆</strong>
-        </li>
-        <li class="card clp-testimonial">
-          <span class="clp-quote-mark" aria-hidden="true">&ldquo;</span>
-          <p>Aprendí más en los cursos técnicos que en años de mecánica empírica. Y los puntos de los eventos ayudan mucho.</p>
-          <strong>— Carlos M., nivel Rider 🏍️</strong>
-        </li>
-        <li class="card clp-testimonial">
-          <span class="clp-quote-mark" aria-hidden="true">&ldquo;</span>
-          <p>Los recordatorios de SOAT y tecno me han salvado varias veces. El taller siempre tiene mi moto lista en el día.</p>
-          <strong>— David P., nivel Miembro ✅</strong>
-        </li>
-      </ul>
-    </section>
-
-    <!-- FAQ -->
-    <section class="container">
-      <h2 class="section-title">Preguntas frecuentes</h2>
-      <div class="clp-faq">
+  <!-- ═══ Preguntas ═══ -->
+  <section class="clb-band clb-faq" aria-labelledby="clb-faq-title">
+    <div class="clb-wrap clb-faq-grid">
+      <h2 id="clb-faq-title" class="clb-h2">Preguntas</h2>
+      <div>
         <% [
-          ['¿Cómo me inscribo?', 'Regístrate gratis en esta página. En minutos tendrás acceso a tu panel.'],
-          ['¿Cuánto cuesta?', 'La membresía básica es gratuita. Los niveles Premium tienen beneficios adicionales.'],
-          ['¿Cómo gano puntos?', 'Asistiendo a rodadas, eventos del club, llevando tu moto al taller o haciendo mantenimientos.'],
-          ['¿Los puntos vencen?', 'No. Los puntos acumulados son permanentes en tu perfil.'],
-          ['¿Hay requisitos?', 'Mayor de edad. Recomendamos experiencia básica en conducción.'],
+          ['¿Cuánto cuesta?', 'Nada. El club es gratis y no pide tarjeta.'],
+          ['¿Cómo se registran mis puntos?', 'Las rodadas, encuentros y visitas se confirman con el QR de tu credencial. Los servicios del taller suman solos cuando te entregan una moto que esté en tu garaje.'],
+          ['¿Los puntos vencen?', 'No. Quedan en tu perfil.'],
+          ['¿Qué gano en cada nivel?', anyBenefits ? 'Lo ves arriba, en la lista de niveles.' : 'Los beneficios de cada nivel los anuncia el taller; cuando estén definidos aparecen en esta página y en tu panel.'],
+          ['¿Hay requisitos?', 'Ser mayor de edad. Recomendamos experiencia básica de conducción para las rodadas.'],
         ].forEach(([q, a]) => { %>
-          <details class="clp-faq-item">
-            <summary>
-              <span><%= q %></span>
-              <svg class="clp-faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="<%= icons.chevron %>"/></svg>
-            </summary>
-            <div class="clp-faq-body"><%= a %></div>
+          <details class="clb-faq-item">
+            <summary><%= q %></summary>
+            <p><%= a %></p>
           </details>
         <% }) %>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- CTA de cierre -->
-    <section class="clp-cta">
-      <div class="container">
-        <h2>La manada te espera</h2>
-        <p>Únete hoy y empieza a acumular puntos desde tu primera visita.</p>
-        <div class="btn-row">
-          <a class="btn" href="/club/registro">Únete gratis</a>
-          <a class="btn btn-outline" href="/club/login">Ya tengo cuenta</a>
-        </div>
-        <p class="clp-cta-note">Gratis · Toma 2 minutos · Sin tarjeta de crédito</p>
+  <!-- ═══ Cierre ═══ -->
+  <section class="clb-band clb-cta" aria-labelledby="clb-cta-title">
+    <div class="clb-wrap">
+      <h2 id="clb-cta-title" class="clb-h2">Tu chaleco empieza vacío</h2>
+      <p class="clb-lead">Crea tu cuenta, agrega tu moto y la primera rodada ya cuenta.</p>
+      <div class="btn-row">
+        <a class="btn" href="/club/registro">Unirme gratis</a>
+        <a class="btn btn-outline" href="/club/tabla">Ver la tabla de posiciones</a>
       </div>
-    </section>
+    </div>
+  </section>
 
-  </main>
+</main>
 
-  <%- include('../partials/footer') %>
+<%# GSAP vendorizado (npm run vendor:gsap); defer + module se ejecutan en orden. %>
+<script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
+<script defer src="/static/vendor/gsap-3.15.0/ScrollTrigger.min.js"></script>
+<script type="module" src="/static/js/club/landing.mjs?v=<%= assetV('js/club/landing.mjs') %>"></script>
+
+<%- include('../partials/footer') %>
