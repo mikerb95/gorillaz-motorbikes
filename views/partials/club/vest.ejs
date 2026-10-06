@@ -96,7 +96,10 @@
         <g class="cl-patch-body" data-m>
           <circle r="23" fill="<%= edge %>" />
           <circle r="20" fill="<%= fill %>" />
-          <circle r="21.5" class="cl-stitch cl-patch-stitch" style="stroke: <%= ink %>" pathLength="100" />
+          <circle r="21.5" class="cl-stitch cl-patch-stitch" style="stroke: <%= ink %>" />
+          <%# Tapa de la puntada: del color del parche; al animarse se recorre y
+              destapa las puntadas en sentido horario (ver vest.mjs). %>
+          <circle r="21.5" class="cl-patch-cover" style="stroke: <%= fill %>" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="-100" transform="rotate(-90)" />
           <use href="#<%= vid %>-i-<%= b.icon %>" x="-10" y="-10" width="20" height="20" class="cl-patch-icon" style="stroke: <%= ink %>" />
         </g>
       </g>

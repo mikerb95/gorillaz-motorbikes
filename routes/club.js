@@ -69,23 +69,23 @@ function issueUserSession(res, user) {
 
 router.get('/', async (req, res) => {
   if (req.userId) return res.redirect('/club/panel');
-  const dir     = path.join(__dirname, '..', 'images', 'slideshow', 'club');
-  const allowed = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
-  let slidesClub = [];
-  try {
-    slidesClub = fs.readdirSync(dir)
-      .filter(f => allowed.has(path.extname(f).toLowerCase()))
-      .sort()
-      .map(f => `/images/slideshow/club/${encodeURIComponent(f)}`);
-  } catch { }
-  if (!slidesClub.length) slidesClub = ['/images/slideshow/club.png'];
-  let events = [];
-  try { events = await getAllEvents(); } catch { }
-  let memberCount = 0;
-  try { memberCount = await countUsers(); } catch { }
-  const ridesCount = events.filter(ev => ev.type === 'rodada').length;
+  // Solo datos reales: próximos eventos (no los pasados), niveles y puntos
+  // configurados en el admin y el catálogo de insignias que de verdad se ganan.
+  const [events, memberCount] = await Promise.all([
+    getUpcomingEvents(3).catch(() => []),
+    countUsers().catch(() => 0),
+  ]);
   const puntos = loadPuntosConfig();
-  res.render('club/landing', { events, slidesClub, memberCount, ridesCount, puntos });
+  res.render('club/landing', {
+    events, memberCount, puntos,
+    levels: clubLib.sortLevels(puntos.levels),
+    badges: clubLib.BADGES,
+    title: 'Club de motos en Bogotá',
+    description: 'Únete gratis al club de Gorillaz Motorbikes: rodadas, encuentros, puntos por cada servicio del taller, niveles e insignias. Bogotá.',
+    canonicalPath: '/club',
+    bodyClass: 'page-club',
+    extraCss: ['/static/css/taller-base.css?v=' + res.locals.assetV('css/taller-base.css'), '/static/css/club.css?v=' + res.locals.assetV('css/club.css')],
+  });
 });
 
 router.get('/login', (req, res) => {
