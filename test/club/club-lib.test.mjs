@@ -103,6 +103,9 @@ test('computeBadges marca ganadas y topa el progreso en la meta', () => {
 test('daysSince con fechas solo día', () => {
   assert.equal(lib.daysSince('2025-10-06', '2026-10-06'), 365);
   assert.equal(lib.daysSince('', '2026-10-06'), 0);
+  assert.equal(lib.daysUntil('2026-10-18', '2026-10-06'), 12);
+  assert.equal(lib.daysUntil('2026-10-01', '2026-10-06'), -5);
+  assert.equal(lib.daysUntil('', '2026-10-06'), null);
 });
 
 test('código de miembro: formato y sin caracteres ambiguos', () => {

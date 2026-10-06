@@ -999,7 +999,9 @@ router.post('/configuracion/puntos', requireAuth, requireAdmin, async (req, res)
     const icon  = (req.body[`lvl_icon_${i}`]  || '').trim();
     const color = (req.body[`lvl_color_${i}`] || '').trim();
     const min   = Math.max(0, parseInt(req.body[`lvl_min_${i}`], 10) || 0);
-    if (name) levels.push({ name, icon, color, min });
+    const benefits = String(req.body[`lvl_benefits_${i}`] || '')
+      .split(/\r?\n/).map(t => t.trim().slice(0, 120)).filter(Boolean).slice(0, 8);
+    if (name) levels.push({ name, icon, color, min, benefits });
   }
   await savePuntosConfig({ points, levels: levels.length ? levels : current.levels });
   res.redirect('/admin/configuracion?tab=puntos&flash=saved');

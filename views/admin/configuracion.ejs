@@ -358,7 +358,7 @@
       <div class="crm-card" style="padding:24px">
         <h2 style="font-size:15px;font-weight:800;margin:0 0 6px">Umbrales de nivel</h2>
         <p class="muted" style="font-size:13px;margin:0 0 20px">
-          Puntos mínimos requeridos para alcanzar cada nivel del club.
+          Puntos mínimos requeridos para alcanzar cada nivel del club y lo que el taller da en cada uno. Si un nivel no tiene beneficios, el club no promete nada para ese nivel.
         </p>
         <div style="display:grid;gap:14px">
           <% const levelsOrdered = [...puntosConfig.levels].sort((a, b) => b.min - a.min); %>
@@ -381,6 +381,11 @@
             <input type="hidden" name="lvl_icon_<%= i %>" value="<%= lvl.icon %>" />
             <input type="hidden" name="lvl_color_<%= i %>" value="<%= lvl.color %>" />
           </div>
+          <label style="display:block;margin:-4px 0 6px 34px">
+            <span style="display:block;font-size:12px;color:#6b7280;margin-bottom:4px">Beneficios de <%= lvl.name %> (uno por línea; se muestran en /club y en el panel del miembro)</span>
+            <textarea name="lvl_benefits_<%= i %>" rows="2" maxlength="600" placeholder="Ej: 10% en mano de obra"
+              style="width:100%;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"><%= (lvl.benefits || []).join('\n') %></textarea>
+          </label>
           <% }); %>
           <input type="hidden" name="lvl_count" value="<%= levelsOrdered.length %>" />
         </div>

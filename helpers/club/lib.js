@@ -145,6 +145,14 @@ function daysSince(ymd, today) {
   return Math.max(0, Math.floor((b - a) / 86400000));
 }
 
+// Días que faltan para una fecha 'YYYY-MM-DD' (negativo si ya pasó).
+function daysUntil(ymd, today) {
+  const a = Date.parse(String(ymd || '').slice(0, 10) + 'T00:00:00Z');
+  const b = Date.parse(String(today || '').slice(0, 10) + 'T00:00:00Z');
+  if (Number.isNaN(a) || Number.isNaN(b)) return null;
+  return Math.round((a - b) / 86400000);
+}
+
 // ── Código de miembro (credencial) ──────────────────────────────────────────
 // Sin caracteres ambiguos (0/O, 1/I/L) para poder dictarlo o teclearlo.
 const CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
@@ -162,6 +170,6 @@ function isMemberCode(code) {
 
 module.exports = {
   sortLevels, levelProgress, docState, docLabel, plateFromOrder, modelFromOrder,
-  monthlyStreak, monthlyChallenge, CHALLENGES, computeBadges, BADGES, daysSince,
+  monthlyStreak, monthlyChallenge, CHALLENGES, computeBadges, BADGES, daysSince, daysUntil,
   newMemberCode, isMemberCode, CODE_ALPHABET,
 };
