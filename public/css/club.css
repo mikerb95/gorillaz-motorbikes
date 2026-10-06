@@ -58,9 +58,13 @@
   padding: calc(var(--header-offset) + 12px) var(--lp-gutter) 72px;
   gap: 8px;
 }
-.clb-vest-col { order: -1; max-width: 340px; width: 72%; margin: 0 auto }
+.clb-vest-col { order: -1; max-width: 230px; width: 58%; margin: 0 auto }
 .clb-vest { margin: 0 }
 .clb-vest-caption { font-size: .78rem; text-align: center; color: rgba(241, 236, 228, .6); margin-top: 6px }
+@media (max-width: 1023.98px) {
+  .clb-vest-caption { display: none }
+  .clb-h1 { margin-top: 4px }
+}
 .clb-steps { display: grid; grid-template-columns: minmax(0, 1fr); gap: 72px; max-width: 640px; margin: 0 auto }
 
 .clb-h1 {

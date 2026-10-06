@@ -549,15 +549,15 @@ router.post('/perfil', requireAuth, async (req, res) => {
   const { firstName, lastName, nickname, phone, city, department, bloodType, emergencyName, emergencyPhone, clubNotifications } = req.body;
   if (!firstName || firstName.trim().length < 2 || firstName.trim().length > 50) {
     setFlash(res, 'error', 'El nombre debe tener entre 2 y 50 caracteres.');
-    return res.redirect('/club/panel');
+    return res.redirect('/club/panel#cuenta');
   }
   if (!lastName || lastName.trim().length < 2 || lastName.trim().length > 50) {
     setFlash(res, 'error', 'El apellido debe tener entre 2 y 50 caracteres.');
-    return res.redirect('/club/panel');
+    return res.redirect('/club/panel#cuenta');
   }
   if (phone && !/^[+\d\s\-()ñ]{7,25}$/.test(phone.trim())) {
     setFlash(res, 'error', 'El teléfono no es válido.');
-    return res.redirect('/club/panel');
+    return res.redirect('/club/panel#cuenta');
   }
   const name = (firstName.trim() + ' ' + lastName.trim()).trim();
   try {
@@ -579,7 +579,7 @@ router.post('/perfil', requireAuth, async (req, res) => {
     console.error('POST /club/perfil error:', e.message);
     setFlash(res, 'error', 'No se pudo actualizar el perfil.');
   }
-  res.redirect('/club/panel');
+  res.redirect('/club/panel#cuenta');
 });
 
 router.post('/vehiculos', requireAuth, async (req, res) => {
@@ -587,14 +587,14 @@ router.post('/vehiculos', requireAuth, async (req, res) => {
   const plateUp = (plate || '').trim().toUpperCase();
   if (!plateUp || !/^[A-Z0-9]{3,7}$/.test(plateUp)) {
     setFlash(res, 'error', 'La placa no es válida (3–7 caracteres alfanuméricos).');
-    return res.redirect('/club/panel');
+    return res.redirect('/club/panel#garaje');
   }
   try {
     const user = await getUserById(req.userId);
     if (user) {
       if ((user.vehicles || []).some(v => v.plate === plateUp)) {
         setFlash(res, 'error', `La placa ${plateUp} ya está registrada.`);
-        return res.redirect('/club/panel');
+        return res.redirect('/club/panel#garaje');
       }
       const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
       const vehicles  = [...(user.vehicles || []), { plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload }];
@@ -605,7 +605,7 @@ router.post('/vehiculos', requireAuth, async (req, res) => {
     console.error('POST /club/vehiculos error:', e.message);
     setFlash(res, 'error', 'No se pudo agregar el vehículo. Intenta de nuevo.');
   }
-  res.redirect('/club/panel');
+  res.redirect('/club/panel#garaje');
 });
 
 router.post('/vehiculos/eliminar', requireAuth, async (req, res) => {
@@ -619,7 +619,7 @@ router.post('/vehiculos/eliminar', requireAuth, async (req, res) => {
     console.error('POST /club/vehiculos/eliminar error:', e.message);
     setFlash(res, 'error', 'No se pudo eliminar el vehículo.');
   }
-  res.redirect('/club/panel');
+  res.redirect('/club/panel#garaje');
 });
 
 router.post('/vehiculos/actualizar', requireAuth, async (req, res) => {
@@ -636,7 +636,7 @@ router.post('/vehiculos/actualizar', requireAuth, async (req, res) => {
     console.error('POST /club/vehiculos/actualizar error:', e.message);
     setFlash(res, 'error', 'No se pudo actualizar el vehículo.');
   }
-  res.redirect('/club/panel');
+  res.redirect('/club/panel#garaje');
 });
 
 router.post('/eventos/:id/asistencia', requireAuth, async (req, res) => {
