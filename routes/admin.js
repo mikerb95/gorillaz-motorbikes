@@ -10,6 +10,7 @@ const { setFlash } = require('../helpers/flash');
 const settings = require('../helpers/settings');
 const { catalog } = require('../helpers/catalog');
 const { SCORE_POINTS, loadPuntosConfig, DEFAULTS: PUNTOS_DEFAULTS }  = require('../helpers/score');
+const { plateFromOrder } = require('../helpers/club/lib');
 const { buildQuotationSummary } = require('../helpers/quotationStats');
 const {
   countUsers, countEvents, countAppointments,
@@ -183,8 +184,7 @@ router.get('/eventos/:id/asistencias', requireAuth, requireAdmin, async (req, re
 router.post('/eventos/asistencia/confirmar', requireAuth, requireAdmin, async (req, res) => {
   const { attendanceId, eventId, userId, eventType } = req.body;
   const attendance = await getAttendanceById(attendanceId);
-  if (attendance && attendance.status !== 'confirmed') {
-    await confirmEventAttendance(attendanceId);
+  if (attendance && attendance.status !== 'confirmed' && await confirmEventAttendance(attendanceId)) {
     const pts = SCORE_POINTS[eventType] || SCORE_POINTS.evento;
     const ev  = await getEventById(eventId);
     await addUserScore(userId, pts, eventType || 'evento', ev ? ev.title : 'Evento del club');
@@ -1383,7 +1383,21 @@ router.post('/ordenes-servicio/:id/entregar', requireAuth, requireAdmin, async (
     setFlash(res, 'error', e.message);
     return res.redirect('/admin/ordenes-servicio/' + req.params.id);
   }
-  setFlash(res, 'success', 'Moto entregada y factura cerrada.');
+  // Puntos del club por el servicio: si la placa es de un miembro, suma
+  // 'mantenimiento' automáticamente (la ref evita duplicar si se reentrega).
+  // Reemplaza el autorreporte de visitas para los servicios del taller.
+  let clubMsg = '';
+  try {
+    const plate = plateFromOrder(order.motorcycle);
+    const owner = plate ? await getUserByVehiclePlate(plate) : null;
+    if (owner && owner.user.role !== 'admin') {
+      const pts = SCORE_POINTS.mantenimiento || 0;
+      if (pts > 0 && await addUserScore(owner.user.id, pts, 'mantenimiento', `Servicio en el taller ${order.label || ''}`.trim(), `orden:${order.id}`)) {
+        clubMsg = ` ${owner.user.nickname || owner.user.firstName || owner.user.name} sumó +${pts} pts en el club.`;
+      }
+    }
+  } catch (e) { console.error('puntos club al entregar:', e.message); }
+  setFlash(res, 'success', 'Moto entregada y factura cerrada.' + clubMsg);
   // ?wa=1 le indica a la vista de la factura que resalte el botón de WhatsApp
   // para que el admin la envíe al cliente en el acto.
   res.redirect('/admin/facturas/' + invoice.id + '?wa=1');
