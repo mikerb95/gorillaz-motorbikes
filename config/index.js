@@ -27,11 +27,6 @@ const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID     || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const APP_URL              = process.env.APP_URL || 'http://localhost:3000';
 
-const APPLE_CLIENT_ID  = process.env.APPLE_CLIENT_ID  || '';
-const APPLE_TEAM_ID    = process.env.APPLE_TEAM_ID    || '';
-const APPLE_KEY_ID     = process.env.APPLE_KEY_ID     || '';
-// The .p8 private key — newlines may be stored as \n in env vars
-const APPLE_PRIVATE_KEY = (process.env.APPLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 
 // Enlace a la ficha de Google (CID tomado del link de Maps en home.ejs).
 // Si más adelante se genera un enlace corto oficial de 1 clic (g.page/r/XXXX/review)
@@ -39,4 +34,4 @@ const APPLE_PRIVATE_KEY = (process.env.APPLE_PRIVATE_KEY || '').replace(/\\n/g, 
 const GOOGLE_REVIEW_URL = process.env.GOOGLE_REVIEW_URL
   || 'https://www.google.com/maps?cid=842246296160373199';
 
-module.exports = { JWT_SECRET, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, resendClient, BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL, APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY, GOOGLE_REVIEW_URL };
+module.exports = { JWT_SECRET, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, resendClient, BOLD_API_KEY, BOLD_SECRET_KEY, BOLD_REDIRECT_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL, GOOGLE_REVIEW_URL };

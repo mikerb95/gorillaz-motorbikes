@@ -32,12 +32,16 @@ function validateRegistration({ firstName, lastName, email, password, phone, ced
 }
 const QRCode = require('qrcode');
 
-const { JWT_SECRET, resendClient, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL, APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY } = require('../config');
-const { requireAuth }               = require('../middleware/auth');
+const { JWT_SECRET, resendClient, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_URL } = require('../config');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
+const rateLimit = require('express-rate-limit');
+const { buildPanelData } = require('../helpers/club/panel-data');
+const clubLib = require('../helpers/club/lib');
+const { hoyCO } = require('../helpers/datetime');
 const { authLimiter }               = require('../middleware/auth');
 const { getScoreLevel, SCORE_POINTS, loadPuntosConfig } = require('../helpers/score');
 const {
-  getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId, getUserByAppleId,
+  getUserById, getUserByEmail, getUserByCedula, getUserByResetToken, getUserByGoogleId,
   getPasskeysByUserId, getPasskeyByCredentialId, createPasskey, updatePasskeyCounter, deletePasskey,
   updateUser, createUser, deleteUserAccount, deleteNewsletterByEmail, incrementTokenVersion,
   countUsers,
@@ -46,7 +50,12 @@ const {
   getLeaderboard,
   getUserRank,
   getQuotationsByMotorcyclePlates,
+  addUserScore, checkInEventAttendance, getEventsBetween, getUserByMemberCode, ensureMemberCode,
 } = require('../db');
+
+// La credencial es pública por diseño (se muestra en rodadas), pero se limita
+// el ritmo para que nadie recorra códigos al azar.
+const credentialLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false });
 
 const router = express.Router();
 
@@ -83,15 +92,11 @@ router.get('/login', (req, res) => {
   const returnTo = (req.query.return || '').toString().trim();
   const safeReturn = returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '';
   const googleErr = req.query.google;
-  const appleErr  = req.query.apple;
   const googleErrorMsg = googleErr === 'denied' ? null
     : googleErr === 'error' ? 'Hubo un problema al autenticarte con Google. Intenta de nuevo.'
     : null;
-  const appleErrorMsg = appleErr === 'denied' ? null
-    : appleErr === 'error' ? 'Hubo un problema al autenticarte con Apple. Intenta de nuevo.'
-    : null;
-  const errorMsg = googleErrorMsg || appleErrorMsg || null;
-  res.render('club/login', { error: errorMsg, returnTo: safeReturn, googleEnabled: !!GOOGLE_CLIENT_ID, appleEnabled: !!APPLE_CLIENT_ID });
+  const errorMsg = googleErrorMsg || null;
+  res.render('club/login', { error: errorMsg, returnTo: safeReturn, googleEnabled: !!GOOGLE_CLIENT_ID });
 });
 
 router.post('/login', authLimiter, async (req, res) => {
@@ -99,33 +104,36 @@ router.post('/login', authLimiter, async (req, res) => {
   const safeReturn = (returnTo || '').toString().trim();
   const redirectTo = safeReturn.startsWith('/') && !safeReturn.startsWith('//') ? safeReturn : '/club/panel';
   const gEnabled = !!GOOGLE_CLIENT_ID;
-  const aEnabled = !!APPLE_CLIENT_ID;
   if (!await verifyRecaptcha(req.body['g-recaptcha-response'], req.ip)) {
-    return res.status(400).render('club/login', { error: 'Verifica que no eres un robot.', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
+    return res.status(400).render('club/login', { error: 'Verifica que no eres un robot.', returnTo: safeReturn, googleEnabled: gEnabled });
   }
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
-    return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
+    return res.status(400).render('club/login', { error: 'Ingresa un correo electrónico válido.', returnTo: safeReturn, googleEnabled: gEnabled });
   }
   try {
     const user = await getUserByEmail(email);
-    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
+    if (!user) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled });
     if (!user.password || user.password === '$google$' || user.password === '$apple$') {
-      const provider = (!user.password || user.password === '$google$') ? 'Google' : 'Apple';
-      return res.status(401).render('club/login', { error: `Esta cuenta usa ${provider} para iniciar sesión.`, returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
+      // '$apple$' son cuentas creadas con Apple, que ya no se ofrece: pueden
+      // crear una contraseña con "Olvidé mi contraseña".
+      const error = user.password === '$apple$'
+        ? 'Esta cuenta se creó con Apple, que ya no está disponible. Usa "¿Olvidaste tu contraseña?" para crear una.'
+        : 'Esta cuenta usa Google para iniciar sesión.';
+      return res.status(401).render('club/login', { error, returnTo: safeReturn, googleEnabled: gEnabled });
     }
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
+    if (!isMatch) return res.status(401).render('club/login', { error: 'Credenciales inválidas', returnTo: safeReturn, googleEnabled: gEnabled });
     issueUserSession(res, user);
     res.redirect(redirectTo);
   } catch (e) {
     console.error('POST /club/login error:', e);
-    res.status(500).render('club/login', { error: 'Error del servidor', returnTo: safeReturn, googleEnabled: gEnabled, appleEnabled: aEnabled });
+    res.status(500).render('club/login', { error: 'Error del servidor', returnTo: safeReturn, googleEnabled: gEnabled });
   }
 });
 
 router.get('/registro', (req, res) => {
   if (req.userId) return res.redirect('/club/panel');
-  res.render('club/register', { error: null, googleEnabled: !!GOOGLE_CLIENT_ID, appleEnabled: !!APPLE_CLIENT_ID });
+  res.render('club/register', { error: null, googleEnabled: !!GOOGLE_CLIENT_ID });
 });
 
 router.post('/registro', authLimiter, async (req, res) => {
@@ -287,95 +295,6 @@ router.get('/auth/google/callback', authLimiter, async (req, res) => {
   } catch (e) {
     console.error('Google OAuth callback error:', e.message);
     res.redirect('/club/login?google=error');
-  }
-});
-
-// ── Apple Sign In ─────────────────────────────────────────────────────────
-
-const APPLE_AUTH_URL  = 'https://appleid.apple.com/auth/authorize';
-const APPLE_TOKEN_URL = 'https://appleid.apple.com/auth/token';
-const APPLE_KEYS_URL  = 'https://appleid.apple.com/auth/keys';
-
-function getAppleClientSecret() {
-  const now = Math.floor(Date.now() / 1000);
-  return jwt.sign(
-    { iss: APPLE_TEAM_ID, iat: now, exp: now + 15777000, aud: 'https://appleid.apple.com', sub: APPLE_CLIENT_ID },
-    APPLE_PRIVATE_KEY,
-    { algorithm: 'ES256', header: { alg: 'ES256', kid: APPLE_KEY_ID } },
-  );
-}
-
-async function verifyAppleIdToken(idToken) {
-  const { keys } = await fetch(APPLE_KEYS_URL).then(r => r.json());
-  const header = JSON.parse(Buffer.from(idToken.split('.')[0], 'base64url').toString());
-  const jwk = keys.find(k => k.kid === header.kid);
-  if (!jwk) throw new Error('Apple JWK not found for kid: ' + header.kid);
-  const pem = require('crypto').createPublicKey({ key: jwk, format: 'jwk' }).export({ type: 'spki', format: 'pem' });
-  return jwt.verify(idToken, pem, { algorithms: ['RS256'], audience: APPLE_CLIENT_ID, issuer: 'https://appleid.apple.com' });
-}
-
-router.get('/auth/apple', (req, res) => {
-  if (!APPLE_CLIENT_ID) return res.redirect('/club/login');
-  const state = crypto.randomBytes(16).toString('hex');
-  res.cookie('a_state', state, { httpOnly: true, maxAge: 600_000, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
-  const params = new URLSearchParams({
-    client_id: APPLE_CLIENT_ID,
-    redirect_uri: `${APP_URL}/club/auth/apple/callback`,
-    response_type: 'code id_token',
-    scope: 'name email',
-    state,
-    response_mode: 'form_post',
-  });
-  res.redirect(`${APPLE_AUTH_URL}?${params.toString()}`);
-});
-
-// Apple posts to the callback (form_post)
-router.post('/auth/apple/callback', authLimiter, async (req, res) => {
-  const { code, id_token, state, error, user: userJson } = req.body;
-  if (error || !code || !id_token) return res.redirect('/club/login?apple=denied');
-
-  const savedState = req.cookies.a_state;
-  res.clearCookie('a_state');
-  if (!state || state !== savedState) return res.redirect('/club/login?apple=error');
-
-  try {
-    const payload = await verifyAppleIdToken(id_token);
-    const appleId = payload.sub;
-    const email   = payload.email;
-    if (!appleId || !email) throw new Error('Incomplete Apple id_token payload');
-
-    // Apple only sends user name on first login
-    let firstName = '', lastName = '';
-    if (userJson) {
-      try {
-        const parsed = typeof userJson === 'string' ? JSON.parse(userJson) : userJson;
-        firstName = parsed?.name?.firstName || '';
-        lastName  = parsed?.name?.lastName  || '';
-      } catch { /* name not available */ }
-    }
-
-    let user = await getUserByAppleId(appleId);
-    if (!user) user = await getUserByEmail(email);
-
-    let isNew = false;
-    if (user) {
-      if (!user.appleId) await updateUser(user.id, { appleId });
-    } else {
-      user = await createUser({
-        firstName: firstName || email.split('@')[0],
-        lastName,
-        email,
-        password: '$apple$',
-        appleId,
-      });
-      isNew = true;
-    }
-
-    issueUserSession(res, user);
-    res.redirect(isNew ? '/club/completar-perfil' : '/club/panel');
-  } catch (e) {
-    console.error('Apple Sign In callback error:', e.message);
-    res.redirect('/club/login?apple=error');
   }
 });
 
@@ -616,44 +535,12 @@ router.post('/eliminar-cuenta', requireAuth, authLimiter, async (req, res) => {
 router.get('/panel', requireAuth, async (req, res) => {
   const user = await getUserById(req.userId);
   if (!user) return res.redirect('/club/login');
-  const today      = new Date(); today.setHours(0, 0, 0, 0);
-  const daysBetween = (a, b) => Math.ceil((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
-  const reminders  = (user.vehicles || []).map(v => ({
-    plate: v.plate,
-    soat:  v.soatExpires  ? daysBetween(new Date(v.soatExpires  + 'T00:00:00'), today) : null,
-    tecno: v.tecnoExpires ? daysBetween(new Date(v.tecnoExpires + 'T00:00:00'), today) : null,
-  }));
-  const plates = (user.vehicles || []).map(v => v.plate).filter(Boolean);
-  let upcomingEvents = [], registrations = {}, quotationHistory = [], myRank = null, passkeys = [];
-  try {
-    [upcomingEvents, registrations, quotationHistory, myRank, passkeys] = await Promise.all([
-      getUpcomingEvents(8),
-      getUserEventRegistrations(user.id),
-      getQuotationsByMotorcyclePlates(plates),
-      getUserRank(user.id, user.score || 0),
-      getPasskeysByUserId(user.id),
-    ]);
-  } catch (e) {
-    console.error('GET /club/panel data error:', e.message);
-  }
-  const scoreLevel = getScoreLevel(user.score || 0);
-  res.render('club/dashboard', { user, reminders, upcomingEvents, registrations, scoreLevel, SCORE_POINTS, quotationHistory, myRank, passkeys, noIndex: true });
-});
-
-router.post('/visitas', requireAuth, async (req, res) => {
-  try {
-    const user = await getUserById(req.userId);
-    const { date, service, type } = req.body;
-    if (date && service && user) {
-      // Solo se permiten tipos auto-reportables (no eventos/rodadas de mayor puntaje).
-      const visitType = ['visita', 'mantenimiento'].includes(type) ? type : 'visita';
-      // La visita queda PENDIENTE: no suma puntos hasta que un admin la confirme.
-      const visit = { id: uuidv4(), date, service: String(service).slice(0, 200), type: visitType, status: 'pending' };
-      await updateUser(user.id, { visits: [visit, ...(user.visits || [])] });
-      setFlash(res, 'success', 'Actividad registrada. Sumará puntos cuando el taller la confirme.');
-    }
-  } catch (e) { console.error('POST /club/visitas error:', e.message); }
-  res.redirect('/club/panel');
+  const data = await buildPanelData(user);
+  res.render('club/dashboard', {
+    user, ...data,
+    title: 'Mi panel | Club Gorillaz', noIndex: true,
+    bodyClass: 'page-club-panel',
+  });
 });
 
 router.post('/perfil', requireAuth, async (req, res) => {
@@ -763,7 +650,8 @@ router.post('/eventos/:id/asistencia', requireAuth, async (req, res) => {
   } catch {
     setFlash(res, 'error', 'No se pudo procesar la inscripción.');
   }
-  res.redirect('/eventos');
+  // Desde el panel se vuelve al panel (lista blanca, nada de redirects abiertos).
+  res.redirect(req.body && req.body.back === 'panel' ? '/club/panel#club' : '/eventos');
 });
 
 router.get('/tabla', async (req, res) => {
@@ -791,4 +679,95 @@ router.get('/vehiculos/:plate/qr.png', requireAuth, async (req, res) => {
   } catch { res.status(500).send('Error generando QR'); }
 });
 
+// ── Credencial del club y check-in ───────────────────────────────────────────
+// El QR de la credencial apunta a /club/m/<código>. Si lo escanea un admin ve
+// la pantalla de check-in (asistencia a la rodada de hoy, visita al taller) y
+// los puntos se suman en el acto; cualquier otra persona solo ve que es un
+// miembro verificado (apodo, nivel y antigüedad), sin datos personales.
+
+function credentialUrl(req, code) {
+  const base = (APP_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '');
+  return `${base}/club/m/${code}`;
+}
+
+router.get('/credencial/qr.svg', requireAuth, async (req, res) => {
+  const user = await getUserById(req.userId);
+  if (!user) return res.status(404).end();
+  const code = await ensureMemberCode(user);
+  if (!code) return res.status(500).end();
+  try {
+    const svg = await QRCode.toString(credentialUrl(req, code), { type: 'svg', errorCorrectionLevel: 'M', margin: 1, color: { dark: '#0e0f11', light: '#ffffff' } });
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.send(svg);
+  } catch { res.status(500).end(); }
+});
+
+async function loadMember(req) {
+  const code = String(req.params.code || '').toUpperCase();
+  if (!clubLib.isMemberCode(code)) return null;
+  return getUserByMemberCode(code);
+}
+
+router.get('/m/:code', credentialLimiter, async (req, res) => {
+  const member = await loadMember(req);
+  if (!member) return res.status(404).render('404');
+  const puntos = loadPuntosConfig();
+  const progress = clubLib.levelProgress(member.score || 0, puntos.levels);
+  const isAdmin = !!(res.locals.user && res.locals.user.role === 'admin');
+  let events = [], registrations = {};
+  if (isAdmin) {
+    // Eventos de ayer, hoy y mañana: cubre rodadas que salen de madrugada o
+    // que se confirman al volver.
+    const today = hoyCO();
+    const shift = (n) => new Date(Date.parse(today + 'T12:00:00Z') + n * 86400000).toISOString().slice(0, 10);
+    [events, registrations] = await Promise.all([
+      getEventsBetween(shift(-1), shift(1)).catch(() => []),
+      getUserEventRegistrations(member.id).catch(() => ({})),
+    ]);
+  }
+  const visitedToday = (member.scoreHistory || []).some(h => h && h.ref === `visita:${hoyCO()}`);
+  res.render('club/miembro', {
+    member, progress, isAdmin, events, registrations, visitedToday,
+    points: puntos.points, code: member.memberCode,
+    title: 'Miembro del Club Gorillaz', noIndex: true, bodyClass: 'page-club-panel',
+  });
+});
+
+router.post('/m/:code/evento/:eventId', requireAuth, requireAdmin, async (req, res) => {
+  const member = await loadMember(req);
+  if (!member) return res.status(404).render('404');
+  const ev = await require('../db').getEventById(req.params.eventId);
+  if (!ev) return res.redirect(`/club/m/${member.memberCode}`);
+  try {
+    if (await checkInEventAttendance(ev.id, member.id)) {
+      const pts = SCORE_POINTS[ev.type] || SCORE_POINTS.evento || 0;
+      await addUserScore(member.id, pts, ev.type || 'evento', ev.title, `evento:${ev.id}`);
+      setFlash(res, 'success', `Asistencia confirmada: +${pts} pts para ${member.nickname || member.firstName || member.name}.`);
+    } else {
+      setFlash(res, 'info', 'Esta asistencia ya estaba confirmada.');
+    }
+  } catch (e) {
+    console.error('check-in evento:', e.message);
+    setFlash(res, 'error', 'No se pudo confirmar la asistencia.');
+  }
+  res.redirect(`/club/m/${member.memberCode}`);
+});
+
+router.post('/m/:code/visita', requireAuth, requireAdmin, async (req, res) => {
+  const member = await loadMember(req);
+  if (!member) return res.status(404).render('404');
+  const pts = SCORE_POINTS.visita || 0;
+  try {
+    // Una visita por día: la ref con la fecha hace idempotente el doble escaneo.
+    const ok = await addUserScore(member.id, pts, 'visita', 'Visita al taller', `visita:${hoyCO()}`);
+    setFlash(res, ok ? 'success' : 'info', ok ? `Visita registrada: +${pts} pts.` : 'La visita de hoy ya estaba registrada.');
+  } catch (e) {
+    console.error('check-in visita:', e.message);
+    setFlash(res, 'error', 'No se pudo registrar la visita.');
+  }
+  res.redirect(`/club/m/${member.memberCode}`);
+});
+
 module.exports = router;
+
