@@ -21,7 +21,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 19;
+const SCHEMA_VERSION = 20;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -581,6 +581,9 @@ async function initDb() {
     `ALTER TABLE orders ADD COLUMN paid_at TEXT`,
     // "Mi moto" en la tienda: slug del modelo (bike_models) que el miembro eligió.
     `ALTER TABLE users ADD COLUMN shop_bike TEXT`,
+    // v20: código corto de la credencial del club (QR de check-in en eventos y
+    // en el taller). Se genera la primera vez que el miembro abre su panel.
+    `ALTER TABLE users ADD COLUMN member_code TEXT`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
@@ -610,6 +613,7 @@ async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_orders_created    ON orders(created_at)`,
     `CREATE INDEX IF NOT EXISTS idx_orders_user       ON orders(user_id)`,
     `CREATE INDEX IF NOT EXISTS idx_users_score       ON users(score)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_member_code ON users(member_code)`,
     `CREATE INDEX IF NOT EXISTS idx_checkins_status    ON checkins(status)`,
     `CREATE INDEX IF NOT EXISTS idx_checkins_plate     ON checkins(plate)`,
     `CREATE INDEX IF NOT EXISTS idx_checkins_created   ON checkins(created_at)`,
@@ -703,6 +707,7 @@ function rowToUser(row) {
     avatarUrl: row.avatar_url || null,
     tokenVersion: Number(row.token_version) || 0,
     shopBike: row.shop_bike || null,
+    memberCode: row.member_code || null,
     createdAt: row.created_at,
   };
 }
@@ -1354,23 +1359,31 @@ async function countOrders() {
 
 // ── Score ─────────────────────────────────────────────────────────────────
 
-async function addUserScore(userId, points, concept, description) {
+// ref (opcional): identificador único del hecho que da los puntos (p. ej.
+// 'orden:<id>' o 'visita:2026-10-06'). Si el historial ya tiene esa ref, no
+// suma de nuevo: así un doble escaneo o una orden reentregada no duplican.
+// Devuelve true si sumó.
+async function addUserScore(userId, points, concept, description, ref = null) {
   const tx = await db.transaction('write');
   try {
     const r = await tx.execute({
       sql: 'SELECT score, score_history FROM users WHERE id = ? AND deleted_at IS NULL',
       args: [userId],
     });
-    if (!r.rows[0]) { await tx.rollback(); return; }
+    if (!r.rows[0]) { await tx.rollback(); return false; }
     const row        = r.rows[0];
+    const prev       = safeJson(row.score_history, []);
+    if (ref && prev.some(h => h && h.ref === ref)) { await tx.rollback(); return false; }
     const newScore   = (Number(row.score) || 0) + points;
     const entry      = { date: hoyCO(), points, concept, description };
-    const history    = [entry, ...safeJson(row.score_history, [])].slice(0, 100);
+    if (ref) entry.ref = ref;
+    const history    = [entry, ...prev].slice(0, 100);
     await tx.execute({
       sql: 'UPDATE users SET score = ?, score_history = ? WHERE id = ?',
       args: [newScore, JSON.stringify(history), userId],
     });
     await tx.commit();
+    return true;
   } catch (e) {
     await tx.rollback();
     throw e;
@@ -1447,11 +1460,101 @@ async function getAttendanceById(attendanceId) {
   return r.rows[0] || null;
 }
 
+// Claim atómico: solo el UPDATE que pasa de 'pending' a 'confirmed' devuelve
+// true, así un doble clic (o admin + escaneo a la vez) no suma puntos dos veces.
 async function confirmEventAttendance(attendanceId) {
-  await db.execute({
-    sql: 'UPDATE event_attendances SET status = ? WHERE id = ?',
-    args: ['confirmed', attendanceId],
+  const r = await db.execute({
+    sql: "UPDATE event_attendances SET status = 'confirmed' WHERE id = ? AND status != 'confirmed'",
+    args: [attendanceId],
   });
+  return (r.rowsAffected ?? 0) > 0;
+}
+
+// Check-in con la credencial: inscribe si hacía falta y confirma en un paso.
+// Devuelve true solo si esta llamada fue la que confirmó.
+async function checkInEventAttendance(eventId, userId) {
+  await db.execute({
+    sql: "INSERT OR IGNORE INTO event_attendances (id, event_id, user_id, status) VALUES (?,?,?,'pending')",
+    args: [uuidv4(), eventId, userId],
+  });
+  const r = await db.execute({
+    sql: "UPDATE event_attendances SET status = 'confirmed' WHERE event_id = ? AND user_id = ? AND status != 'confirmed'",
+    args: [eventId, userId],
+  });
+  return (r.rowsAffected ?? 0) > 0;
+}
+
+// Asistencias confirmadas del miembro agrupadas por tipo de evento (insignias).
+async function getUserAttendanceCounts(userId) {
+  const r = await db.execute({
+    sql: `SELECT e.type AS type, COUNT(*) AS n FROM event_attendances ea
+          JOIN events e ON e.id = ea.event_id
+          WHERE ea.user_id = ? AND ea.status = 'confirmed' AND e.deleted_at IS NULL
+          GROUP BY e.type`,
+    args: [userId],
+  });
+  const out = {};
+  r.rows.forEach(row => { out[row.type || 'evento'] = Number(row.n) || 0; });
+  return out;
+}
+
+// Eventos de un rango de fechas (check-in del día).
+async function getEventsBetween(fromYmd, toYmd) {
+  const r = await db.execute({
+    sql: 'SELECT * FROM events WHERE date >= ? AND date <= ? AND deleted_at IS NULL ORDER BY date ASC',
+    args: [fromYmd, toYmd + '\uffff'],
+  });
+  return r.rows.map(rowToEvent);
+}
+
+// ── Credencial del club ──────────────────────────────────────────────────────
+
+async function getUserByMemberCode(code) {
+  const r = await db.execute({
+    sql: 'SELECT * FROM users WHERE member_code = ? AND deleted_at IS NULL',
+    args: [String(code || '')],
+  });
+  return rowToUser(r.rows[0] || null);
+}
+
+// Devuelve el código del miembro, generándolo si aún no tiene. El índice único
+// resuelve la (improbable) colisión: se reintenta con otro código.
+async function ensureMemberCode(user) {
+  if (user.memberCode) return user.memberCode;
+  const { newMemberCode } = require('./helpers/club/lib');
+  const { randomBytes } = require('crypto');
+  for (let i = 0; i < 5; i++) {
+    const code = newMemberCode(randomBytes);
+    try {
+      const r = await db.execute({
+        sql: 'UPDATE users SET member_code = ? WHERE id = ? AND member_code IS NULL',
+        args: [code, user.id],
+      });
+      if ((r.rowsAffected ?? 0) > 0) return code;
+      const again = await getUserById(user.id); // otro request lo generó primero
+      return again ? again.memberCode : null;
+    } catch { /* colisión con el índice único: otro intento */ }
+  }
+  return null;
+}
+
+// Vecinos en la tabla: los que están justo arriba y justo abajo del miembro.
+// Muestra una posición alcanzable en vez de solo el top (que desmotiva).
+async function getLeaderboardAround(userId, userScore, span = 2) {
+  const [above, below] = await Promise.all([
+    db.execute({
+      sql: `SELECT id, name, nickname, score FROM users WHERE role != 'admin' AND deleted_at IS NULL
+            AND id != ? AND score > ? ORDER BY score ASC LIMIT ?`,
+      args: [userId, userScore || 0, span],
+    }),
+    db.execute({
+      sql: `SELECT id, name, nickname, score FROM users WHERE role != 'admin' AND deleted_at IS NULL
+            AND id != ? AND score <= ? ORDER BY score DESC LIMIT ?`,
+      args: [userId, userScore || 0, span],
+    }),
+  ]);
+  const map = row => ({ id: row.id, name: row.name, nickname: row.nickname, score: Number(row.score) || 0 });
+  return { above: above.rows.map(map).reverse(), below: below.rows.map(map) };
 }
 
 async function getUpcomingEvents(limit = 6) {
@@ -2942,6 +3045,7 @@ module.exports = {
   getPasskeysByUserId, getPasskeyByCredentialId, createPasskey, updatePasskeyCounter, deletePasskey,
   getAllUsers, countUsers, createUser, updateUser, deleteUser, deleteUserAccount, incrementTokenVersion,
   addUserScore, getLeaderboard, getUserRank, getUserByVehiclePlate,
+  checkInEventAttendance, getUserAttendanceCounts, getEventsBetween, getUserByMemberCode, ensureMemberCode, getLeaderboardAround,
   getAllAppointments, getAppointmentDates, countAppointments,
   createAppointment, updateAppointment, deleteAppointment, getPendingAppointmentByPlate, getAppointmentsByPlate, getAppointmentsByDate,
   getAllEvents, countEvents, createEvent, getEventById, updateEvent, deleteEvent,
