@@ -1,0 +1,113 @@
+<%#
+  CHALECO DEL CLUB (espalda de un chaleco de cuero con sus parches).
+  Pieza compartida por la landing /club y el panel del miembro.
+
+  Parámetros:
+    vid         prefijo de ids (dos chalecos en la misma página no chocan)
+    badges      [{ id, icon, name, earned }] (helpers/club/lib.js BADGES)
+    levelName   texto de la pestaña de nivel
+    levelColor  color del nivel (hex)
+    bottomText  rocker inferior (ciudad del miembro; por defecto BOGOTÁ)
+
+  El marcado es el estado final: las insignias ganadas ya están cosidas y las
+  demás quedan marcadas con tiza (contorno punteado), como el sastre marca
+  dónde irá un parche. El motion (public/js/club/vest.mjs) solo las vuelve a
+  coser. Es decorativo (aria-hidden): cada página lista las insignias en texto.
+%>
+<%
+  const vid = locals.vid || 'v';
+  const list = locals.badges || [];
+  const bottom = String(locals.bottomText || 'BOGOTÁ').toUpperCase().slice(0, 14);
+  const lvlName = locals.levelName || '';
+  const lvlColor = locals.levelColor || '#F25C05';
+  // Color de cada familia de insignia: rodadas en azul del piso del taller,
+  // taller en grafito con amarillo de placa, constancia en naranja de marca.
+  const tone = {
+    route:    ['#1f4c9c', '#163a78', '#f3ead9'],
+    users:    ['#1f4c9c', '#163a78', '#f3ead9'],
+    flag:     ['#F25C05', '#b8460b', '#fff9f5'],
+    wrench:   ['#2b2e33', '#121315', '#F6C700'],
+    bike:     ['#F6C700', '#b39000', '#0e0f11'],
+    heart:    ['#b91c1c', '#7f1414', '#fff9f5'],
+    flame:    ['#F25C05', '#b8460b', '#fff9f5'],
+    calendar: ['#401309', '#250a04', '#f3ead9'],
+  };
+  const cols = 6, gap = 54, x0 = 210 - (gap * (cols - 1)) / 2;
+%>
+<svg class="cl-vest" viewBox="0 0 420 500" aria-hidden="true" focusable="false" data-vest="<%= vid %>">
+  <defs>
+    <symbol id="<%= vid %>-i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.5"/></symbol>
+    <symbol id="<%= vid %>-i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/></symbol>
+    <symbol id="<%= vid %>-i-flag" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></symbol>
+    <symbol id="<%= vid %>-i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/></symbol>
+    <symbol id="<%= vid %>-i-bike" viewBox="0 0 24 24"><circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5 9 9h5l4.5 7.5"/><path d="M14 9l-1.5-3H10"/><path d="M9 9l3 7.5"/></symbol>
+    <symbol id="<%= vid %>-i-heart" viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-9-9.4C1.9 7.4 4.3 4 7.6 4c2 0 3.4 1.1 4.4 2.6C13 5.1 14.4 4 16.4 4c3.3 0 5.7 3.4 4.6 7.1-1.5 4.8-9 9.4-9 9.4z"/><path d="M12 9v5M9.5 11.5h5"/></symbol>
+    <symbol id="<%= vid %>-i-flame" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.1 0-3.9 3.4-6.1 3.9-10.4 2.7 1.6 4.2 4 4.4 6.4.9-.6 1.5-1.7 1.7-2.9 1.9 1.6 3 4 3 6.9 0 3.5-2.6 6.1-6.5 6.1z"/></symbol>
+    <symbol id="<%= vid %>-i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M9.5 15l2 2 3.5-4"/></symbol>
+
+    <path id="<%= vid %>-rk-top" d="M88 116 Q210 46 332 116" />
+    <path id="<%= vid %>-rk-bot" d="M88 410 Q210 478 332 410" />
+    <radialGradient id="<%= vid %>-leather" cx="50%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#2c2724" />
+      <stop offset="1" stop-color="#151311" />
+    </radialGradient>
+    <clipPath id="<%= vid %>-logo-clip"><circle cx="210" cy="196" r="55" /></clipPath>
+  </defs>
+
+  <!-- Cuero: espalda del chaleco con sus costuras -->
+  <path class="cl-vest-leather" fill="url(#<%= vid %>-leather)"
+    d="M128 14 Q210 52 292 14 L356 26 Q368 92 344 150 Q390 184 394 252 L398 470 Q210 496 22 470 L26 252 Q30 184 76 150 Q52 92 64 26 Z" />
+  <path class="cl-vest-seam"
+    d="M131 24 Q210 62 289 24 L346 34 Q356 94 333 152 Q378 186 383 252 L387 461 Q210 485 33 461 L37 252 Q42 186 87 152 Q64 94 74 34 Z" />
+  <path class="cl-vest-seam" d="M210 60 V472" opacity=".35" />
+
+  <!-- Rocker superior -->
+  <g class="cl-vest-rocker" data-part="top">
+    <use href="#<%= vid %>-rk-top" class="cl-rk-edge" />
+    <use href="#<%= vid %>-rk-top" class="cl-rk-fill" />
+    <use href="#<%= vid %>-rk-top" class="cl-rk-stitch" />
+    <text class="cl-rk-text"><textPath href="#<%= vid %>-rk-top" startOffset="50%" text-anchor="middle" dominant-baseline="central">GORILLAZ</textPath></text>
+  </g>
+
+  <!-- Parche central: el logo del taller -->
+  <g class="cl-vest-center" data-part="center">
+    <circle cx="210" cy="196" r="62" fill="#0e0f11" />
+    <circle cx="210" cy="196" r="57" fill="#F25C05" />
+    <circle cx="210" cy="196" r="59.5" class="cl-stitch" />
+    <image href="/images/club/logo-parche.webp" x="160" y="146" width="100" height="100" clip-path="url(#<%= vid %>-logo-clip)" />
+  </g>
+
+  <!-- Pestaña del nivel -->
+  <g class="cl-vest-level" data-part="level" style="--lvl: <%= lvlColor %>">
+    <rect x="140" y="270" width="140" height="28" rx="3" class="cl-lvl-edge" />
+    <rect x="143" y="273" width="134" height="22" rx="2" class="cl-lvl-fill" />
+    <rect x="141.5" y="271.5" width="137" height="25" rx="2.5" class="cl-stitch" />
+    <text x="210" y="285" class="cl-lvl-text" text-anchor="middle" dominant-baseline="central"><%= lvlName %></text>
+  </g>
+
+  <!-- Insignias: tiza donde va cada parche y el parche cosido si se ganó -->
+  <g class="cl-vest-patches">
+    <% list.forEach((b, i) => {
+         const cx = x0 + (i % cols) * gap, cy = 330 + Math.floor(i / cols) * 52;
+         const [fill, edge, ink] = tone[b.icon] || tone.flag; %>
+      <g class="cl-patch<%= b.earned ? ' is-earned' : '' %>" data-badge="<%= b.id %>" transform="translate(<%= cx %> <%= cy %>)">
+        <circle r="22" class="cl-chalk" />
+        <use href="#<%= vid %>-i-<%= b.icon %>" x="-9" y="-9" width="18" height="18" class="cl-chalk-icon" />
+        <g class="cl-patch-body" data-m>
+          <circle r="23" fill="<%= edge %>" />
+          <circle r="20" fill="<%= fill %>" />
+          <circle r="21.5" class="cl-stitch cl-patch-stitch" style="stroke: <%= ink %>" pathLength="100" />
+          <use href="#<%= vid %>-i-<%= b.icon %>" x="-10" y="-10" width="20" height="20" class="cl-patch-icon" style="stroke: <%= ink %>" />
+        </g>
+      </g>
+    <% }) %>
+  </g>
+
+  <!-- Rocker inferior -->
+  <g class="cl-vest-rocker" data-part="bottom">
+    <use href="#<%= vid %>-rk-bot" class="cl-rk-edge" />
+    <use href="#<%= vid %>-rk-bot" class="cl-rk-fill" />
+    <use href="#<%= vid %>-rk-bot" class="cl-rk-stitch" />
+    <text class="cl-rk-text"><textPath href="#<%= vid %>-rk-bot" startOffset="50%" text-anchor="middle" dominant-baseline="central"><%= bottom %></textPath></text>
+  </g>
+</svg>
