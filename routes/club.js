@@ -677,6 +677,7 @@ router.post('/vehiculos/runt-sync', requireAuth, runtLimiter, async (req, res) =
   const fresh = v.runtCheckedAt && v.runtDoc === docFor(v, user)
     && Date.now() - Date.parse(v.runtCheckedAt) < 12 * 3600000;
   const out = fresh ? v : await syncVehicle(user.id, plate);
+  if (!out) return res.status(404).json({ ok: false, error: 'Esa moto no está en tu garaje.' });
   res.json({ ok: true, status: out.runtStatus, soat: out.soatExpires || null, tecno: out.tecnoExpires || null });
 });
 
