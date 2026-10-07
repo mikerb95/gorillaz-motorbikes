@@ -206,3 +206,244 @@
 /* Fila de puntos que se está contando en la pestaña del chaleco. */
 .clb-earn-pts { transition: color .25s ease }
 .clb-earn li.is-on .clb-earn-pts { color: var(--lp-plate) }
+
+/* ════════════════════════════════════════════════════════════════════════
+   PANEL DEL MIEMBRO
+   Cabecera grafito con la credencial (lo que se muestra en la rodada) y la
+   meta del siguiente nivel; debajo, contenido claro en cuatro pestañas.
+   En móvil las pestañas van arriba (sticky): la barra inferior ya la usa el
+   sitio para Inicio, Tienda, Agendar y Mi orden.
+   ════════════════════════════════════════════════════════════════════════ */
+.page-club-panel main.page-root { padding-top: 0; background: var(--cl-concrete) }
+.clp-wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--lp-gutter) }
+.clp-muted { color: #5f6670; line-height: 1.5; margin: 0 }
+.clp-small { font-size: .86rem; margin-top: 14px }
+.clp-h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -.02em; line-height: 1.05; margin: 0 0 6px }
+.clp-h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 900; letter-spacing: -.02em; margin: 0 0 18px }
+.clp-h3 { font-size: 1.02rem; font-weight: 800; margin: 0 0 12px }
+
+.clp-head {
+  background:
+    radial-gradient(900px 420px at 85% 0%, rgba(242, 92, 5, .12), transparent 60%),
+    var(--cl-stage);
+  color: #f1ece4;
+  padding: calc(var(--header-offset) + 14px) 0 34px;
+}
+.clp-sub { margin: 0; opacity: .75; line-height: 1.5 }
+.clp-sub strong { color: #fff }
+.clp-admin { display: inline-block; margin-top: 10px; color: var(--lp-plate) !important; font-weight: 800; font-size: .9rem }
+.clp-head-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; margin-top: 24px; align-items: center }
+
+/* Credencial que se voltea: frente con nivel y código, reverso con el QR. */
+.clp-cred {
+  all: unset; box-sizing: border-box; display: grid; width: min(100%, 380px); aspect-ratio: 85.6 / 54;
+  perspective: 1200px; cursor: pointer; border-radius: 16px;
+}
+.clp-cred:focus-visible { outline: 3px solid var(--lp-plate); outline-offset: 4px }
+.clp-cred-face {
+  grid-area: 1 / 1; width: 100%; height: 100%; backface-visibility: hidden;
+  transition: transform .6s cubic-bezier(.2, .8, .2, 1);
+}
+.clp-cred-front.cl-cred { width: 100% }
+.clp-cred-back {
+  transform: rotateY(180deg); background: #fff; color: #0e0f11; border-radius: 16px; box-sizing: border-box;
+  padding: 14px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .28);
+}
+.clp-cred-back img { width: min(150px, 32vw); height: auto; aspect-ratio: 1; display: block }
+.clp-cred-back-text { display: grid; gap: 6px; font-size: .85rem; line-height: 1.4 }
+.clp-cred-back-text strong { font-size: 1.15rem; letter-spacing: .08em }
+.clp-cred.is-flipped .clp-cred-front { transform: rotateY(-180deg) }
+.clp-cred.is-flipped .clp-cred-back { transform: rotateY(0) }
+.clp-cred-hint { grid-column: 1; grid-row: 2; align-self: start; font-size: .72rem; opacity: .55 }
+@media (prefers-reduced-motion: reduce) { .clp-cred-face { transition: none } }
+
+.clp-goal-pts { margin: 0; font-size: clamp(2.6rem, 6vw, 4rem); font-weight: 900; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums }
+.clp-goal-text { margin: 8px 0 14px; font-size: 1.05rem; line-height: 1.45 }
+.clp-goal-text strong { color: #fff }
+.clp-bar { height: 12px; border-radius: 99px; background: rgba(255, 255, 255, .12); overflow: hidden }
+.clp-bar-fill { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--lp-orange), var(--lp-plate)) }
+.clp-bar-legend { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0 0; font-size: .8rem; opacity: .7 }
+.clp-goal-hint { margin: 14px 0 0; font-size: .88rem; opacity: .65 }
+
+/* Pestañas */
+.clp-tabs { position: sticky; top: 0; z-index: 20; background: var(--cl-concrete); border-bottom: 1px solid rgba(0, 0, 0, .08) }
+.clp-tabs-row { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none }
+.clp-tabs a {
+  position: relative; padding: 16px 16px 14px; font-weight: 800; color: #5f6670; text-decoration: none; white-space: nowrap;
+  border-bottom: 3px solid transparent;
+}
+.clp-tabs a:hover { color: #0e0f11; text-decoration: none }
+.clp-tabs a[aria-current="page"] { color: #0e0f11; border-bottom-color: var(--lp-orange) }
+.clp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #dc2626; margin-left: 6px; vertical-align: 2px }
+@media (min-width: 1024px) { .clp-tabs { top: calc(var(--header-offset) - 8px) } }
+
+.clp-body { padding-top: 28px; padding-bottom: 72px }
+.clp-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; margin-bottom: 56px }
+.clp-panel[hidden] { display: none }
+.is-tabbed .clp-panel { margin-bottom: 0 }
+
+.clp-block, .clp-tile, .clp-bike {
+  background: #fff; border-radius: 16px; padding: 22px; box-sizing: border-box; min-width: 0;
+  box-shadow: 0 1px 0 rgba(14, 15, 17, .06);
+}
+.clp-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px }
+.clp-trio { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px }
+.clp-tile { display: grid; align-content: start; gap: 8px }
+.clp-tile .clp-h3 { margin: 0; font-size: .9rem; color: #5f6670 }
+.clp-tile-big { margin: 0; font-size: 1.35rem; font-weight: 900; letter-spacing: -.01em; line-height: 1.15 }
+.clp-tile-foot { margin: 4px 0 0; font-weight: 700; font-size: .9rem }
+.clp-tile form { margin-top: 6px }
+.clp-ticks { display: flex; gap: 6px; margin-top: 4px }
+.clp-ticks span { flex: 1; height: 8px; border-radius: 99px; background: #e3e5e8 }
+.clp-ticks span.on { background: var(--lp-orange) }
+
+/* Pendientes: punto de color al inicio, nada de franjas en el borde. */
+.clp-alerts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px }
+.clp-alert {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+  padding: 14px 18px; border-radius: 14px; background: #fff; font-weight: 700;
+}
+.clp-alert-text { display: flex; align-items: center; gap: 10px }
+.clp-alert-text::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; background: #2563eb }
+.clp-alert[data-tone="danger"] { background: #fdecec }
+.clp-alert[data-tone="danger"] .clp-alert-text::before { background: #dc2626 }
+.clp-alert[data-tone="warn"] { background: #fff4dc }
+.clp-alert[data-tone="warn"] .clp-alert-text::before { background: #d97706 }
+.clp-alert[data-tone="ok"] .clp-alert-text::before { background: #16a34a }
+.clp-alert-act { font-weight: 800; color: var(--lp-orange-text) }
+
+.clp-ledger { list-style: none; margin: 0 0 12px; padding: 0 }
+.clp-ledger li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eef0f2; align-items: baseline }
+.clp-ledger li:last-child { border-bottom: 0 }
+.clp-ledger-date { font-size: .82rem; color: #5f6670; font-variant-numeric: tabular-nums }
+.clp-ledger strong { font-variant-numeric: tabular-nums; color: #15803d }
+.clp-shortcuts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px }
+.clp-shortcuts a { display: inline-block; padding: 9px 14px; border-radius: 99px; background: var(--cl-concrete); font-weight: 700; font-size: .92rem }
+.clp-shortcuts a:hover { background: #ffe7d9; text-decoration: none }
+
+/* Garaje */
+.clp-bikes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px }
+.clp-bike { display: grid; gap: 16px; align-content: start }
+.clp-bike-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap }
+/* Placa de moto colombiana: amarilla, dos renglones. */
+.clp-plate {
+  display: inline-grid; justify-items: center; padding: 6px 14px 5px; border-radius: 8px; background: var(--lp-plate); color: #0e0f11;
+  border: 2px solid #0e0f11; font-weight: 900; letter-spacing: .1em; line-height: 1; font-size: 1.25rem;
+  box-shadow: inset 0 0 0 2px var(--lp-plate), inset 0 0 0 3px rgba(0, 0, 0, .35);
+}
+.clp-bike-model { font-weight: 800; color: #3b4048 }
+.clp-docs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 }
+.clp-docs > div { padding: 12px 14px; border-radius: 12px; background: var(--cl-concrete) }
+.clp-docs dt { font-size: .8rem; color: #5f6670; font-weight: 700 }
+.clp-docs dd { margin: 4px 0 0; font-weight: 800 }
+.clp-docs [data-state="expired"] { background: #fdecec } .clp-docs [data-state="expired"] dd { color: #b91c1c }
+.clp-docs [data-state="soon"] { background: #fff4dc } .clp-docs [data-state="soon"] dd { color: #92400e }
+.clp-docs [data-state="ok"] dd { color: #15803d }
+.clp-edit summary, .clp-bike-add summary { cursor: pointer; font-weight: 800; color: var(--lp-orange-text) }
+.clp-bike-add summary { font-size: 1.05rem }
+.clp-form-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 12px; align-items: end }
+.clp-form-row label, .clp-form-stack label { display: grid; gap: 6px; font-size: .86rem; font-weight: 700 }
+.clp-form-row input, .clp-form-stack input { width: 100%; box-sizing: border-box; min-width: 0 }
+.clp-plate-input { text-transform: uppercase; letter-spacing: .1em; font-weight: 800 }
+.clp-form-stack { display: grid; gap: 14px }
+.clp-form-stack p { margin: 0 }
+
+/* Historial del taller: la ficha de papel con su sello de estado. */
+.clp-orders { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px }
+.clp-orders li {
+  display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 12px 14px; border-radius: 10px;
+  background: var(--lp-paper);
+}
+.clp-order-date { font-size: .8rem; color: #6b5a3e; font-weight: 700 }
+.clp-order-main { display: grid; gap: 3px; min-width: 0 }
+.clp-order-status { font-size: .84rem; color: #6b5a3e }
+.clp-orders li:not([data-status="entregado"]) .clp-order-status { color: var(--lp-floor); font-weight: 800 }
+.clp-bike-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px }
+.clp-link-danger { all: unset; cursor: pointer; color: #b91c1c; font-weight: 700; font-size: .9rem }
+.clp-link-danger:hover { text-decoration: underline }
+.clp-link-danger:focus-visible { outline: 2px solid #b91c1c; outline-offset: 3px }
+.clp-qr-body { display: grid; justify-items: center; gap: 10px }
+.clp-qr-body img { width: 240px; height: 240px; image-rendering: pixelated }
+
+/* Club: el chaleco del miembro y la lista de insignias */
+.clp-vest-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start }
+.clp-vest {
+  margin: 0; padding: 22px; border-radius: 16px; background: var(--cl-stage);
+  display: grid; justify-items: center; gap: 10px;
+}
+.clp-vest .cl-vest { max-width: 360px }
+.clp-vest figcaption { color: rgba(241, 236, 228, .7) }
+.clp-badges { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+.clp-badges li {
+  display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 12px; align-items: center;
+  background: #fff; border-radius: 12px; padding: 10px 14px;
+}
+.clp-badge-icon {
+  width: 38px; height: 38px; padding: 8px; box-sizing: border-box; border-radius: 50%;
+  fill: none; stroke: #9aa1aa; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  background: transparent; border: 1.5px dashed #b8bec6;
+}
+.clp-badges li.is-earned .clp-badge-icon { background: var(--lp-orange); stroke: #fff; border: 0 }
+.clp-badge-text { display: grid; gap: 2px; min-width: 0 }
+.clp-badge-text span { font-size: .86rem; color: #5f6670 }
+.clp-badge-state { font-size: .8rem; font-weight: 800; color: #5f6670; white-space: nowrap; font-variant-numeric: tabular-nums }
+.clp-badges li.is-earned .clp-badge-state { color: #15803d }
+
+.clp-levels { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px }
+.clp-levels > li { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 12px; border-radius: 10px }
+.clp-levels > li.is-current { background: color-mix(in srgb, var(--lvl) 12%, #fff) }
+.clp-levels > li.is-done .clp-level-name { color: #5f6670 }
+.clp-level-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--lvl) }
+.clp-level-name { font-weight: 800 }
+.clp-level-pts { font-size: .86rem; color: #5f6670; font-variant-numeric: tabular-nums }
+.clp-level-benefits { grid-column: 2 / -1; margin: 2px 0 0; padding-left: 18px; font-size: .9rem; color: #3b4048 }
+.clp-chip { display: inline-block; padding: 3px 9px; border-radius: 99px; background: #0e0f11; color: #fff; font-size: .72rem; font-weight: 800; vertical-align: 2px }
+.clp-chip.is-ok { background: #15803d }
+
+.clp-board { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 4px }
+.clp-board li { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 10px; padding: 10px 12px; border-radius: 10px; align-items: center }
+.clp-board li.is-me { background: #ffe7d9; font-weight: 800 }
+.clp-board-pos { font-weight: 900; color: #5f6670; font-variant-numeric: tabular-nums }
+.clp-board-pts { font-variant-numeric: tabular-nums; font-size: .9rem }
+
+.clp-events { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px }
+.clp-events li { display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid #eef0f2 }
+.clp-events li:last-child { border-bottom: 0 }
+.clp-ev-date { display: grid; justify-items: center; gap: 2px; padding: 8px 0; border-radius: 10px; background: #0e0f11; color: #fff; font-size: .7rem; font-weight: 700; line-height: 1 }
+.clp-ev-date strong { font-size: 1.45rem; font-weight: 900; color: var(--lp-plate) }
+.clp-ev-main { display: grid; gap: 2px; min-width: 0 }
+.clp-ev-type { font-size: .78rem; font-weight: 800; color: var(--lp-floor) }
+.clp-events li:not([data-type="rodada"]) .clp-ev-type { color: var(--lp-orange-text) }
+.clp-ev-act { grid-column: 2 }
+
+.clp-facts { display: grid; gap: 0; margin: 0 0 16px }
+.clp-facts > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 10px 0; border-bottom: 1px solid #eef0f2 }
+.clp-facts dt { font-size: .8rem; color: #5f6670; font-weight: 700 }
+.clp-facts dd { margin: 0; font-weight: 700; overflow-wrap: anywhere }
+.clp-keys { list-style: none; margin: 14px 0; padding: 0; display: grid; gap: 8px }
+.clp-keys li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--cl-concrete) }
+.clp-keys li > span { display: grid; gap: 2px }
+.clp-msg { margin: 12px 0; padding: 10px 14px; border-radius: 10px; font-size: .9rem; background: #ecfdf3; color: #166534 }
+.clp-msg[data-tone="error"] { background: #fdecec; color: #991b1b }
+.clp-block p.clp-muted + .btn, .clp-block .clp-msg + .btn { margin-top: 14px }
+.clp-danger-row { display: flex; flex-wrap: wrap; align-items: center; gap: 20px }
+.clp-danger-title { color: #b91c1c }
+.clp-btn-danger { background: #dc2626; border-color: #dc2626; color: #fff }
+.clp-btn-danger:disabled { opacity: .5; cursor: not-allowed }
+
+@media (min-width: 720px) {
+  .clp-trio { grid-template-columns: repeat(3, minmax(0, 1fr)) }
+  .clp-split { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+  .clp-form-row { grid-template-columns: repeat(3, minmax(0, 1fr)) auto }
+  .clp-edit .clp-form-row { grid-template-columns: repeat(2, minmax(0, 1fr)) auto }
+  .clp-events li { grid-template-columns: 60px minmax(0, 1fr) auto }
+  .clp-ev-act { grid-column: auto }
+  .clp-facts > div { grid-template-columns: 180px minmax(0, 1fr) }
+}
+@media (min-width: 1024px) {
+  .clp-head-grid { grid-template-columns: auto minmax(0, 1fr); gap: 56px }
+  .clp-bikes { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+  .clp-vest-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr) }
+  .clp-vest { position: sticky; top: calc(var(--header-offset) + 56px) }
+}

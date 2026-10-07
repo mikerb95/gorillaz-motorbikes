@@ -1,559 +1,460 @@
-<%- include('../partials/head', { title: 'Mi panel | Gorillaz Motorbikes Club', user, noIndex: true }) %>
+<%- include('../partials/head', { user, extraCss: ['/static/css/taller-base.css?v=' + assetV('css/taller-base.css'), '/static/css/club.css?v=' + assetV('css/club.css')] }) %>
+<%#
+  PANEL DEL MIEMBRO (/club/panel)
+  Cuatro pestañas: Inicio (credencial, lo que pide acción, reto y racha),
+  Garaje (motos, documentos, historial del taller), Club (chaleco con las
+  insignias, niveles, posición, salidas, puntos) y Cuenta.
+  Sin JS se ven las cuatro seguidas; public/js/club/panel.mjs las convierte en
+  pestañas por hash (#garaje, #club…) y anima la credencial y el chaleco.
+  Los datos salen de helpers/club/panel-data.js.
+%>
+<%
+  const fmt = (n) => Number(n || 0).toLocaleString('es-CO');
+  const display = user.nickname || user.firstName || user.name;
+  const lvl = progress.current || { name: 'Prospecto', color: '#6b7280' };
+  const nxt = progress.next;
+  const conceptName = { rodada: 'Rodada', encuentro: 'Encuentro', caminata: 'Caminata', actividad: 'Actividad', evento: 'Evento', mantenimiento: 'Servicio', visita: 'Visita', compra: 'Compra' };
+  const typeName = { rodada: 'Rodada', encuentro: 'Encuentro', caminata: 'Caminata', actividad: 'Actividad', evento: 'Evento' };
+  const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+  const dd = (ymd) => { const d = new Date(String(ymd).slice(0, 10) + 'T12:00:00Z'); return isNaN(d) ? { day: '', mon: '', wd: '' } : { day: d.getUTCDate(), mon: MESES[d.getUTCMonth()], wd: DIAS[d.getUTCDay()] }; };
+  const shortDate = (ymd) => { const d = dd(ymd); return d.day ? `${d.day} ${d.mon}` : ''; };
+  const pts = puntos.points;
+  const hasPassword = user.password && user.password !== '$google$' && user.password !== '$apple$';
+  const monthName = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'][Number(today.slice(5, 7)) - 1];
+  const myRow = { id: user.id, name: user.name, nickname: user.nickname, score: user.score || 0, me: true };
+  const board = [...neighbors.above, myRow, ...neighbors.below];
+  const firstRank = rank ? rank - neighbors.above.length : null;
+%>
 
-<div class="club-panel">
+<div class="clp" data-club="panel">
 
-  <!-- ── Hero greeting ── -->
-  <div class="cp-hero">
-    <div class="container">
-      <div class="cp-hero-greeting">
-        <div class="cp-hero-avatar" aria-hidden="true"><%= (user.nickname || user.name).charAt(0).toUpperCase() %></div>
-        <div>
-          <h1>Bienvenido, <%= user.nickname ? user.nickname : user.name %></h1>
-          <div class="cp-hero-sub">Gorillaz Motorbikes Club · Bogotá</div>
-          <% if (myRank) { %>
-            <div class="cp-hero-rank">Puesto <strong>#<%= myRank %></strong> en el club</div>
+  <!-- ═══ Cabecera: credencial y meta del siguiente nivel ═══ -->
+  <header class="clp-head">
+    <div class="clp-wrap">
+      <div class="clp-hello">
+        <h1 class="clp-h1">Hola, <%= display %></h1>
+        <p class="clp-sub">
+          <% if (rank) { %>Puesto <strong><%= rank %></strong> en el club. <% } %>
+          <% if (streak.months > 0) { %><%= streak.months %> <%= streak.months === 1 ? 'mes' : 'meses' %> seguidos con actividad.<% } %>
+        </p>
+        <% if (user.role === 'admin') { %><a class="clp-admin" href="/admin">Ir al panel admin</a><% } %>
+      </div>
+
+      <div class="clp-head-grid">
+        <button class="clp-cred" type="button" data-cred aria-pressed="false" aria-label="Credencial del club. Toca para ver el código QR">
+          <span class="clp-cred-face clp-cred-front cl-cred" style="--lvl: <%= lvl.color || '#F25C05' %>">
+            <span class="cl-cred-club">Club Gorillaz</span>
+            <span class="cl-cred-name"><%= display %></span>
+            <span class="cl-cred-level"><%= lvl.name %></span>
+            <span class="cl-cred-code"><%= memberCode ? memberCode.slice(0, 2) + '·' + memberCode.slice(2) : '' %></span>
+            <span class="clp-cred-hint" aria-hidden="true">Toca para ver tu QR</span>
+          </span>
+          <span class="clp-cred-face clp-cred-back">
+            <% if (memberCode) { %>
+              <img src="/club/credencial/qr.svg" alt="Código QR de tu credencial <%= memberCode %>" width="150" height="150" loading="lazy" />
+              <span class="clp-cred-back-text"><strong><%= memberCode %></strong>Muéstralo en la rodada o en el mostrador para sumar tus puntos.</span>
+            <% } else { %>
+              <span class="clp-cred-back-text">No se pudo generar tu código. Recarga la página.</span>
+            <% } %>
+          </span>
+        </button>
+
+        <div class="clp-goal" style="--lvl: <%= lvl.color || '#F25C05' %>">
+          <p class="clp-goal-pts"><span class="clp-odo" data-odo="<%= user.score || 0 %>"><%= fmt(user.score) %></span> pts</p>
+          <% if (nxt) { %>
+            <p class="clp-goal-text">Te faltan <strong><%= fmt(progress.remaining) %> pts</strong> para <strong><%= nxt.name %></strong>.</p>
+            <div class="clp-bar" role="progressbar" aria-valuemin="<%= lvl.min %>" aria-valuemax="<%= nxt.min %>" aria-valuenow="<%= user.score || 0 %>" aria-label="Progreso hacia <%= nxt.name %>">
+              <span class="clp-bar-fill" data-m style="width: <%= progress.pct %>%"></span>
+            </div>
+            <p class="clp-bar-legend"><span><%= lvl.name %>, <%= fmt(lvl.min) %></span><span><%= nxt.name %>, <%= fmt(nxt.min) %></span></p>
+            <p class="clp-goal-hint">Una rodada suma <%= pts.rodada %> pts y cada servicio en el taller <%= pts.mantenimiento %>.</p>
+          <% } else { %>
+            <p class="clp-goal-text">Llegaste al nivel más alto del club: <strong><%= lvl.name %></strong>.</p>
           <% } %>
         </div>
       </div>
-      <div class="cp-hero-aside">
-        <% if (user && user.role === 'admin') { %>
-          <a class="cp-admin-link" href="/admin">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Panel admin
-          </a>
-        <% } %>
-        <div class="cp-hero-badge">
-          <div class="cp-hero-badge-icon" aria-hidden="true"><%= scoreLevel.icon %></div>
-          <div>
-            <div class="cp-hero-badge-name" style="color:<%= scoreLevel.color %>"><%= scoreLevel.name %></div>
-            <div class="cp-hero-badge-pts"><%= user.score || 0 %> puntos</div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+  </header>
 
-  <!-- ── Quick actions ── -->
-  <nav class="cp-actions-bar" aria-label="Acciones rápidas">
-    <div class="container">
-      <a class="cp-action-chip" href="/servicios/agendar"><span aria-hidden="true">🔧</span> Agendar servicio</a>
-      <a class="cp-action-chip" href="/eventos"><span aria-hidden="true">📅</span> Eventos</a>
-      <a class="cp-action-chip" href="/tienda"><span aria-hidden="true">🛒</span> Tienda</a>
-      <a class="cp-action-chip" href="/clasificados/mios"><span aria-hidden="true">🏷️</span> Mis clasificados</a>
-      <a class="cp-action-chip" href="/cursos"><span aria-hidden="true">🎓</span> Cursos</a>
-      <a class="cp-action-chip" href="#vehiculos"><span aria-hidden="true">🏍️</span> Mi moto</a>
-      <button class="cp-action-chip" type="button" data-modal-open="#editProfile" style="border:none;cursor:pointer;font:inherit"><span aria-hidden="true">✏️</span> Mi perfil</button>
+  <!-- ═══ Pestañas ═══ -->
+  <nav class="clp-tabs" aria-label="Secciones del panel">
+    <div class="clp-wrap clp-tabs-row">
+      <a href="#inicio" data-tab="inicio">Inicio</a>
+      <a href="#garaje" data-tab="garaje">Garaje<% if (alerts.some(a => a.kind !== 'order')) { %><span class="clp-dot" aria-label="con avisos"></span><% } %></a>
+      <a href="#club" data-tab="club">Club</a>
+      <a href="#cuenta" data-tab="cuenta">Cuenta</a>
     </div>
   </nav>
 
-  <div class="container">
+  <div class="clp-wrap clp-body">
 
-    <!-- ── Puntaje + Membresía ── -->
-    <div class="cp-section">
-      <div class="cp-grid-2">
+    <!-- ═══ Inicio ═══ -->
+    <section id="inicio" class="clp-panel" data-panel="inicio" aria-labelledby="t-inicio">
+      <h2 id="t-inicio" class="sr-only">Inicio</h2>
 
-        <!-- Score card -->
-        <div class="cp-score-card" style="--score-color:<%= scoreLevel.color %>">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px">
-            <div>
-              <p class="cp-card-label">Tu puntaje</p>
-              <div style="display:flex;align-items:baseline;gap:4px">
-                <span class="cp-score-number"><%= user.score || 0 %></span>
-                <span class="cp-score-label">pts</span>
-              </div>
-            </div>
-            <div class="cp-rank-badge">
-              <span class="cp-rank-icon" aria-hidden="true"><%= scoreLevel.icon %></span>
-              <span class="cp-rank-name" style="color:<%= scoreLevel.color %>"><%= scoreLevel.name %></span>
-            </div>
-          </div>
-
-          <%
-            const thresholds = [0, 100, 300, 700, 1500, Infinity];
-            const sc = user.score || 0;
-            let fromPts = 0, toPts = null, nextName = null;
-            for (let i = 0; i < thresholds.length - 1; i++) {
-              if (sc < thresholds[i+1]) {
-                fromPts = thresholds[i];
-                toPts   = thresholds[i+1];
-                const names = ['Prospecto','Miembro','Rider','Gorilla','Gorilla Legend'];
-                nextName = names[i+1] || null;
-                break;
-              }
-            }
-            const pct = toPts && toPts !== Infinity ? Math.min(100, Math.round(((sc - fromPts) / (toPts - fromPts)) * 100)) : 100;
-          %>
-          <% if (nextName) { %>
-            <div>
-              <div class="cp-progress-label">
-                <span>Hacia <%= nextName %></span>
-                <span><%= sc - fromPts %> / <%= toPts - fromPts %></span>
-              </div>
-              <div class="cp-progress-track"
-                   role="progressbar"
-                   aria-valuenow="<%= pct %>"
-                   aria-valuemin="0"
-                   aria-valuemax="100"
-                   aria-label="Progreso hacia <%= nextName %>: <%= pct %>%">
-                <div class="cp-progress-fill" style="width:<%= pct %>%"></div>
-              </div>
-            </div>
-          <% } else { %>
-            <div style="font-size:.82em;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:4px">
-              <span aria-hidden="true">⚡</span> Nivel máximo — Leyenda del club
-            </div>
-          <% } %>
-
-          <!-- Levels roadmap -->
-          <%
-            const allLevels = [
-              { name:'Prospecto', icon:'🌱', min:0 },
-              { name:'Miembro',   icon:'✅', min:100 },
-              { name:'Rider',     icon:'🏍️', min:300 },
-              { name:'Gorilla',   icon:'🏆', min:700 },
-              { name:'Legend',    icon:'🦍', min:1500 }
-            ];
-            const currentLvlIdx = allLevels.reduce((acc, lv, i) => sc >= lv.min ? i : acc, 0);
-          %>
-          <div class="cp-levels-map" aria-label="Mapa de niveles del club">
-            <% allLevels.forEach((lv, i) => { %>
-              <div class="cp-level-step<%= i <= currentLvlIdx ? ' active' : '' %><%= i === currentLvlIdx ? ' current' : '' %>">
-                <span class="cp-level-icon" aria-hidden="true"><%= lv.icon %></span>
-                <span class="cp-level-name"><%= lv.name %></span>
-                <span class="cp-level-pts"><%= lv.min > 0 ? lv.min + ' pts' : 'Inicio' %></span>
-              </div>
-              <% if (i < allLevels.length - 1) { %>
-                <div class="cp-level-connector<%= i < currentLvlIdx ? ' filled' : '' %>" aria-hidden="true"></div>
+      <% if (alerts.length) { %>
+        <ul class="clp-alerts" aria-label="Pendientes">
+          <% alerts.forEach(a => { %>
+            <li class="clp-alert" data-tone="<%= a.tone %>">
+              <span class="clp-alert-text"><%= a.title %></span>
+              <% if (a.kind === 'order') { %>
+                <a class="clp-alert-act" href="#garaje" data-tab-link="garaje">Ver la orden</a>
+              <% } else if (a.kind === 'tecno') { %>
+                <a class="clp-alert-act" href="/servicios/agendar">Agendar revisión</a>
+              <% } else { %>
+                <a class="clp-alert-act" href="#garaje" data-tab-link="garaje">Actualizar fecha</a>
               <% } %>
-            <% }) %>
-          </div>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
 
-          <div style="margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">
-            <a class="btn btn-sm btn-outline" href="/club/tabla">Ver tabla de posiciones →</a>
+      <div class="clp-trio">
+        <article class="clp-tile">
+          <h3 class="clp-h3">Reto de <%= monthName %></h3>
+          <p class="clp-tile-big"><%= challenge.title %></p>
+          <p class="clp-muted"><%= challenge.desc %></p>
+          <div class="clp-ticks" aria-label="<%= challenge.value %> de <%= challenge.goal %>">
+            <% for (let i = 0; i < challenge.goal; i++) { %><span class="<%= i < challenge.value ? 'on' : '' %>"></span><% } %>
           </div>
-        </div>
+          <p class="clp-tile-foot"><%= challenge.done ? 'Cumplido.' : `Quedan ${challenge.daysLeft} ${challenge.daysLeft === 1 ? 'día' : 'días'}.` %></p>
+        </article>
 
-        <!-- Membresía -->
-        <div class="cp-card">
-          <p class="cp-card-label">Membresía</p>
-          <div class="cp-membership-level"><%= user.membership.level %></div>
-          <div class="cp-info-row">
-            <span class="cp-info-key">Miembro desde</span>
-            <span class="cp-info-val"><%= user.membership.since %></span>
-          </div>
-          <div class="cp-info-row">
-            <span class="cp-info-key">Vence</span>
-            <span class="cp-info-val"><%= user.membership.expires || '—' %></span>
-          </div>
-          <h2 style="font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin:14px 0 8px">Beneficios</h2>
-          <% if (user.membership.benefits && user.membership.benefits.length > 0) { %>
-            <ul class="cp-benefit-list">
-              <% user.membership.benefits.forEach(b => { %>
-                <li><%= b %></li>
+        <article class="clp-tile">
+          <h3 class="clp-h3">Racha</h3>
+          <p class="clp-tile-big"><%= streak.months %> <%= streak.months === 1 ? 'mes' : 'meses' %></p>
+          <p class="clp-muted">
+            <% if (streak.months === 0) { %>Suma puntos este mes para empezar tu racha.
+            <% } else if (!streak.currentActive) { %>Suma puntos antes de fin de mes para no perderla.
+            <% } else { %>Meses seguidos en los que sumaste puntos.<% } %>
+          </p>
+        </article>
+
+        <article class="clp-tile">
+          <h3 class="clp-h3">Próxima salida</h3>
+          <% if (nextEvent) { const d = dd(nextEvent.date); const st = registrations[nextEvent.id]; %>
+            <p class="clp-tile-big"><%= nextEvent.title %></p>
+            <p class="clp-muted"><%= d.wd %> <%= d.day %> de <%= d.mon %><% if (nextEvent.location) { %>. <%= nextEvent.location %><% } %></p>
+            <% if (st === 'pending') { %>
+              <p class="clp-tile-foot">Ya estás inscrito. Muestra tu QR al llegar.</p>
+            <% } else { %>
+              <form method="post" action="/club/eventos/<%= nextEvent.id %>/asistencia">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="back" value="panel" />
+                <button class="btn btn-sm" type="submit">Apuntarme</button>
+              </form>
+            <% } %>
+          <% } else { %>
+            <p class="clp-muted">No hay salidas programadas. Las nuevas aparecen aquí y en <a class="lp-link" href="/eventos">eventos</a>.</p>
+          <% } %>
+        </article>
+      </div>
+
+      <div class="clp-split">
+        <section class="clp-block" aria-labelledby="t-recent">
+          <h3 id="t-recent" class="clp-h3">Últimos puntos</h3>
+          <% if (!history.length) { %>
+            <p class="clp-muted">Todavía no tienes puntos. La primera rodada suma <%= pts.rodada %> y el primer servicio en el taller, <%= pts.mantenimiento %>.</p>
+          <% } else { %>
+            <ul class="clp-ledger">
+              <% history.slice(0, 5).forEach(h => { %>
+                <li><span class="clp-ledger-date"><%= shortDate(h.date) %></span><span><%= h.description || conceptName[h.concept] || 'Actividad' %></span><strong>+<%= h.points %></strong></li>
               <% }) %>
             </ul>
-          <% } else { %>
-            <div style="margin-top:4px">
-              <p class="cp-motivation-text">Alcanza <strong>100 puntos</strong> para subir a <strong>Miembro</strong> y desbloquear:</p>
-              <ul class="cp-benefit-list cp-benefit-list--locked">
-                <li>Descuentos en servicios de taller</li>
-                <li>Acceso prioritario a rodadas</li>
-                <li>Insignia de miembro activo</li>
-              </ul>
-            </div>
+            <a class="lp-link" href="#club" data-tab-link="club">Ver todo el historial</a>
           <% } %>
-        </div>
-
+        </section>
+        <section class="clp-block" aria-labelledby="t-shortcuts">
+          <h3 id="t-shortcuts" class="clp-h3">Atajos</h3>
+          <ul class="clp-shortcuts">
+            <li><a href="/servicios/agendar">Agendar servicio</a></li>
+            <li><a href="/eventos">Eventos</a></li>
+            <li><a href="/clasificados/mios">Mis clasificados</a></li>
+            <li><a href="/tienda">Tienda</a></li>
+            <li><a href="/cursos">Cursos</a></li>
+          </ul>
+        </section>
       </div>
-    </div>
+    </section>
 
-    <!-- ── Próximas actividades ── -->
-    <% if (upcomingEvents && upcomingEvents.length > 0) { %>
-    <div class="cp-section">
-      <h2 class="cp-section-title">Próximas actividades</h2>
-      <div class="cp-grid-3">
-        <% upcomingEvents.forEach(ev => { %>
-          <%
-            const regStatus = registrations[ev.id] || null;
-            const pts = ev.type === 'rodada' ? SCORE_POINTS.rodada : SCORE_POINTS.evento;
-            const isRodada = ev.type === 'rodada';
-          %>
-          <article class="cp-event-card" style="--ev-color:<%= isRodada ? '#38bdf8' : '#a78bfa' %>">
-            <div>
-              <span class="cp-event-type <%= isRodada ? 'rodada' : 'evento' %>">
-                <span aria-hidden="true"><%= isRodada ? '🏍️' : '🎉' %></span>
-                <%= isRodada ? 'Rodada' : 'Evento' %>
-                <strong>+<%= pts %> pts</strong>
-              </span>
-            </div>
-            <h3 class="cp-event-title"><%= ev.title %></h3>
-            <div class="cp-event-meta">
-              <%= ev.date %><% if (ev.location) { %> · <%= ev.location %><% } %>
-            </div>
-            <% if (ev.description) { %>
-              <p class="cp-event-desc"><%= ev.description %></p>
+    <!-- ═══ Garaje ═══ -->
+    <section id="garaje" class="clp-panel" data-panel="garaje" aria-labelledby="t-garaje">
+      <h2 id="t-garaje" class="clp-h2">Garaje</h2>
+      <% if (!vehicles.length) { %>
+        <p class="clp-muted">Agrega tu moto: con la placa, los servicios del taller suman puntos solos y te avisamos del SOAT y la tecnomecánica.</p>
+      <% } %>
+
+      <div class="clp-bikes">
+        <% vehicles.forEach(v => { %>
+          <article class="clp-bike" aria-labelledby="bk-<%= v.plate %>">
+            <header class="clp-bike-head">
+              <span class="clp-plate" id="bk-<%= v.plate %>"><span><%= v.plate.slice(0, 3) %></span><span><%= v.plate.slice(3) %></span></span>
+              <% if (v.model) { %><span class="clp-bike-model"><%= v.model %></span><% } %>
+            </header>
+
+            <dl class="clp-docs">
+              <% [['SOAT', v.soat], ['Tecnomecánica', v.tecno]].forEach(([name, d]) => { %>
+                <div data-state="<%= d.state %>"><dt><%= name %></dt><dd><%= d.label %></dd></div>
+              <% }) %>
+            </dl>
+
+            <details class="clp-edit">
+              <summary>Editar fechas</summary>
+              <form method="post" action="/club/vehiculos/actualizar" class="clp-form-row">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="plate" value="<%= v.plate %>" />
+                <label>Vence el SOAT<input type="date" name="soatExpires" value="<%= v.soat.date || '' %>" /></label>
+                <label>Vence la tecnomecánica<input type="date" name="tecnoExpires" value="<%= v.tecno.date || '' %>" /></label>
+                <button class="btn btn-sm" type="submit">Guardar fechas</button>
+              </form>
+            </details>
+
+            <h3 class="clp-h3">Servicios en el taller</h3>
+            <% if (!v.orders.length) { %>
+              <p class="clp-muted">Aún no hay servicios registrados con esta placa.</p>
+            <% } else { %>
+              <ol class="clp-orders">
+                <% v.orders.slice(0, 6).forEach(o => { %>
+                  <li data-status="<%= o.status %>">
+                    <span class="clp-order-date"><%= fechaCO(o.deliveredAt || o.createdAt, { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+                    <span class="clp-order-main">
+                      <strong><%= (o.items || []).slice(0, 2).map(it => it.name).join(', ') || 'Servicio' %><% if ((o.items || []).length > 2) { %> y <%= o.items.length - 2 %> más<% } %></strong>
+                      <span class="clp-order-status"><%= o.statusLabel %><% if (o.label) { %>, orden <%= o.label %><% } %></span>
+                    </span>
+                  </li>
+                <% }) %>
+              </ol>
             <% } %>
-            <div class="cp-event-footer">
-              <% if (regStatus === 'confirmed') { %>
-                <span class="cp-status-confirmed"><span aria-hidden="true">✓</span> Confirmado</span>
-              <% } else if (regStatus === 'pending') { %>
-                <span class="cp-status-pending"><span aria-hidden="true">⏳</span> Pendiente</span>
-              <% } else { %>
-                <form method="post" action="/club/eventos/<%= ev.id %>/asistencia">
-                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                  <button class="btn btn-sm" type="submit">Apuntarme</button>
-                </form>
-              <% } %>
+
+            <div class="clp-bike-actions">
+              <button class="btn btn-sm btn-outline" type="button" data-modal-open="#qr-<%= v.plate %>">QR de la moto</button>
+              <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Quitar la moto <%= v.plate %> de tu garaje?">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="plate" value="<%= v.plate %>" />
+                <button class="clp-link-danger" type="submit">Quitar del garaje</button>
+              </form>
             </div>
           </article>
-        <% }) %>
-      </div>
-    </div>
-    <% } %>
 
-    <!-- ── Historial + Puntos ── -->
-    <div class="cp-section">
-      <div class="cp-grid-2">
-
-        <!-- Historial de actividades + Registro -->
-        <div class="cp-card">
-          <h2>Historial de actividades</h2>
-          <% if (user.visits.length === 0) { %>
-            <div class="cp-empty">
-              <div class="cp-empty-icon" aria-hidden="true">🔩</div>
-              <div class="cp-empty-text">Aún no hay actividades</div>
-              <p class="cp-empty-hint">Visita el taller y registra tu servicio para ganar <strong>+<%= SCORE_POINTS.visita %> puntos</strong></p>
-              <a class="btn btn-sm" href="/servicios/agendar">Agendar servicio</a>
+          <div class="modal" id="qr-<%= v.plate %>" aria-hidden="true">
+            <div class="modal-backdrop" data-modal-close></div>
+            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-qr-<%= v.plate %>">
+              <div class="modal-header">
+                <h3 class="modal-title" id="title-qr-<%= v.plate %>">QR de la moto <%= v.plate %></h3>
+                <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
+              </div>
+              <div class="modal-body clp-qr-body">
+                <img src="/club/vehiculos/<%= v.plate %>/qr.png" alt="Código QR de la moto con placa <%= v.plate %>" width="240" height="240" loading="lazy" />
+                <p class="clp-muted">Identifica tu moto en el taller.</p>
+              </div>
+              <div class="modal-actions">
+                <a class="btn btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png">Descargar</a>
+                <button class="btn" type="button" data-modal-close>Cerrar</button>
+              </div>
             </div>
-          <% } else { %>
-            <ul class="cp-timeline">
-              <% user.visits.forEach(v => { %>
-                <li class="cp-timeline-item">
-                  <div class="cp-timeline-dot <%= v.type === 'visita' ? 'green' : '' %>" aria-hidden="true"></div>
-                  <div class="cp-timeline-content">
-                    <div class="cp-timeline-date">
-                      <%= v.date %>
-                      <% if (v.type === 'mantenimiento') { %>
-                        <span class="cp-activity-chip mtto"><span aria-hidden="true">🔩</span> Mtto</span>
-                      <% } else { %>
-                        <span class="cp-activity-chip visita"><span aria-hidden="true">🏪</span> Visita</span>
-                      <% } %>
-                      <% if (v.status === 'pending') { %>
-                        <span class="cp-activity-chip" style="background:#fef3c7;color:#92400e"><span aria-hidden="true">⏳</span> Pendiente de confirmar</span>
-                      <% } %>
-                    </div>
-                    <div class="cp-timeline-desc"><%= v.service %></div>
-                  </div>
+          </div>
+        <% }) %>
+
+        <details class="clp-bike clp-bike-add"<%= vehicles.length ? '' : ' open' %>>
+          <summary>Agregar moto</summary>
+          <form method="post" action="/club/vehiculos" class="clp-form-row">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <label>Placa<input name="plate" maxlength="7" placeholder="ABC12D" required autocapitalize="characters" pattern="[A-Za-z0-9]{3,7}" class="clp-plate-input" /></label>
+            <label>Vence el SOAT<input type="date" name="soatExpires" /></label>
+            <label>Vence la tecnomecánica<input type="date" name="tecnoExpires" /></label>
+            <button class="btn btn-sm" type="submit">Agregar moto</button>
+          </form>
+        </details>
+      </div>
+
+      <% if (quotations && quotations.length) { %>
+        <section class="clp-block" aria-labelledby="t-quotes">
+          <h3 id="t-quotes" class="clp-h3">Cotizaciones</h3>
+          <ul class="clp-ledger">
+            <% quotations.slice(0, 8).forEach(q => { %>
+              <li>
+                <span class="clp-ledger-date"><%= fechaCO(q.createdAt, { day: 'numeric', month: 'short' }) %></span>
+                <span><a href="/cotizacion/<%= q.id %>" target="_blank" rel="noopener">Cotización <%= q.label %></a><% if (q.motorcycle) { %>, <%= q.motorcycle %><% } %></span>
+                <strong>$<%= fmt(q.total) %></strong>
+              </li>
+            <% }) %>
+          </ul>
+        </section>
+      <% } %>
+    </section>
+
+    <!-- ═══ Club ═══ -->
+    <section id="club" class="clp-panel" data-panel="club" aria-labelledby="t-club">
+      <h2 id="t-club" class="clp-h2">Tu chaleco</h2>
+      <div class="clp-vest-grid">
+        <figure class="clp-vest">
+          <%- include('../partials/club/vest', {
+            vid: 'pv', badges, levelName: lvl.name, levelColor: lvl.color || '#F25C05',
+            bottomText: user.city || 'Bogotá',
+          }) %>
+          <figcaption class="clp-muted"><%= earnedCount %> de <%= badges.length %> insignias cosidas.</figcaption>
+        </figure>
+        <ul class="clp-badges">
+          <% badges.forEach(b => { %>
+            <li class="<%= b.earned ? 'is-earned' : '' %>">
+              <svg class="clp-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#pv-i-<%= b.icon %>" /></svg>
+              <span class="clp-badge-text">
+                <strong><%= b.name %></strong>
+                <span><%= b.desc %></span>
+              </span>
+              <span class="clp-badge-state">
+                <% if (b.earned) { %>Cosida<% } else if (b.goal > 1) { %><%= b.stat === 'daysInClub' ? `${fmt(b.value)} de ${fmt(b.goal)} días` : `${b.value} de ${b.goal}` %><% } else { %>Pendiente<% } %>
+              </span>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div class="clp-split">
+        <section class="clp-block" aria-labelledby="t-levels">
+          <h3 id="t-levels" class="clp-h3">Niveles</h3>
+          <ol class="clp-levels">
+            <% progress.levels.forEach((l, i) => { %>
+              <li class="<%= i === progress.index ? 'is-current' : (i < progress.index ? 'is-done' : '') %>" style="--lvl: <%= l.color || '#6b7280' %>">
+                <span class="clp-level-dot" aria-hidden="true"></span>
+                <span class="clp-level-name"><%= l.name %><% if (i === progress.index) { %> <span class="clp-chip">Tu nivel</span><% } %></span>
+                <span class="clp-level-pts"><%= fmt(l.min) %> pts</span>
+                <% if (l.benefits && l.benefits.length) { %>
+                  <ul class="clp-level-benefits"><% l.benefits.forEach(t => { %><li><%= t %></li><% }) %></ul>
+                <% } %>
+              </li>
+            <% }) %>
+          </ol>
+        </section>
+
+        <section class="clp-block" aria-labelledby="t-rank">
+          <h3 id="t-rank" class="clp-h3">Tu posición</h3>
+          <% if (firstRank) { %>
+            <ol class="clp-board" start="<%= firstRank %>">
+              <% board.forEach((r, i) => { %>
+                <li class="<%= r.me ? 'is-me' : '' %>">
+                  <span class="clp-board-pos"><%= firstRank + i %></span>
+                  <span class="clp-board-name"><%= r.me ? 'Tú' : (r.nickname || String(r.name || '').split(' ')[0]) %></span>
+                  <span class="clp-board-pts"><%= fmt(r.score) %> pts</span>
+                </li>
+              <% }) %>
+            </ol>
+          <% } %>
+          <a class="lp-link" href="/club/tabla">Ver la tabla completa</a>
+        </section>
+      </div>
+
+      <section class="clp-block" aria-labelledby="t-events">
+        <h3 id="t-events" class="clp-h3">Próximas salidas</h3>
+        <% if (!upcomingEvents.length) { %>
+          <p class="clp-muted">No hay salidas programadas por ahora.</p>
+        <% } else { %>
+          <ul class="clp-events">
+            <% upcomingEvents.forEach(ev => { const d = dd(ev.date); const st = registrations[ev.id]; const p = pts[ev.type] || pts.evento; %>
+              <li data-type="<%= ev.type %>">
+                <span class="clp-ev-date" aria-hidden="true"><span><%= d.wd %></span><strong><%= d.day %></strong><span><%= d.mon %></span></span>
+                <span class="clp-ev-main">
+                  <span class="clp-ev-type"><%= typeName[ev.type] || 'Evento' %>, +<%= p %> pts</span>
+                  <strong><%= ev.title %></strong>
+                  <span class="sr-only"><%= d.wd %> <%= d.day %> de <%= d.mon %>.</span>
+                  <% if (ev.location) { %><span class="clp-muted"><%= ev.location %></span><% } %>
+                </span>
+                <span class="clp-ev-act">
+                  <% if (st === 'confirmed') { %><span class="clp-chip is-ok">Asististe</span>
+                  <% } else if (st === 'pending') { %><span class="clp-chip">Inscrito</span>
+                  <% } else { %>
+                    <form method="post" action="/club/eventos/<%= ev.id %>/asistencia">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <input type="hidden" name="back" value="panel" />
+                      <button class="btn btn-sm" type="submit">Apuntarme</button>
+                    </form>
+                  <% } %>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </section>
+
+      <section class="clp-block" aria-labelledby="t-history">
+        <h3 id="t-history" class="clp-h3">Historial de puntos</h3>
+        <% if (!history.length) { %>
+          <p class="clp-muted">Aún no hay movimientos.</p>
+        <% } else { %>
+          <ul class="clp-ledger">
+            <% history.slice(0, 30).forEach(h => { %>
+              <li><span class="clp-ledger-date"><%= shortDate(h.date) %></span><span><%= h.description || conceptName[h.concept] || 'Actividad' %></span><strong>+<%= h.points %></strong></li>
+            <% }) %>
+          </ul>
+        <% } %>
+        <p class="clp-muted clp-small">Puntos por actividad: rodada <%= pts.rodada %>, encuentro <%= pts.encuentro %>, servicio en el taller <%= pts.mantenimiento %>, visita <%= pts.visita %>. El taller los registra con tu credencial o al entregarte la moto.</p>
+      </section>
+    </section>
+
+    <!-- ═══ Cuenta ═══ -->
+    <section id="cuenta" class="clp-panel" data-panel="cuenta" aria-labelledby="t-cuenta">
+      <h2 id="t-cuenta" class="clp-h2">Cuenta</h2>
+
+      <div class="clp-split">
+        <section class="clp-block" aria-labelledby="t-profile">
+          <h3 id="t-profile" class="clp-h3">Tus datos</h3>
+          <dl class="clp-facts">
+            <div><dt>Nombre</dt><dd><%= user.name %></dd></div>
+            <div><dt>Apodo</dt><dd><%= user.nickname || 'Sin apodo' %></dd></div>
+            <div><dt>Correo</dt><dd><%= user.email %></dd></div>
+            <div><dt>Teléfono</dt><dd><%= user.phone || 'Sin teléfono' %></dd></div>
+            <div><dt>RH</dt><dd><%= user.bloodType || 'Sin dato' %></dd></div>
+            <div><dt>Contacto de emergencia</dt><dd><%= user.emergencyName ? `${user.emergencyName}, ${user.emergencyPhone || ''}` : 'Sin dato' %></dd></div>
+            <div><dt>En el club desde</dt><dd><%= user.membership && user.membership.since ? fechaCO(user.membership.since, { day: 'numeric', month: 'long', year: 'numeric' }) : '' %></dd></div>
+          </dl>
+          <% if (!user.bloodType || !user.emergencyName) { %>
+            <p class="clp-muted clp-small">El RH y el contacto de emergencia los usa el club si pasa algo en una rodada.</p>
+          <% } %>
+          <button class="btn btn-sm" type="button" data-modal-open="#editProfile">Editar datos</button>
+        </section>
+
+        <section class="clp-block" aria-labelledby="t-sec">
+          <h3 id="t-sec" class="clp-h3">Acceso con huella o rostro</h3>
+          <p class="clp-muted">Las llaves de acceso (passkeys) te dejan entrar con la huella, el rostro o el PIN del teléfono, sin contraseña.</p>
+          <div id="passkeyMsg" class="clp-msg" role="status" hidden></div>
+          <% if (passkeys && passkeys.length) { %>
+            <ul class="clp-keys">
+              <% passkeys.forEach(pk => { %>
+                <li>
+                  <span><strong><%= pk.name || 'Llave de acceso' %></strong><span class="clp-muted">Creada el <%= fechaCO(pk.createdAt, { day: 'numeric', month: 'short', year: 'numeric' }) %></span></span>
+                  <form method="post" action="/club/auth/passkey/<%= pk.id %>/delete" data-confirm="¿Eliminar esta llave de acceso?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button class="clp-link-danger" type="submit">Eliminar</button>
+                  </form>
                 </li>
               <% }) %>
             </ul>
           <% } %>
-
-          <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e7eb">
-            <div style="font-size:.75em;font-weight:900;color:var(--brand, #F25C05);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Registrar actividad</div>
-            <form class="stack" method="post" action="/club/visitas">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <label>
-                Tipo
-                <select name="type">
-                  <option value="visita">Visita al taller (+<%= SCORE_POINTS.visita %> pts)</option>
-                  <option value="mantenimiento">Mantenimiento (+<%= SCORE_POINTS.mantenimiento %> pts)</option>
-                </select>
-              </label>
-              <label>
-                Fecha
-                <input type="date" name="date" required />
-              </label>
-              <label>
-                Descripción
-                <input type="text" name="service" placeholder="Ej: Cambio de aceite y filtros" required />
-              </label>
-              <button class="btn" type="submit">Registrar</button>
-              <p style="font-size:.72em;color:#92400e;margin:8px 0 0">⏳ Los puntos se acreditan cuando el taller confirma tu actividad.</p>
-            </form>
-          </div>
-        </div>
-
-        <!-- Historial de puntos -->
-        <div class="cp-card">
-          <h2>Historial de puntos</h2>
-          <% if (!user.scoreHistory || user.scoreHistory.length === 0) { %>
-            <div class="cp-pts-empty">
-              <div class="cp-pts-empty-icon" aria-hidden="true">⚡</div>
-              <p class="cp-pts-empty-title">Aún no tienes puntos</p>
-              <p class="cp-pts-empty-sub">Gana puntos participando en estas actividades</p>
-              <div class="cp-earn-grid">
-                <div class="cp-earn-item">
-                  <span class="cp-earn-emoji" aria-hidden="true">🏪</span>
-                  <span class="cp-earn-label">Visita al taller</span>
-                  <span class="cp-earn-badge">+<%= SCORE_POINTS.visita %> pts</span>
-                </div>
-                <div class="cp-earn-item">
-                  <span class="cp-earn-emoji" aria-hidden="true">🔩</span>
-                  <span class="cp-earn-label">Mantenimiento</span>
-                  <span class="cp-earn-badge">+<%= SCORE_POINTS.mantenimiento %> pts</span>
-                </div>
-                <div class="cp-earn-item">
-                  <span class="cp-earn-emoji" aria-hidden="true">🏍️</span>
-                  <span class="cp-earn-label">Rodada</span>
-                  <span class="cp-earn-badge">+<%= SCORE_POINTS.rodada %> pts</span>
-                </div>
-                <div class="cp-earn-item">
-                  <span class="cp-earn-emoji" aria-hidden="true">🎉</span>
-                  <span class="cp-earn-label">Evento</span>
-                  <span class="cp-earn-badge">+<%= SCORE_POINTS.evento %> pts</span>
-                </div>
-              </div>
-            </div>
-          <% } else { %>
-            <div>
-              <% user.scoreHistory.slice(0, 10).forEach(h => { %>
-                <div class="cp-pts-row">
-                  <div>
-                    <div class="cp-pts-date"><%= h.date %></div>
-                    <div class="cp-pts-desc"><%= h.description %></div>
-                  </div>
-                  <div class="cp-pts-value">+<%= h.points %></div>
-                </div>
-              <% }) %>
-            </div>
-          <% } %>
-        </div>
-
+          <button class="btn btn-sm btn-outline" type="button" id="addPasskeyBtn">Agregar llave de acceso</button>
+        </section>
       </div>
-    </div>
 
-    <!-- ── Recordatorios + Vehículos ── -->
-    <div class="cp-section">
-      <div class="cp-grid-2">
-
-        <!-- Recordatorios -->
-        <div class="cp-card">
-          <h2>SOAT y Tecnomecánica</h2>
-          <% if (!reminders || reminders.length === 0) { %>
-            <div class="cp-empty">
-              <div class="cp-empty-icon" aria-hidden="true">🏍️</div>
-              <div class="cp-empty-text">Sin vehículos registrados</div>
-              <p class="cp-empty-hint">Agrega tu moto para recibir alertas de SOAT y tecnomecánica</p>
-              <a class="btn btn-sm btn-outline" href="#vehiculos">Agregar moto</a>
-            </div>
-          <% } else { %>
-            <% reminders.forEach(r => { %>
-              <% const soatState = (r.soat === null) ? 'none' : (r.soat < 0 ? 'expired' : (r.soat <= 30 ? 'soon' : 'ok')); %>
-              <% const tecState  = (r.tecno === null) ? 'none' : (r.tecno < 0 ? 'expired' : (r.tecno <= 30 ? 'soon' : 'ok')); %>
-              <div class="cp-reminder-item">
-                <div class="cp-reminder-header">
-                  <span class="cp-plate-badge"><%= r.plate %></span>
-                  <button class="btn btn-xs btn-outline" type="button" data-modal-open="#edit-<%= r.plate %>">Editar</button>
-                </div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                  <span class="cp-stat <%= soatState %>">
-                    SOAT: <%= r.soat === null ? '—' : (r.soat < 0 ? ('vencido hace ' + Math.abs(r.soat) + 'd') : ('en ' + r.soat + 'd')) %>
-                  </span>
-                  <span class="cp-stat <%= tecState %>">
-                    Tecno: <%= r.tecno === null ? '—' : (r.tecno < 0 ? ('vencido hace ' + Math.abs(r.tecno) + 'd') : ('en ' + r.tecno + 'd')) %>
-                  </span>
-                </div>
-              </div>
-
-              <div class="modal" id="edit-<%= r.plate %>" aria-hidden="true">
-                <div class="modal-backdrop" data-modal-close></div>
-                <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-edit-<%= r.plate %>">
-                  <div class="modal-header">
-                    <h3 class="modal-title" id="title-edit-<%= r.plate %>">Editar fechas — <%= r.plate %></h3>
-                    <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
-                  </div>
-                  <form method="post" action="/club/vehiculos/actualizar">
-                    <div class="modal-body">
-                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                      <input type="hidden" name="plate" value="<%= r.plate %>" />
-                      <fieldset style="border:none;padding:0;margin:0">
-                        <legend class="sr-only">Fechas de vencimiento de <%= r.plate %></legend>
-                        <div class="grid two">
-                          <label>Vence SOAT<input type="date" name="soatExpires" /></label>
-                          <label>Vence Tecno<input type="date" name="tecnoExpires" /></label>
-                        </div>
-                      </fieldset>
-                    </div>
-                    <div class="modal-actions">
-                      <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
-                      <button class="btn" type="submit">Guardar</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            <% }) %>
-          <% } %>
+      <section class="clp-block clp-danger" aria-labelledby="t-danger">
+        <h3 id="t-danger" class="clp-h3">Salir o eliminar la cuenta</h3>
+        <div class="clp-danger-row">
+          <form method="post" action="/club/logout">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <button class="btn btn-sm btn-outline" type="submit">Cerrar sesión</button>
+          </form>
+          <button class="clp-link-danger" type="button" data-modal-open="#deleteAccount">Eliminar mi cuenta</button>
         </div>
+      </section>
+    </section>
 
-        <!-- Mis vehículos -->
-        <div class="cp-card" id="vehiculos">
-          <h2>Mis vehículos</h2>
-          <% if (user.vehicles && user.vehicles.length) { %>
-            <div style="margin-bottom:16px">
-              <% user.vehicles.forEach(v => { %>
-                <div class="cp-vehicle-item">
-                  <div>
-                    <div class="cp-vehicle-plate"><%= v.plate %></div>
-                    <div class="cp-vehicle-sub">QR de identificación</div>
-                  </div>
-                  <div class="cp-vehicle-actions">
-                    <a class="btn btn-xs btn-outline" href="/historial?placa=<%= v.plate %>"><span aria-hidden="true">📋</span> Historial</a>
-                    <a class="btn btn-xs btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png"><span aria-hidden="true">⬇</span> QR</a>
-                    <button class="btn btn-xs btn-outline" type="button" data-modal-open="#qr-<%= v.plate %>">Ver QR</button>
-                    <form method="post" action="/club/vehiculos/eliminar" data-confirm="¿Eliminar vehículo?" style="display:inline">
-                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                      <input type="hidden" name="plate" value="<%= v.plate %>" />
-                      <button class="btn btn-xs btn-outline" type="submit" style="color:#f87171;border-color:#3a1515">Eliminar</button>
-                    </form>
-                  </div>
-                </div>
-
-                <div class="modal" id="qr-<%= v.plate %>" aria-hidden="true">
-                  <div class="modal-backdrop" data-modal-close></div>
-                  <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-qr-<%= v.plate %>">
-                    <div class="modal-header">
-                      <h3 class="modal-title" id="title-qr-<%= v.plate %>">QR — <%= v.plate %></h3>
-                      <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
-                    </div>
-                    <div class="modal-body" style="display:grid;justify-items:center;gap:10px">
-                      <img src="/club/vehiculos/<%= v.plate %>/qr.png" alt="Código QR de la moto con placa <%= v.plate %>" style="width:260px;height:260px;image-rendering:pixelated;border-radius:12px;padding:8px;background:#fff" loading="lazy" />
-                      <p style="text-align:center;margin:0;font-size:.84em;color:#6b7280">Usa este código para identificar tu moto en el taller y rodadas.</p>
-                    </div>
-                    <div class="modal-actions">
-                      <a class="btn btn-outline" href="/club/vehiculos/<%= v.plate %>/qr.png" download="QR-<%= v.plate %>.png">Descargar</a>
-                      <button class="btn" type="button" data-modal-close>Cerrar</button>
-                    </div>
-                  </div>
-                </div>
-              <% }) %>
-            </div>
-          <% } %>
-
-          <div style="padding-top:16px;border-top:1px solid #e5e7eb">
-            <div style="font-size:.75em;font-weight:900;color:var(--brand, #F25C05);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Agregar vehículo</div>
-            <form class="stack" method="post" action="/club/vehiculos">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <label>Placa<input name="plate" maxlength="8" placeholder="ABC123" required
-                style="text-transform:uppercase"
-                oninput="this.value=this.value.toUpperCase()" /></label>
-              <fieldset style="border:none;padding:0;margin:0">
-                <legend class="sr-only">Fechas de vencimiento de documentos</legend>
-                <div class="grid two" style="align-items:end">
-                  <label>Vence SOAT<input type="date" name="soatExpires" style="min-width:0" /></label>
-                  <label>Vence Tecno<input type="date" name="tecnoExpires" style="min-width:0" /></label>
-                </div>
-              </fieldset>
-              <button class="btn" type="submit">Agregar</button>
-            </form>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ── Cotizaciones ── -->
-    <% if (quotationHistory && quotationHistory.length > 0) { %>
-    <div class="cp-section" id="cotizaciones">
-      <h2 class="cp-section-title">Historial de cotizaciones</h2>
-      <p style="margin:-8px 0 20px;font-size:.82em;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;font-weight:700">Cotizaciones registradas con las placas de tus vehículos</p>
-      <div class="cp-card">
-        <% quotationHistory.forEach((q, idx) => { %>
-          <div class="cp-quote-item">
-            <div style="flex:1;min-width:0">
-              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
-                <span class="cp-quote-ref">#<%= q.label %></span>
-                <% if (q.motorcycle) { %>
-                  <span style="font-size:.72em;font-weight:900;text-transform:uppercase;letter-spacing:.06em;background:#f5f5f5;border:1px solid #e5e7eb;color:#6b7280;border-radius:4px;padding:2px 8px"><%= q.motorcycle %></span>
-                <% } %>
-                <span style="font-size:.75em;color:#9ca3af;font-weight:600">
-                  <%= fechaCO(q.createdAt, { day:'2-digit', month:'short', year:'numeric' }) %>
-                </span>
-              </div>
-              <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px">
-                <% q.items.slice(0, 3).forEach(it => { %>
-                  <li style="font-size:.83em;color:#374151">
-                    <span style="color:#9ca3af"><%= it.qty %>×</span> <%= it.name %>
-                  </li>
-                <% }) %>
-                <% if (q.items.length > 3) { %>
-                  <li style="font-size:.78em;color:#9ca3af">+ <%= q.items.length - 3 %> ítem<%= q.items.length - 3 > 1 ? 's' : '' %> más</li>
-                <% } %>
-              </ul>
-            </div>
-            <div style="text-align:right;flex-shrink:0">
-              <div class="cp-quote-total" style="margin-bottom:10px">COP <%= q.total.toLocaleString('es-CO') %></div>
-              <a href="/cotizacion/<%= q.id %>" target="_blank" rel="noopener" class="cp-link">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Ver detalle
-              </a>
-            </div>
-          </div>
-        <% }) %>
-      </div>
-    </div>
-    <% } %>
-
-    <!-- ── Seguridad / Passkeys ── -->
-    <div class="cp-section" id="seguridad">
-      <h2 class="cp-section-title">Seguridad</h2>
-      <div class="cp-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-          <div>
-            <p class="cp-card-label" style="margin:0 0 2px">Llaves de acceso (Passkeys)</p>
-            <p style="margin:0;font-size:.82em;color:#6b7280">Inicia sesión con huella dactilar, Face ID o PIN del dispositivo — sin contraseña.</p>
-          </div>
-          <button class="btn btn-sm btn-outline" type="button" id="addPasskeyBtn">+ Agregar passkey</button>
-        </div>
-
-        <div id="passkeyMsg" style="display:none;margin-bottom:12px"></div>
-
-        <% if (passkeys && passkeys.length > 0) { %>
-          <ul class="passkey-list">
-            <% passkeys.forEach(pk => { %>
-              <li class="passkey-item">
-                <span class="passkey-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-                </span>
-                <div class="passkey-info">
-                  <span class="passkey-name"><%= pk.name || 'Passkey' %></span>
-                  <span class="passkey-date">Registrada el <%= fechaCO(pk.createdAt, { day:'2-digit', month:'short', year:'numeric' }) %></span>
-                </div>
-                <form method="post" action="/club/auth/passkey/<%= pk.id %>/delete" style="margin:0" onsubmit="return confirm('¿Eliminar esta passkey?')">
-                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                  <button class="btn btn-sm" style="color:#ef4444;border-color:#fca5a5" type="submit">Eliminar</button>
-                </form>
-              </li>
-            <% }) %>
-          </ul>
-        <% } else { %>
-          <p style="font-size:.85em;color:#9ca3af;margin:0">No tienes passkeys registradas aún.</p>
-        <% } %>
-      </div>
-    </div>
-
-    <!-- ── Zona de peligro / Baja de cuenta ── -->
-    <div class="cp-section" id="peligro">
-      <h2 class="cp-section-title">Zona de peligro</h2>
-      <div class="cp-card" style="border:1px solid #fca5a5">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-          <div>
-            <p class="cp-card-label" style="margin:0 0 2px;color:#b91c1c">Eliminar mi cuenta</p>
-            <p style="margin:0;font-size:.82em;color:#6b7280">Se borrarán tus datos personales y no podrás recuperarlos. Esta acción es permanente.</p>
-          </div>
-          <button class="btn btn-sm" style="color:#ef4444;border-color:#fca5a5" type="button" data-modal-open="#deleteAccount">Eliminar cuenta</button>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /.container -->
+  </div>
 
   <!-- ── Editar perfil ── -->
   <div class="modal" id="editProfile" aria-hidden="true">
     <div class="modal-backdrop" data-modal-close></div>
     <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-editProfile">
       <div class="modal-header">
-        <h3 class="modal-title" id="title-editProfile">Editar mi perfil</h3>
+        <h3 class="modal-title" id="title-editProfile">Editar mis datos</h3>
         <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
       </div>
       <form method="post" action="/club/perfil">
@@ -570,46 +471,38 @@
   </div>
 
   <!-- ── Eliminar cuenta ── -->
-  <% const hasPassword = user.password && user.password !== '$google$' && user.password !== '$apple$'; %>
   <div class="modal" id="deleteAccount" aria-hidden="true">
     <div class="modal-backdrop" data-modal-close></div>
     <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-deleteAccount">
       <div class="modal-header">
-        <h3 class="modal-title" id="title-deleteAccount" style="color:#b91c1c">Eliminar mi cuenta</h3>
+        <h3 class="modal-title clp-danger-title" id="title-deleteAccount">Eliminar mi cuenta</h3>
         <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
       </div>
       <form method="post" action="/club/eliminar-cuenta" id="deleteAccountForm">
-        <div class="modal-body">
+        <div class="modal-body clp-form-stack">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <p style="margin:0 0 14px;font-size:.9em;color:#374151">
-            Esta acción <strong>no se puede deshacer</strong>. Tus datos personales se eliminarán de forma permanente.
-          </p>
+          <p>Esta acción <strong>no se puede deshacer</strong>. Se borran tus datos personales, tus puntos y tus insignias.</p>
           <% if (hasPassword) { %>
-          <label style="display:block;margin-bottom:14px">
-            <span style="display:block;font-size:.82em;color:#6b7280;margin-bottom:4px">Confirma tu contraseña</span>
-            <input type="password" name="password" autocomplete="current-password" required style="width:100%" />
-          </label>
+            <label>Confirma tu contraseña<input type="password" name="password" autocomplete="current-password" required /></label>
           <% } %>
-          <label style="display:block">
-            <span style="display:block;font-size:.82em;color:#6b7280;margin-bottom:4px">Escribe <strong>ELIMINAR</strong> para confirmar</span>
-            <input type="text" name="confirm" id="deleteConfirmInput" autocomplete="off" autocapitalize="characters" required style="width:100%" />
-          </label>
+          <label>Escribe <strong>ELIMINAR</strong> para confirmar<input type="text" name="confirm" id="deleteConfirmInput" autocomplete="off" autocapitalize="characters" required /></label>
         </div>
         <div class="modal-actions">
           <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
-          <button class="btn" id="deleteAccountBtn" type="submit" disabled style="color:#fff;background:#ef4444;border-color:#ef4444">Eliminar definitivamente</button>
+          <button class="btn clp-btn-danger" id="deleteAccountBtn" type="submit" disabled>Eliminar definitivamente</button>
         </div>
       </form>
     </div>
   </div>
-</div><!-- /.club-panel -->
+</div>
 
 <script>
+// Llaves de acceso (passkeys): registro con WebAuthn.
 (function () {
   const btn = document.getElementById('addPasskeyBtn');
   const msg = document.getElementById('passkeyMsg');
   if (!btn) return;
-
+  const label = btn.textContent;
   function b64uToBuffer(b) {
     const s = atob(b.replace(/-/g, '+').replace(/_/g, '/'));
     return Uint8Array.from(s, c => c.charCodeAt(0)).buffer;
@@ -621,29 +514,24 @@
   }
   function showMsg(text, ok) {
     msg.textContent = text;
-    msg.style.cssText = `display:block;padding:10px 14px;border-radius:8px;font-size:.85em;background:${ok ? '#f0fdf4' : '#fef2f2'};color:${ok ? '#166534' : '#991b1b'};border:1px solid ${ok ? '#bbf7d0' : '#fca5a5'}`;
+    msg.dataset.tone = ok ? 'ok' : 'error';
+    msg.hidden = false;
   }
-
   if (!window.PublicKeyCredential) {
     btn.disabled = true;
-    btn.title = 'Tu navegador no soporta Passkeys';
+    btn.title = 'Este navegador no admite llaves de acceso';
     return;
   }
-
   btn.addEventListener('click', async () => {
     btn.disabled = true;
     btn.textContent = 'Preparando…';
     try {
       const optsRes = await fetch('/club/auth/passkey/register-options');
-      if (!optsRes.ok) throw new Error('Error obteniendo opciones');
+      if (!optsRes.ok) throw new Error('No se pudieron obtener las opciones.');
       const opts = await optsRes.json();
-
       opts.challenge = b64uToBuffer(opts.challenge);
-      opts.user.id  = b64uToBuffer(opts.user.id);
-      if (opts.excludeCredentials) {
-        opts.excludeCredentials = opts.excludeCredentials.map(c => ({ ...c, id: b64uToBuffer(c.id) }));
-      }
-
+      opts.user.id = b64uToBuffer(opts.user.id);
+      if (opts.excludeCredentials) opts.excludeCredentials = opts.excludeCredentials.map(c => ({ ...c, id: b64uToBuffer(c.id) }));
       const cred = await navigator.credentials.create({ publicKey: opts });
       const body = {
         id: cred.id,
@@ -656,7 +544,6 @@
         },
         clientExtensionResults: cred.getClientExtensionResults(),
       };
-
       const csrf = document.querySelector('input[name="_csrf"]')?.value || '';
       const res = await fetch('/club/auth/passkey/register', {
         method: 'POST',
@@ -664,30 +551,26 @@
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Error al registrar');
-      showMsg('✓ Passkey registrada correctamente. Recargando…', true);
+      if (!res.ok || !data.ok) throw new Error(data.error || 'No se pudo registrar la llave.');
+      showMsg('Llave de acceso agregada. Recargando…', true);
       setTimeout(() => location.reload(), 1200);
     } catch (e) {
-      if (e.name === 'NotAllowedError') {
-        showMsg('Operación cancelada.', false);
-      } else {
-        showMsg(e.message || 'Error inesperado', false);
-      }
+      showMsg(e.name === 'NotAllowedError' ? 'Operación cancelada.' : (e.message || 'Error inesperado.'), false);
       btn.disabled = false;
-      btn.textContent = '+ Agregar passkey';
+      btn.textContent = label;
     }
   });
 })();
 
-// Habilita el botón de baja solo cuando se escribe exactamente "ELIMINAR".
+// El botón de baja solo se habilita al escribir exactamente "ELIMINAR".
 (function () {
   const input = document.getElementById('deleteConfirmInput');
   const delBtn = document.getElementById('deleteAccountBtn');
   if (!input || !delBtn) return;
-  input.addEventListener('input', () => {
-    delBtn.disabled = input.value.trim().toUpperCase() !== 'ELIMINAR';
-  });
+  input.addEventListener('input', () => { delBtn.disabled = input.value.trim().toUpperCase() !== 'ELIMINAR'; });
 })();
 </script>
+<script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
+<script type="module" src="/static/js/club/panel.mjs?v=<%= assetV('js/club/panel.mjs') %>"></script>
 
 <%- include('../partials/footer') %>
