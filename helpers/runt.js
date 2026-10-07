@@ -11,10 +11,39 @@ const HEADERS_BASE = {
   'referer': 'https://www.runt.gov.co/',
 };
 
-// Cookie store keyed by captchaId — válido mientras la instancia esté activa.
-// En Vercel Fluid Compute la misma instancia atiende ambas requests en la
-// ventana de tiempo normal (usuario llena el formulario).
-const cookieStore = new Map();
+// Cookies de la sesión del RUNT por captchaId, guardadas en la BD: el captcha y
+// la consulta son dos requests y en Vercel pueden caer en instancias distintas.
+// Una sesión vale 15 minutos (lo que el RUNT da de inactividad).
+const SESSION_TTL_MIN = 15;
+
+function sessionsDb() {
+  return require('../db').db; // perezoso: db.js no debe cargarse al importar este módulo
+}
+
+const cookieStore = {
+  async get(id) {
+    const r = await sessionsDb().execute({
+      sql: `SELECT cookies FROM runt_sessions WHERE id = ? AND created_at > strftime('%Y-%m-%dT%H:%M:%SZ','now', ?)`,
+      args: [String(id), `-${SESSION_TTL_MIN} minutes`],
+    });
+    return r.rows[0]?.cookies ?? '';
+  },
+  async set(id, cookies) {
+    const conn = sessionsDb();
+    await conn.execute({
+      sql: `INSERT INTO runt_sessions (id, cookies) VALUES (?, ?)
+            ON CONFLICT(id) DO UPDATE SET cookies = excluded.cookies`,
+      args: [String(id), cookies || ''],
+    });
+    await conn.execute({
+      sql: `DELETE FROM runt_sessions WHERE created_at < strftime('%Y-%m-%dT%H:%M:%SZ','now', ?)`,
+      args: [`-${SESSION_TTL_MIN} minutes`],
+    });
+  },
+  async delete(id) {
+    await sessionsDb().execute({ sql: 'DELETE FROM runt_sessions WHERE id = ?', args: [String(id)] }).catch(() => {});
+  },
+};
 
 function extractCookies(res) {
   try {
@@ -67,9 +96,7 @@ async function generarCaptcha() {
   const id = data.id ?? data.idLibreCaptcha ?? data.uuid;
   const allCookies = [sessionCookie, captchaCookie].filter(Boolean).join('; ');
 
-  cookieStore.set(id, allCookies);
-  // Limpiar entradas viejas (máx 200)
-  if (cookieStore.size > 200) cookieStore.delete(cookieStore.keys().next().value);
+  await cookieStore.set(id, allCookies);
 
   return {
     idLibreCaptcha: id,
@@ -79,7 +106,7 @@ async function generarCaptcha() {
 }
 
 async function autenticar(placa, documento, idLibreCaptcha, captcha) {
-  const cookie = cookieStore.get(idLibreCaptcha) ?? '';
+  const cookie = await cookieStore.get(idLibreCaptcha);
 
   const body = {
     procedencia: 'NACIONAL',
@@ -106,13 +133,11 @@ async function autenticar(placa, documento, idLibreCaptcha, captcha) {
   });
 
   // Acumular cookies para las llamadas de datos
-  if (authCookie) {
-    cookieStore.set(idLibreCaptcha, [cookie, authCookie].filter(Boolean).join('; '));
-  }
+  const allCookies = [cookie, authCookie].filter(Boolean).join('; ');
 
   const token = data.token ?? data.authToken ?? data.access_token ?? data.jwt;
   if (!token) throw new Error('No se recibió token del RUNT: ' + JSON.stringify(data));
-  return { token, cookie: cookieStore.get(idLibreCaptcha) ?? '' };
+  return { token, cookie: allCookies };
 }
 
 async function consultarVigencias(token, cookie) {
@@ -148,10 +173,10 @@ async function consultarHistorialRunt(placa, documento, idLibreCaptcha, captcha)
   try {
     const { token, cookie } = await autenticar(placa, documento, idLibreCaptcha, captcha);
     const vigencias = await consultarVigencias(token, cookie);
-    cookieStore.delete(idLibreCaptcha);
+    await cookieStore.delete(idLibreCaptcha);
     return { success: true, data: vigencias, error: null };
   } catch (err) {
-    cookieStore.delete(idLibreCaptcha);
+    await cookieStore.delete(idLibreCaptcha);
     return { success: false, data: null, error: err?.message ?? String(err) };
   }
 }

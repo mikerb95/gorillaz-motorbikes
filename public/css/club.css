@@ -371,6 +371,20 @@
 .clp-link-danger:focus-visible { outline: 2px solid #b91c1c; outline-offset: 3px }
 .clp-qr-body { display: grid; justify-items: center; gap: 10px }
 .clp-qr-body img { width: 240px; height: 240px; image-rendering: pixelated }
+.clp-runt { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px }
+.clp-runt .clp-muted { font-size: .84rem }
+.clp-runt-captcha { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: end }
+.clp-runt-img {
+  all: unset; box-sizing: border-box; cursor: pointer; width: 170px; height: 58px; border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, .15); background: #f3f1ec; display: grid; place-items: center; overflow: hidden;
+  font-size: .8rem; color: #6b5a3e;
+}
+.clp-runt-img img { width: 100%; height: 100%; object-fit: cover }
+.clp-runt-img:focus-visible { outline: 2px solid #F25C05; outline-offset: 2px }
+.clp-runt-img[aria-busy="true"] { opacity: .55 }
+.clp-runt-captcha input { letter-spacing: .14em }
+.clp-runt-error { margin: 0; padding: 10px 12px; border-radius: 8px; background: #fdecec; color: #b91c1c; font-size: .9rem }
+@media (max-width: 420px) { .clp-runt-captcha { grid-template-columns: minmax(0, 1fr) } }
 
 /* Club: el chaleco del miembro y la lista de insignias */
 .clp-vest-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start }

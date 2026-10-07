@@ -199,8 +199,13 @@
               <% }) %>
             </dl>
 
+            <div class="clp-runt">
+              <button class="btn btn-sm" type="button" data-modal-open="#runt-modal" data-runt-plate="<%= v.plate %>">Traer fechas del RUNT</button>
+              <% if (v.runtCheckedAt) { %><span class="clp-muted">Consultado el <%= fechaCO(v.runtCheckedAt, { day: 'numeric', month: 'short', year: 'numeric' }) %></span><% } %>
+            </div>
+
             <details class="clp-edit">
-              <summary>Editar fechas</summary>
+              <summary>Editar fechas a mano</summary>
               <form method="post" action="/club/vehiculos/actualizar" class="clp-form-row">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <input type="hidden" name="plate" value="<%= v.plate %>" />
@@ -255,6 +260,40 @@
             </div>
           </div>
         <% }) %>
+
+        <% if (vehicles.length) { %>
+          <div class="modal" id="runt-modal" aria-hidden="true">
+            <div class="modal-backdrop" data-modal-close></div>
+            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-runt">
+              <div class="modal-header">
+                <h3 class="modal-title" id="title-runt">Consultar en el RUNT</h3>
+                <button class="modal-close" type="button" aria-label="Cerrar" data-modal-close>✕</button>
+              </div>
+              <form class="modal-body clp-form-stack clp-runt-form" id="runt-form" autocomplete="off">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="plate" />
+                <p class="clp-muted">Traemos el vencimiento del SOAT y la tecnomecánica de <strong data-runt-label></strong> y lo guardamos en tu garaje.</p>
+                <label>Cédula del propietario
+                  <input name="documento" inputmode="numeric" pattern="\d{5,12}" maxlength="12" required value="<%= user.cedula || '' %>" />
+                </label>
+                <div class="clp-runt-captcha">
+                  <button type="button" class="clp-runt-img" data-runt-reload aria-label="Cargar otra imagen">
+                    <img alt="Caracteres de verificación del RUNT" hidden />
+                    <span data-runt-status>Cargando…</span>
+                  </button>
+                  <label>Caracteres de la imagen
+                    <input name="captcha" maxlength="8" required autocapitalize="off" spellcheck="false" />
+                  </label>
+                </div>
+                <p class="clp-runt-error" role="alert" hidden></p>
+                <div class="modal-actions">
+                  <button class="btn btn-outline" type="button" data-modal-close>Cancelar</button>
+                  <button class="btn" type="submit">Consultar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        <% } %>
 
         <details class="clp-bike clp-bike-add"<%= vehicles.length ? '' : ' open' %>>
           <summary>Agregar moto</summary>
@@ -572,5 +611,6 @@
 </script>
 <script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
 <script type="module" src="/static/js/club/panel.mjs?v=<%= assetV('js/club/panel.mjs') %>"></script>
+<script type="module" src="/static/js/club/runt.mjs?v=<%= assetV('js/club/runt.mjs') %>"></script>
 
 <%- include('../partials/footer') %>

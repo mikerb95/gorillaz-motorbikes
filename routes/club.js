@@ -36,6 +36,7 @@ const { JWT_SECRET, resendClient, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, APP_UR
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const rateLimit = require('express-rate-limit');
 const { buildPanelData } = require('../helpers/club/panel-data');
+const { consultarHistorialRunt } = require('../helpers/runt');
 const clubLib = require('../helpers/club/lib');
 const { hoyCO } = require('../helpers/datetime');
 const { authLimiter }               = require('../middleware/auth');
@@ -56,6 +57,13 @@ const {
 // La credencial es pública por diseño (se muestra en rodadas), pero se limita
 // el ritmo para que nadie recorra códigos al azar.
 const credentialLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false });
+
+// Consulta al RUNT desde el garaje: el miembro resuelve el captcha. Límite por
+// IP para no quemar la IP del servidor con el RUNT.
+const runtLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false,
+  message: { ok: false, error: 'Demasiadas consultas. Espera unos minutos e inténtalo de nuevo.' },
+});
 
 const router = express.Router();
 
@@ -637,6 +645,55 @@ router.post('/vehiculos/actualizar', requireAuth, async (req, res) => {
     setFlash(res, 'error', 'No se pudo actualizar el vehículo.');
   }
   res.redirect('/club/panel#garaje');
+});
+
+// Trae del RUNT el vencimiento del SOAT y la tecnomecánica de una moto del
+// garaje y lo guarda. El captcha lo genera /runt/captcha y lo resuelve el
+// miembro; la cédula es la del perfil salvo que la moto esté a nombre de otro.
+router.post('/vehiculos/runt', requireAuth, runtLimiter, async (req, res) => {
+  const user = await getUserById(req.userId);
+  if (!user) return res.status(401).json({ ok: false, error: 'Inicia sesión de nuevo.' });
+
+  const plate     = String(req.body.plate || '').trim().toUpperCase();
+  const documento = String(req.body.documento || user.cedula || '').trim();
+  const { idLibreCaptcha, captcha } = req.body;
+  if (!(user.vehicles || []).some(v => v.plate === plate)) {
+    return res.status(404).json({ ok: false, error: 'Esa moto no está en tu garaje.' });
+  }
+  if (!/^\d{5,12}$/.test(documento)) {
+    return res.status(400).json({ ok: false, error: 'Escribe la cédula del propietario (solo números).' });
+  }
+  if (!idLibreCaptcha || !String(captcha || '').trim()) {
+    return res.status(400).json({ ok: false, error: 'Escribe los caracteres de la imagen.' });
+  }
+
+  const r = await consultarHistorialRunt(plate, documento, String(idLibreCaptcha), String(captcha));
+  if (!r.success) {
+    console.error('POST /club/vehiculos/runt:', r.error);
+    // El RUNT responde igual a captcha errado y a placa/cédula que no cuadran.
+    return res.status(400).json({ ok: false, error: 'El RUNT no aceptó la consulta. Revisa los caracteres de la imagen y que la cédula sea la del propietario.' });
+  }
+  const { soat_vencimiento: soat, tecno_vencimiento: tecno } = r.data;
+  if (!soat && !tecno) {
+    return res.json({ ok: true, soat: null, tecno: null, message: 'El RUNT no tiene SOAT ni tecnomecánica registrados para esta moto.' });
+  }
+
+  try {
+    // Se relee el usuario: entre el captcha y la respuesta pudo editar el garaje.
+    const fresh = await getUserById(user.id);
+    const vehicles = (fresh.vehicles || []).map(v => v.plate !== plate ? v : {
+      ...v,
+      soatExpires:  soat  || v.soatExpires,
+      tecnoExpires: tecno || v.tecnoExpires,
+      runtCheckedAt: hoyCO(),
+    });
+    await updateUser(user.id, { vehicles });
+  } catch (e) {
+    console.error('POST /club/vehiculos/runt guardar:', e.message);
+    return res.status(500).json({ ok: false, error: 'Consultamos el RUNT pero no pudimos guardar las fechas. Intenta de nuevo.' });
+  }
+  setFlash(res, 'success', `Fechas de ${plate} actualizadas desde el RUNT.`);
+  res.json({ ok: true, soat, tecno });
 });
 
 router.post('/eventos/:id/asistencia', requireAuth, async (req, res) => {

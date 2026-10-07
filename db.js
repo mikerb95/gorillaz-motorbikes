@@ -21,7 +21,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 20;
+const SCHEMA_VERSION = 21;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -584,6 +584,13 @@ async function initDb() {
     // v20: código corto de la credencial del club (QR de check-in en eventos y
     // en el taller). Se genera la primera vez que el miembro abre su panel.
     `ALTER TABLE users ADD COLUMN member_code TEXT`,
+    // v21: cookies de la sesión del RUNT entre "generar captcha" y "consultar".
+    // En memoria se perdían si las dos requests caían en instancias distintas.
+    `CREATE TABLE IF NOT EXISTS runt_sessions (
+      id TEXT PRIMARY KEY,
+      cookies TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+    )`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
