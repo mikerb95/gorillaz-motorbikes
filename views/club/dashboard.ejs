@@ -103,7 +103,7 @@
               <% } else if (a.kind === 'tecno') { %>
                 <a class="clp-alert-act" href="/servicios/agendar">Agendar revisión</a>
               <% } else { %>
-                <a class="clp-alert-act" href="#garaje" data-tab-link="garaje">Actualizar fecha</a>
+                <a class="clp-alert-act" href="#garaje" data-tab-link="garaje">Ver en el garaje</a>
               <% } %>
             </li>
           <% }) %>
@@ -199,19 +199,30 @@
               <% }) %>
             </dl>
 
-            <div class="clp-runt">
-              <button class="btn btn-sm" type="button" data-modal-open="#runt-modal" data-runt-plate="<%= v.plate %>">Traer fechas del RUNT</button>
-              <% if (v.runtCheckedAt) { %><span class="clp-muted">Consultado el <%= fechaCO(v.runtCheckedAt, { day: 'numeric', month: 'short', year: 'numeric' }) %></span><% } %>
+            <div class="clp-runt"<% if (runtAuto && v.runtPending && v.runtStatus !== 'nodoc') { %> data-runt-auto="<%= v.plate %>"<% } %>>
+              <% if (v.runtStatus === 'notfound') { %>
+                <p class="clp-runt-note">El RUNT no encontró esta moto con la cédula <%= v.runtDoc %>. Si está a nombre de otra persona, escribe su cédula abajo.</p>
+              <% } else if (v.runtStatus === 'nodoc') { %>
+                <p class="clp-runt-note">Falta la cédula del propietario para consultar el RUNT.</p>
+              <% } else if (runtAuto && v.runtPending) { %>
+                <span class="clp-muted" data-runt-msg>Consultando el RUNT…</span>
+              <% } else if (v.runtCheckedAt) { %>
+                <span class="clp-muted">Datos del RUNT al <%= fechaCO(v.runtCheckedAt, { day: 'numeric', month: 'short', year: 'numeric' }) %>. Se actualizan solos.</span>
+              <% } %>
+              <% if (runtAuto) { %>
+                <% if (!v.runtPending && v.runtStatus === 'ok') { %><button class="clp-link" type="button" data-runt-sync="<%= v.plate %>">Actualizar ahora</button><% } %>
+              <% } else { %>
+                <button class="btn btn-sm" type="button" data-modal-open="#runt-modal" data-runt-plate="<%= v.plate %>"><%= v.runtCheckedAt ? 'Consultar de nuevo en el RUNT' : 'Consultar en el RUNT' %></button>
+              <% } %>
             </div>
 
-            <details class="clp-edit">
-              <summary>Editar fechas a mano</summary>
-              <form method="post" action="/club/vehiculos/actualizar" class="clp-form-row">
+            <details class="clp-edit"<%= ['notfound', 'nodoc'].includes(v.runtStatus) ? ' open' : '' %>>
+              <summary>¿La moto está a nombre de otra persona?</summary>
+              <form method="post" action="/club/vehiculos/propietario" class="clp-form-row">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <input type="hidden" name="plate" value="<%= v.plate %>" />
-                <label>Vence el SOAT<input type="date" name="soatExpires" value="<%= v.soat.date || '' %>" /></label>
-                <label>Vence la tecnomecánica<input type="date" name="tecnoExpires" value="<%= v.tecno.date || '' %>" /></label>
-                <button class="btn btn-sm" type="submit">Guardar fechas</button>
+                <label>Cédula del propietario<input name="ownerDoc" inputmode="numeric" pattern="\d{5,12}" maxlength="12" value="<%= v.ownerDoc || '' %>" placeholder="<%= user.cedula || 'Solo números' %>" /></label>
+                <button class="btn btn-sm" type="submit">Guardar y consultar</button>
               </form>
             </details>
 
@@ -261,7 +272,7 @@
           </div>
         <% }) %>
 
-        <% if (vehicles.length) { %>
+        <% if (vehicles.length && !runtAuto) { %>
           <div class="modal" id="runt-modal" aria-hidden="true">
             <div class="modal-backdrop" data-modal-close></div>
             <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="title-runt">
@@ -300,10 +311,10 @@
           <form method="post" action="/club/vehiculos" class="clp-form-row">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
             <label>Placa<input name="plate" maxlength="7" placeholder="ABC12D" required autocapitalize="characters" pattern="[A-Za-z0-9]{3,7}" class="clp-plate-input" /></label>
-            <label>Vence el SOAT<input type="date" name="soatExpires" /></label>
-            <label>Vence la tecnomecánica<input type="date" name="tecnoExpires" /></label>
+            <label>Cédula del propietario<input name="ownerDoc" inputmode="numeric" pattern="\d{5,12}" maxlength="12" value="<%= user.cedula || '' %>" <%= user.cedula ? '' : 'required' %> /></label>
             <button class="btn btn-sm" type="submit">Agregar moto</button>
           </form>
+          <p class="clp-muted clp-runt-legal">El vencimiento del SOAT y la tecnomecánica lo traemos del RUNT con la placa y la cédula; no tienes que escribir fechas.</p>
         </details>
       </div>
 

@@ -373,6 +373,12 @@
 .clp-qr-body img { width: 240px; height: 240px; image-rendering: pixelated }
 .clp-runt { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px }
 .clp-runt .clp-muted { font-size: .84rem }
+.clp-runt-note { margin: 0; padding: 10px 12px; border-radius: 8px; background: #fff4e5; color: #7a4a00; font-size: .88rem; flex-basis: 100% }
+.clp-runt-legal { font-size: .8rem; margin-top: 10px }
+.clp-link { all: unset; cursor: pointer; color: #F25C05; font-weight: 700; font-size: .86rem }
+.clp-link:hover { text-decoration: underline }
+.clp-link:focus-visible { outline: 2px solid #F25C05; outline-offset: 3px }
+.clp-link[aria-busy="true"] { opacity: .55; pointer-events: none }
 .clp-runt-captcha { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: end }
 .clp-runt-img {
   all: unset; box-sizing: border-box; cursor: pointer; width: 170px; height: 58px; border-radius: 8px;

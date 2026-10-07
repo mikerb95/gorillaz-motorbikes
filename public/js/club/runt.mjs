@@ -1,6 +1,47 @@
-// Garaje del club: trae del RUNT el vencimiento del SOAT y la tecnomecánica.
-// El captcha lo resuelve el miembro (el RUNT lo exige); el servidor guarda las
-// fechas en la moto y los avisos por correo salen solos desde el cron diario.
+// Garaje del club: vencimiento del SOAT y la tecnomecánica desde el RUNT.
+//   - Con proveedor con API (lo normal): las motos sin consultar se consultan
+//     solas al abrir el panel, y "Actualizar ahora" fuerza una consulta.
+//   - Sin proveedor (respaldo): modal con el captcha del RUNT.
+// El miembro nunca escribe fechas.
+
+const csrf = document.querySelector('input[name="_csrf"]')?.value || '';
+
+async function syncPlate(plate) {
+  const res = await fetch('/club/vehiculos/runt-sync', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+    body: JSON.stringify({ plate }),
+  });
+  return res.json().catch(() => ({ ok: false }));
+}
+
+const autos = [...document.querySelectorAll('[data-runt-auto]')];
+if (autos.length) {
+  // En serie: el servidor guarda todo en el mismo registro del usuario.
+  (async () => {
+    let changed = false;
+    for (const box of autos) {
+      const json = await syncPlate(box.dataset.runtAuto).catch(() => ({ ok: false }));
+      if (json.ok && json.status !== 'error') changed = true;
+      else {
+        const msg = box.querySelector('[data-runt-msg]');
+        if (msg) msg.textContent = 'El RUNT no respondió. Lo intentamos de nuevo más tarde.';
+      }
+    }
+    if (changed) { location.hash = 'garaje'; location.reload(); }
+  })();
+}
+
+document.querySelectorAll('[data-runt-sync]').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    btn.setAttribute('aria-busy', 'true');
+    btn.textContent = 'Consultando…';
+    const json = await syncPlate(btn.dataset.runtSync).catch(() => ({ ok: false }));
+    if (json.ok) { location.hash = 'garaje'; location.reload(); return; }
+    btn.removeAttribute('aria-busy');
+    btn.textContent = json.error || 'No se pudo consultar. Intenta más tarde.';
+  });
+});
 
 const modal = document.getElementById('runt-modal');
 const form = document.getElementById('runt-form');
@@ -61,7 +102,7 @@ if (modal && form) {
     try {
       const res = await fetch('/club/vehiculos/runt', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-csrf-token': form._csrf.value },
+        headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
         body: JSON.stringify({
           plate: form.plate.value,
           documento: form.documento.value.trim(),
