@@ -459,3 +459,7 @@
 .clm-head .cl-cred { width: min(100%, 340px) }
 .clm-gap { margin-top: 24px }
 @media (min-width: 900px) { .clm-head { grid-template-columns: auto minmax(0, 1fr); gap: 48px } }
+
+/* Tapa el contenido que pasa entre la navbar y las pestañas al hacer scroll. */
+.clp-tabs::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: var(--clp-stick, 0px); background: inherit; pointer-events: none }
+@media (max-width: 719.98px) { .clp-badge-state { white-space: normal; text-align: right; max-width: 84px } }
