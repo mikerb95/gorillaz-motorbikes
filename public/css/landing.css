@@ -192,7 +192,7 @@ section .lp-service-name { max-width: none }
   .lp-carousel-count { white-space: nowrap; margin-left: 10px; font-size: .72rem; font-weight: 800; letter-spacing: .1em; color: rgba(244, 241, 236, .6); font-variant-numeric: tabular-nums }
 }
 
-/* ─── Servicios: escenario fijado de escritorio (lo activa el JS) ──────── */
+/* ─── Servicios: escenario de escritorio por hover (lo activa el JS) ───── */
 @media (min-width: 1024px) {
   .lp-services.is-staged {
     min-height: 100vh; display: flex; flex-direction: column; justify-content: center;

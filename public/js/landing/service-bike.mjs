@@ -4,11 +4,12 @@
 // que atiende y la pone a funcionar (el pistón sube y baja, la corriente
 // recorre el cableado, el rodamiento entra a presión en la manzana…).
 //
-// ESCRITORIO (≥1024 px): la sección se fija y el scroll avanza servicio por
-// servicio con paradas de trinquete (snap). Una lámpara de inspección, como la
-// que usa el mecánico, deja en penumbra todo menos la parte activa, y la
-// cámara (el viewBox del SVG) se acerca a ella. Los títulos se vuelven
-// pestañas: clic o flechas del teclado llevan a ese servicio.
+// ESCRITORIO (≥1024 px): la sección NO se fija ni depende del scroll. Pasar
+// el mouse por un título (o clic, o flechas del teclado: los títulos son
+// pestañas) muestra ese servicio. Una lámpara de inspección, como la que usa
+// el mecánico, deja en penumbra todo menos la parte activa, y la cámara (el
+// viewBox del SVG) se acerca a ella. La llave de trinquete gira un diente por
+// cada servicio que avanza.
 //
 // MÓVIL: no se fija nada. Las tarjetas van en un carrusel con scroll-snap y
 // cada lupa "enfoca" (de borrosa a nítida y la parte se enciende) cuando su
@@ -18,7 +19,6 @@
 // una con su lupa ya encendida (ver bike-art.ejs y landing.css).
 
 import { getGsap, MQ } from '../motion/core.mjs?v=1';
-import { detentIndex, detentProgress, ratchetAngle } from '../motion/lib/ratchet.mjs?v=1';
 import { cameraBox, viewBoxString } from '../motion/lib/camera.mjs?v=1';
 import { polar } from '../motion/lib/tach.mjs?v=1';
 
@@ -162,12 +162,11 @@ function ratchetSvg() {
 }
 
 function setupDesktop(root, gsap) {
-  const ST = window.ScrollTrigger;
   const list = root.querySelector('.lp-service-list');
   const items = Array.from(root.querySelectorAll('.lp-service'));
   const stageSvg = root.querySelector('.lp-stage-svg');
   const source = document.getElementById('lp-bike-art');
-  if (!ST || !list || !stageSvg || !source || items.length < 2) return () => {};
+  if (!list || !stageSvg || !source || items.length < 2) return () => {};
   const n = items.length;
 
   // Escenario: se clona el arte una sola vez (las lupas siguen usando <use>).
@@ -221,12 +220,12 @@ function setupDesktop(root, gsap) {
     panel.id = `lp-panel-${slug}`;
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', btn.id);
-    btn.addEventListener('click', () => goTo(i));
-    // Pasar el mouse por un título lo muestra igual que el scroll (cámara,
-    // lámpara y panel), sin mover la página. Una pausa corta evita que barrer
-    // la lista con el cursor dispare todos los servicios en cadena.
+    btn.addEventListener('click', () => setActive(i));
+    // Una pausa corta evita que barrer la lista con el cursor dispare todos
+    // los servicios en cadena. Al salir, el servicio se queda: así se puede
+    // llevar el cursor hasta el enlace del panel sin que cambie.
     btn.addEventListener('pointerenter', (e) => {
-      if (e.pointerType !== 'mouse' || navigating) return;
+      if (e.pointerType !== 'mouse') return;
       clearTimeout(hoverTimer);
       hoverTimer = setTimeout(() => setActive(i), 70);
     });
@@ -237,7 +236,7 @@ function setupDesktop(root, gsap) {
       e.preventDefault();
       const j = Math.max(0, Math.min(n - 1, map[e.key]));
       tabs[j].focus();
-      goTo(j);
+      setActive(j);
     });
     return btn;
   });
@@ -255,9 +254,6 @@ function setupDesktop(root, gsap) {
 
   let active = -1;
   let current = null;
-  // Último servicio que marcó el scroll. El hover solo previsualiza: el scroll
-  // retoma el mando en cuanto cambia de parada.
-  let scrollIdx = 0;
   let hoverTimer = 0;
 
   function setActive(i, instant = false) {
@@ -281,6 +277,7 @@ function setupDesktop(root, gsap) {
     gsap.to(stageSvg, { attr: { viewBox: viewBoxString(box) }, duration: d, ease: 'power3.inOut', overwrite: true });
     gsap.to([hole, glow], { attr: { cx: lx, cy: ly, r: lr }, duration: d, ease: 'power3.inOut', overwrite: true });
     gsap.to(ratchet, { y: li.offsetTop + li.offsetHeight / 2 - 20, duration: instant ? 0 : 0.5, ease: "back.out(1.8)", overwrite: "auto" });
+    gsap.to(ratchet.querySelector('.lp-ratchet-head'), { rotation: (i * 360) / 24, svgOrigin: '0 0', duration: instant ? 0 : 0.35, ease: 'back.out(2.2)', overwrite: true });
 
     activeSys = sys;
     syncFx();
@@ -317,69 +314,10 @@ function setupDesktop(root, gsap) {
   const onVis = () => syncFx();
   document.addEventListener('visibilitychange', onVis);
 
-  const st = ST.create({
-    trigger: root,
-    start: 'top top',
-    end: () => '+=' + Math.round(window.innerHeight * 0.5 * (n - 1)),
-    pin: true,
-    anticipatePin: 1,
-    // Parada de trinquete: siempre a la más cercana (el modo direccional de GSAP
-    // empuja a la siguiente con un píxel de más). Mientras una pestaña está
-    // llevando el scroll a su servicio, el snap no mueve nada: si no, el snap
-    // pendiente del último giro de rueda se queda con el desplazamiento.
-    snap: {
-      snapTo: (v) => (navigating ? v : detentProgress(detentIndex(v, n), n)),
-      directional: false, duration: { min: 0.18, max: 0.45 }, delay: 0.06, ease: 'power2.inOut',
-    },
-    onUpdate(self) {
-      const k = detentIndex(self.progress, n);
-      if (k !== scrollIdx) {
-        scrollIdx = k;
-        setActive(k);
-      }
-      gsap.set(ratchet.querySelector('.lp-ratchet-head'), { rotation: ratchetAngle(self.progress, n, 24), svgOrigin: '0 0' });
-    },
-  });
-
-  // Navegación desde una pestaña: un tween propio sobre el scroll (en vez del
-  // scroll suave del navegador) para poder coordinarlo con el snap.
-  let navigating = false;
-  let navTween = null;
-  const scrollPos = { y: 0 };
-  const stopNav = () => {
-    navTween?.kill();
-    navTween = null;
-    navigating = false;
-  };
-  function goTo(i) {
-    st.getTween(true)?.kill();
-    stopNav();
-    const y = Math.round(st.start + (st.end - st.start) * detentProgress(i, n));
-    scrollPos.y = window.scrollY;
-    navigating = true;
-    const distance = Math.abs(y - scrollPos.y);
-    navTween = gsap.to(scrollPos, {
-      y, duration: Math.min(1.2, 0.45 + distance / 5000), ease: 'power2.inOut',
-      onUpdate: () => window.scrollTo(0, scrollPos.y),
-      onComplete: () => { navigating = false; navTween = null; },
-    });
-    setActive(i);
-  }
-  // Si la persona toca la pantalla a mitad de camino, manda ella. La rueda NO
-  // cancela: los trackpads siguen mandando eventos de inercia hasta un segundo
-  // después de soltar, y cancelarían justo la navegación que se pidió. El
-  // recorrido dura como mucho 1,2 s.
-  const userTakesOver = () => navigating && stopNav();
-  window.addEventListener('touchstart', userTakesOver, { passive: true });
-
   setActive(0, true);
-  ST.refresh();
 
   return () => {
     clearTimeout(hoverTimer);
-    stopNav();
-    window.removeEventListener('touchstart', userTakesOver);
-    st.kill(true);
     io.disconnect();
     document.removeEventListener('visibilitychange', onVis);
     stopFx();
