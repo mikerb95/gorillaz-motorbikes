@@ -70,6 +70,22 @@ function init(root) {
   window.addEventListener('hashchange', onHash);
   show(TABS.includes(fromHash()) ? fromHash() : 'inicio');
 
+  // Las pestañas se pegan justo debajo de la navbar del sitio, que cambia de
+  // alto (barra de sesión, modo compacto al bajar). Se mide su borde real.
+  const nav = document.querySelector('.nav-bar') || document.querySelector('header');
+  let navRaf = 0;
+  const stick = () => {
+    navRaf = 0;
+    const r = nav ? nav.getBoundingClientRect() : null;
+    // Si la navbar se fue con el scroll (no es fija), su borde queda arriba de 0.
+    const bottom = r && r.bottom > 0 && r.bottom < 260 ? Math.round(r.bottom + 4) : 0;
+    root.style.setProperty('--clp-stick', bottom + 'px');
+  };
+  const onScroll = () => { if (!navRaf) navRaf = requestAnimationFrame(stick); };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  stick();
+
   // Credencial: tocar para ver el QR (y otra vez para volver).
   const cred = root.querySelector('[data-cred]');
   if (cred) {
@@ -101,6 +117,8 @@ function init(root) {
     destroy() {
       window.removeEventListener('popstate', onHash);
       window.removeEventListener('hashchange', onHash);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
     },
   };
 }

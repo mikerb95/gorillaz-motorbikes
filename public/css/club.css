@@ -274,7 +274,7 @@
 .clp-goal-hint { margin: 14px 0 0; font-size: .88rem; opacity: .65 }
 
 /* Pestañas */
-.clp-tabs { position: sticky; top: 0; z-index: 20; background: var(--cl-concrete); border-bottom: 1px solid rgba(0, 0, 0, .08) }
+.clp-tabs { position: sticky; top: var(--clp-stick, 0px); z-index: 20; background: var(--cl-concrete); border-bottom: 1px solid rgba(0, 0, 0, .08) }
 .clp-tabs-row { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none }
 .clp-tabs a {
   position: relative; padding: 16px 16px 14px; font-weight: 800; color: #5f6670; text-decoration: none; white-space: nowrap;
@@ -283,7 +283,6 @@
 .clp-tabs a:hover { color: #0e0f11; text-decoration: none }
 .clp-tabs a[aria-current="page"] { color: #0e0f11; border-bottom-color: var(--lp-orange) }
 .clp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #dc2626; margin-left: 6px; vertical-align: 2px }
-@media (min-width: 1024px) { .clp-tabs { top: calc(var(--header-offset) - 8px) } }
 
 .clp-body { padding-top: 28px; padding-bottom: 72px }
 .clp-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; margin-bottom: 56px }
