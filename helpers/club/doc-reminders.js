@@ -61,7 +61,7 @@ function whenLabel(days) {
 async function sendDocsEmail(user, docs) {
   const rows = docs.map(d => `<li><strong>${esc(d.name)}</strong> de la moto <strong>${esc(d.plate)}</strong>: ${esc(whenLabel(d.days))} (${esc(d.date)})</li>`).join('');
   const tecno = docs.some(d => d.key === 'tecno')
-    ? `<p>¿Te toca la tecnomecánica? En el taller te alistamos la moto antes de ir al CDA para llegar al CDA sin sorpresas: gases, frenos, luces, llantas y nivel sonoro.</p>
+    ? `<p>¿Te toca la tecnomecánica? En el taller te alistamos la moto para que llegues al CDA sin sorpresas: gases, frenos, luces, llantas y nivel sonoro.</p>
        <p><a href="${esc(abs('/servicios/alistamiento-tecnomecanica'))}" style="background:#F25C05;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Ver el alistamiento</a></p>`
     : '';
   const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
