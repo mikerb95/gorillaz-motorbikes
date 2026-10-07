@@ -181,4 +181,4 @@ async function consultarHistorialRunt(placa, documento, idLibreCaptcha, captcha)
   }
 }
 
-module.exports = { generarCaptcha, consultarHistorialRunt };
+module.exports = { generarCaptcha, consultarHistorialRunt, normalizarFecha };

@@ -37,6 +37,8 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 const rateLimit = require('express-rate-limit');
 const { buildPanelData } = require('../helpers/club/panel-data');
 const { consultarHistorialRunt } = require('../helpers/runt');
+const { providerName } = require('../helpers/runt-provider');
+const { syncSoon, syncVehicle, docFor } = require('../helpers/club/runt-sync');
 const clubLib = require('../helpers/club/lib');
 const { hoyCO } = require('../helpers/datetime');
 const { authLimiter }               = require('../middleware/auth');
@@ -162,10 +164,8 @@ router.post('/registro', authLimiter, async (req, res) => {
     const plates      = [].concat(req.body.vehiclePlate  || []);
     const ccs         = [].concat(req.body.vehicleCC     || []);
     const colors      = [].concat(req.body.vehicleColor  || []);
-    const soats       = [].concat(req.body.soatExpires   || []);
-    const tecnos      = [].concat(req.body.tecnoExpires  || []);
     const vehicles = brands
-      .map((b, i) => ({ brand: b, model: models[i] || '', year: years[i] || '', plate: (plates[i] || '').toUpperCase(), cc: ccs[i] || '', color: colors[i] || '', soatExpires: soats[i] || null, tecnoExpires: tecnos[i] || null }))
+      .map((b, i) => ({ brand: b, model: models[i] || '', year: years[i] || '', plate: (plates[i] || '').toUpperCase(), cc: ccs[i] || '', color: colors[i] || '' }))
       .filter(v => v.brand || v.plate);
     const newUser = await createUser({
       firstName, lastName, email, password: hashedPassword, cedula, phone, birthdate, bloodType: bloodType || null, city, department: department || null,
@@ -175,6 +175,8 @@ router.post('/registro', authLimiter, async (req, res) => {
       membership: { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Descuentos en taller', 'Acceso al club'] },
     });
     issueUserSession(res, newUser);
+    // SOAT y tecnomecánica salen del RUNT, nunca del formulario.
+    await syncSoon(newUser.id, vehicles.map(v => v.plate).filter(Boolean));
     res.redirect('/club/panel');
   } catch (e) {
     console.error(e);
@@ -463,10 +465,8 @@ router.post('/completar-perfil', requireAuth, authLimiter, async (req, res) => {
     const plates  = [].concat(req.body.vehiclePlate  || []);
     const ccs     = [].concat(req.body.vehicleCC     || []);
     const colors  = [].concat(req.body.vehicleColor  || []);
-    const soats   = [].concat(req.body.soatExpires   || []);
-    const tecnos  = [].concat(req.body.tecnoExpires  || []);
     const newVehicles = brands
-      .map((b, i) => ({ brand: b, model: models[i] || '', year: years[i] || '', plate: (plates[i] || '').toUpperCase(), cc: ccs[i] || '', color: colors[i] || '', soatExpires: soats[i] || null, tecnoExpires: tecnos[i] || null }))
+      .map((b, i) => ({ brand: b, model: models[i] || '', year: years[i] || '', plate: (plates[i] || '').toUpperCase(), cc: ccs[i] || '', color: colors[i] || '' }))
       .filter(v => v.brand || v.plate);
 
     const existingVehicles = user.vehicles || [];
@@ -494,6 +494,7 @@ router.post('/completar-perfil', requireAuth, authLimiter, async (req, res) => {
       vehicles: mergedVehicles,
       membership: user.membership || { level: 'Básica', since: new Date().toISOString().slice(0, 10), expires: null, benefits: ['Descuentos en taller', 'Acceso al club'] },
     });
+    await syncSoon(user.id, mergedVehicles.map(v => v.plate).filter(Boolean));
     res.redirect('/club/panel');
   } catch (e) {
     console.error('POST /club/completar-perfil error:', e.message);
@@ -590,9 +591,15 @@ router.post('/perfil', requireAuth, async (req, res) => {
   res.redirect('/club/panel#cuenta');
 });
 
+// Cédula del propietario cuando la moto no está a nombre del miembro. Vacía o
+// igual a la del perfil = se usa la del perfil.
+function ownerDocFrom(body, user) {
+  const d = String(body.ownerDoc || '').replace(/\D/g, '');
+  return d && d !== String(user.cedula || '') ? d : '';
+}
+
 router.post('/vehiculos', requireAuth, async (req, res) => {
-  const { plate, soatExpires, tecnoExpires } = req.body;
-  const plateUp = (plate || '').trim().toUpperCase();
+  const plateUp = (req.body.plate || '').trim().toUpperCase();
   if (!plateUp || !/^[A-Z0-9]{3,7}$/.test(plateUp)) {
     setFlash(res, 'error', 'La placa no es válida (3–7 caracteres alfanuméricos).');
     return res.redirect('/club/panel#garaje');
@@ -604,10 +611,16 @@ router.post('/vehiculos', requireAuth, async (req, res) => {
         setFlash(res, 'error', `La placa ${plateUp} ya está registrada.`);
         return res.redirect('/club/panel#garaje');
       }
+      const ownerDoc = ownerDocFrom(req.body, user);
+      if (ownerDoc && !/^\d{5,12}$/.test(ownerDoc)) {
+        setFlash(res, 'error', 'La cédula del propietario debe tener entre 5 y 12 dígitos.');
+        return res.redirect('/club/panel#garaje');
+      }
       const qrPayload = JSON.stringify({ t: 'vehicle', plate: plateUp, uid: user.id });
-      const vehicles  = [...(user.vehicles || []), { plate: plateUp, soatExpires: soatExpires || '', tecnoExpires: tecnoExpires || '', qr: qrPayload }];
+      const vehicles  = [...(user.vehicles || []), { plate: plateUp, ownerDoc, soatExpires: '', tecnoExpires: '', qr: qrPayload }];
       await updateUser(user.id, { vehicles });
-      setFlash(res, 'success', `Vehículo ${plateUp} agregado correctamente.`);
+      await syncSoon(user.id, [plateUp]);
+      setFlash(res, 'success', `Moto ${plateUp} agregada.`);
     }
   } catch (e) {
     console.error('POST /club/vehiculos error:', e.message);
@@ -630,26 +643,46 @@ router.post('/vehiculos/eliminar', requireAuth, async (req, res) => {
   res.redirect('/club/panel#garaje');
 });
 
-router.post('/vehiculos/actualizar', requireAuth, async (req, res) => {
+// Cambia la cédula del propietario de una moto (moto a nombre de otra
+// persona, o el RUNT dijo que no coincide) y vuelve a consultar.
+router.post('/vehiculos/propietario', requireAuth, async (req, res) => {
   try {
     const user = await getUserById(req.userId);
-    const { plate, soatExpires, tecnoExpires } = req.body;
-    const vehicles = (user.vehicles || []).map(v => {
-      if (v.plate !== (plate || '').toUpperCase()) return v;
-      return { ...v, soatExpires: soatExpires ?? v.soatExpires, tecnoExpires: tecnoExpires ?? v.tecnoExpires, qr: v.qr || JSON.stringify({ t: 'vehicle', plate: v.plate, uid: user.id }) };
-    });
+    const plate = (req.body.plate || '').toUpperCase();
+    const ownerDoc = ownerDocFrom(req.body, user);
+    if (ownerDoc && !/^\d{5,12}$/.test(ownerDoc)) {
+      setFlash(res, 'error', 'La cédula del propietario debe tener entre 5 y 12 dígitos.');
+      return res.redirect('/club/panel#garaje');
+    }
+    const vehicles = (user.vehicles || []).map(v => v.plate !== plate ? v : { ...v, ownerDoc });
     await updateUser(user.id, { vehicles });
-    setFlash(res, 'success', 'Vehículo actualizado.');
+    await syncSoon(user.id, [plate]);
+    setFlash(res, 'success', 'Propietario actualizado.');
   } catch (e) {
-    console.error('POST /club/vehiculos/actualizar error:', e.message);
-    setFlash(res, 'error', 'No se pudo actualizar el vehículo.');
+    console.error('POST /club/vehiculos/propietario error:', e.message);
+    setFlash(res, 'error', 'No se pudo actualizar la moto.');
   }
   res.redirect('/club/panel#garaje');
 });
 
-// Trae del RUNT el vencimiento del SOAT y la tecnomecánica de una moto del
-// garaje y lo guarda. El captcha lo genera /runt/captcha y lo resuelve el
-// miembro; la cédula es la del perfil salvo que la moto esté a nombre de otro.
+// Consulta automática (proveedor con API): el panel la dispara solo para motos
+// que nunca se han consultado y el botón "Actualizar" para el resto. Como cada
+// consulta cuesta, se repite como máximo cada 12 horas por moto.
+router.post('/vehiculos/runt-sync', requireAuth, runtLimiter, async (req, res) => {
+  if (!providerName()) return res.status(503).json({ ok: false, error: 'Consulta automática no disponible.' });
+  const user = await getUserById(req.userId);
+  const plate = String(req.body.plate || '').toUpperCase();
+  const v = user && (user.vehicles || []).find(x => x.plate === plate);
+  if (!v) return res.status(404).json({ ok: false, error: 'Esa moto no está en tu garaje.' });
+  const fresh = v.runtCheckedAt && v.runtDoc === docFor(v, user)
+    && Date.now() - Date.parse(v.runtCheckedAt) < 12 * 3600000;
+  const out = fresh ? v : await syncVehicle(user.id, plate);
+  res.json({ ok: true, status: out.runtStatus, soat: out.soatExpires || null, tecno: out.tecnoExpires || null });
+});
+
+// Respaldo mientras no haya proveedor con API configurado: trae del RUNT las
+// fechas de una moto con el captcha que resuelve el miembro (/runt/captcha).
+// La cédula es la del perfil salvo que la moto esté a nombre de otro.
 router.post('/vehiculos/runt', requireAuth, runtLimiter, async (req, res) => {
   const user = await getUserById(req.userId);
   if (!user) return res.status(401).json({ ok: false, error: 'Inicia sesión de nuevo.' });
@@ -685,7 +718,10 @@ router.post('/vehiculos/runt', requireAuth, runtLimiter, async (req, res) => {
       ...v,
       soatExpires:  soat  || v.soatExpires,
       tecnoExpires: tecno || v.tecnoExpires,
-      runtCheckedAt: hoyCO(),
+      ownerDoc: documento !== String(fresh.cedula || '') ? documento : '',
+      runtStatus: 'ok',
+      runtDoc: documento,
+      runtCheckedAt: new Date().toISOString(),
     });
     await updateUser(user.id, { vehicles });
   } catch (e) {

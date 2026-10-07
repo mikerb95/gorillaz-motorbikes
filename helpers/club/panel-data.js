@@ -11,6 +11,7 @@ const {
 const { loadPuntosConfig } = require('../score');
 const { hoyCO } = require('../datetime');
 const lib = require('./lib');
+const { providerName } = require('../runt-provider');
 
 const ORDER_STATUS = {
   pendiente:        'Recibida',
@@ -34,10 +35,13 @@ async function buildPanelData(user) {
   const vehicles = (user.vehicles || []).map(v => {
     const soat  = v.soatExpires  ? lib.daysUntil(v.soatExpires, today)  : null;
     const tecno = v.tecnoExpires ? lib.daysUntil(v.tecnoExpires, today) : null;
+    // Sin fecha: o no se ha consultado, o el RUNT no tiene ese documento.
+    const empty = v.runtStatus === 'ok' ? 'Sin registro en el RUNT' : 'Sin consultar';
     return {
       ...v,
-      soat:  { days: soat,  state: lib.docState(soat),  label: lib.docLabel(soat),  date: v.soatExpires || null },
-      tecno: { days: tecno, state: lib.docState(tecno), label: lib.docLabel(tecno), date: v.tecnoExpires || null },
+      soat:  { days: soat,  state: lib.docState(soat),  label: soat === null ? empty : lib.docLabel(soat),  date: v.soatExpires || null },
+      tecno: { days: tecno, state: lib.docState(tecno), label: tecno === null ? empty : lib.docLabel(tecno), date: v.tecnoExpires || null },
+      runtPending: !v.runtCheckedAt || v.runtStatus === 'error',
       orders: [],
     };
   });
@@ -101,6 +105,7 @@ async function buildPanelData(user) {
   const nextEvent = upcomingEvents.find(ev => registrations[ev.id] !== 'confirmed') || null;
 
   return {
+    runtAuto: !!providerName(),
     today, puntos, progress, vehicles, upcomingEvents, registrations, nextEvent,
     quotations, rank, passkeys, memberCode, neighbors, history, streak, challenge, badges,
     earnedCount: badges.filter(b => b.earned).length, alerts,
