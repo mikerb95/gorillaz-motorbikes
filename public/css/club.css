@@ -46,7 +46,10 @@
 .cl-patch-cover { fill: none; stroke-width: 2.6 }
 
 /* ─── Landing: escenario oscuro con el chaleco fijo ───────────────────── */
-.page-club main.page-root { padding-top: 0; background: var(--lp-cream) }
+.page-club main.page-root,
+.page-club.has-subbar main.page-root { padding-top: 0; background: var(--lp-cream) }
+/* La regla global `section { padding }` no aplica a las piezas del club. */
+.clb section, .clp section { padding: 0 }
 
 .clb-stage {
   background:
@@ -123,7 +126,7 @@
 }
 
 /* ─── Bandas claras ───────────────────────────────────────────────────── */
-.clb-band { padding: clamp(56px, 8vw, 104px) var(--lp-gutter) }
+.clb .clb-band { padding: clamp(56px, 8vw, 104px) var(--lp-gutter) }
 .clb-wrap { max-width: 1120px; margin: 0 auto }
 .clb-events { background: var(--lp-paper) }
 .clb-event-list { list-style: none; margin: 0 0 22px; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px }
@@ -181,7 +184,7 @@
   .clb-vest { position: sticky; top: calc(var(--header-offset) + 10px); height: calc(100vh - var(--header-offset) - 30px); display: grid; align-content: center }
   .clb-vest .cl-vest { max-height: calc(100vh - var(--header-offset) - 80px) }
   .clb-steps { max-width: 600px; margin: 0 0 0 auto; gap: 0 }
-  .clb-steps > section { min-height: calc(100vh - var(--header-offset)); display: grid; align-content: center; padding: 48px 0 }
+  .clb .clb-steps > section { min-height: calc(100vh - var(--header-offset)); display: grid; align-content: center; padding: 48px 0 }
   .clb-hero { min-height: calc(100vh - var(--header-offset) - 40px) }
 }
 
@@ -191,7 +194,7 @@
   position: relative; width: min(100%, 360px); aspect-ratio: 85.6 / 54; box-sizing: border-box;
   border-radius: 16px; padding: 18px 20px; color: #f1ece4; overflow: hidden;
   background:
-    linear-gradient(115deg, transparent 0 62%, color-mix(in srgb, var(--lvl) 85%, #000) 62% 100%),
+    linear-gradient(115deg, transparent 0 74%, color-mix(in srgb, var(--lvl) 70%, #1d1a18) 74% 100%),
     #1d1a18;
   box-shadow: 0 18px 40px rgba(0, 0, 0, .28), inset 0 0 0 1px rgba(255, 255, 255, .06);
   display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto 1fr auto auto; column-gap: 12px;
@@ -214,7 +217,8 @@
    En móvil las pestañas van arriba (sticky): la barra inferior ya la usa el
    sitio para Inicio, Tienda, Agendar y Mi orden.
    ════════════════════════════════════════════════════════════════════════ */
-.page-club-panel main.page-root { padding-top: 0; background: var(--cl-concrete) }
+.page-club-panel main.page-root,
+.page-club-panel.has-subbar main.page-root { padding-top: 0; background: var(--cl-concrete) }
 .clp-wrap { max-width: 1120px; margin: 0 auto; padding: 0 var(--lp-gutter) }
 .clp-muted { color: #5f6670; line-height: 1.5; margin: 0 }
 .clp-small { font-size: .86rem; margin-top: 14px }
@@ -229,6 +233,9 @@
   color: #f1ece4;
   padding: calc(var(--header-offset) + 14px) 0 34px;
 }
+/* Con la barra de sesión (sub-bar) la navbar es más alta. */
+.has-subbar .clp-head { padding-top: calc(var(--header-offset) + 84px) }
+@media (max-width: 1023.98px) { .has-subbar .clp-head { padding-top: calc(var(--header-offset) + 20px) } }
 .clp-sub { margin: 0; opacity: .75; line-height: 1.5 }
 .clp-sub strong { color: #fff }
 .clp-admin { display: inline-block; margin-top: 10px; color: var(--lp-plate) !important; font-weight: 800; font-size: .9rem }
@@ -283,7 +290,7 @@
 .clp-panel[hidden] { display: none }
 .is-tabbed .clp-panel { margin-bottom: 0 }
 
-.clp-block, .clp-tile, .clp-bike {
+.clp .clp-block, .clp-tile, .clp-bike {
   background: #fff; border-radius: 16px; padding: 22px; box-sizing: border-box; min-width: 0;
   box-shadow: 0 1px 0 rgba(14, 15, 17, .06);
 }
