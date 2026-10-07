@@ -1,0 +1,77 @@
+<%- include('../partials/head', { extraCss: ['/static/css/taller-base.css?v=' + assetV('css/taller-base.css'), '/static/css/club.css?v=' + assetV('css/club.css')] }) %>
+<%#
+  Lo que abre el QR de la credencial (/club/m/<código>).
+  - Admin: check-in. Confirma la asistencia a la salida de ayer, hoy o
+    mañana, o registra la visita del día; los puntos se suman en el acto.
+  - Cualquier otra persona: solo verifica que es miembro (apodo, nivel y
+    antigüedad), sin datos personales.
+%>
+<%
+  const display = member.nickname || member.firstName || String(member.name || '').split(' ')[0];
+  const lvl = progress.current || { name: '', color: '#F25C05' };
+  const typeName = { rodada: 'Rodada', encuentro: 'Encuentro', caminata: 'Caminata', actividad: 'Actividad', evento: 'Evento' };
+  const since = member.membership && member.membership.since;
+%>
+<div class="clp clm">
+  <header class="clp-head">
+    <div class="clp-wrap clm-head">
+      <div class="cl-cred" style="--lvl: <%= lvl.color || '#F25C05' %>">
+        <span class="cl-cred-club">Club Gorillaz</span>
+        <span class="cl-cred-name"><%= display %></span>
+        <span class="cl-cred-level"><%= lvl.name %></span>
+        <span class="cl-cred-code"><%= code.slice(0, 2) %>·<%= code.slice(2) %></span>
+      </div>
+      <div>
+        <h1 class="clp-h1">Miembro verificado</h1>
+        <p class="clp-sub"><%= display %> es miembro del Club Gorillaz<% if (since) { %> desde <%= fechaCO(since, { month: 'long', year: 'numeric' }) %><% } %>, nivel <strong><%= lvl.name %></strong>.</p>
+      </div>
+    </div>
+  </header>
+
+  <% if (isAdmin) { %>
+    <div class="clp-wrap clp-body">
+      <section class="clp-block" aria-labelledby="t-ci">
+        <h2 id="t-ci" class="clp-h2">Check-in</h2>
+        <p class="clp-muted"><%= member.name %><% if (member.phone) { %>, <%= member.phone %><% } %>. <%= Number(member.score || 0).toLocaleString('es-CO') %> pts.</p>
+
+        <h3 class="clp-h3 clm-gap">Salidas de ayer, hoy y mañana</h3>
+        <% if (!events.length) { %>
+          <p class="clp-muted">No hay salidas en estos días.</p>
+        <% } else { %>
+          <ul class="clp-events">
+            <% events.forEach(ev => { const st = registrations[ev.id]; const p = points[ev.type] || points.evento; %>
+              <li data-type="<%= ev.type %>">
+                <span class="clp-ev-date" aria-hidden="true"><strong><%= String(ev.date).slice(8, 10) %></strong></span>
+                <span class="clp-ev-main">
+                  <span class="clp-ev-type"><%= typeName[ev.type] || 'Evento' %>, +<%= p %> pts</span>
+                  <strong><%= ev.title %></strong>
+                </span>
+                <span class="clp-ev-act">
+                  <% if (st === 'confirmed') { %><span class="clp-chip is-ok">Asistencia confirmada</span>
+                  <% } else { %>
+                    <form method="post" action="/club/m/<%= code %>/evento/<%= ev.id %>">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button class="btn btn-sm" type="submit">Confirmar asistencia</button>
+                    </form>
+                  <% } %>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+
+        <h3 class="clp-h3 clm-gap">Visita al taller</h3>
+        <% if (visitedToday) { %>
+          <p class="clp-muted">La visita de hoy ya está registrada.</p>
+        <% } else { %>
+          <form method="post" action="/club/m/<%= code %>/visita">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <button class="btn btn-sm" type="submit">Registrar visita (+<%= points.visita %> pts)</button>
+          </form>
+          <p class="clp-muted clp-small">Los servicios del taller no se registran aquí: suman solos al entregar la moto.</p>
+        <% } %>
+      </section>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

@@ -454,3 +454,9 @@
   .clp-vest-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr) }
   .clp-vest { position: sticky; top: calc(var(--header-offset) + 56px) }
 }
+
+/* Página que abre el QR de la credencial (/club/m/<código>). */
+.clm-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: center }
+.clm-head .cl-cred { width: min(100%, 340px) }
+.clm-gap { margin-top: 24px }
+@media (min-width: 900px) { .clm-head { grid-template-columns: auto minmax(0, 1fr); gap: 48px } }
