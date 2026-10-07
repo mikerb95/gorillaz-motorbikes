@@ -3,7 +3,8 @@
 // crons, así que todo lo diario cuelga de esta misma ruta:
 //   - libera el stock reservado por pedidos que no se pagaron;
 //   - envía UN recordatorio de carrito abandonado a usuarios con sesión;
-//   - avisa del vencimiento del SOAT y la tecnomecánica (garaje del club).
+//   - consulta el RUNT de las motos que lo necesitan y avisa del vencimiento
+//     del SOAT y la tecnomecánica (garaje del club).
 // Protegido con CRON_SECRET (Vercel lo envía como "Authorization: Bearer …").
 
 const express = require('express');
@@ -14,6 +15,7 @@ const { priceCart } = require('../helpers/cart');
 const { sendCartReminder } = require('../helpers/shop/emails');
 const { refreshIfStale } = require('../helpers/catalog');
 const { remindExpiringDocs } = require('../helpers/club/doc-reminders');
+const { refreshDueVehicles } = require('../helpers/club/runt-sync');
 
 const router = express.Router();
 
@@ -51,8 +53,10 @@ router.get('/api/cron/tienda', async (req, res) => {
   await refreshIfStale(0);
   const released = await releaseExpired().catch((e) => { console.error('[cron] reservas:', e.message); return -1; });
   const reminders = await remindAbandonedCarts().catch((e) => { console.error('[cron] carritos:', e.message); return -1; });
+  // Primero el RUNT (quien ya renovó no recibe aviso), luego los avisos.
+  const runt = await refreshDueVehicles().catch((e) => { console.error('[cron] runt:', e.message); return -1; });
   const docs = await remindExpiringDocs().catch((e) => { console.error('[cron] documentos:', e.message); return -1; });
-  res.json({ ok: true, released, reminders, docs });
+  res.json({ ok: true, released, reminders, runt, docs });
 });
 
 module.exports = router;

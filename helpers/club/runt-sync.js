@@ -31,7 +31,9 @@ function needsRefresh(v, user, now = Date.now(), today = hoyCO()) {
   if (v.runtStatus === 'error') return age >= 1;
   const days = [v.soatExpires, v.tecnoExpires].filter(Boolean).map(d => daysUntil(d, today));
   const nearest = days.length ? Math.min(...days) : null;
-  // Por vencer o vencido: cada 3 días, para ver la renovación a tiempo.
+  // Vence hoy o venció hace poco: a diario, para no avisar "vencido" a quien
+  // ya renovó. Por vencer o vencido hace rato: cada 3 días.
+  if (nearest !== null && nearest <= 0 && nearest >= -7) return age >= 0.9;
   if (nearest !== null && nearest <= 7 && nearest >= -60) return age >= 3;
   // Vencido hace mucho, o el RUNT no trae alguno de los dos: mensual.
   if (nearest !== null && nearest < -60) return age >= 30;

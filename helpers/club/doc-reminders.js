@@ -1,7 +1,8 @@
 'use strict';
 // Avisos por correo del vencimiento del SOAT y la tecnomecánica de las motos
 // del garaje. Corre desde el cron diario (routes/cron.js), que ya existe: así
-// no se gasta otro cron de Vercel.
+// no se gasta otro cron de Vercel. Va después de refreshDueVehicles
+// (./runt-sync.js), que deja las fechas frescas desde el RUNT.
 //
 // Cada documento avisa una vez por escalón (30 días, 7 días, el día que vence).
 // Lo ya avisado queda en el vehículo como `reminded: { soat: 'AAAA-MM-DD@7' }`:
@@ -68,7 +69,7 @@ async function sendDocsEmail(user, docs) {
       <h2 style="color:#F25C05">${esc(user.firstName || user.name || 'Hola')}, revisa los papeles de tu moto</h2>
       <ul>${rows}</ul>
       ${tecno}
-      <p>Cuando renueves, actualiza la fecha en tu garaje (o tráela del RUNT con un clic) y dejamos de avisarte por este documento.</p>
+      <p>Revisamos el RUNT por ti: cuando renueves lo vemos solos y dejamos de avisarte por este documento.</p>
       <p><a href="${esc(abs('/club/panel#garaje'))}">Ir a mi garaje</a></p>
       <p style="color:#888;font-size:13px">Recibes este correo porque tienes activas las notificaciones del club. Puedes apagarlas en tu panel, pestaña Cuenta.</p>
     </div>`;
