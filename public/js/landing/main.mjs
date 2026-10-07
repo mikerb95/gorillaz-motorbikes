@@ -15,7 +15,7 @@
 
 import { mount, prefersReduced, getGsap } from '../motion/core.mjs?v=1';
 import initHero from './hero-shutter.mjs?v=1';
-import initServices from './service-bike.mjs?v=1';
+import initServices from './service-bike.mjs?v=2';
 import initTicket from './ticket-stamps.mjs?v=1';
 import initClub from './club-tach.mjs?v=1';
 import initShopTags from './shop-tags.mjs?v=2';

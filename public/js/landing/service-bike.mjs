@@ -222,6 +222,15 @@ function setupDesktop(root, gsap) {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', btn.id);
     btn.addEventListener('click', () => goTo(i));
+    // Pasar el mouse por un título lo muestra igual que el scroll (cámara,
+    // lámpara y panel), sin mover la página. Una pausa corta evita que barrer
+    // la lista con el cursor dispare todos los servicios en cadena.
+    btn.addEventListener('pointerenter', (e) => {
+      if (e.pointerType !== 'mouse' || navigating) return;
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => setActive(i), 70);
+    });
+    btn.addEventListener('pointerleave', () => clearTimeout(hoverTimer));
     btn.addEventListener('keydown', (e) => {
       const map = { ArrowDown: i + 1, ArrowRight: i + 1, ArrowUp: i - 1, ArrowLeft: i - 1, Home: 0, End: n - 1 };
       if (!(e.key in map)) return;
@@ -246,6 +255,10 @@ function setupDesktop(root, gsap) {
 
   let active = -1;
   let current = null;
+  // Último servicio que marcó el scroll. El hover solo previsualiza: el scroll
+  // retoma el mando en cuanto cambia de parada.
+  let scrollIdx = 0;
+  let hoverTimer = 0;
 
   function setActive(i, instant = false) {
     if (i === active) return;
@@ -319,7 +332,11 @@ function setupDesktop(root, gsap) {
       directional: false, duration: { min: 0.18, max: 0.45 }, delay: 0.06, ease: 'power2.inOut',
     },
     onUpdate(self) {
-      setActive(detentIndex(self.progress, n));
+      const k = detentIndex(self.progress, n);
+      if (k !== scrollIdx) {
+        scrollIdx = k;
+        setActive(k);
+      }
       gsap.set(ratchet.querySelector('.lp-ratchet-head'), { rotation: ratchetAngle(self.progress, n, 24), svgOrigin: '0 0' });
     },
   });
@@ -359,6 +376,7 @@ function setupDesktop(root, gsap) {
   ST.refresh();
 
   return () => {
+    clearTimeout(hoverTimer);
     stopNav();
     window.removeEventListener('touchstart', userTakesOver);
     st.kill(true);
