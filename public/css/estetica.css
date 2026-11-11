@@ -1,0 +1,264 @@
+/* ════════════════════════════════════════════════════════════════════════
+   /PINTURA-DETAILING-WRAP · "LA CABINA"
+
+   Landing de estética. Hereda tokens y piezas de taller-base.css y las cintas
+   Dymo y ganchos de servicios.css. La pieza central es la cabina: el tanque
+   cambia de acabado con radios + :has() (sin JS). Todo lo de aquí es el estado
+   final; estetica.js solo agrega una demostración al cargar.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.page-estetica {
+  --et-pintura: #F25C05;
+  --et-detailing: #c9971f;
+  --et-wrap: #5b4fd6;
+  --et-booth: #141518;
+}
+
+.et-page { padding: 20px 0 clamp(64px, 8vw, 120px) }
+/* El section global trae padding y h2 centrados: aquí no aplican. */
+.et-page section { padding: 0 }
+.et-page section h2,
+.et-page section h3 { margin-left: 0; margin-right: 0; padding: 0 }
+.et-block { margin-top: clamp(64px, 8vw, 112px) }
+.et-page .btn-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 }
+.et-page .btn { padding: 13px 20px }
+
+.et-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--et-c, var(--lp-orange)); margin-right: 10px; vertical-align: .12em; flex: none }
+.et-svc-pintura, .et-fix-pintura { --et-c: var(--et-pintura) }
+.et-svc-detailing, .et-fix-detailing { --et-c: var(--et-detailing) }
+.et-svc-wrap, .et-fix-wrap { --et-c: var(--et-wrap) }
+
+/* ─── Hero ─────────────────────────────────────────────────────────────── */
+.et-hero { display: grid; gap: 28px; align-items: center }
+@media (min-width: 1024px) {
+  .et-hero {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); column-gap: clamp(32px, 4vw, 64px);
+    min-height: calc(100vh - var(--header-offset, 92px) - 40px);
+  }
+}
+.et-title { font-size: clamp(2.6rem, 6.4vw, 5.6rem); line-height: .92; letter-spacing: -.035em; font-weight: 900; margin: 0 0 12px; text-wrap: balance; max-width: 12ch }
+.et-claim { margin: 0 0 16px; font-size: clamp(1.2rem, 2vw, 1.6rem); font-weight: 800; color: var(--lp-orange-text); letter-spacing: -.01em }
+
+/* ─── La cabina ────────────────────────────────────────────────────────── */
+.et-cab {
+  position: relative; border-radius: 22px; padding: 14px 14px 16px; color: #e9e6e1;
+  background: radial-gradient(130% 90% at 50% 0%, #2a2c31, var(--et-booth) 70%);
+  box-shadow: inset 0 0 0 2px #2c2f35, 0 30px 60px rgba(40, 20, 0, .22);
+  min-width: 0;
+}
+.et-cab fieldset { border: 0; margin: 0; padding: 0; min-width: 0 }
+
+/* Botones de acabado (radios con aspecto de interruptor). */
+.et-cab-ctrl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 4px; border-radius: 14px; background: rgba(0, 0, 0, .35) }
+.et-cab-ctrl label {
+  display: block; text-align: center; padding: 10px 4px; border-radius: 10px; cursor: pointer;
+  font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #b9b6b0;
+  transition: background .2s, color .2s;
+}
+.et-cab-ctrl label:hover { color: #fff; background: rgba(255, 255, 255, .06) }
+.et-cab-ctrl input:checked + label { color: #fff; background: linear-gradient(180deg, #ff8a3d, #d84f04) ; box-shadow: 0 4px 14px rgba(242, 92, 5, .35) }
+.et-cab-ctrl input:focus-visible + label,
+.et-vinyl input:focus-visible + label { outline: 2px solid #fff; outline-offset: 2px }
+
+.et-booth { position: relative; margin: 12px 0 6px; padding: 26px 4px 4px; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(180deg, #1d1f23 0%, #191a1d 62%, #232528 62.2%, #1b1c1f 100%);
+}
+/* Lámpara de la cabina: tubo de luz arriba con su halo. */
+.et-lamp { position: absolute; top: 10px; left: 18%; right: 18%; height: 6px; border-radius: 6px; background: #fdf6ea; box-shadow: 0 0 18px 4px rgba(255, 240, 215, .45), 0 0 80px 30px rgba(255, 240, 215, .08) }
+.et-tank { display: block; width: 100%; height: auto; overflow: visible }
+
+.tk-floor { fill: #000; opacity: .45; filter: blur(6px) }
+.tk-cap { fill: #9aa1aa }
+.tk-cap-top { fill: #c9ced4 }
+.tk-b { opacity: 0; transition: opacity .6s ease }
+.tk-b-dull { fill: url(#et-g-dull) }
+.tk-b-paint { fill: url(#et-g-paint) }
+.tk-b-mate { fill: url(#et-g-mate) }
+.tk-b-satinado { fill: url(#et-g-sat) }
+.tk-b-carbono { fill: url(#et-p-carbon) }
+.tk-b-camaleon { fill: url(#et-g-cham) }
+.tk-stripe { fill: #fff; opacity: 0; transition: opacity .5s }
+.tk-knee { fill: none; stroke: #000; opacity: .22 }
+.tk-haze { fill: #e8ddd2; opacity: 0; transition: opacity .6s }
+.tk-scratch { fill: none; stroke: #f3e7dc; opacity: 0; transition: opacity .4s }
+.tk-gloss { fill: #fff; opacity: 0; transition: opacity .6s }
+.tk-gloss2 { fill: #fff; opacity: 0; transition: opacity .6s }
+.tk-spark path { fill: #fff; opacity: 0; transition: opacity .3s; transform-box: fill-box; transform-origin: center }
+.tk-peel { opacity: 0; transition: opacity .4s }
+.tk-peel-under { fill: url(#et-g-paint) }
+.tk-peel-flap { fill: #d8dbe0 }
+
+/* Estado por defecto (también sin :has): así llega. */
+.tk-b-dull { opacity: 1 }
+.tk-haze { opacity: .16 }
+.tk-scratch { opacity: .7 }
+
+.et-cab:has(#etf-llega:not(:checked)) .tk-b-dull,
+.et-cab:has(#etf-llega:not(:checked)) .tk-haze,
+.et-cab:has(#etf-llega:not(:checked)) .tk-scratch { opacity: 0 }
+
+.et-cab:has(#etf-pintura:checked) .tk-b-paint,
+.et-cab:has(#etf-detailing:checked) .tk-b-paint { opacity: 1 }
+.et-cab:has(#etf-pintura:checked) .tk-stripe,
+.et-cab:has(#etf-detailing:checked) .tk-stripe { opacity: .9 }
+.et-cab:has(#etf-pintura:checked) .tk-gloss { opacity: .32 }
+.et-cab:has(#etf-detailing:checked) .tk-gloss { opacity: .78 }
+.et-cab:has(#etf-detailing:checked) .tk-gloss2 { opacity: .35 }
+.et-cab:has(#etf-detailing:checked) .tk-spark path { opacity: 1; animation: et-twinkle 2.4s ease-in-out infinite }
+.et-cab:has(#etf-detailing:checked) .tk-spark path:nth-child(2) { animation-delay: .8s }
+.et-cab:has(#etf-detailing:checked) .tk-spark path:nth-child(3) { animation-delay: 1.6s }
+
+.et-cab:has(#etf-wrap:checked) .tk-peel { opacity: 1 }
+.et-cab:has(#etf-wrap:checked):has(#etv-mate:checked) .tk-b-mate { opacity: 1 }
+.et-cab:has(#etf-wrap:checked):has(#etv-satinado:checked) .tk-b-satinado { opacity: 1 }
+.et-cab:has(#etf-wrap:checked):has(#etv-satinado:checked) .tk-gloss { opacity: .14 }
+.et-cab:has(#etf-wrap:checked):has(#etv-carbono:checked) .tk-b-carbono { opacity: 1 }
+.et-cab:has(#etf-wrap:checked):has(#etv-carbono:checked) .tk-gloss { opacity: .22 }
+.et-cab:has(#etf-wrap:checked):has(#etv-camaleon:checked) .tk-b-camaleon { opacity: 1 }
+.et-cab:has(#etf-wrap:checked):has(#etv-camaleon:checked) .tk-gloss { opacity: .5 }
+
+@keyframes et-twinkle {
+  0%, 100% { transform: scale(.4) rotate(0deg); opacity: .2 }
+  50% { transform: scale(1.1) rotate(45deg); opacity: 1 }
+}
+@media (prefers-reduced-motion: reduce) {
+  .et-cab .tk-spark path { animation: none !important }
+  .tk-b, .tk-haze, .tk-scratch, .tk-gloss, .tk-gloss2, .tk-stripe, .tk-peel { transition: none }
+}
+
+/* Acabados del vinilo: solo se muestran con Wrap elegido. */
+.et-vinyl { display: none; flex-wrap: wrap; gap: 6px 8px; margin: 8px 0 4px }
+.et-cab:has(#etf-wrap:checked) .et-vinyl { display: flex }
+.et-vinyl legend { float: left; width: 100%; margin: 0 0 6px; font-size: .66rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #9b978f }
+.et-vinyl label {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; cursor: pointer;
+  font-size: .8rem; font-weight: 700; color: #d6d2cb; background: rgba(255, 255, 255, .06); transition: background .2s, color .2s;
+}
+.et-vinyl input:checked + label { background: #fff; color: #111 }
+.et-sw { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25) }
+
+/* Muestras de acabado (cabina y sección de wrap). */
+.et-sw-mate { background: linear-gradient(180deg, #3b3e44, #1a1b1e) }
+.et-sw-satinado { background: linear-gradient(160deg, #6c809a, #34445a 55%, #1c2633) }
+.et-sw-carbono { background: repeating-conic-gradient(#33363b 0 25%, #1b1c1f 0 50%) 0 0 / 8px 8px }
+.et-sw-camaleon { background: linear-gradient(135deg, #2fd3c0, #3b5fe0 40%, #9b3fd6 75%, #e0458f) }
+.et-sw-brillante { background: radial-gradient(60% 50% at 35% 30%, #ff9a9a, transparent 60%), linear-gradient(180deg, #e5303a, #8d0f17) }
+.et-sw-metal { background: linear-gradient(120deg, #6b6f75, #e9ebee 35%, #8a9098 55%, #d9dce0 75%, #5d6168) }
+
+.et-cab-notes { min-height: 3.2em; margin-top: 8px }
+.et-cab-notes p { display: none; margin: 0; font-size: .92rem; line-height: 1.5; color: #d6d2cb }
+.et-cab-notes p[data-for="llega"] { display: block }
+.et-cab:has(#etf-llega:not(:checked)) .et-cab-notes p[data-for="llega"] { display: none }
+.et-cab:has(#etf-pintura:checked) .et-cab-notes p[data-for="pintura"],
+.et-cab:has(#etf-detailing:checked) .et-cab-notes p[data-for="detailing"],
+.et-cab:has(#etf-wrap:checked) .et-cab-notes p[data-for="wrap"] { display: block }
+.et-cab-notes strong { color: #fff }
+.et-cab-disclaimer { margin: 8px 0 0; font-size: .7rem; color: #8a867f }
+
+/* ─── Servicios ────────────────────────────────────────────────────────── */
+.et-services { display: grid; gap: 18px; margin-top: 8px }
+@media (min-width: 900px) { .et-services { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+.et-svc {
+  display: flex; flex-direction: column; overflow: hidden; scroll-margin-top: calc(var(--header-offset, 92px) + 16px);
+  background: #fff; border-radius: 20px; box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 14px 36px rgba(60, 30, 10, .08);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.et-svc:hover { transform: translateY(-3px); box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 20px 44px rgba(60, 30, 10, .13) }
+.et-svc-tool {
+  position: relative; display: grid; justify-items: center; gap: 8px; padding: 30px 22px 18px;
+  background:
+    radial-gradient(circle, #07080a 0 2.1px, rgba(0, 0, 0, 0) 2.7px) 0 0 / 20px 20px,
+    radial-gradient(120% 90% at 40% 20%, #2e3136, #1a1c20 75%);
+}
+.et-svc-tool .sv-hook { top: 10px }
+.et-svc-tool .sv-tool { width: min(100%, 210px); height: auto; aspect-ratio: 200 / 120; overflow: visible; transition: transform .45s cubic-bezier(.3, 1.5, .5, 1) }
+.et-svc:hover .et-svc-tool .sv-tool { transform: translate(4px, -8px) rotate(-5deg) }
+.et-svc-tool .sv-slot-name { font-size: .64rem; padding: 4px 10px }
+.et-svc-body { display: flex; flex-direction: column; flex: 1; padding: clamp(20px, 2.4vw, 30px) }
+.et-svc-title { display: flex; align-items: center; margin: 0 0 8px; font-size: clamp(1.3rem, 1.9vw, 1.6rem); line-height: 1.1; font-weight: 900; letter-spacing: -.015em }
+.et-svc-lead { margin: 0 0 14px; color: #3f3a36; line-height: 1.55 }
+.et-best { margin: 0 0 18px; font-size: .92rem; color: #3f3a36; background: color-mix(in srgb, var(--et-c) 9%, #fff); border-radius: 12px; padding: 10px 12px }
+.et-svc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: auto }
+.et-page .et-svc-actions .btn { padding: 11px 18px }
+
+/* ─── ¿Cuál necesito? ──────────────────────────────────────────────────── */
+.et-diag { display: grid; gap: 28px; scroll-margin-top: calc(var(--header-offset, 92px) + 16px) }
+@media (min-width: 1024px) { .et-diag { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: clamp(32px, 4vw, 64px); align-items: start } }
+.et-nail { background: var(--lp-paper); border-radius: 16px; padding: 16px 18px; max-width: 52ch }
+.et-nail p { margin: 0; line-height: 1.55; color: #3f3a36 }
+.et-nail .et-nail-title { margin-bottom: 6px; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #5b4a2e }
+.et-diag-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px }
+.et-diag-row {
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "problem fix" "note note"; gap: 4px 14px; align-items: center;
+  background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 8px 22px rgba(60, 30, 10, .06);
+  transition: background .2s;
+}
+.et-diag-row:hover { background: color-mix(in srgb, var(--et-c) 6%, #fff) }
+.et-diag-problem { grid-area: problem; font-weight: 800; line-height: 1.3 }
+.et-diag-arrow { display: none; color: var(--lp-muted) }
+.et-diag-fix { grid-area: fix; display: inline-flex; align-items: center; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap }
+.et-diag-fix .et-dot { margin-right: 7px }
+.et-diag-note { grid-area: note; font-size: .9rem; color: var(--lp-muted) }
+@media (min-width: 640px) {
+  .et-diag-row { grid-template-columns: minmax(0, 1fr) auto 128px; grid-template-areas: "problem arrow fix" "note note note" }
+  .et-diag-arrow { display: block; grid-area: arrow }
+}
+
+/* ─── Wrap a fondo (bloque oscuro) ─────────────────────────────────────── */
+.et-page .et-wrap {
+  margin-top: clamp(64px, 8vw, 112px); padding: clamp(28px, 5vw, 64px); border-radius: 24px; color: #ece8e2;
+  display: grid; gap: 32px; scroll-margin-top: calc(var(--header-offset, 92px) + 16px);
+  background:
+    radial-gradient(90% 70% at 100% 0%, rgba(91, 79, 214, .35), transparent 60%),
+    radial-gradient(70% 60% at 0% 100%, rgba(242, 92, 5, .22), transparent 60%),
+    var(--et-booth);
+}
+@media (min-width: 1024px) { .et-page .et-wrap { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); column-gap: clamp(32px, 5vw, 80px); align-items: center } }
+.et-wrap .lp-label { color: #ff9a52 }
+.et-wrap .lp-lead { opacity: .85 }
+.et-why { list-style: none; margin: 0 0 26px; padding: 0; display: grid; gap: 12px; max-width: 54ch }
+.et-why li { position: relative; padding-left: 28px; line-height: 1.5; color: #cfcac2 }
+.et-why li::before { content: ""; position: absolute; left: 4px; top: .45em; width: 12px; height: 12px; border-radius: 3px; transform: rotate(45deg); background: linear-gradient(135deg, #ff8a3d, #8b7cf6) }
+.et-why strong { color: #fff }
+.et-wrap-side { background: rgba(255, 255, 255, .04); border-radius: 18px; padding: clamp(18px, 2.4vw, 28px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08) }
+.et-side-title { margin: 0 0 12px; font-size: .68rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #9b978f }
+.et-swatches { list-style: none; margin: 0 0 24px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 10px }
+.et-swatches li { display: grid; justify-items: center; gap: 8px; text-align: center; font-size: .8rem; font-weight: 700; color: #d6d2cb }
+.et-chip { width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 8px 18px rgba(0, 0, 0, .35); transition: transform .3s cubic-bezier(.3, 1.5, .5, 1) }
+.et-swatches li:hover .et-chip { transform: translateY(-4px) rotate(-2deg) }
+.et-wrap-side .sv-dymo-list { margin-bottom: 14px }
+.et-side-note { margin: 0; font-size: .82rem; color: #9b978f }
+
+/* ─── Proceso ──────────────────────────────────────────────────────────── */
+.et-steps { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 14px; counter-reset: none }
+@media (min-width: 640px) { .et-steps { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+@media (min-width: 1024px) { .et-steps { grid-template-columns: repeat(5, minmax(0, 1fr)) } }
+.et-step { position: relative; background: #fff; border-radius: 18px; padding: 20px 18px 18px; box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 10px 26px rgba(60, 30, 10, .06) }
+.et-step-n { display: inline-block; margin-bottom: 12px; font-size: 2.2rem; line-height: 1; font-weight: 900; letter-spacing: -.03em; color: transparent; -webkit-text-stroke: 1.5px var(--lp-orange-text); font-variant-numeric: tabular-nums }
+.et-step-title { margin: 0 0 6px; font-size: 1.1rem; font-weight: 900 }
+.et-step p { margin: 0; font-size: .92rem; line-height: 1.55; color: #3f3a36 }
+
+/* ─── Cuidados ─────────────────────────────────────────────────────────── */
+.et-care { display: grid; gap: 14px; margin-top: 8px }
+@media (min-width: 900px) { .et-care { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+.et-care-col { background: color-mix(in srgb, var(--et-c) 7%, #fff); border-radius: 18px; padding: 20px 20px 8px }
+.et-care-title { display: flex; align-items: center; margin: 0 0 10px; font-size: 1.1rem; font-weight: 900 }
+.et-care-col ul { margin: 0; padding-left: 18px }
+.et-care-col li { margin: 0 0 10px; line-height: 1.5; color: #3f3a36 }
+
+/* ─── Preguntas ────────────────────────────────────────────────────────── */
+.et-faq-list { display: grid; gap: 10px; max-width: 860px; margin-top: 8px }
+.et-q { background: #fff; border-radius: 14px; box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 8px 22px rgba(60, 30, 10, .06) }
+.et-q summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 18px; font-weight: 800; line-height: 1.35 }
+.et-q summary::-webkit-details-marker { display: none }
+.et-q summary::after { content: "+"; flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: #fff1e8; color: var(--lp-orange-text); font-size: 1.2rem; font-weight: 900; transition: transform .25s }
+.et-q[open] summary::after { transform: rotate(45deg) }
+.et-q summary:focus-visible { outline: 2px solid var(--lp-orange); outline-offset: 2px; border-radius: 14px }
+.et-q p { margin: 0; padding: 0 18px 18px; line-height: 1.6; color: #3f3a36; max-width: 70ch }
+
+/* ─── Cierre ───────────────────────────────────────────────────────────── */
+.et-page .et-final { margin-top: clamp(64px, 8vw, 112px); text-align: center; display: grid; justify-items: center }
+.et-page section .et-final-title,
+.et-final-title { margin: 0 0 12px; font-size: clamp(1.8rem, 3.4vw, 2.8rem); font-weight: 900; letter-spacing: -.02em; text-wrap: balance }
+.et-final .lp-lead { margin-left: auto; margin-right: auto }
+.et-final .btn-row { justify-content: center }

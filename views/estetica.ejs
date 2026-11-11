@@ -1,0 +1,335 @@
+<%- include('partials/head', { title: title, extraCss: ['/static/css/taller-base.css?v=1', '/static/css/servicios.css?v=' + assetV('css/servicios.css'), '/static/css/estetica.css?v=' + assetV('css/estetica.css')] }) %>
+<%#
+  /pintura-detailing-wrap: "LA CABINA"
+  Landing de estética. La pieza central es la cabina de pintura: un tanque de
+  moto que cambia de acabado (así llega, pintura, detailing, wrap) con radios
+  y :has(), sin JS. public/js/estetica.js solo hace una demostración al cargar
+  (si no hay movimiento reducido) y se detiene en cuanto tocas un botón.
+  Contenido: data/estetica.js. Pintura y detailing siguen con su ficha en
+  /servicios/<slug>. Nota: head.ejs ya abre <main>; aquí no se abre otro.
+%>
+<%- include('partials/servicios/tools') %>
+<svg class="sv-defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Wrap: rollo de vinilo y espátula de instalación (mismo lienzo que las herramientas del tablero) -->
+    <symbol id="et-t-wrap" viewBox="0 0 200 120">
+      <path class="t-orangeglass" d="M26 40 L124 40 L116 82 L32 78 Z"/>
+      <path class="t-shade" d="M26 40 L124 40 L122 52 L28 52 Z"/>
+      <rect class="t-orange" x="18" y="12" width="112" height="32" rx="16"/>
+      <path class="s-line" d="M30 22 H118" stroke-width="3" stroke-linecap="round"/>
+      <ellipse class="t-darksteel" cx="130" cy="28" rx="9" ry="16"/>
+      <circle class="t-hole" cx="130" cy="28" r="5"/>
+      <path class="t-gold" d="M118 70 L180 60 L186 98 L124 108 Z"/>
+      <path class="t-dark" d="M123 102 L186 92 L188 102 L125 113 Z"/>
+      <circle class="t-hole" cx="168" cy="72" r="5"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="et-page">
+  <div class="lp-wrap">
+
+    <!-- ─── Hero: texto + cabina ─────────────────────────────────────────── -->
+    <section class="et-hero" aria-labelledby="et-h1">
+      <div class="et-hero-copy">
+        <p class="lp-label">Estética en el taller</p>
+        <h1 id="et-h1" class="et-title">Pintura, detailing y wrap</h1>
+        <p class="et-claim">Tu moto como la imaginas.</p>
+        <p class="lp-lead">Reparamos la pintura, le devolvemos el brillo o le cambiamos la cara con vinilo. Mándanos fotos y te decimos qué le sirve a tu moto y cuánto cuesta.</p>
+        <div class="btn-row">
+          <a class="btn" href="<%= waLink(waContext) %>" target="_blank" rel="noopener">Cotizar con fotos por WhatsApp</a>
+          <a class="btn btn-outline" href="#et-cual">¿Cuál necesito?</a>
+        </div>
+      </div>
+
+      <div class="et-cab" data-et-cab>
+        <fieldset class="et-cab-ctrl">
+          <legend class="sr-only">Ver el tanque con cada acabado</legend>
+          <input class="sr-only" type="radio" name="et-finish" id="etf-llega" value="llega" checked>
+          <label for="etf-llega">Así llega</label>
+          <input class="sr-only" type="radio" name="et-finish" id="etf-pintura" value="pintura">
+          <label for="etf-pintura">Pintura</label>
+          <input class="sr-only" type="radio" name="et-finish" id="etf-detailing" value="detailing">
+          <label for="etf-detailing">Detailing</label>
+          <input class="sr-only" type="radio" name="et-finish" id="etf-wrap" value="wrap">
+          <label for="etf-wrap">Wrap</label>
+        </fieldset>
+
+        <div class="et-booth">
+          <span class="et-lamp" aria-hidden="true"></span>
+          <svg class="et-tank" viewBox="0 0 420 260" role="img" aria-labelledby="et-tank-t">
+            <title id="et-tank-t">Tanque de moto que cambia de acabado según el botón elegido</title>
+            <defs>
+              <path id="et-shape" d="M48 178 C40 128 78 82 150 66 C214 52 300 54 350 84 C384 104 392 140 372 166 C352 192 290 202 216 204 L92 206 C66 206 52 196 48 178 Z"/>
+              <clipPath id="et-clip"><use href="#et-shape"/></clipPath>
+              <linearGradient id="et-g-paint" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ff9a52"/><stop offset=".45" stop-color="#F25C05"/><stop offset="1" stop-color="#8f3200"/>
+              </linearGradient>
+              <linearGradient id="et-g-dull" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#c98a64"/><stop offset=".5" stop-color="#a5613c"/><stop offset="1" stop-color="#6e3d22"/>
+              </linearGradient>
+              <linearGradient id="et-g-mate" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#3b3e44"/><stop offset="1" stop-color="#1a1b1e"/>
+              </linearGradient>
+              <linearGradient id="et-g-sat" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#5d7088"/><stop offset=".55" stop-color="#34445a"/><stop offset="1" stop-color="#1c2633"/>
+              </linearGradient>
+              <linearGradient id="et-g-cham" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#2fd3c0"/><stop offset=".4" stop-color="#3b5fe0"/><stop offset=".75" stop-color="#9b3fd6"/><stop offset="1" stop-color="#e0458f"/>
+              </linearGradient>
+              <pattern id="et-p-carbon" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="12" height="12" fill="#1b1c1f"/>
+                <rect width="6" height="6" fill="#33363b"/>
+                <rect x="6" y="6" width="6" height="6" fill="#2a2c30"/>
+              </pattern>
+              <linearGradient id="et-g-shadow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/>
+              </linearGradient>
+            </defs>
+
+            <ellipse class="tk-floor" cx="214" cy="232" rx="170" ry="12"/>
+            <rect class="tk-cap" x="236" y="44" width="56" height="20" rx="7"/>
+            <rect class="tk-cap-top" x="244" y="38" width="40" height="9" rx="4"/>
+
+            <use class="tk-b tk-b-dull" href="#et-shape"/>
+            <use class="tk-b tk-b-paint" href="#et-shape"/>
+            <use class="tk-b tk-b-mate" href="#et-shape"/>
+            <use class="tk-b tk-b-satinado" href="#et-shape"/>
+            <use class="tk-b tk-b-carbono" href="#et-shape"/>
+            <use class="tk-b tk-b-camaleon" href="#et-shape"/>
+
+            <g clip-path="url(#et-clip)">
+              <path class="tk-stripe" d="M40 150 C150 128 270 126 400 140 L400 156 C270 142 150 146 40 168 Z"/>
+              <rect class="tk-shade" x="30" y="40" width="370" height="180" fill="url(#et-g-shadow)"/>
+              <path class="tk-knee" d="M300 116 C322 138 324 170 302 196" stroke-width="5" stroke-linecap="round"/>
+              <rect class="tk-haze" x="30" y="40" width="370" height="180"/>
+              <g class="tk-scratch" stroke-linecap="round">
+                <path d="M110 118 L178 104" stroke-width="2"/>
+                <path d="M128 132 L196 116" stroke-width="1.4"/>
+                <path d="M226 96 C250 92 268 96 288 104" stroke-width="1.6"/>
+                <path d="M240 150 L300 138" stroke-width="2.2"/>
+                <circle cx="168" cy="170" r="14" fill="none" stroke-width="1"/>
+                <circle cx="168" cy="170" r="22" fill="none" stroke-width="1"/>
+                <circle cx="168" cy="170" r="30" fill="none" stroke-width="1"/>
+              </g>
+              <path class="tk-gloss" d="M100 104 C160 76 262 70 336 94 C268 84 176 90 104 116 Z"/>
+              <path class="tk-gloss2" d="M86 176 C140 186 230 188 330 176 C240 192 150 194 90 186 Z"/>
+            </g>
+
+            <!-- Esquina de vinilo levantada: debajo sigue la pintura original -->
+            <g class="tk-peel">
+              <path class="tk-peel-under" clip-path="url(#et-clip)" d="M318 194 L362 178 L326 160 Z"/>
+              <path class="tk-peel-flap" d="M362 178 L326 160 C330 150 338 142 350 140 C352 154 356 166 362 178 Z"/>
+            </g>
+
+            <g class="tk-spark" aria-hidden="true">
+              <path d="M150 88 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/>
+              <path d="M296 86 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
+              <path d="M222 172 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z"/>
+            </g>
+          </svg>
+        </div>
+
+        <fieldset class="et-vinyl">
+          <legend>Acabado del vinilo</legend>
+          <% wrapFinishes.forEach(function (f, i) { %>
+            <input class="sr-only" type="radio" name="et-vinyl" id="etv-<%= f.id %>" value="<%= f.id %>"<%= i === 0 ? ' checked' : '' %>>
+            <label for="etv-<%= f.id %>"><span class="et-sw et-sw-<%= f.id %>" aria-hidden="true"></span><%= f.name %></label>
+          <% }) %>
+        </fieldset>
+
+        <div class="et-cab-notes">
+          <p data-for="llega"><strong>Así llega:</strong> barniz opaco, remolinos de lavado y rayones.</p>
+          <p data-for="pintura"><strong>Pintura:</strong> rayones y golpes reparados, color parejo y barniz nuevo.</p>
+          <p data-for="detailing"><strong>Detailing:</strong> la misma pintura, corregida y sellada. Brillo de espejo.</p>
+          <p data-for="wrap"><strong>Wrap:</strong> otro color y otra textura. Debajo, la pintura original queda protegida.</p>
+        </div>
+        <p class="et-cab-disclaimer">Ilustración del tipo de resultado, no una foto de un trabajo.</p>
+      </div>
+    </section>
+
+    <!-- ─── Los tres servicios ───────────────────────────────────────────── -->
+    <section class="et-block" aria-labelledby="et-srv-h">
+      <p class="lp-label">Tres formas de cambiarle la cara</p>
+      <h2 id="et-srv-h" class="lp-h2">Cada acabado, su trabajo</h2>
+      <div class="et-services">
+        <% services.forEach(function (s) { %>
+          <article class="et-svc et-svc-<%= s.id %>" id="<%= s.id %>" aria-labelledby="et-svc-<%= s.id %>">
+            <div class="et-svc-tool" aria-hidden="true">
+              <span class="sv-hook"></span>
+              <svg class="sv-tool" viewBox="0 0 200 120" focusable="false"><use href="#<%= s.tool %>"/></svg>
+              <span class="sv-slot-name"><%= s.name %></span>
+            </div>
+            <div class="et-svc-body">
+              <h3 id="et-svc-<%= s.id %>" class="et-svc-title"><span class="et-dot" aria-hidden="true"></span><%= s.title %></h3>
+              <p class="et-svc-lead"><%= s.lead %></p>
+              <ul class="sv-dymo-list" aria-label="Lo que incluye <%= s.name.toLowerCase() %>">
+                <% s.includes.forEach(function (t) { %><li class="sv-dymo"><span><%= t %></span></li><% }) %>
+              </ul>
+              <p class="et-best"><strong>Ideal si:</strong> <%= s.bestFor %></p>
+              <div class="et-svc-actions">
+                <a class="btn" href="/servicios/agendar?servicio=<%= encodeURIComponent(s.agendar) %>">Agendar valoración<span class="sr-only"> de <%= s.name.toLowerCase() %></span></a>
+                <% if (s.detailHref) { %>
+                  <a class="lp-link" href="<%= s.detailHref %>">Ver ficha<span class="sr-only"> de <%= s.name.toLowerCase() %></span><span aria-hidden="true"> &rarr;</span></a>
+                <% } else { %>
+                  <a class="lp-link" href="#et-wrap">Ver acabados<span aria-hidden="true"> &darr;</span></a>
+                <% } %>
+              </div>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- ─── ¿Cuál necesito? ──────────────────────────────────────────────── -->
+    <section class="et-block et-diag" id="et-cual" aria-labelledby="et-diag-h">
+      <div class="et-diag-head">
+        <p class="lp-label">Antes de cotizar</p>
+        <h2 id="et-diag-h" class="lp-h2">¿Cuál necesita tu moto?</h2>
+        <p class="lp-lead">Una guía rápida según lo que ves. La valoración en el taller confirma.</p>
+        <div class="et-nail">
+          <p class="et-nail-title">La prueba de la uña</p>
+          <p>Pasa la uña sobre el rayón. Si no se engancha, casi siempre sale con <strong>detailing</strong>. Si se engancha, llegó al color y toca <strong>pintura</strong>.</p>
+        </div>
+      </div>
+      <ul class="et-diag-list">
+        <% var nameOf = {}; services.forEach(function (s) { nameOf[s.id] = s.name; }); %>
+        <% diagnosis.forEach(function (d) { %>
+          <li class="et-diag-row et-fix-<%= d.fix %>">
+            <span class="et-diag-problem"><%= d.problem %></span>
+            <span class="et-diag-arrow" aria-hidden="true">&rarr;</span>
+            <span class="et-diag-fix"><span class="et-dot" aria-hidden="true"></span><span class="sr-only">Recomendado: </span><%= nameOf[d.fix] %></span>
+            <span class="et-diag-note"><%= d.note %></span>
+          </li>
+        <% }) %>
+      </ul>
+    </section>
+
+    <!-- ─── Wrap a fondo ─────────────────────────────────────────────────── -->
+    <section class="et-wrap" id="et-wrap" aria-labelledby="et-wrap-h">
+      <div class="et-wrap-copy">
+        <p class="lp-label">Wrap · forrado en vinilo</p>
+        <h2 id="et-wrap-h" class="lp-h2">Otra moto, sin pintarla</h2>
+        <p class="lp-lead">El vinilo se instala pieza por pieza con calor y espátula. Cambia el color y la textura, protege la pintura de fábrica y, si un día quieres volver al original, se retira.</p>
+        <ul class="et-why">
+          <li><strong>Protege.</strong> Sol, rayones leves y piedritas pegan en el vinilo, no en la pintura.</li>
+          <li><strong>Se puede retirar.</strong> Útil si vas a vender la moto o te cansas del color.</li>
+          <li><strong>Se combina.</strong> Tanque en carbono, el resto en mate, franjas de otro color: tú decides.</li>
+        </ul>
+        <a class="btn" href="<%= waLink(waWrap) %>" target="_blank" rel="noopener">Cotizar mi wrap</a>
+      </div>
+      <div class="et-wrap-side">
+        <p class="et-side-title">Acabados</p>
+        <ul class="et-swatches">
+          <% wrapFinishes.forEach(function (f) { %>
+            <li><span class="et-chip et-sw-<%= f.id %>" aria-hidden="true"></span><span><%= f.name %></span></li>
+          <% }) %>
+          <li><span class="et-chip et-sw-brillante" aria-hidden="true"></span><span>Brillante</span></li>
+          <li><span class="et-chip et-sw-metal" aria-hidden="true"></span><span>Metalizado</span></li>
+        </ul>
+        <p class="et-side-title">Qué se puede forrar</p>
+        <ul class="sv-dymo-list">
+          <% wrapParts.forEach(function (p) { %><li class="sv-dymo"><span><%= p %></span></li><% }) %>
+        </ul>
+        <p class="et-side-note">Colores y acabados disponibles según inventario: te mostramos las muestras en la valoración.</p>
+      </div>
+    </section>
+
+    <!-- ─── Proceso ──────────────────────────────────────────────────────── -->
+    <section class="et-block" aria-labelledby="et-steps-h">
+      <p class="lp-label">Cómo trabajamos</p>
+      <h2 id="et-steps-h" class="lp-h2">De las fotos a la entrega</h2>
+      <ol class="et-steps">
+        <% steps.forEach(function (st, i) { %>
+          <li class="et-step">
+            <span class="et-step-n" aria-hidden="true"><%= String(i + 1).padStart(2, '0') %></span>
+            <h3 class="et-step-title"><%= st.title %></h3>
+            <p><%= st.text %></p>
+          </li>
+        <% }) %>
+      </ol>
+    </section>
+
+    <!-- ─── Cuidados ─────────────────────────────────────────────────────── -->
+    <section class="et-block" aria-labelledby="et-care-h">
+      <p class="lp-label">Para que dure</p>
+      <h2 id="et-care-h" class="lp-h2">Cómo cuidar el resultado</h2>
+      <div class="et-care">
+        <% care.forEach(function (c) { %>
+          <div class="et-care-col et-svc-<%= c.id %>">
+            <h3 class="et-care-title"><span class="et-dot" aria-hidden="true"></span><%= c.title %></h3>
+            <ul>
+              <% c.tips.forEach(function (t) { %><li><%= t %></li><% }) %>
+            </ul>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- ─── Preguntas ────────────────────────────────────────────────────── -->
+    <section class="et-block et-faq" aria-labelledby="et-faq-h">
+      <p class="lp-label">Preguntas frecuentes</p>
+      <h2 id="et-faq-h" class="lp-h2">Lo que más nos preguntan</h2>
+      <div class="et-faq-list">
+        <% faq.forEach(function (f) { %>
+          <details class="et-q">
+            <summary><%= f.q %></summary>
+            <p><%= f.a %></p>
+          </details>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- ─── Cierre ───────────────────────────────────────────────────────── -->
+    <section class="et-final" aria-labelledby="et-final-h">
+      <p class="lp-label">Sin compromiso</p>
+      <h2 id="et-final-h" class="et-final-title">Mándanos fotos de tu moto</h2>
+      <p class="lp-lead">De lado, de frente y de cerca en lo que quieras arreglar o cambiar. Te respondemos con lo que recomendamos y un valor estimado.</p>
+      <div class="btn-row">
+        <a class="btn" href="<%= waLink(waContext) %>" target="_blank" rel="noopener">Enviar fotos por WhatsApp</a>
+        <a class="btn btn-outline" href="/servicios">Ver todos los servicios</a>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<%
+  var SITE_URL = 'https://gorillazmotorbikes.com';
+  var pageUrl = SITE_URL + canonicalPath;
+  var ld = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'Pintura, detailing y wrap de motos',
+      serviceType: 'Estética de motos',
+      description: description,
+      url: pageUrl,
+      areaServed: { '@type': 'City', name: 'Bogotá' },
+      provider: { '@type': 'MotorcycleRepair', '@id': SITE_URL + '/#negocio', name: 'Gorillaz Motorbikes', url: SITE_URL + '/' },
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Estética de motos',
+        itemListElement: services.map(function (s) { return { '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.title, description: s.lead } }; })
+      }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map(function (f) { return { '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }; })
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL + '/' },
+        { '@type': 'ListItem', position: 2, name: 'Servicios', item: SITE_URL + '/servicios' },
+        { '@type': 'ListItem', position: 3, name: 'Pintura, detailing y wrap', item: pageUrl }
+      ]
+    }
+  ];
+%>
+<script type="application/ld+json"><%- JSON.stringify(ld).replace(/</g, '\\u003c') %></script>
+<script defer src="/static/js/estetica.js?v=<%= assetV('js/estetica.js') %>"></script>
+
+<%- include('partials/footer') %>

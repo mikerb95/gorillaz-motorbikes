@@ -23,6 +23,7 @@ const STATIC_PAGES = [
   { path: '/club',         changefreq: 'monthly', priority: '0.6' },
   { path: '/clasificados', changefreq: 'daily',   priority: '0.6' },
   { path: '/duplicado-placas', changefreq: 'monthly', priority: '0.6' },
+  { path: '/pintura-detailing-wrap', changefreq: 'monthly', priority: '0.8' },
   { path: '/runt',         changefreq: 'monthly', priority: '0.5' },
   { path: '/faq',          changefreq: 'monthly', priority: '0.5' },
   { path: '/mision',       changefreq: 'yearly',  priority: '0.3' },

@@ -31,6 +31,7 @@ const serviceGroups = [
   {
     title: 'Estética',
     items: [
+      { href: '/pintura-detailing-wrap', slug: null, label: 'Pintura, detailing y wrap', icon: 'palette', desc: 'Color, brillo y vinilo' },
       svc('pintura', 'brush', 'Rayones y color original'),
       svc('lavado-motos', 'drop', 'Cuida pintura y plásticos'),
       svc('detailing-motos', 'sparkle', 'Pulido y sellado cerámico'),

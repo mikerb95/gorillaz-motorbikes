@@ -34,7 +34,7 @@ function calcParking(order, config) {
 }
 
 const router = express.Router();
-const SERVICES = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos', 'Lavado de motos', 'Detailing de motos', 'Lavado de cascos'];
+const SERVICES = ['Mecánica', 'Pintura', 'Alistamiento tecnomecánica', 'Electricidad', 'Torno', 'Prensa', 'Mecánica rápida', 'Escaneo de motos', 'Lavado de motos', 'Detailing de motos', 'Wrap (forrado)', 'Lavado de cascos'];
 
 // Ficha de cada servicio (includes, textos, fotos): data/services-detail.js.
 // El asesor con IA (helpers/asesor) lee la misma lista.

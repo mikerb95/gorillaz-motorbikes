@@ -103,6 +103,7 @@ app.use('/',       require('./routes/shop'));
 app.use('/',       require('./routes/cart'));
 app.use('/clasificados', require('./routes/clasificados'));
 app.use('/duplicado-placas', require('./routes/duplicado-placas'));
+app.use('/',       require('./routes/estetica'));
 app.use('/',       require('./routes/courses'));
 app.use('/',       require('./routes/events'));
 app.use('/',       require('./routes/newsletter'));
