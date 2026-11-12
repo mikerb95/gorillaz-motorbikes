@@ -2,7 +2,8 @@
 //
 // Cada sección grande es un componente propio con su propio mecanismo (la
 // cortina se enrolla, la moto avanza a golpes de trinquete, la ficha recibe
-// sellos, la aguja del tacómetro barre los niveles, las etiquetas se mecen).
+// sellos, la aguja del tacómetro barre los niveles, las etiquetas se mecen,
+// la moto de la cabina cambia de piel).
 // `mount` aplica el contrato fail-open: si un componente falla, su sección
 // vuelve al estado final del servidor y las demás siguen funcionando.
 //
@@ -19,6 +20,7 @@ import initServices from './service-bike.mjs?v=3';
 import initTicket from './ticket-stamps.mjs?v=1';
 import initClub from './club-tach.mjs?v=1';
 import initShopTags from './shop-tags.mjs?v=2';
+import initSkin from './skin-change.mjs?v=1';
 
 const reduced = prefersReduced();
 const gsap = getGsap();
@@ -29,6 +31,7 @@ if (!reduced) {
   mount('[data-lp="services"]', initServices);
   mount('[data-lp="ticket"]', initTicket);
   mount('[data-lp="shop"]', initShopTags);
+  mount('[data-lp="skin"]', initSkin);
 } else {
   document.documentElement.classList.remove('lp-shutter-pending');
 }

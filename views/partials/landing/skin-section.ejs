@@ -1,0 +1,161 @@
+<%#
+  "CAMBIO DE PIEL": la sección de estética de la home (lleva a /estetica).
+
+  La pieza central es la misma moto de la landing (#lp-bike-art) dentro de una
+  cabina. Hay cuatro copias apiladas; cada una le pone a la carrocería un
+  acabado distinto con la propiedad heredable --skin (ver .s-body en
+  landing.css): así llega, pintura, detailing y wrap. Las tres de arriba se
+  destapan con un recorte (clipPath) que avanza detrás de su herramienta:
+  la pistola pinta, la pulidora saca brillo y el rollo de vinilo forra.
+
+  ESTADO FINAL (sin JS o con movimiento reducido): la moto partida en cuatro
+  franjas, una por acabado, con su rótulo encima. skin-change.mjs esconde los
+  rótulos, cierra los recortes y los abre al ritmo del scroll (escritorio,
+  sección fijada) o en bucle cuando la sección se ve (móvil).
+%>
+<section class="lp-skin" id="estetica" data-lp="skin" aria-labelledby="lp-skin-title">
+  <div class="lp-wrap lp-skin-grid">
+    <div class="lp-skin-copy">
+      <p class="lp-label">Pintura, detailing y wrap</p>
+      <h2 id="lp-skin-title" class="lp-h2">Cambia la piel de tu moto</h2>
+      <p class="lp-lead">Borramos los rayones, le devolvemos el brillo o le cambiamos el color sin tocar la pintura original. Mándanos fotos y te decimos qué le sirve.</p>
+      <ol class="lp-skin-steps">
+        <li data-step="1">
+          <span class="lp-skin-num" aria-hidden="true">01</span>
+          <div><h3>Pintura</h3><p>Rayones profundos, golpes y piezas reparadas, con el color original o uno nuevo.</p></div>
+        </li>
+        <li data-step="2">
+          <span class="lp-skin-num" aria-hidden="true">02</span>
+          <div><h3>Detailing</h3><p>Corrección de barniz, pulido y sellado cerámico para la pintura opaca o con remolinos.</p></div>
+        </li>
+        <li data-step="3">
+          <span class="lp-skin-num" aria-hidden="true">03</span>
+          <div><h3>Wrap</h3><p>Vinilo mate, satinado, carbono o camaleón. Protege la pintura y se puede retirar.</p></div>
+        </li>
+      </ol>
+      <div class="btn-row">
+        <a class="btn" href="/estetica">Ver estética <span aria-hidden="true">&rarr;</span></a>
+        <a class="lp-link" href="/estetica#et-cotizar">Armar mi cotización<span aria-hidden="true"> &rarr;</span></a>
+      </div>
+    </div>
+
+    <div class="lp-skin-stage">
+      <svg class="lp-skin-svg lp-bike-view" viewBox="150 140 900 490" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+        <defs>
+          <%# Acabados en coordenadas de la moto, para que tanque, colín y
+              guardabarros compartan el mismo degradado continuo. %>
+          <linearGradient id="es-g-dull" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+            <stop offset="0" stop-color="#8d847c"/><stop offset=".5" stop-color="#655c55"/><stop offset="1" stop-color="#3b3632"/>
+          </linearGradient>
+          <linearGradient id="es-g-paint" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+            <stop offset="0" stop-color="#ff9a52"/><stop offset=".45" stop-color="#F25C05"/><stop offset="1" stop-color="#8f3200"/>
+          </linearGradient>
+          <linearGradient id="es-g-gloss" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+            <stop offset="0" stop-color="#ffd2ad"/><stop offset=".18" stop-color="#ff8a3d"/><stop offset=".5" stop-color="#e84f00"/><stop offset=".8" stop-color="#9c3300"/><stop offset="1" stop-color="#4d1800"/>
+          </linearGradient>
+          <linearGradient id="es-g-cham" gradientUnits="userSpaceOnUse" x1="250" y1="200" x2="1000" y2="420">
+            <stop offset="0" stop-color="#2fd3c0"/><stop offset=".35" stop-color="#3b5fe0"/><stop offset=".7" stop-color="#9b3fd6"/><stop offset="1" stop-color="#e0458f"/>
+          </linearGradient>
+          <radialGradient id="es-g-booth" cx=".5" cy="0" r="1">
+            <stop offset="0" stop-color="#3a3d44"/><stop offset=".55" stop-color="#1c1e22"/><stop offset="1" stop-color="#0e0f11"/>
+          </radialGradient>
+          <radialGradient id="es-g-mist">
+            <stop offset="0" stop-color="#ffb070" stop-opacity=".85"/><stop offset=".6" stop-color="#ff8a3d" stop-opacity=".3"/><stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="es-g-pad">
+            <stop offset="0" stop-color="#ffcf9e"/><stop offset=".7" stop-color="#ff8a3d"/><stop offset="1" stop-color="#c94d06"/>
+          </radialGradient>
+          <linearGradient id="es-g-roll" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#2a1f5c"/><stop offset=".35" stop-color="#7d6cf0"/><stop offset=".55" stop-color="#e6e0ff"/><stop offset=".75" stop-color="#6a4fd8"/><stop offset="1" stop-color="#1d1540"/>
+          </linearGradient>
+          <linearGradient id="es-g-sheen" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".22"/>
+          </linearGradient>
+          <%# Recortes: estado final = franjas. El JS los cierra y los abre. %>
+          <clipPath id="es-c1"><rect class="es-clip" x="420" y="140" width="630" height="490"/></clipPath>
+          <clipPath id="es-c2"><rect class="es-clip" x="640" y="140" width="410" height="490"/></clipPath>
+          <clipPath id="es-c3"><rect class="es-clip" x="800" y="140" width="250" height="490"/></clipPath>
+        </defs>
+
+        <rect x="150" y="140" width="900" height="490" fill="url(#es-g-booth)"/>
+        <ellipse class="es-lamp" cx="600" cy="140" rx="300" ry="26"/>
+        <ellipse cx="600" cy="606" rx="420" ry="16" fill="#000" opacity=".45"/>
+
+        <%# 0 · Así llega: color cansado y rayones. %>
+        <g style="--skin:url(#es-g-dull)">
+          <use href="#lp-bike-art"/>
+          <g class="es-scratch" stroke-linecap="round">
+            <path d="M610 230 L680 214" stroke-width="2.2"/>
+            <path d="M628 246 L700 232" stroke-width="1.4"/>
+            <path d="M720 214 C744 212 762 218 780 228" stroke-width="1.8"/>
+            <path d="M400 268 L470 286" stroke-width="2"/>
+            <circle cx="690" cy="262" r="12" fill="none" stroke-width="1"/>
+            <circle cx="690" cy="262" r="20" fill="none" stroke-width="1"/>
+          </g>
+        </g>
+        <%# 1 · Pintura. %>
+        <g clip-path="url(#es-c1)" style="--skin:url(#es-g-paint)">
+          <use href="#lp-bike-art"/>
+        </g>
+        <%# 2 · Detailing: el mismo color, con reflejo. %>
+        <g clip-path="url(#es-c2)" style="--skin:url(#es-g-gloss)">
+          <use href="#lp-bike-art"/>
+          <g class="es-reflect" fill="none" stroke-linecap="round">
+            <path d="M606 222 C664 200 744 200 792 222" stroke-width="6"/>
+            <path d="M380 262 C420 272 470 284 530 292" stroke-width="3"/>
+            <path d="M800 266 L838 282" stroke-width="3"/>
+          </g>
+        </g>
+        <%# 3 · Wrap camaleón. %>
+        <g clip-path="url(#es-c3)" style="--skin:url(#es-g-cham)">
+          <use href="#lp-bike-art"/>
+          <path class="es-reflect" d="M606 226 C664 206 744 206 792 226" fill="none" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+        </g>
+
+        <%# Rótulos de las franjas (solo en el estado final). %>
+        <g class="es-bands" data-m>
+          <path d="M420 176 V600 M640 176 V600 M800 176 V600" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-dasharray="6 8"/>
+          <text x="285" y="172">Así llega</text>
+          <text x="530" y="172">Pintura</text>
+          <text x="720" y="172">Detailing</text>
+          <text x="925" y="172">Wrap</text>
+        </g>
+
+        <%# Herramientas (solo con motion): las mueve el JS por el borde del recorte. %>
+        <g class="es-tool es-gun">
+          <ellipse class="es-mist" cx="0" cy="70" rx="48" ry="80" fill="url(#es-g-mist)"/>
+          <rect x="-5" y="-14" width="10" height="16" rx="2" fill="#c9ced4"/>
+          <path d="M-18 -14 L18 -14 L22 -48 L-22 -48 Z" fill="#2b2e33"/>
+          <rect x="-15" y="-90" width="30" height="42" rx="7" fill="#F25C05" fill-opacity=".85"/>
+          <rect x="-15" y="-90" width="30" height="10" rx="5" fill="#fff" fill-opacity=".25"/>
+          <path d="M18 -44 L64 -36 L66 -24 L20 -30 Z" fill="#3a3e45"/>
+          <path d="M28 -28 L36 -6 L44 -8 L38 -28 Z" fill="#d4a93c"/>
+        </g>
+        <g class="es-tool es-polisher">
+          <circle r="34" fill="url(#es-g-pad)"/>
+          <g class="es-pad-lines" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-linecap="round">
+            <path d="M-20 0 H-8 M8 0 H20 M0 -20 V-8 M0 8 V20"/>
+          </g>
+          <circle r="10" fill="#2b2e33"/>
+          <rect x="-15" y="-78" width="30" height="46" rx="6" fill="#2b2e33"/>
+          <rect x="-56" y="-86" width="112" height="14" rx="7" fill="#3a3e45"/>
+          <rect x="-56" y="-86" width="112" height="4" rx="2" fill="#fff" fill-opacity=".2"/>
+        </g>
+        <g class="es-tool es-roll">
+          <rect x="-70" y="168" width="58" height="444" fill="url(#es-g-sheen)"/>
+          <rect x="-14" y="160" width="28" height="460" rx="14" fill="url(#es-g-roll)"/>
+          <rect x="-6" y="150" width="12" height="16" rx="3" fill="#2b2e33"/>
+          <rect x="-6" y="614" width="12" height="16" rx="3" fill="#2b2e33"/>
+        </g>
+
+        <%# Destellos que deja el detailing. %>
+        <g class="es-sparks" fill="#fff">
+          <path d="M700 214 l3 -9 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 Z"/>
+          <path d="M612 252 l2 -7 l2 7 l7 2 l-7 2 l-2 7 l-2 -7 l-7 -2 Z"/>
+          <path d="M484 284 l2 -7 l2 7 l7 2 l-7 2 l-2 7 l-2 -7 l-7 -2 Z"/>
+          <path d="M770 238 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>

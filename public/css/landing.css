@@ -63,14 +63,16 @@
 .s-electric { opacity: min(1, calc(var(--on-electric, 0) + var(--on-scan, 0))) }
 .s-headlight { fill: color-mix(in srgb, #fff3c4 calc((var(--on-electric, 0) + var(--on-inspect, 0)) * 100%), #9aa6b4) }
 .s-taillight { fill: color-mix(in srgb, #ff3b2f calc((var(--on-electric, 0) + var(--on-inspect, 0)) * 100%), #6e1a14) }
+/* --skin: un acabado completo para la carrocería (sección "Cambio de piel",
+   que le pasa un gradiente url(#...)). Sin --skin, el color por sistemas. */
 .s-body {
-  fill: color-mix(in srgb, #9aa2ad calc(var(--on-detail, 0) * 45%),
-          color-mix(in srgb, var(--hl) calc(var(--on-body, 0) * 92%), #474c54));
+  fill: var(--skin, color-mix(in srgb, #9aa2ad calc(var(--on-detail, 0) * 45%),
+          color-mix(in srgb, var(--hl) calc(var(--on-body, 0) * 92%), #474c54)));
 }
 .s-fender {
   fill: none;
-  stroke: color-mix(in srgb, #9aa2ad calc(var(--on-detail, 0) * 45%),
-            color-mix(in srgb, var(--hl) calc(var(--on-body, 0) * 92%), #474c54));
+  stroke: var(--skin, color-mix(in srgb, #9aa2ad calc(var(--on-detail, 0) * 45%),
+            color-mix(in srgb, var(--hl) calc(var(--on-body, 0) * 92%), #474c54)));
 }
 .s-sidepanel { fill-opacity: calc(1 - min(1, calc(var(--on-electric, 0) + var(--on-scan, 0))) * .8) }
 .s-seat { fill: #16171a }
@@ -411,3 +413,62 @@ section .lp-product-name { max-width: none }
 .lp-offer-body .lp-label { margin: 0 }
 .lp-offer-body s { opacity: .6; font-size: .9em }
 @media (max-width: 560px) { .lp-offer { flex-wrap: wrap } .lp-offer .btn { width: 100%; text-align: center } }
+
+/* ─── Cambio de piel (partials/landing/skin-section.ejs) ──────────────────
+   La moto en la cabina de pintura. Estado final: cuatro franjas con rótulo.
+   Con motion, skin-change.mjs pone .is-armed: esconde rótulos y destellos y
+   mueve las herramientas por el borde de cada recorte. */
+.lp-skin {
+  position: relative; overflow: clip; padding: clamp(64px, 8vw, 112px) 0;
+  background: radial-gradient(90% 60% at 85% 10%, rgba(242, 92, 5, .12), rgba(242, 92, 5, 0) 60%), var(--lp-paper);
+  color: var(--lp-ink);
+}
+.lp-skin-grid { display: grid; gap: clamp(28px, 4vw, 56px); align-items: center }
+@media (min-width: 1024px) {
+  .lp-skin-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr) }
+  .lp-skin.is-pinned { min-height: 100vh; display: flex; align-items: center; padding: calc(var(--header-offset, 92px) + 8px) 0 32px }
+  .lp-skin.is-pinned .lp-skin-grid { width: 100% }
+}
+.lp-skin .lp-label { color: var(--lp-orange-text, #b8460b) }
+.lp-skin .lp-lead { max-width: 46ch }
+
+.lp-skin-steps { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 6px }
+.lp-skin-steps li {
+  --p: 1; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start;
+  padding: 12px 14px; border-radius: 14px; transition: background-color .35s ease, opacity .35s ease;
+}
+.lp-skin-num {
+  display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+  font-size: .78rem; font-weight: 900; color: #fff; background: var(--lp-ink); transition: background-color .35s ease, transform .35s ease;
+}
+.lp-skin-steps h3 { margin: 4px 0 4px; font-size: 1.08rem; font-weight: 900; letter-spacing: -.01em }
+.lp-skin-steps p { margin: 0; font-size: .93rem; line-height: 1.5; color: #4a443f }
+/* Barra de avance del paso (el JS mueve --p; sin JS está llena). */
+.lp-skin-steps h3::after {
+  content: ''; display: block; height: 3px; margin-top: 6px; border-radius: 3px; width: 64px;
+  background: linear-gradient(90deg, var(--lp-orange) calc(var(--p) * 100%), rgba(14, 15, 17, .12) 0);
+}
+.motion-ok .lp-skin.is-armed .lp-skin-steps li { opacity: .5 }
+.motion-ok .lp-skin.is-armed .lp-skin-steps li.is-active { opacity: 1; background: rgba(242, 92, 5, .09) }
+.motion-ok .lp-skin.is-armed .lp-skin-steps li.is-active .lp-skin-num { background: var(--lp-orange); transform: scale(1.08) }
+.motion-ok .lp-skin.is-armed .lp-skin-steps li.is-done { opacity: .8 }
+
+.lp-skin-stage {
+  position: relative; border-radius: 22px; overflow: hidden; background: #0e0f11;
+  box-shadow: 0 30px 60px -20px rgba(40, 20, 5, .45), 0 2px 0 rgba(255, 255, 255, .05) inset;
+}
+.lp-skin-svg { display: block; width: 100%; height: auto; aspect-ratio: 900 / 490 }
+.es-lamp { fill: #fff6e6; opacity: .14; filter: blur(6px) }
+.es-scratch { stroke: #e9e2da; stroke-opacity: .55 }
+.es-reflect { stroke: #fff; stroke-opacity: .7 }
+.es-bands text {
+  fill: #fff; font: 800 15px/1 Montserrat, Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; text-anchor: middle;
+}
+.es-tool, .es-sparks path { opacity: 0 }
+.es-sparks path { transform-box: fill-box; transform-origin: center }
+.es-tool { filter: drop-shadow(0 10px 8px rgba(0, 0, 0, .5)) }
+.es-pad-lines { transform-box: fill-box; transform-origin: center }
+@media (max-width: 1023.98px) {
+  .lp-skin-stage { order: -1 }
+  .es-bands text { font-size: 22px }
+}
