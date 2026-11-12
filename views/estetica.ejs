@@ -37,7 +37,7 @@
         <p class="et-claim">Tu moto como la imaginas.</p>
         <p class="lp-lead">Reparamos la pintura, le devolvemos el brillo o le cambiamos la cara con vinilo. Mándanos fotos y te decimos qué le sirve a tu moto y cuánto cuesta.</p>
         <div class="btn-row">
-          <a class="btn" href="<%= waLink(waContext) %>" target="_blank" rel="noopener">Cotizar con fotos por WhatsApp</a>
+          <a class="btn" href="#et-cotizar">Armar mi cotización</a>
           <a class="btn btn-outline" href="#et-cual">¿Cuál necesito?</a>
         </div>
       </div>
@@ -85,47 +85,92 @@
               <linearGradient id="et-g-shadow" x1="0" y1="0" x2="0" y2="1">
                 <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/>
               </linearGradient>
+              <radialGradient id="et-g-mist">
+                <stop offset="0" stop-color="#ffb070" stop-opacity=".8"/><stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="et-g-spec">
+                <stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".4" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="et-g-pad">
+                <stop offset="0" stop-color="#ffb070"/><stop offset="1" stop-color="#e0600f"/>
+              </radialGradient>
+              <linearGradient id="et-g-sweep" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </linearGradient>
+              <filter id="et-f-soft" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="7"/></filter>
+              <%# Máscara del acabado que entra: un trazo en zigzag (pistola y pulidora),
+                  un barrido recto (vinilo) o todo de una vez (volver a "así llega"). %>
+              <mask id="et-m" maskUnits="userSpaceOnUse" x="-20" y="0" width="460" height="260">
+                <path class="m-stroke" d="M-10 82 H410 V128 H-10 V176 H410" fill="none" stroke="#fff" stroke-width="68" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect class="m-wipe" x="-20" y="0" width="0" height="260" fill="#fff"/>
+                <rect class="m-all" x="-20" y="0" width="460" height="260" fill="#fff" opacity="0"/>
+              </mask>
             </defs>
 
             <ellipse class="tk-floor" cx="214" cy="232" rx="170" ry="12"/>
             <rect class="tk-cap" x="236" y="44" width="56" height="20" rx="7"/>
             <rect class="tk-cap-top" x="244" y="38" width="40" height="9" rx="4"/>
 
-            <use class="tk-b tk-b-dull" href="#et-shape"/>
-            <use class="tk-b tk-b-paint" href="#et-shape"/>
-            <use class="tk-b tk-b-mate" href="#et-shape"/>
-            <use class="tk-b tk-b-satinado" href="#et-shape"/>
-            <use class="tk-b tk-b-carbono" href="#et-shape"/>
-            <use class="tk-b tk-b-camaleon" href="#et-shape"/>
-
-            <g clip-path="url(#et-clip)">
-              <path class="tk-stripe" d="M40 150 C150 128 270 126 400 140 L400 156 C270 142 150 146 40 168 Z"/>
-              <rect class="tk-shade" x="30" y="40" width="370" height="180" fill="url(#et-g-shadow)"/>
-              <path class="tk-knee" d="M300 116 C322 138 324 170 302 196" stroke-width="5" stroke-linecap="round"/>
-              <rect class="tk-haze" x="30" y="40" width="370" height="180"/>
-              <g class="tk-scratch" stroke-linecap="round">
-                <path d="M110 118 L178 104" stroke-width="2"/>
-                <path d="M128 132 L196 116" stroke-width="1.4"/>
-                <path d="M226 96 C250 92 268 96 288 104" stroke-width="1.6"/>
-                <path d="M240 150 L300 138" stroke-width="2.2"/>
-                <circle cx="168" cy="170" r="14" fill="none" stroke-width="1"/>
-                <circle cx="168" cy="170" r="22" fill="none" stroke-width="1"/>
-                <circle cx="168" cy="170" r="30" fill="none" stroke-width="1"/>
+            <%# Dos capas iguales: "a" es el acabado actual y "b" el que entra,
+                destapado por la máscara mientras pasa la herramienta (estetica.js).
+                Sin JS solo existe "a", que cambia con los radios (:has). %>
+            <% ['a', 'b'].forEach(function (k) { %>
+            <g class="tk-look tk-look-<%= k %>"<%- k === 'b' ? ' mask="url(#et-m)"' : '' %>>
+              <use class="tk-b tk-b-dull" href="#et-shape"/>
+              <use class="tk-b tk-b-paint" href="#et-shape"/>
+              <use class="tk-b tk-b-mate" href="#et-shape"/>
+              <use class="tk-b tk-b-satinado" href="#et-shape"/>
+              <use class="tk-b tk-b-carbono" href="#et-shape"/>
+              <use class="tk-b tk-b-camaleon" href="#et-shape"/>
+              <g clip-path="url(#et-clip)">
+                <path class="tk-stripe" d="M40 150 C150 128 270 126 400 140 L400 156 C270 142 150 146 40 168 Z"/>
+                <rect class="tk-shade" x="30" y="40" width="370" height="180" fill="url(#et-g-shadow)"/>
+                <path class="tk-knee" d="M300 116 C322 138 324 170 302 196" stroke-width="5" stroke-linecap="round"/>
+                <rect class="tk-haze" x="30" y="40" width="370" height="180"/>
+                <g class="tk-scratch" stroke-linecap="round">
+                  <path d="M110 118 L178 104" stroke-width="2"/>
+                  <path d="M128 132 L196 116" stroke-width="1.4"/>
+                  <path d="M226 96 C250 92 268 96 288 104" stroke-width="1.6"/>
+                  <path d="M240 150 L300 138" stroke-width="2.2"/>
+                  <circle cx="168" cy="170" r="14" fill="none" stroke-width="1"/>
+                  <circle cx="168" cy="170" r="22" fill="none" stroke-width="1"/>
+                  <circle cx="168" cy="170" r="30" fill="none" stroke-width="1"/>
+                </g>
+                <path class="tk-gloss" d="M100 104 C160 76 262 70 336 94 C268 84 176 90 104 116 Z"/>
+                <path class="tk-gloss2" d="M86 176 C140 186 230 188 330 176 C240 192 150 194 90 186 Z"/>
+                <ellipse class="tk-spec" cx="214" cy="112" rx="78" ry="30" fill="url(#et-g-spec)"/>
+                <path class="tk-peel-under" d="M318 194 L362 178 L326 160 Z"/>
               </g>
-              <path class="tk-gloss" d="M100 104 C160 76 262 70 336 94 C268 84 176 90 104 116 Z"/>
-              <path class="tk-gloss2" d="M86 176 C140 186 230 188 330 176 C240 192 150 194 90 186 Z"/>
-            </g>
-
-            <!-- Esquina de vinilo levantada: debajo sigue la pintura original -->
-            <g class="tk-peel">
-              <path class="tk-peel-under" clip-path="url(#et-clip)" d="M318 194 L362 178 L326 160 Z"/>
               <path class="tk-peel-flap" d="M362 178 L326 160 C330 150 338 142 350 140 C352 154 356 166 362 178 Z"/>
+              <g class="tk-spark">
+                <path d="M150 88 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/>
+                <path d="M296 86 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
+                <path d="M222 172 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z"/>
+              </g>
             </g>
+            <% }) %>
 
-            <g class="tk-spark" aria-hidden="true">
-              <path d="M150 88 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/>
-              <path d="M296 86 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
-              <path d="M222 172 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z"/>
+            <%# Utilería de la animación: invisible hasta que estetica.js la usa. %>
+            <g clip-path="url(#et-clip)" aria-hidden="true">
+              <rect class="fx-sweep" x="0" y="30" width="80" height="200" fill="url(#et-g-sweep)"/>
+            </g>
+            <g class="tk-fx" aria-hidden="true">
+              <circle class="fx-mist" r="46" fill="url(#et-g-mist)"/>
+              <g class="fx-gun"><g transform="scale(.62) translate(-18 -57)"><use href="#sv-t-pintura" width="200" height="120"/></g></g>
+              <g class="fx-pad">
+                <g class="fx-pad-spin">
+                  <circle r="30" fill="url(#et-g-pad)"/>
+                  <circle r="29" fill="none" stroke="#7a3206" stroke-width="2"/>
+                  <path d="M0 -21 A21 21 0 0 1 21 0 M0 21 A21 21 0 0 1 -21 0" fill="none" stroke="#fff" stroke-opacity=".65" stroke-width="3" stroke-linecap="round"/>
+                  <circle r="8" fill="#1b1d21"/>
+                </g>
+              </g>
+              <g class="fx-sq">
+                <rect x="-9" y="34" width="18" height="188" rx="9" fill="url(#sv-g-dark)"/>
+                <rect x="-4" y="38" width="4" height="180" rx="2" fill="#fff" opacity=".16"/>
+                <path d="M8 104 L44 96 L50 152 L12 160 Z" fill="#d4a93c"/>
+                <path d="M2 104 L8 104 L12 160 L6 160 Z" fill="#1b1d21"/>
+              </g>
             </g>
           </svg>
         </div>
@@ -216,7 +261,7 @@
           <li><strong>Se puede retirar.</strong> Útil si vas a vender la moto o te cansas del color.</li>
           <li><strong>Se combina.</strong> Tanque en carbono, el resto en mate, franjas de otro color: tú decides.</li>
         </ul>
-        <a class="btn" href="<%= waLink(waWrap) %>" target="_blank" rel="noopener">Cotizar mi wrap</a>
+        <a class="btn" href="#et-cotizar" data-qz-pick="wrap">Cotizar mi wrap</a>
       </div>
       <div class="et-wrap-side">
         <p class="et-side-title">Acabados</p>
@@ -280,16 +325,136 @@
       </div>
     </section>
 
-    <!-- ─── Cierre ───────────────────────────────────────────────────────── -->
-    <section class="et-final" aria-labelledby="et-final-h">
-      <p class="lp-label">Sin compromiso</p>
-      <h2 id="et-final-h" class="et-final-title">Mándanos fotos de tu moto</h2>
-      <p class="lp-lead">De lado, de frente y de cerca en lo que quieras arreglar o cambiar. Te respondemos con lo que recomendamos y un valor estimado.</p>
-      <div class="btn-row">
-        <a class="btn" href="<%= waLink(waContext) %>" target="_blank" rel="noopener">Enviar fotos por WhatsApp</a>
-        <a class="btn btn-outline" href="/servicios">Ver todos los servicios</a>
+    <!-- ─── Cotizador por pasos ──────────────────────────────────────────── -->
+    <%#
+      Sin JS se ve el bloque de respaldo (enlace directo a WhatsApp). Con JS,
+      estetica.js lo cambia por el cotizador: arma el mensaje y abre WhatsApp.
+      No envía nada al servidor.
+    %>
+    <section class="et-block et-quote" id="et-cotizar" aria-labelledby="et-quote-h">
+      <div class="et-quote-head">
+        <p class="lp-label">Sin compromiso</p>
+        <h2 id="et-quote-h" class="lp-h2">Arma tu cotización</h2>
+        <p class="lp-lead">Unos toques y se abre WhatsApp con todo escrito. Solo te falta adjuntar las fotos.</p>
+        <div class="et-photos">
+          <p class="et-nail-title">Las fotos que nos sirven</p>
+          <ol>
+            <li>La moto completa, de lado.</li>
+            <li>De frente o de tres cuartos.</li>
+            <li>De cerca, lo que quieres arreglar o cambiar.</li>
+          </ol>
+        </div>
       </div>
+
+      <div class="et-qz-fallback" data-qz-fallback>
+        <p>Escríbenos y cuéntanos qué quieres hacerle a tu moto.</p>
+        <a class="btn" href="<%= waLink(waContext) %>" target="_blank" rel="noopener">Enviar fotos por WhatsApp</a>
+      </div>
+
+      <form class="et-qz" data-qz hidden novalidate data-wa="<%= waLink('') %>" data-url="<%= siteUrl + canonicalPath %>">
+        <div class="et-qz-top">
+          <div class="et-qz-bar" aria-hidden="true"><span data-qz-bar></span></div>
+          <p class="et-qz-count" data-qz-count aria-live="polite"></p>
+        </div>
+
+        <fieldset class="et-qz-step" data-step="servicio">
+          <legend tabindex="-1">¿Qué quieres hacerle a tu moto?</legend>
+          <p class="et-qz-hint">Puedes elegir varios.</p>
+          <div class="qz-chips">
+            <% quote.services.forEach(function (s) { %>
+              <label class="qz-chip qz-chip-<%= s.id %>"><input type="checkbox" name="svc" value="<%= s.id %>" data-label="<%= s.name %>"><span><%= s.name %></span></label>
+            <% }) %>
+          </div>
+        </fieldset>
+
+        <fieldset class="et-qz-step" data-step="moto" hidden>
+          <legend tabindex="-1">¿Qué moto es?</legend>
+          <label class="qz-field">Marca, modelo y año
+            <input type="text" name="moto" maxlength="60" autocomplete="off" placeholder="Ej: Yamaha MT-03 2022">
+          </label>
+          <label class="qz-field">Color actual <span class="qz-opt">(opcional)</span>
+            <input type="text" name="color" maxlength="40" autocomplete="off" placeholder="Ej: azul con negro">
+          </label>
+        </fieldset>
+
+        <fieldset class="et-qz-step" data-step="piezas" hidden>
+          <legend tabindex="-1">¿Qué piezas?</legend>
+          <p class="et-qz-hint">Toca las piezas en la moto o en la lista.</p>
+          <svg class="qz-bike" viewBox="0 0 520 262" aria-hidden="true" focusable="false">
+            <circle class="qz-tire" cx="110" cy="196" r="54"/><circle class="qz-tire" cx="410" cy="196" r="54"/>
+            <path class="qz-frame" d="M110 196 L172 78 M166 72 L200 54 M214 134 L300 196 M300 134 L410 196"/>
+            <path class="qz-pipe" d="M292 202 L474 186"/>
+            <path class="qz-block" d="M204 132 L296 132 L304 192 L214 198 Z"/>
+            <path class="qz-seat" d="M318 98 C344 92 372 94 396 104 L396 121 L322 124 Z"/>
+            <g class="qz-part qz-ring" data-part="rines"><circle cx="110" cy="196" r="36"/><circle cx="410" cy="196" r="36"/></g>
+            <path class="qz-part" data-part="guardabarros-del" d="M50 168 C64 122 152 118 176 164 L160 170 C142 138 82 140 66 172 Z"/>
+            <path class="qz-part" data-part="guardabarros-tras" d="M352 166 C366 122 452 118 476 164 L460 170 C442 138 384 140 368 172 Z"/>
+            <path class="qz-part" data-part="tapas" d="M302 133 L350 131 L340 168 L307 166 Z"/>
+            <path class="qz-part" data-part="frontal" d="M146 80 C146 60 176 52 198 62 L206 100 C186 112 158 108 148 94 Z"/>
+            <path class="qz-part" data-part="tanque" d="M198 96 C222 68 292 68 318 96 L322 124 C290 132 230 132 202 126 Z"/>
+            <path class="qz-part" data-part="colin" d="M396 104 C430 98 462 102 486 92 L480 116 C456 124 430 124 396 122 Z"/>
+          </svg>
+          <div class="qz-chips qz-chips-sm">
+            <label class="qz-chip qz-chip-all"><input type="checkbox" name="toda" value="1"><span>Toda la moto</span></label>
+            <% quote.parts.forEach(function (p) { %>
+              <label class="qz-chip"><input type="checkbox" name="pieza" value="<%= p.id %>" data-label="<%= p.name %>"><span><%= p.name %></span></label>
+            <% }) %>
+          </div>
+        </fieldset>
+
+        <fieldset class="et-qz-step" data-step="detalles" hidden>
+          <legend tabindex="-1">Últimos detalles</legend>
+          <div class="qz-group" data-if="wrap">
+            <p class="qz-group-title">Acabado del vinilo</p>
+            <div class="qz-chips qz-chips-sm">
+              <% quote.wrapFinishes.forEach(function (f) { %>
+                <label class="qz-chip"><input type="radio" name="wrapFinish" value="<%= f %>"><span><%= f %></span></label>
+              <% }) %>
+            </div>
+            <label class="qz-field">Color que te gustaría <span class="qz-opt">(opcional)</span>
+              <input type="text" name="wrapColor" maxlength="40" autocomplete="off" placeholder="Ej: negro, verde militar">
+            </label>
+          </div>
+          <div class="qz-group" data-if="pintura">
+            <p class="qz-group-title">En pintura buscas</p>
+            <div class="qz-chips qz-chips-sm">
+              <% quote.paintGoals.forEach(function (g) { %>
+                <label class="qz-chip"><input type="radio" name="paintGoal" value="<%= g %>"><span><%= g %></span></label>
+              <% }) %>
+            </div>
+          </div>
+          <div class="qz-group" data-if="detailing">
+            <p class="qz-group-title">¿Qué le notas?</p>
+            <div class="qz-chips qz-chips-sm">
+              <% quote.detailingSigns.forEach(function (g) { %>
+                <label class="qz-chip"><input type="checkbox" name="sign" value="<%= g %>"><span><%= g %></span></label>
+              <% }) %>
+            </div>
+          </div>
+          <label class="qz-field">¿Algo más que debamos saber? <span class="qz-opt">(opcional)</span>
+            <textarea name="nota" rows="3" maxlength="400" placeholder="Ej: se cayó del lado derecho, quiero franjas en los rines"></textarea>
+          </label>
+        </fieldset>
+
+        <fieldset class="et-qz-step" data-step="resumen" hidden>
+          <legend tabindex="-1">Listo. Así va tu mensaje</legend>
+          <label class="qz-field">Tu nombre <span class="qz-opt">(opcional)</span>
+            <input type="text" name="nombre" maxlength="40" autocomplete="given-name">
+          </label>
+          <pre class="qz-preview" data-qz-preview></pre>
+          <p class="et-qz-hint">Al abrir WhatsApp, adjunta las fotos antes de enviar.</p>
+        </fieldset>
+
+        <p class="et-qz-error" role="alert" data-qz-error></p>
+        <div class="et-qz-nav">
+          <button type="button" class="btn btn-outline" data-qz-back hidden>Atrás</button>
+          <button type="button" class="btn" data-qz-next>Continuar</button>
+          <a class="btn" data-qz-send href="<%= waLink(waContext) %>" target="_blank" rel="noopener" hidden>Abrir WhatsApp</a>
+        </div>
+      </form>
     </section>
+
+    <p class="et-more"><a class="lp-link" href="/servicios">Ver todos los servicios del taller<span aria-hidden="true"> &rarr;</span></a></p>
 
   </div>
 </div>
@@ -330,6 +495,7 @@
   ];
 %>
 <script type="application/ld+json"><%- JSON.stringify(ld).replace(/</g, '\\u003c') %></script>
+<script defer src="/static/vendor/gsap-3.15.0/gsap.min.js"></script>
 <script defer src="/static/js/estetica.js?v=<%= assetV('js/estetica.js') %>"></script>
 
 <%- include('partials/footer') %>

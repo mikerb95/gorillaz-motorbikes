@@ -70,60 +70,77 @@
 .tk-floor { fill: #000; opacity: .45; filter: blur(6px) }
 .tk-cap { fill: #9aa1aa }
 .tk-cap-top { fill: #c9ced4 }
-.tk-b { opacity: 0; transition: opacity .6s ease }
-.tk-b-dull { fill: url(#et-g-dull) }
-.tk-b-paint { fill: url(#et-g-paint) }
-.tk-b-mate { fill: url(#et-g-mate) }
-.tk-b-satinado { fill: url(#et-g-sat) }
-.tk-b-carbono { fill: url(#et-p-carbon) }
-.tk-b-camaleon { fill: url(#et-g-cham) }
-.tk-stripe { fill: #fff; opacity: 0; transition: opacity .5s }
+/* Cada acabado es un juego de variables sobre la capa (.tk-look): qué base
+   se ve, cuánto brillo, si hay rayones. Así las dos capas del tanque (la
+   actual y la que entra) comparten las mismas reglas. */
+.tk-look {
+  --o-dull: 0; --o-paint: 0; --o-mate: 0; --o-sat: 0; --o-carbon: 0; --o-cham: 0;
+  --o-haze: 0; --o-scratch: 0; --o-stripe: 0; --o-gloss: 0; --o-gloss2: 0; --o-spark: 0; --o-peel: 0;
+}
+.tk-look-b { display: none }
+.tk-b-dull { fill: url(#et-g-dull); opacity: var(--o-dull) }
+.tk-b-paint { fill: url(#et-g-paint); opacity: var(--o-paint) }
+.tk-b-mate { fill: url(#et-g-mate); opacity: var(--o-mate) }
+.tk-b-satinado { fill: url(#et-g-sat); opacity: var(--o-sat) }
+.tk-b-carbono { fill: url(#et-p-carbon); opacity: var(--o-carbon) }
+.tk-b-camaleon { fill: url(#et-g-cham); opacity: var(--o-cham) }
+.tk-stripe { fill: #fff; opacity: var(--o-stripe) }
 .tk-knee { fill: none; stroke: #000; opacity: .22 }
-.tk-haze { fill: #e8ddd2; opacity: 0; transition: opacity .6s }
-.tk-scratch { fill: none; stroke: #f3e7dc; opacity: 0; transition: opacity .4s }
-.tk-gloss { fill: #fff; opacity: 0; transition: opacity .6s }
-.tk-gloss2 { fill: #fff; opacity: 0; transition: opacity .6s }
-.tk-spark path { fill: #fff; opacity: 0; transition: opacity .3s; transform-box: fill-box; transform-origin: center }
-.tk-peel { opacity: 0; transition: opacity .4s }
-.tk-peel-under { fill: url(#et-g-paint) }
-.tk-peel-flap { fill: #d8dbe0 }
+.tk-haze { fill: #e8ddd2; opacity: var(--o-haze) }
+.tk-scratch { fill: none; stroke: #f3e7dc; opacity: var(--o-scratch) }
+/* El reflejo se corre con la luz (--lx/--ly las pone estetica.js con el cursor). */
+.tk-gloss { fill: #fff; opacity: var(--o-gloss); transform: translate(calc(var(--lx, 0) * 22px), calc(var(--ly, 0) * 5px)) }
+.tk-gloss2 { fill: #fff; opacity: var(--o-gloss2); transform: translate(calc(var(--lx, 0) * -14px), 0) }
+.tk-spec {
+  opacity: calc(var(--o-gloss) * var(--l-on, 0)); transition: opacity .45s;
+  transform: translate(calc(var(--lx, 0) * 130px), calc(var(--ly, 0) * 46px));
+}
+.tk-spark { opacity: var(--o-spark) }
+.tk-spark path { fill: #fff; transform-box: fill-box; transform-origin: center; animation: et-twinkle 2.4s ease-in-out infinite }
+.tk-spark path:nth-child(2) { animation-delay: .8s }
+.tk-spark path:nth-child(3) { animation-delay: 1.6s }
+.tk-peel-under { fill: url(#et-g-paint); opacity: var(--o-peel) }
+.tk-peel-flap { fill: #d8dbe0; opacity: var(--o-peel) }
 
-/* Estado por defecto (también sin :has): así llega. */
-.tk-b-dull { opacity: 1 }
-.tk-haze { opacity: .16 }
-.tk-scratch { opacity: .7 }
+/* Sin JS (la capa aún no tiene data-look) el acabado sale de los radios. */
+.tk-look-a:not([data-look]),
+.tk-look[data-look="llega"] { --o-dull: 1; --o-haze: .16; --o-scratch: .7 }
+.et-cab:has(#etf-llega:not(:checked)) .tk-look-a:not([data-look]) { --o-dull: 0; --o-haze: 0; --o-scratch: 0 }
+.et-cab:has(#etf-pintura:checked) .tk-look-a:not([data-look]),
+.tk-look[data-look="pintura"] { --o-paint: 1; --o-stripe: .9; --o-gloss: .32 }
+.et-cab:has(#etf-detailing:checked) .tk-look-a:not([data-look]),
+.tk-look[data-look="detailing"] { --o-paint: 1; --o-stripe: .9; --o-gloss: .78; --o-gloss2: .35; --o-spark: 1 }
+.et-cab:has(#etf-wrap:checked):has(#etv-mate:checked) .tk-look-a:not([data-look]),
+.tk-look[data-look="mate"] { --o-mate: 1; --o-peel: 1 }
+.et-cab:has(#etf-wrap:checked):has(#etv-satinado:checked) .tk-look-a:not([data-look]),
+.tk-look[data-look="satinado"] { --o-sat: 1; --o-peel: 1; --o-gloss: .14 }
+.et-cab:has(#etf-wrap:checked):has(#etv-carbono:checked) .tk-look-a:not([data-look]),
+.tk-look[data-look="carbono"] { --o-carbon: 1; --o-peel: 1; --o-gloss: .22 }
+.et-cab:has(#etf-wrap:checked):has(#etv-camaleon:checked) .tk-look-a:not([data-look]),
+.tk-look[data-look="camaleon"] { --o-cham: 1; --o-peel: 1; --o-gloss: .5 }
 
-.et-cab:has(#etf-llega:not(:checked)) .tk-b-dull,
-.et-cab:has(#etf-llega:not(:checked)) .tk-haze,
-.et-cab:has(#etf-llega:not(:checked)) .tk-scratch { opacity: 0 }
-
-.et-cab:has(#etf-pintura:checked) .tk-b-paint,
-.et-cab:has(#etf-detailing:checked) .tk-b-paint { opacity: 1 }
-.et-cab:has(#etf-pintura:checked) .tk-stripe,
-.et-cab:has(#etf-detailing:checked) .tk-stripe { opacity: .9 }
-.et-cab:has(#etf-pintura:checked) .tk-gloss { opacity: .32 }
-.et-cab:has(#etf-detailing:checked) .tk-gloss { opacity: .78 }
-.et-cab:has(#etf-detailing:checked) .tk-gloss2 { opacity: .35 }
-.et-cab:has(#etf-detailing:checked) .tk-spark path { opacity: 1; animation: et-twinkle 2.4s ease-in-out infinite }
-.et-cab:has(#etf-detailing:checked) .tk-spark path:nth-child(2) { animation-delay: .8s }
-.et-cab:has(#etf-detailing:checked) .tk-spark path:nth-child(3) { animation-delay: 1.6s }
-
-.et-cab:has(#etf-wrap:checked) .tk-peel { opacity: 1 }
-.et-cab:has(#etf-wrap:checked):has(#etv-mate:checked) .tk-b-mate { opacity: 1 }
-.et-cab:has(#etf-wrap:checked):has(#etv-satinado:checked) .tk-b-satinado { opacity: 1 }
-.et-cab:has(#etf-wrap:checked):has(#etv-satinado:checked) .tk-gloss { opacity: .14 }
-.et-cab:has(#etf-wrap:checked):has(#etv-carbono:checked) .tk-b-carbono { opacity: 1 }
-.et-cab:has(#etf-wrap:checked):has(#etv-carbono:checked) .tk-gloss { opacity: .22 }
-.et-cab:has(#etf-wrap:checked):has(#etv-camaleon:checked) .tk-b-camaleon { opacity: 1 }
-.et-cab:has(#etf-wrap:checked):has(#etv-camaleon:checked) .tk-gloss { opacity: .5 }
+/* Utilería de la animación (pistola, pulidora, espátula, barrido de luz):
+   invisible hasta que estetica.js la mueve. */
+.tk-fx > *,
+.fx-sweep { opacity: 0; pointer-events: none }
+.fx-gun { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .45)) }
+.fx-pad { filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .5)) }
 
 @keyframes et-twinkle {
-  0%, 100% { transform: scale(.4) rotate(0deg); opacity: .2 }
-  50% { transform: scale(1.1) rotate(45deg); opacity: 1 }
+  0%, 100% { transform: scale(.35) rotate(0deg) }
+  50% { transform: scale(1.1) rotate(45deg) }
+}
+/* La lámpara enciende como tubo fluorescente. */
+@keyframes et-lamp-on {
+  0%, 12%, 20%, 34% { opacity: .08 }
+  8%, 16%, 30% { opacity: .7 }
+  48%, 100% { opacity: 1 }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .et-lamp { animation: et-lamp-on 1.1s linear .2s both }
 }
 @media (prefers-reduced-motion: reduce) {
-  .et-cab .tk-spark path { animation: none !important }
-  .tk-b, .tk-haze, .tk-scratch, .tk-gloss, .tk-gloss2, .tk-stripe, .tk-peel { transition: none }
+  .tk-spark path { animation: none }
 }
 
 /* Acabados del vinilo: solo se muestran con Wrap elegido. */
@@ -256,9 +273,89 @@
 .et-q summary:focus-visible { outline: 2px solid var(--lp-orange); outline-offset: 2px; border-radius: 14px }
 .et-q p { margin: 0; padding: 0 18px 18px; line-height: 1.6; color: #3f3a36; max-width: 70ch }
 
-/* ─── Cierre ───────────────────────────────────────────────────────────── */
-.et-page .et-final { margin-top: clamp(64px, 8vw, 112px); text-align: center; display: grid; justify-items: center }
-.et-page section .et-final-title,
-.et-final-title { margin: 0 0 12px; font-size: clamp(1.8rem, 3.4vw, 2.8rem); font-weight: 900; letter-spacing: -.02em; text-wrap: balance }
-.et-final .lp-lead { margin-left: auto; margin-right: auto }
-.et-final .btn-row { justify-content: center }
+/* ─── Cotizador por pasos ──────────────────────────────────────────────── */
+.et-quote { display: grid; gap: 28px; scroll-margin-top: calc(var(--header-offset, 92px) + 16px) }
+@media (min-width: 1024px) { .et-quote { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: clamp(32px, 4vw, 64px); align-items: start } }
+.et-photos { background: var(--lp-paper); border-radius: 16px; padding: 16px 18px; max-width: 52ch }
+.et-photos .et-nail-title { margin: 0 0 8px; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #5b4a2e }
+.et-photos ol { margin: 0; padding-left: 20px; color: #3f3a36; line-height: 1.6 }
+.et-qz-fallback { background: #fff; border-radius: 20px; padding: clamp(20px, 3vw, 36px); box-shadow: 0 14px 36px rgba(60, 30, 10, .08) }
+.et-qz-fallback[hidden] { display: none }
+.et-qz-fallback p { margin: 0 0 16px }
+
+.et-qz {
+  background: #fff; border-radius: 22px; padding: clamp(20px, 3vw, 36px); min-width: 0;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 18px 44px rgba(60, 30, 10, .1);
+}
+.et-qz[hidden] { display: none }
+.et-qz fieldset { border: 0; margin: 0; padding: 0; min-width: 0 }
+.et-qz-top { display: flex; align-items: center; gap: 14px; margin-bottom: 22px }
+/* Avance: una franja de pintura que crece. */
+.et-qz-bar { flex: 1; height: 8px; border-radius: 8px; background: #f1e9df; overflow: hidden }
+.et-qz-bar span { display: block; height: 100%; width: 0; border-radius: 8px; background: linear-gradient(90deg, #ff8a3d, #d84f04); transition: width .5s cubic-bezier(.65, 0, .25, 1) }
+.et-qz-count { margin: 0; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--lp-muted); white-space: nowrap; font-variant-numeric: tabular-nums }
+.et-qz-step[hidden] { display: none }
+.et-qz-step legend { padding: 0; margin: 0 0 8px; font-size: clamp(1.5rem, 2.6vw, 2.1rem); line-height: 1.08; font-weight: 900; letter-spacing: -.02em; outline: none; text-wrap: balance }
+.et-qz-hint { margin: 0 0 16px; font-size: .92rem; color: var(--lp-muted) }
+.et-qz-step legend + .qz-field,
+.et-qz-step legend + .qz-group { margin-top: 14px }
+
+.qz-chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 6px }
+.qz-chip { position: relative; cursor: pointer }
+.qz-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer }
+.qz-chip span {
+  display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 14px;
+  font-weight: 800; background: #faf5ef; box-shadow: inset 0 0 0 2px #ece2d6;
+  transition: background .2s, box-shadow .2s, color .2s, transform .2s cubic-bezier(.3, 1.5, .5, 1);
+}
+.qz-chip span::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--et-c, #cfc4b6); transition: transform .25s cubic-bezier(.3, 1.8, .5, 1) }
+.qz-chip-pintura { --et-c: var(--et-pintura) }
+.qz-chip-detailing { --et-c: var(--et-detailing) }
+.qz-chip-wrap { --et-c: var(--et-wrap) }
+.qz-chip:hover span { background: #fff; box-shadow: inset 0 0 0 2px #d8c9b6 }
+.qz-chip input:checked + span { background: #17181b; color: #fff; box-shadow: inset 0 0 0 2px #17181b; transform: translateY(-2px) }
+.qz-chip input:checked + span::before { transform: scale(1.35); background: var(--et-c, var(--lp-orange)) }
+.qz-chip input:focus-visible + span { outline: 2px solid var(--lp-orange); outline-offset: 2px }
+.qz-chips-sm .qz-chip span { padding: 10px 14px; font-size: .9rem; border-radius: 12px }
+.qz-chips-sm .qz-chip span::before { width: 9px; height: 9px }
+
+.qz-field { display: block; margin: 0 0 16px; font-size: .86rem; font-weight: 800 }
+.qz-opt { font-weight: 400; color: var(--lp-muted) }
+.qz-field input,
+.qz-field textarea {
+  display: block; width: 100%; margin-top: 6px; padding: 14px 16px; border: 0; border-radius: 14px; font: inherit; font-weight: 400; font-size: 1rem;
+  background: #faf5ef; box-shadow: inset 0 0 0 2px #ece2d6; transition: box-shadow .2s, background .2s; resize: vertical;
+}
+.qz-field input:focus,
+.qz-field textarea:focus { outline: none; background: #fff; box-shadow: inset 0 0 0 2px var(--lp-orange) }
+.qz-group { margin-bottom: 18px }
+.qz-group[hidden] { display: none }
+.qz-group-title { margin: 0 0 10px; font-size: .68rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--lp-muted) }
+.qz-group .qz-field { margin-top: 12px }
+
+/* La moto del paso de piezas: cada pieza se toca y se "pinta". */
+.qz-bike { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto 16px; overflow: visible }
+.qz-tire { fill: none; stroke: #26282c; stroke-width: 15 }
+.qz-frame { fill: none; stroke: #9aa1aa; stroke-width: 7; stroke-linecap: round }
+.qz-pipe { fill: none; stroke: #b9bec5; stroke-width: 11; stroke-linecap: round }
+.qz-block { fill: #3a3e45 }
+.qz-seat { fill: #17181b }
+.qz-part { fill: #e9e2d8; stroke: #b7ac9d; stroke-width: 2; stroke-linejoin: round; cursor: pointer; transition: fill .25s, stroke .25s, transform .3s cubic-bezier(.3, 1.6, .5, 1); transform-box: fill-box; transform-origin: center }
+.qz-part:hover { fill: #ffd9bf; stroke: var(--lp-orange) }
+.qz-part.is-on { fill: var(--lp-orange); stroke: #a53d02; transform: scale(1.05) }
+.qz-ring circle { fill: none; stroke: #cfc6b9; stroke-width: 9; pointer-events: stroke; transition: stroke .25s }
+.qz-ring { stroke: none; transform: none !important }
+.qz-ring:hover circle { stroke: #ffb98a }
+.qz-ring.is-on circle { stroke: var(--lp-orange) }
+
+.qz-preview {
+  margin: 0 0 12px; padding: 16px 18px; border-radius: 4px 16px 16px 16px; white-space: pre-wrap; overflow-wrap: anywhere;
+  font: inherit; font-size: .95rem; line-height: 1.55; color: #10231a; background: #dcf8c6; box-shadow: 0 1px 1px rgba(0, 0, 0, .12);
+}
+.et-qz-error { min-height: 1.4em; margin: 10px 0 0; font-size: .9rem; font-weight: 700; color: #b3261e }
+.et-qz-nav { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px }
+.et-qz-nav [hidden] { display: none }
+.et-qz-nav [data-qz-next],
+.et-qz-nav [data-qz-send] { margin-left: auto }
+.et-qz-nav button { font: inherit; font-weight: 700; cursor: pointer }
+.et-more { margin: clamp(40px, 5vw, 64px) 0 0; text-align: center }

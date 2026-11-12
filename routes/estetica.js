@@ -15,7 +15,6 @@ router.get(PATH, (req, res) => {
     canonicalPath: PATH,
     bodyClass: 'page-servicios page-estetica',
     waContext: `Hola, quiero cotizar pintura, detailing o wrap para mi moto. Les envío fotos. ${url}`,
-    waWrap: `Hola, quiero cotizar un wrap (forrado) para mi moto. ${url}`,
   });
 });
 

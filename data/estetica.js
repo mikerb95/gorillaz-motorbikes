@@ -127,4 +127,28 @@ const faq = [
   },
 ];
 
-module.exports = { services, diagnosis, steps, wrapFinishes, wrapParts, care, faq };
+// Cotizador por pasos (public/js/estetica.js): arma el mensaje y abre WhatsApp.
+// No guarda nada en el servidor. Los `id` de las piezas son los data-part de
+// la silueta de la moto en views/estetica.ejs.
+const quote = {
+  services: [
+    { id: 'pintura', name: 'Pintura' },
+    { id: 'detailing', name: 'Detailing' },
+    { id: 'wrap', name: 'Wrap (forrado)' },
+    { id: 'asesoria', name: 'No sé, asesórenme' },
+  ],
+  parts: [
+    { id: 'tanque', name: 'Tanque' },
+    { id: 'frontal', name: 'Carenaje frontal' },
+    { id: 'guardabarros-del', name: 'Guardabarros delantero' },
+    { id: 'guardabarros-tras', name: 'Guardabarros trasero' },
+    { id: 'colin', name: 'Colín' },
+    { id: 'tapas', name: 'Tapas laterales' },
+    { id: 'rines', name: 'Rines' },
+  ],
+  paintGoals: ['Mismo color (retoque o reparación)', 'Cambiar de color', 'Diseño personalizado'],
+  detailingSigns: ['Pintura opaca', 'Remolinos y micro rayas', 'Rayones leves', 'Metales sin brillo', 'Plásticos descoloridos'],
+  wrapFinishes: wrapFinishes.map((f) => f.name).concat(['Brillante', 'Metalizado', 'Aún no sé']),
+};
+
+module.exports = { services, diagnosis, steps, wrapFinishes, wrapParts, care, faq, quote };
