@@ -1,4 +1,4 @@
-<%- include('partials/head', { title: title, user, extraCss: ['/static/css/taller-base.css?v=1', '/static/css/servicios.css?v=2'] }) %>
+<%- include('partials/head', { title: title, user, extraCss: ['/static/css/taller-base.css?v=1', '/static/css/servicios.css?v=' + assetV('css/servicios.css')] }) %>
 <%#
   /servicios: "CADA TRABAJO CON SU HERRAMIENTA"
   El tablero de herramientas del taller es el índice: cada servicio es la
@@ -73,6 +73,7 @@
             </div>
           </div>
         </article>
+        <% if (s.slug === 'detailing-motos') { %><%- include('partials/servicios/estetica-promo') %><% } %>
       <% }) %>
 
       <div class="sv-final">

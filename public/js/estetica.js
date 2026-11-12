@@ -1,4 +1,4 @@
-// /pintura-detailing-wrap
+// /estetica
 //
 // 1. LA CABINA. Sin JS el tanque cambia de acabado con radios + :has()
 //    (estetica.css). Con JS y GSAP, cada acabado se APLICA: la pistola pinta en

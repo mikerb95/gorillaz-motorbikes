@@ -1,0 +1,17 @@
+<%#
+  Aviso de la landing de estética (/estetica) en /servicios y en las fichas de
+  pintura, lavado y detailing. Los chips de color anuncian el wrap sin foto.
+  Parámetro opcional: heading ('h2' por defecto; en la ficha va bajo un h1).
+%>
+<% var promoHeading = (typeof heading !== 'undefined' && heading) || 'h2'; %>
+<aside class="sv-promo" aria-labelledby="sv-promo-h">
+  <div class="sv-promo-chips" aria-hidden="true">
+    <span style="--c:#F25C05"></span><span style="--c:#1d1f24"></span><span style="--c:#2f6f4e"></span><span style="--c:#8fb8d8"></span><span style="--c:linear-gradient(135deg,#7b2ff7,#21d4fd)"></span>
+  </div>
+  <div class="sv-promo-body">
+    <p class="lp-label">Estética</p>
+    <<%= promoHeading %> class="sv-promo-title" id="sv-promo-h">Pintura, detailing y wrap</<%= promoHeading %>>
+    <p class="sv-promo-text">Cambia el color sin pintar, recupera el brillo o deja la moto como salió de fábrica. Mándanos fotos y te cotizamos.</p>
+  </div>
+  <a class="btn sv-promo-btn" href="/estetica">Ver estética<span aria-hidden="true"> &rarr;</span></a>
+</aside>

@@ -4,7 +4,7 @@ const express = require('express');
 const estetica = require('../data/estetica');
 
 const router = express.Router();
-const PATH = '/pintura-detailing-wrap';
+const PATH = '/estetica';
 
 router.get(PATH, (req, res) => {
   const url = `${res.locals.siteUrl}${PATH}`;
@@ -19,7 +19,7 @@ router.get(PATH, (req, res) => {
 });
 
 // Nombres con que la gente puede llegar o recordar la página.
-router.get(['/pintura-y-detailing', '/estetica', '/wrap', '/forrado', '/forrado-motos', '/wrap-motos'],
+router.get(['/pintura-detailing-wrap', '/pintura-y-detailing', '/wrap', '/forrado', '/forrado-motos', '/wrap-motos'],
   (req, res) => res.redirect(301, PATH));
 
 module.exports = router;

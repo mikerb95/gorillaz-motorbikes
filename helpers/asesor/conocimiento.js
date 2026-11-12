@@ -58,7 +58,7 @@ Los servicios del taller NO tienen precio publicado y el taller NO da precios ex
 ${servicios
   .map((v) => `- ${v.title} (/servicios/${v.slug}): ${v.desc} Incluye: ${(v.includes || []).join(', ')}.`)
   .join('\n')}
-- Wrap o forrado en vinilo: cambio de color o acabado (mate, satinado, fibra de carbono, camaleón, brillante, metalizado) sin pintar; protege la pintura original y se puede retirar. Se puede forrar todo o solo piezas (tanque, carenaje, guardabarros, tapas, franjas en rines). Sin precio publicado: se cotiza con fotos o viendo la moto. Página que reúne pintura, detailing y wrap: /pintura-detailing-wrap.
+- Wrap o forrado en vinilo: cambio de color o acabado (mate, satinado, fibra de carbono, camaleón, brillante, metalizado) sin pintar; protege la pintura original y se puede retirar. Se puede forrar todo o solo piezas (tanque, carenaje, guardabarros, tapas, franjas en rines). Sin precio publicado: se cotiza con fotos o viendo la moto. Página que reúne pintura, detailing y wrap: /estetica.
 - Duplicado de placas y portaplacas (/duplicado-placas): solicitud de duplicado de placa de moto o carro y venta de portaplacas para moto. Tiempos y requisitos los confirma el taller por WhatsApp.`);
 
   s.push(`## Citas y seguimiento

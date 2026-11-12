@@ -1,5 +1,5 @@
 'use strict';
-// Landing de estética: pintura, detailing y wrap (/pintura-detailing-wrap).
+// Landing de estética: pintura, detailing y wrap (/estetica).
 // La vista (views/estetica.ejs) y el asesor con IA (helpers/asesor/conocimiento.js)
 // leen de aquí. Sin precios: todo se cotiza tras ver la moto o sus fotos.
 // Pintura y detailing conservan su ficha en /servicios/<slug>; el wrap solo

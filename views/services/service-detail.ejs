@@ -75,6 +75,10 @@
       </div>
     </article>
 
+    <% if (['pintura', 'lavado-motos', 'detailing-motos'].includes(service.slug)) { %>
+      <%- include('../partials/servicios/estetica-promo') %>
+    <% } %>
+
     <% if (suggestedProducts.length) { %>
     <section class="sv-detail-more" aria-labelledby="sv-prod-h">
       <h2 class="sv-more-title" id="sv-prod-h">Productos para este servicio</h2>
