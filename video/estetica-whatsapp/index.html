@@ -1,0 +1,702 @@
+<!doctype html>
+<html
+  lang="es"
+  data-resolution="portrait"
+  data-composition-variables='[
+    {"id":"phone","type":"string","label":"WhatsApp visible","default":"321 320 4299"},
+    {"id":"address","type":"string","label":"Dirección","default":"Tv. 42a #5i 20 · Bogotá"},
+    {"id":"url","type":"string","label":"Web","default":"gorillazmotorbikes.com/estetica"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      /* Paleta de la landing /estetica (public/css/estetica.css). */
+      :root {
+        --ground: #141518;
+        --ink: #f4f1ec;
+        --muted: #b9b6b0;
+        --orange: #f25c05;
+        --orange-soft: #ff8a3d;
+        --pintura: #f25c05;
+        --detailing: #e0ad2e;
+        --ppf: #46c8dc;
+        --wrap: #8a7cff;
+        --wa: #25d366;
+        --font-display: "Montserrat", sans-serif;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box }
+      html, body {
+        margin: 0; width: 1080px; height: 1920px; overflow: hidden;
+        background: var(--ground);
+      }
+      #root { position: relative; width: 100%; height: 100%; font-family: var(--font-display); color: var(--ink) }
+
+      /* Fondo: la cabina de pintura, luz desde arriba. */
+      #bg { position: absolute; inset: 0; z-index: 1 }
+      #bg .bg-fill {
+        position: absolute; inset: 0;
+        background:
+          radial-gradient(70% 34% at 50% 52%, rgba(255, 240, 215, .10), rgba(255, 240, 215, 0) 70%),
+          radial-gradient(120% 70% at 50% 0%, #2a2c31 0%, #17181b 55%, #0c0d0f 100%);
+      }
+      #bg .bg-floor {
+        position: absolute; left: 0; right: 0; top: 1330px; bottom: 0;
+        background: linear-gradient(180deg, #1b1c1f, #0c0d0f);
+      }
+      #bg .bg-floor::before {
+        content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: rgba(255, 255, 255, .06);
+      }
+      /* Rejilla del piso de la cabina, solo textura. */
+      #bg .bg-grate {
+        position: absolute; left: 0; right: 0; top: 1360px; bottom: 0; opacity: .5;
+        background: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 3px, transparent 3px 36px);
+      }
+
+      /* Cinta decorativa en la franja que tapa la interfaz de WhatsApp. */
+      #bg .bg-tape { position: absolute; left: -40px; right: -40px; top: 1520px; height: 150px; overflow: hidden; transform: rotate(-4deg); background: rgba(242, 92, 5, .07); box-shadow: inset 0 2px 0 rgba(242,92,5,.18), inset 0 -2px 0 rgba(242,92,5,.18) }
+      #bg .bg-tape span { position: absolute; top: 28px; left: 0; white-space: nowrap; font-size: 92px; font-weight: 900; letter-spacing: .02em; color: rgba(255, 255, 255, .06) }
+
+      /* Escenario de la moto. */
+      #stage { position: absolute; left: 0; top: 600px; width: 1080px; height: 743px; z-index: 5 }
+      #stage-in { position: absolute; inset: 0; transform-origin: 50% 50% }
+      #bike-svg { display: block; width: 1080px; height: 743px; overflow: visible }
+      .s-tire { fill: #0b0c0e }
+      .s-rim { fill: #1b1d21; stroke: #99a0a8; stroke-width: 6 }
+      .s-spoke { stroke: #99a0a8 }
+      .s-disc { stroke: #b9bec5 }
+      .s-caliper { fill: #a3a9b1 }
+      .s-axle, .s-hub { fill: #7d838c }
+      .s-chain { stroke: #5b6068 }
+      .s-sprocket { fill: #6a7079 }
+      .s-frame { fill: #25282d }
+      .s-radiator { fill: #2e3137 }
+      .s-muffler { fill: #80858d }
+      .s-engine-case { fill: #5d626a }
+      .s-engine-block { fill: #4f545c }
+      .s-engine-head { fill: #6a7079 }
+      .s-engine-cam { fill: #8a909a }
+      .s-engine-cover { fill: #7a8089 }
+      .s-oil-cap { fill: #c9ced4 }
+      .s-oil-filter { fill: #3c4047 }
+      .s-oil-sump { fill: #464b52 }
+      .s-electric { opacity: 0 }
+      .s-headlight { fill: #9aa6b4 }
+      .s-taillight { fill: #6e1a14 }
+      .s-body { fill: var(--skin, #474c54) }
+      .s-fender { fill: none; stroke: var(--skin, #474c54) }
+      .s-seat { fill: #16171a }
+      .s-mirror { fill: #1b1d21 }
+      .s-fork-up { fill: #2a2d33 }
+      .s-fork-low { fill: #b8913a }
+
+      .scratch { stroke: #fff; stroke-opacity: .55; fill: none }
+      .reflect { stroke: #fff; stroke-opacity: .7; fill: none }
+      .star { fill: #fff }
+
+      /* Textos de cada escena: arriba de la moto, dentro de la franja segura. */
+      .scene-text { position: absolute; left: 72px; right: 72px; top: 220px; z-index: 10 }
+      .kicker {
+        display: flex; align-items: center; gap: 16px;
+        font-size: 30px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+      }
+      .dot { width: 22px; height: 22px; border-radius: 50%; background: var(--c, var(--orange)); flex: none; box-shadow: 0 0 24px var(--c, var(--orange)) }
+      .title {
+        margin-top: 14px; font-size: 150px; line-height: .9; font-weight: 900; letter-spacing: -.04em; color: var(--ink);
+      }
+      .title .accent { color: var(--c, var(--orange)) }
+      .sub { margin-top: 26px; font-size: 44px; line-height: 1.18; font-weight: 700; color: var(--ink); max-width: 15em }
+      .sub em { font-style: normal; color: var(--c, var(--orange)) }
+
+      #s0 .title { font-size: 128px; line-height: .95 }
+
+      /* Rótulo del acabado del vinilo (escena wrap). */
+      .finish {
+        position: absolute; right: 72px; top: 600px; z-index: 11;
+        padding: 14px 26px; border-radius: 999px; background: rgba(0, 0, 0, .55);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .18);
+        font-size: 34px; font-weight: 800; letter-spacing: .04em;
+      }
+
+      /* Cierre. */
+      #cta { position: absolute; inset: 0; z-index: 12 }
+      .cta-brand { position: absolute; left: 0; right: 0; top: 196px; display: flex; align-items: center; justify-content: center; gap: 22px }
+      .cta-logo { width: 104px; height: 104px; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.4) }
+      .cta-logo img { width: 92px; height: 92px }
+      .cta-name { font-size: 46px; font-weight: 900; letter-spacing: -.02em; line-height: 1 }
+      .cta-name small { display: block; margin-top: 8px; font-size: 28px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--orange-soft) }
+      .cta-chips { position: absolute; left: 60px; right: 60px; top: 790px; display: flex; justify-content: center; gap: 14px }
+      .chip {
+        display: flex; align-items: center; gap: 12px; padding: 14px 22px; border-radius: 999px;
+        background: rgba(255, 255, 255, .07); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .12);
+        font-size: 30px; font-weight: 800;
+      }
+      .chip .dot { width: 16px; height: 16px; box-shadow: none }
+      .cta-wa {
+        position: absolute; left: 110px; right: 110px; top: 890px; height: 128px; border-radius: 999px;
+        display: flex; align-items: center; justify-content: center; gap: 22px;
+        background: var(--wa); color: #06210f; font-size: 54px; font-weight: 900; letter-spacing: -.02em;
+        box-shadow: 0 18px 50px rgba(37, 211, 102, .35);
+      }
+      .cta-wa svg { width: 62px; height: 62px }
+      .cta-phone { position: absolute; left: 0; right: 0; top: 1046px; text-align: center; font-size: 76px; font-weight: 900; letter-spacing: -.01em }
+      .cta-note { position: absolute; left: 80px; right: 80px; top: 1150px; text-align: center; font-size: 36px; font-weight: 700; color: var(--ink) }
+      .cta-addr { position: absolute; left: 0; right: 0; top: 1222px; text-align: center; font-size: 30px; font-weight: 700; color: var(--muted); line-height: 1.45 }
+      .cta-addr b { color: var(--orange-soft); font-weight: 800 }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="25"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Fondo -->
+      <div id="bg" class="clip" data-start="0" data-duration="25" data-track-index="0" data-track-kind="graphics">
+        <div class="bg-fill"></div>
+        <div class="bg-floor"></div>
+        <div class="bg-grate"></div>
+        <div class="bg-tape" data-layout-ignore><span id="tape-in">PINTURA · DETAILING · PPF · WRAP · PINTURA · DETAILING · PPF · WRAP · PINTURA · DETAILING · PPF · WRAP</span></div>
+      </div>
+
+      <!-- La moto: cinco copias apiladas, una por acabado, que se destapan con recortes. -->
+      <div id="stage" class="clip" data-start="0" data-duration="25" data-track-index="1" data-track-kind="graphics" data-layout-allow-overflow>
+        <div id="stage-in">
+          <svg id="bike-svg" viewBox="120 60 960 660" aria-hidden="true">
+            <defs>
+              <!-- Acabados en coordenadas de la moto (como #es-g-* en la home). -->
+              <linearGradient id="g-dull" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+                <stop offset="0" stop-color="#8d847c"/><stop offset=".5" stop-color="#655c55"/><stop offset="1" stop-color="#3b3632"/>
+              </linearGradient>
+              <linearGradient id="g-paint" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+                <stop offset="0" stop-color="#ff9a52"/><stop offset=".45" stop-color="#F25C05"/><stop offset="1" stop-color="#8f3200"/>
+              </linearGradient>
+              <linearGradient id="g-gloss" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+                <stop offset="0" stop-color="#ffd2ad"/><stop offset=".18" stop-color="#ff8a3d"/><stop offset=".5" stop-color="#e84f00"/><stop offset=".8" stop-color="#9c3300"/><stop offset="1" stop-color="#4d1800"/>
+              </linearGradient>
+              <linearGradient id="g-film" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+                <stop offset="0" stop-color="#e8fbff" stop-opacity=".55"/><stop offset=".35" stop-color="#9fe6f2" stop-opacity=".18"/><stop offset="1" stop-color="#46c8dc" stop-opacity=".12"/>
+              </linearGradient>
+              <linearGradient id="g-cham" gradientUnits="userSpaceOnUse" x1="250" y1="200" x2="1000" y2="420">
+                <stop offset="0" stop-color="#2fd3c0"/><stop offset=".35" stop-color="#3b5fe0"/><stop offset=".7" stop-color="#9b3fd6"/><stop offset="1" stop-color="#e0458f"/>
+              </linearGradient>
+              <linearGradient id="g-mate" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+                <stop offset="0" stop-color="#3b3e44"/><stop offset="1" stop-color="#16171a"/>
+              </linearGradient>
+              <linearGradient id="g-sat" gradientUnits="userSpaceOnUse" x1="0" y1="190" x2="0" y2="360">
+                <stop offset="0" stop-color="#6f86a3"/><stop offset=".55" stop-color="#34445a"/><stop offset="1" stop-color="#1c2633"/>
+              </linearGradient>
+              <pattern id="g-carbon" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="14" height="14" fill="#1b1c1f"/>
+                <rect width="7" height="7" fill="#383b41"/>
+                <rect x="7" y="7" width="7" height="7" fill="#2c2e33"/>
+              </pattern>
+              <radialGradient id="g-mist">
+                <stop offset="0" stop-color="#ffb070" stop-opacity=".85"/><stop offset=".6" stop-color="#ff8a3d" stop-opacity=".3"/><stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="g-pad">
+                <stop offset="0" stop-color="#ffe2a8"/><stop offset=".7" stop-color="#e0ad2e"/><stop offset="1" stop-color="#8a6510"/>
+              </radialGradient>
+              <linearGradient id="g-roll" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#2a1f5c"/><stop offset=".35" stop-color="#7d6cf0"/><stop offset=".55" stop-color="#e6e0ff"/><stop offset=".75" stop-color="#6a4fd8"/><stop offset="1" stop-color="#1d1540"/>
+              </linearGradient>
+              <linearGradient id="g-chrome" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#eef0f2"/><stop offset=".5" stop-color="#9ea3aa"/><stop offset="1" stop-color="#5d6168"/>
+              </linearGradient>
+              <linearGradient id="g-sheen" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="g-edge" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#46c8dc" stop-opacity="0"/><stop offset=".5" stop-color="#e8fbff" stop-opacity=".95"/><stop offset="1" stop-color="#46c8dc" stop-opacity="0"/>
+              </linearGradient>
+
+              <!-- Recortes que destapan cada acabado (los anima la línea de tiempo). -->
+              <clipPath id="c-paint"><rect id="c-paint-r" x="120" y="60" width="0" height="660"/></clipPath>
+              <clipPath id="c-gloss">
+                <rect id="c-gloss-top" x="120" y="60" width="0" height="216"/>
+                <rect id="c-gloss-bot" x="1080" y="276" width="0" height="444"/>
+              </clipPath>
+              <clipPath id="c-film"><rect id="c-film-r" x="1080" y="60" width="0" height="660"/></clipPath>
+              <clipPath id="c-cham"><rect id="c-cham-r" x="120" y="60" width="0" height="660"/></clipPath>
+              <!-- La carrocería sola, para que el brillo no se salga de ella. -->
+              <clipPath id="c-body">
+                <path d="M568 292 L472 318 L500 362 L596 352 Z"/>
+                <path d="M572 292 L446 282 L352 258 L248 220 L262 240 L352 292 L472 320 L566 318 Z"/>
+                <path d="M810 238 C784 196 676 180 598 210 C574 220 560 236 556 254 L566 300 C630 314 716 312 780 292 Z"/>
+                <path d="M794 246 L852 270 L844 318 L806 352 L770 338 L776 290 Z"/>
+                <path d="M846 226 L896 220 L926 252 L908 296 L862 298 L848 264 Z"/>
+              </clipPath>
+
+              <!-- La moto de la landing (views/partials/landing/bike-art.ejs), sin efectos ni placa. -->
+              <g id="bike-art">
+      <!-- ── Elevador del taller (naranja, como en las fotos reales) ── -->
+      <g class="lp-lift">
+        <path d="M322 624 L878 690 M878 624 L322 690" stroke="#121316" stroke-width="16" stroke-linecap="round"/>
+        <circle cx="600" cy="657" r="11" fill="#2a2c31"/>
+        <rect x="140" y="600" width="920" height="24" rx="4" fill="#F25C05"/>
+        <rect x="140" y="600" width="920" height="5" rx="2" fill="#ff8a3d"/>
+        <path d="M1008 600 L1016 552 L1048 552 L1058 600 Z" fill="#c4470a"/>
+      </g>
+
+      <!-- ── Rueda trasera ── -->
+      <g class="lp-wheel lp-wheel-rear">
+        <circle class="s-tire" cx="300" cy="482" r="118"/>
+        <circle cx="300" cy="482" r="106" fill="none" stroke="#2b2e33" stroke-width="3"/>
+        <circle class="s-rim" cx="300" cy="482" r="90"/>
+        <circle cx="300" cy="482" r="82" fill="#0d0e10"/>
+        <g class="lp-spokes s-spoke" stroke-width="9" stroke-linecap="round">
+          <path d="M300 482 L300 402 M300 482 L376 457 M300 482 L347 547 M300 482 L253 547 M300 482 L224 457"/>
+        </g>
+        <circle class="s-disc" cx="300" cy="482" r="44" fill="none" stroke-width="7" stroke-dasharray="7 4"/>
+        <circle class="s-axle" cx="300" cy="482" r="20"/>
+        <circle cx="300" cy="482" r="7" fill="#1a1b1e"/>
+        <path class="s-caliper" d="M256 446 q-8 16 -2 32 l12 -3 q-5 -12 1 -25 z"/>
+      </g>
+
+      <!-- ── Basculante, cadena y piñones ── -->
+      <path class="s-chain" d="M300 443 L600 452 M300 521 L600 484" fill="none" stroke-width="7" stroke-dasharray="6 3"/>
+      <circle class="s-sprocket" cx="600" cy="468" r="17"/>
+      <path class="s-frame" d="M612 428 L300 468 Q288 482 300 496 L612 466 Q624 447 612 428 Z"/>
+      <path d="M600 434 L312 471" stroke="#5a6068" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- ── Motor (tetracilíndrico en línea, inclinado hacia adelante) ── -->
+      <g class="lp-engine">
+        <path class="s-engine-case" d="M600 410 L772 402 Q796 440 776 488 L702 504 L614 498 Q590 470 600 410 Z"/>
+        <path class="s-engine-block" d="M652 408 L770 402 L794 314 L676 320 Z"/>
+        <path class="s-engine-head" d="M676 320 L794 314 L802 290 L682 296 Z"/>
+        <path class="s-engine-cam" d="M682 296 L802 290 L796 274 L690 280 Z"/>
+        <g stroke="#2a2d32" stroke-width="3" stroke-linecap="round">
+          <path d="M660 390 L773 384 M665 372 L778 366 M670 354 L783 348 M674 336 L788 331"/>
+        </g>
+        <circle class="s-engine-cover" cx="642" cy="452" r="34"/>
+        <circle cx="642" cy="452" r="22" fill="none" stroke="#2a2d32" stroke-width="3"/>
+        <g fill="#2a2d32"><circle cx="642" cy="420" r="3"/><circle cx="674" cy="452" r="3"/><circle cx="642" cy="484" r="3"/><circle cx="610" cy="452" r="3"/></g>
+        <!-- aceite: tapa de llenado, filtro y cárter -->
+        <circle class="s-oil-cap" cx="704" cy="414" r="7"/>
+        <rect class="s-oil-filter" x="744" y="452" width="30" height="40" rx="6" transform="rotate(-12 759 472)"/>
+        <path class="s-oil-sump" d="M650 500 L740 502 L732 520 L660 518 Z"/>
+      </g>
+
+      
+
+      
+
+      <!-- ── Escape: headers bajo el motor y silenciador bajo el colín ── -->
+      <g class="s-exhaust">
+        <path d="M800 336 C822 382 816 452 778 494 C746 524 664 520 600 506 L528 478" fill="none" stroke="url(#g-chrome)" stroke-width="16" stroke-linecap="round"/>
+        <path d="M790 340 C808 384 800 446 766 484" fill="none" stroke="#6d7178" stroke-width="3"/>
+        <path class="s-muffler" d="M540 462 L402 398 Q388 394 382 406 L374 428 Q372 440 384 446 L524 500 Z"/>
+        <ellipse cx="379" cy="417" rx="8" ry="20" transform="rotate(22 379 417)" fill="#1b1c1f"/>
+        <path d="M516 468 L420 424" stroke="#ffffff" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
+      </g>
+
+      <!-- ── Radiador (detrás de la tapa lateral) ── -->
+      <path class="s-radiator" d="M804 298 L846 294 L850 404 L808 408 Z"/>
+      <g stroke="#1b1d21" stroke-width="2"><path d="M810 318 L848 315 M810 338 L848 335 M810 358 L849 355 M811 378 L849 375 M811 398 L849 395"/></g>
+
+      <!-- ── Chasis (doble viga) ── -->
+      <path class="s-frame" d="M810 248 L646 318 Q606 336 602 380 L596 444 L626 448 L634 392 Q640 352 674 340 L814 292 Z"/>
+      <path d="M806 256 L652 322" stroke="#5a6068" stroke-width="3" stroke-linecap="round"/>
+      <circle class="s-axle s-pivot" cx="610" cy="446" r="12"/>
+
+      <!-- ── Estribos ── -->
+      <path class="s-frame" d="M470 316 L486 318 L482 404 L468 404 Z"/>
+      <rect x="452" y="398" width="40" height="9" rx="4" fill="#1a1b1e"/>
+      <rect x="578" y="436" width="44" height="10" rx="5" fill="#1a1b1e"/>
+
+      <!-- ── Batería, cableado y conector (Electricidad / Escaneo) ── -->
+      <g class="s-electric s-battery">
+        <rect x="498" y="296" width="58" height="40" rx="4"/>
+        <rect x="506" y="288" width="10" height="9" rx="2"/>
+        <rect x="538" y="288" width="10" height="9" rx="2"/>
+      </g>
+      <path class="s-electric s-wiring" d="M526 300 C560 282 610 290 660 280 C720 268 780 256 856 252 M526 300 C470 290 400 276 340 262 C300 252 276 240 262 232" fill="none" stroke-width="4" stroke-linecap="round"/>
+
+      <!-- ── Tapa lateral (se vuelve translúcida para ver la batería) ── -->
+      <path class="s-body s-sidepanel" d="M568 292 L472 318 L500 362 L596 352 Z"/>
+
+      <!-- ── Colín, piloto trasero, portaplaca y placa ── -->
+      <path class="s-frame" d="M322 258 L286 280 L292 290 L330 268 Z"/>
+      
+      <path class="s-body s-tail" d="M572 292 L446 282 L352 258 L248 220 L262 240 L352 292 L472 320 L566 318 Z"/>
+      <path class="s-taillight" d="M248 220 L270 226 L266 238 L256 236 Z"/>
+
+      <!-- ── Asiento ── -->
+      <path class="s-seat" d="M570 254 C528 244 478 248 442 262 L446 280 C486 272 534 274 572 288 Z"/>
+      <path class="s-seat" d="M442 262 C412 250 380 244 352 240 L352 256 C386 260 418 266 446 280 Z"/>
+      <path d="M566 262 C530 254 486 256 450 268" fill="none" stroke="#34373d" stroke-width="2" stroke-dasharray="4 4"/>
+
+      <!-- ── Tanque ── -->
+      <path class="s-body s-tank" d="M810 238 C784 196 676 180 598 210 C574 220 560 236 556 254 L566 300 C630 314 716 312 780 292 Z"/>
+      <path d="M566 300 C630 314 716 312 780 292 L796 268 C730 286 640 290 562 278 Z" fill="#000" fill-opacity=".22"/>
+      <path d="M786 222 C740 202 660 198 604 222" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="5" stroke-linecap="round"/>
+      <path d="M640 296 C660 272 700 262 744 266" fill="none" stroke="#1d2024" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- ── Tapa lateral del radiador (el "carenado" de una naked) ── -->
+      <path class="s-body s-shroud" d="M794 246 L852 270 L844 318 L806 352 L770 338 L776 290 Z"/>
+      <path d="M796 258 L836 276 L830 314" fill="none" stroke="#ffffff" stroke-opacity=".22" stroke-width="3"/>
+
+      <!-- ── Rueda delantera ── -->
+      <g class="lp-wheel lp-wheel-front">
+        <circle class="s-tire" cx="905" cy="482" r="118"/>
+        <circle cx="905" cy="482" r="106" fill="none" stroke="#2b2e33" stroke-width="3"/>
+        <circle class="s-rim" cx="905" cy="482" r="90"/>
+        <circle cx="905" cy="482" r="82" fill="#0d0e10"/>
+        <g class="lp-spokes s-spoke" stroke-width="9" stroke-linecap="round">
+          <path d="M905 482 L905 402 M905 482 L981 457 M905 482 L952 547 M905 482 L858 547 M905 482 L829 457"/>
+        </g>
+        <circle class="s-disc" cx="905" cy="482" r="70" fill="none" stroke-width="12" stroke-dasharray="9 5"/>
+        <circle class="s-hub" cx="905" cy="482" r="24"/>
+        <circle cx="905" cy="482" r="9" fill="#1a1b1e"/>
+        <path class="s-caliper" d="M844 422 q-18 10 -22 30 l16 6 q4 -14 16 -22 z"/>
+      </g>
+
+      <!-- ── Guardabarros delantero ── -->
+      <path class="s-body s-fender" d="M806 405 A128 128 0 0 1 1000 396" stroke-width="14" stroke-linecap="round"/>
+
+      <!-- ── Horquilla invertida ── -->
+      <path class="s-fork-low" d="M915 478 L873 354 L853 361 L895 485 Z"/>
+      <path class="s-fork-up" d="M879 352 L828 200 L796 211 L847 363 Z"/>
+      <path d="M872 348 L826 212" stroke="#ffffff" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
+      <circle class="s-hub" cx="905" cy="482" r="15"/>
+      <path class="s-frame" d="M790 202 L848 184 L854 200 L796 218 Z"/>
+      <path class="s-frame" d="M808 258 L862 242 L866 256 L812 272 Z"/>
+
+      <!-- ── Manubrio, espejo e instrumentos ── -->
+      <path d="M822 190 L760 170" stroke="#1a1b1e" stroke-width="10" stroke-linecap="round"/>
+      <path d="M760 170 L724 160" stroke="#0e0f11" stroke-width="16" stroke-linecap="round"/>
+      <path d="M798 184 L776 120" stroke="#1a1b1e" stroke-width="5" stroke-linecap="round"/>
+      <ellipse class="s-mirror" cx="772" cy="110" rx="30" ry="13" transform="rotate(-14 772 110)"/>
+      <path d="M836 206 L870 196 L876 214 L842 224 Z" fill="#141518"/>
+
+      <!-- ── Farola ── -->
+      <path class="s-body s-headlight-case" d="M846 226 L896 220 L926 252 L908 296 L862 298 L848 264 Z"/>
+      <path class="s-headlight" d="M872 238 L904 236 L918 256 L906 282 L874 282 L866 262 Z"/>
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+    </g>
+            </defs>
+
+            <ellipse cx="600" cy="712" rx="440" ry="14" fill="#000" opacity=".5"/>
+
+            <!-- 0 · Así llega: color cansado y rayones. -->
+            <g id="l-dull" style="--skin:url(#g-dull)">
+              <use href="#bike-art"/>
+              <g id="scratches" class="scratch" stroke-linecap="round">
+                <path d="M610 230 L680 214" stroke-width="2.4"/>
+                <path d="M628 246 L700 232" stroke-width="1.6"/>
+                <path d="M720 214 C744 212 762 218 780 228" stroke-width="2"/>
+                <path d="M400 268 L470 286" stroke-width="2.2"/>
+                <path d="M300 236 L350 252" stroke-width="1.6"/>
+                <path d="M800 270 L830 300" stroke-width="2"/>
+                <circle cx="690" cy="262" r="12" stroke-width="1.2"/>
+                <circle cx="690" cy="262" r="20" stroke-width="1.2"/>
+                <circle cx="690" cy="262" r="28" stroke-width="1"/>
+              </g>
+            </g>
+
+            <!-- 1 · Pintura -->
+            <g id="l-paint" clip-path="url(#c-paint)" style="--skin:url(#g-paint)">
+              <use href="#bike-art"/>
+            </g>
+
+            <!-- 2 · Detailing: el mismo color con reflejo de espejo. -->
+            <g id="l-gloss" clip-path="url(#c-gloss)" style="--skin:url(#g-gloss)">
+              <use href="#bike-art"/>
+              <g class="reflect" stroke-linecap="round">
+                <path d="M606 222 C664 200 744 200 792 222" stroke-width="6"/>
+                <path d="M380 262 C420 272 470 284 530 292" stroke-width="3"/>
+                <path d="M800 266 L838 282" stroke-width="3"/>
+              </g>
+            </g>
+
+            <!-- 3 · PPF: película transparente encima del brillo. -->
+            <g id="l-film" clip-path="url(#c-film)" style="--skin:url(#g-film)">
+              <g id="l-film-in">
+                <use href="#bike-art"/>
+              </g>
+            </g>
+
+            <!-- 4 · Wrap: camaleón, y luego otros vinilos encima. -->
+            <g id="l-cham" clip-path="url(#c-cham)" style="--skin:url(#g-cham)">
+              <use href="#bike-art"/>
+              <path class="reflect" d="M606 226 C664 206 744 206 792 226" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+            </g>
+            <g id="l-mate" style="--skin:url(#g-mate)" opacity="0"><use href="#bike-art"/></g>
+            <g id="l-carbon" style="--skin:url(#g-carbon)" opacity="0">
+              <use href="#bike-art"/>
+              <path class="reflect" d="M606 226 C664 206 744 206 792 226" stroke-width="3" stroke-linecap="round" opacity=".35"/>
+            </g>
+            <g id="l-sat" style="--skin:url(#g-sat)" opacity="0">
+              <use href="#bike-art"/>
+              <path class="reflect" d="M606 226 C664 206 744 206 792 226" stroke-width="5" stroke-linecap="round" opacity=".4"/>
+            </g>
+
+            <!-- Brillo que recorre la carrocería. -->
+            <g clip-path="url(#c-body)">
+              <rect id="sheen" x="0" y="150" width="120" height="260" fill="url(#g-sheen)" opacity="0"/>
+            </g>
+
+            <!-- Destellos del detailing. -->
+            <g id="stars" opacity="1">
+              <g transform="translate(700 196)"><path class="star" d="M0 -22 L6 -6 L22 0 L6 6 L0 22 L-6 6 L-22 0 L-6 -6 Z"/></g>
+              <g transform="translate(890 230)"><path class="star" d="M0 -16 L4.5 -4.5 L16 0 L4.5 4.5 L0 16 L-4.5 4.5 L-16 0 L-4.5 -4.5 Z"/></g>
+              <g transform="translate(360 250)"><path class="star" d="M0 -16 L4.5 -4.5 L16 0 L4.5 4.5 L0 16 L-4.5 4.5 L-16 0 L-4.5 -4.5 Z"/></g>
+              <g transform="translate(960 396)"><path class="star" d="M0 -13 L3.5 -3.5 L13 0 L3.5 3.5 L0 13 L-3.5 3.5 L-13 0 L-3.5 -3.5 Z"/></g>
+            </g>
+
+            <!-- Herramientas -->
+            <!-- Pistola de pintura con su nube. -->
+            <g id="gun" opacity="0">
+              <ellipse cx="-6" cy="96" rx="92" ry="54" fill="url(#g-mist)"/>
+              <g fill="#F25C05">
+                <circle cx="-30" cy="84" r="4"/><circle cx="18" cy="104" r="3"/><circle cx="-52" cy="110" r="3"/><circle cx="6" cy="70" r="2.5"/><circle cx="-14" cy="126" r="3"/>
+              </g>
+              <g id="gun-body" transform="translate(0 -6)">
+                <g transform="rotate(-28)">
+                  <rect x="18" y="-18" width="78" height="32" rx="8" fill="#2a2d33" stroke="#F25C05" stroke-width="4"/>
+                  <rect x="-6" y="-10" width="26" height="15" rx="3" fill="url(#g-chrome)"/>
+                  <path d="M74 14 L84 62 L66 64 L58 14 Z" fill="#2a2d33"/>
+                  <rect x="36" y="-58" width="36" height="40" rx="6" fill="#3a3e45"/>
+                  <rect x="40" y="-52" width="10" height="28" rx="4" fill="#fff" opacity=".12"/>
+                </g>
+              </g>
+            </g>
+
+            <!-- Pulidora. -->
+            <g id="pad" opacity="0">
+              <ellipse cx="0" cy="0" rx="58" ry="58" fill="#e0ad2e" opacity=".18"/>
+              <g id="pad-spin">
+                <circle r="40" fill="url(#g-pad)"/>
+                <circle r="39" fill="none" stroke="#6b4c08" stroke-width="2.5"/>
+                <path d="M0 -28 A28 28 0 0 1 28 0 M0 28 A28 28 0 0 1 -28 0" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="4" stroke-linecap="round"/>
+                <circle r="10" fill="#1b1d21"/>
+              </g>
+              <rect x="-14" y="-118" width="28" height="80" rx="10" fill="#2a2d33"/>
+              <rect x="-50" y="-150" width="100" height="40" rx="18" fill="#1f2226" stroke="#e0ad2e" stroke-width="3"/>
+            </g>
+
+            <!-- Borde de la película PPF (espátula pasando). -->
+            <g id="film-edge" opacity="0">
+              <rect x="-40" y="150" width="80" height="300" fill="url(#g-edge)"/>
+              <rect x="-3" y="140" width="6" height="320" rx="3" fill="#e8fbff"/>
+              <rect x="-14" y="112" width="28" height="44" rx="6" fill="#1f2226" stroke="#46c8dc" stroke-width="3"/>
+            </g>
+
+            <!-- La piedrita que rebota en la película. -->
+            <circle id="ripple" cx="720" cy="232" r="10" fill="none" stroke="#7fe3f2" stroke-width="5" opacity="0"/>
+            <circle id="ripple2" cx="720" cy="232" r="10" fill="none" stroke="#7fe3f2" stroke-width="3" opacity="0"/>
+            <g id="stone" opacity="0">
+              <path d="M-11 -6 L-3 -13 L9 -10 L13 1 L6 11 L-6 12 L-13 3 Z" fill="#8a8f96" stroke="#c9ced4" stroke-width="2"/>
+            </g>
+
+            <!-- Rollo de vinilo. -->
+            <g id="roll" opacity="0">
+              <rect x="-26" y="150" width="52" height="300" rx="26" fill="url(#g-roll)"/>
+              <rect x="-8" y="138" width="16" height="324" rx="8" fill="#1f2226"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Escena 0 · Gancho (visible desde el primer fotograma: es la miniatura). -->
+      <div id="s0" class="scene-text clip" data-start="0" data-duration="3.2" data-track-index="2" data-track-kind="graphics">
+        <div class="st-in">
+          <p class="kicker"><span class="dot"></span>Gorillaz Motorbikes</p>
+          <h1 class="title">¿Tu moto se ve <span class="accent">cansada?</span></h1>
+          <p class="sub">Rayones, pintura opaca, un color que ya aburre.</p>
+        </div>
+      </div>
+
+      <!-- Escena 1 · Pintura -->
+      <div id="s1" class="scene-text clip" data-start="3.2" data-duration="4.4" data-track-index="2" data-track-kind="graphics" style="--c: var(--pintura)">
+        <div class="st-in">
+          <p class="kicker"><span class="dot"></span>01 / 04</p>
+          <h2 class="title">Pintura</h2>
+          <p class="sub">Rayones y golpes fuera. <em>Color original o uno nuevo.</em></p>
+        </div>
+      </div>
+
+      <!-- Escena 2 · Detailing -->
+      <div id="s2" class="scene-text clip" data-start="7.6" data-duration="4.2" data-track-index="2" data-track-kind="graphics" style="--c: var(--detailing)">
+        <div class="st-in">
+          <p class="kicker"><span class="dot"></span>02 / 04</p>
+          <h2 class="title">Detailing</h2>
+          <p class="sub">Pulido y sellado. <em>Brillo de espejo, sin remolinos.</em></p>
+        </div>
+      </div>
+
+      <!-- Escena 3 · PPF -->
+      <div id="s3" class="scene-text clip" data-start="11.8" data-duration="4.2" data-track-index="2" data-track-kind="graphics" style="--c: var(--ppf)">
+        <div class="st-in">
+          <p class="kicker"><span class="dot"></span>03 / 04</p>
+          <h2 class="title">PPF</h2>
+          <p class="sub">Película transparente que <em>frena piedras y rayones.</em></p>
+        </div>
+      </div>
+
+      <!-- Escena 4 · Wrap -->
+      <div id="s4" class="scene-text clip" data-start="16" data-duration="4" data-track-index="2" data-track-kind="graphics" style="--c: var(--wrap)">
+        <div class="st-in">
+          <p class="kicker"><span class="dot"></span>04 / 04</p>
+          <h2 class="title">Wrap</h2>
+          <p class="sub">Otro color sin tocar la pintura. <em>Y se puede retirar.</em></p>
+        </div>
+      </div>
+
+      <!-- Rótulos de los vinilos -->
+      <div id="f-cham" class="finish clip" data-start="17.2" data-duration="1" data-track-index="3" data-track-kind="graphics"><span>Camaleón</span></div>
+      <div id="f-mate" class="finish clip" data-start="18.2" data-duration="0.55" data-track-index="3" data-track-kind="graphics"><span>Mate</span></div>
+      <div id="f-carbon" class="finish clip" data-start="18.75" data-duration="0.55" data-track-index="3" data-track-kind="graphics"><span>Carbono</span></div>
+      <div id="f-sat" class="finish clip" data-start="19.3" data-duration="0.55" data-track-index="3" data-track-kind="graphics"><span>Satinado</span></div>
+
+      <!-- Escena 5 · Cierre -->
+      <div id="cta" class="clip" data-start="20" data-duration="5" data-track-index="4" data-track-kind="graphics">
+        <div id="cta-brand" class="cta-brand">
+          <span class="cta-logo"><img src="assets/logo.png" alt="" /></span>
+          <span class="cta-name">Gorillaz Motorbikes<small>Estética de motos</small></span>
+        </div>
+        <div id="cta-chips" class="cta-chips">
+          <span class="chip" style="--c: var(--pintura)"><span class="dot"></span>Pintura</span>
+          <span class="chip" style="--c: var(--detailing)"><span class="dot"></span>Detailing</span>
+          <span class="chip" style="--c: var(--ppf)"><span class="dot"></span>PPF</span>
+          <span class="chip" style="--c: var(--wrap)"><span class="dot"></span>Wrap</span>
+        </div>
+        <div id="cta-wa" class="cta-wa">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#06210f" d="M16 3C8.8 3 3 8.6 3 15.6c0 2.5.8 4.9 2.1 6.9L3.6 29l6.8-1.7c1.7.9 3.6 1.4 5.6 1.4 7.2 0 13-5.6 13-12.6S23.2 3 16 3zm0 23.1c-1.8 0-3.5-.5-5-1.3l-.4-.2-4 1 1-3.8-.3-.4c-1.1-1.7-1.7-3.6-1.7-5.7C5.6 10 10.3 5.5 16 5.5s10.4 4.5 10.4 10.3S21.7 26.1 16 26.1zm5.7-7.7c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.6l-1-2.3c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.1 1.4 3.4c.2.2 2.4 3.6 5.8 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.8-.7 2.1-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg>
+          <span>Cotiza por WhatsApp</span>
+        </div>
+        <p id="cta-phone" class="cta-phone" data-var-text="phone">321 320 4299</p>
+        <p id="cta-note" class="cta-note">Mándanos fotos y te decimos qué le sirve.</p>
+        <p id="cta-addr" class="cta-addr"><span data-var-text="address">Tv. 42a #5i 20 · Bogotá</span><br /><b data-var-text="url">gorillazmotorbikes.com/estetica</b></p>
+      </div>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const X0 = 120, X1 = 1080, W = 960;
+
+      /* Entrada y salida de cada bloque de texto. */
+      function textIn(sel, at) {
+        tl.fromTo(`${sel} .kicker`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, at);
+        tl.fromTo(`${sel} .title`, { opacity: 0, y: 70, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "power4.out" }, at + 0.06);
+        tl.fromTo(`${sel} .sub`, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, at + 0.2);
+      }
+      function textOut(sel, at) {
+        tl.to(`${sel} .st-in`, { opacity: 0, y: -40, duration: 0.25, ease: "power2.in" }, at);
+      }
+
+      tl.fromTo("#tape-in", { x: 0 }, { x: -1400, duration: 25, ease: "none" }, 0);
+
+      /* ── 0 · Gancho (0 a 3.2 s). Ya visible en el fotograma 0. ── */
+      tl.fromTo("#s0 .title", { scale: 1 }, { scale: 1.04, duration: 3, ease: "none", transformOrigin: "0% 50%" }, 0);
+      tl.fromTo("#s0 .sub", { opacity: 0.0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.35);
+      tl.fromTo("#stage-in", { scale: 1.06 }, { scale: 1, duration: 3.2, ease: "power1.out" }, 0);
+      tl.fromTo("#scratches", { opacity: 0.55 }, { opacity: 1, duration: 0.25, ease: "power1.inOut", repeat: 5, yoyo: true }, 0.6);
+      textOut("#s0", 2.9);
+
+      /* ── 1 · Pintura (3.2 a 7.6 s): la pistola pinta de atrás hacia adelante. ── */
+      textIn("#s1", 3.25);
+      tl.fromTo("#gun", { opacity: 0, x: X0, y: 150 }, { opacity: 1, duration: 0.25 }, 3.6);
+      tl.fromTo("#c-paint-r", { attr: { width: 0 } }, { attr: { width: W }, duration: 2.6, ease: "power1.inOut" }, 3.8);
+      tl.fromTo("#gun", { x: X0 }, { immediateRender: false,  x: X1, duration: 2.6, ease: "power1.inOut" }, 3.8);
+      tl.fromTo("#gun-body", { y: -6 }, { y: 14, duration: 0.26, ease: "sine.inOut", repeat: 9, yoyo: true }, 3.8);
+      tl.to("#gun", { opacity: 0, duration: 0.25 }, 6.4);
+      tl.fromTo("#sheen", { opacity: 0, attr: { x: 180 } }, { opacity: 1, attr: { x: 980 }, duration: 0.8, ease: "power2.inOut" }, 6.6);
+      tl.to("#sheen", { opacity: 0, duration: 0.1 }, 7.42);
+      textOut("#s1", 7.3);
+
+      /* ── 2 · Detailing (7.6 a 11.8 s): la pulidora saca brillo en dos pasadas. ── */
+      textIn("#s2", 7.65);
+      tl.set("#pad", { x: 250, y: 236 }, 7.9);
+      tl.fromTo("#pad", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 7.9);
+      tl.fromTo("#pad-spin", { rotation: 0 }, { rotation: 2160, svgOrigin: "0 0", duration: 2.6, ease: "none" }, 7.9);
+      tl.fromTo("#c-gloss-top", { attr: { width: 0 } }, { attr: { width: W }, duration: 1.2, ease: "power1.inOut" }, 8.15);
+      tl.to("#pad", { x: X1 - 60, duration: 1.2, ease: "power1.inOut" }, 8.15);
+      tl.to("#pad", { y: 340, duration: 0.2, ease: "power1.inOut" }, 9.35);
+      tl.fromTo("#c-gloss-bot", { attr: { x: X1, width: 0 } }, { attr: { x: X0, width: W }, duration: 1.0, ease: "power1.inOut" }, 9.55);
+      tl.to("#pad", { x: 400, duration: 1.0, ease: "power1.inOut" }, 9.55);
+      tl.to("#pad", { opacity: 0, duration: 0.2 }, 10.5);
+      tl.fromTo("#sheen", { opacity: 0, attr: { x: 180 } }, { immediateRender: false,  opacity: 1, attr: { x: 980 }, duration: 0.7, ease: "power2.inOut" }, 10.6);
+      tl.to("#sheen", { opacity: 0, duration: 0.1 }, 11.32);
+      tl.fromTo("#stars .star", { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(3)", stagger: 0.08 }, 10.7);
+      tl.to("#stars .star", { opacity: 0, scale: 0.4, duration: 0.25, stagger: 0.05 }, 11.35);
+      textOut("#s2", 11.5);
+
+      /* ── 3 · PPF (11.8 a 16 s): la película entra y una piedra rebota. ── */
+      textIn("#s3", 11.85);
+      tl.fromTo("#film-edge", { opacity: 0, x: X1 - 40 }, { opacity: 1, duration: 0.2 }, 12.1);
+      tl.fromTo("#c-film-r", { attr: { x: X1, width: 0 } }, { attr: { x: X0, width: W }, duration: 1.7, ease: "power1.inOut" }, 12.25);
+      tl.fromTo("#film-edge", { x: X1 - 40 }, { immediateRender: false,  x: X0 + 60, duration: 1.7, ease: "power1.inOut" }, 12.25);
+      tl.to("#film-edge", { opacity: 0, duration: 0.2 }, 13.95);
+      // La película se asienta: queda un velo leve.
+      tl.fromTo("#l-film-in", { opacity: 1 }, { opacity: 0.55, duration: 0.5 }, 14.0);
+      // Piedra: llega, rebota en el tanque y se va.
+      tl.fromTo("#stone", { opacity: 1, x: 1110, y: 90, rotation: 0, transformOrigin: "50% 50%" }, { immediateRender: false,  x: 720, y: 228, rotation: 180, duration: 0.45, ease: "power1.in" }, 14.3);
+      tl.to("#stone", { x: 1020, y: 40, rotation: 420, duration: 0.6, ease: "power2.out" }, 14.75);
+      tl.to("#stone", { opacity: 0, duration: 0.1 }, 15.25);
+      tl.fromTo("#ripple", { opacity: 1, attr: { r: 8 } }, { immediateRender: false, opacity: 0, attr: { r: 90 }, duration: 0.6, ease: "power2.out" }, 14.75);
+      tl.fromTo("#ripple2", { opacity: 1, attr: { r: 8 } }, { immediateRender: false, opacity: 0, attr: { r: 140 }, duration: 0.8, ease: "power2.out" }, 14.82);
+      tl.fromTo("#stage-in", { x: 0 }, { immediateRender: false,  x: 6, duration: 0.05, ease: "none", repeat: 3, yoyo: true }, 14.75);
+      textOut("#s3", 15.7);
+
+      /* ── 4 · Wrap (16 a 20 s): el rollo forra en camaleón y luego desfilan vinilos. ── */
+      textIn("#s4", 16.05);
+      tl.fromTo("#roll", { opacity: 0, x: X0 }, { opacity: 1, duration: 0.2 }, 16.2);
+      tl.fromTo("#c-cham-r", { attr: { width: 0 } }, { attr: { width: W }, duration: 1.4, ease: "power1.inOut" }, 16.35);
+      tl.fromTo("#roll", { x: X0, rotation: 0 }, { immediateRender: false,  x: X1, duration: 1.4, ease: "power1.inOut" }, 16.35);
+      tl.to("#roll", { opacity: 0, duration: 0.2 }, 17.75);
+      // Desfile de acabados: cortes secos, uno tras otro.
+      tl.set("#l-mate", { opacity: 1 }, 18.2);
+      tl.set("#l-carbon", { opacity: 1 }, 18.75);
+      tl.set("#l-mate", { opacity: 0 }, 18.75);
+      tl.set("#l-sat", { opacity: 1 }, 19.3);
+      tl.set("#l-carbon", { opacity: 0 }, 19.3);
+      tl.set("#l-sat", { opacity: 0 }, 19.85);
+      ["#f-cham", "#f-mate", "#f-carbon", "#f-sat"].forEach((id, i) => {
+        const at = [17.2, 18.2, 18.75, 19.3][i];
+        tl.fromTo(`${id} span`, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.15, ease: "power2.out" }, at);
+      });
+      [18.2, 18.75, 19.3].forEach((at) => {
+        tl.fromTo("#stage-in", { scale: 1.025 }, { immediateRender: false,  scale: 1, duration: 0.3, ease: "power2.out" }, at);
+      });
+      textOut("#s4", 19.7);
+
+      /* ── 5 · Cierre (20 a 25 s): la moto sube y aparece cómo cotizar. ── */
+      tl.to("#stage-in", { scale: 0.64, y: -432, duration: 0.7, ease: "power3.inOut" }, 19.95);
+      tl.fromTo("#sheen", { opacity: 0, attr: { x: 180 } }, { immediateRender: false,  opacity: 1, attr: { x: 980 }, duration: 0.9, ease: "power2.inOut" }, 20.7);
+      tl.to("#sheen", { opacity: 0, duration: 0.1 }, 21.62);
+      tl.fromTo("#cta-brand", { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 20.3);
+      tl.fromTo("#cta-chips .chip", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out", stagger: 0.07 }, 20.55);
+      tl.fromTo("#cta-wa", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 20.9);
+      tl.fromTo("#cta-phone", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 21.15);
+      tl.fromTo("#cta-note", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 21.35);
+      tl.fromTo("#cta-addr", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 21.5);
+      tl.fromTo("#cta-wa", { scale: 1 }, { immediateRender: false,  scale: 1.04, duration: 0.45, ease: "sine.inOut", repeat: 5, yoyo: true }, 22.1);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
