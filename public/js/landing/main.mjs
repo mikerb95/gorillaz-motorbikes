@@ -29,9 +29,11 @@ if (!reduced) {
   document.documentElement.classList.add('motion-ok');
   mount('[data-lp="hero"]', initHero);
   mount('[data-lp="services"]', initServices);
+  // En el orden de la página: ScrollTrigger calcula cada fijación con el
+  // espacio que agregan las de arriba solo si se crearon antes.
+  mount('[data-lp="skin"]', initSkin);
   mount('[data-lp="ticket"]', initTicket);
   mount('[data-lp="shop"]', initShopTags);
-  mount('[data-lp="skin"]', initSkin);
 } else {
   document.documentElement.classList.remove('lp-shutter-pending');
 }

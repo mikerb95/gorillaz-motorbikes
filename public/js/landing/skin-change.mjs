@@ -54,7 +54,7 @@ export default function initSkin(root) {
   const place = [
     // Pistola: arriba, con un leve vaivén de pintor y la nube que respira.
     (w) => {
-      const y = 182 + Math.sin(w / 38) * 10;
+      const y = 238 + Math.sin(w / 38) * 10; // con el vaso entero dentro del cuadro
       tools[0].setAttribute('transform', `translate(${X0 + w} ${y}) rotate(${Math.sin(w / 60) * 6})`);
       if (mist) mist.setAttribute('ry', String(78 + Math.sin(w / 9) * 10));
     },
@@ -127,7 +127,9 @@ export default function initSkin(root) {
       const st = window.ScrollTrigger.create({
         trigger: root,
         start: 'top top',
-        end: '+=220%',
+        // Unas dos pantallas y media de scroll para las tres pasadas.
+        end: () => `+=${Math.round(window.innerHeight * 2.4)}`,
+        invalidateOnRefresh: true,
         pin: true,
         scrub: 0.6,
         animation: tl,
