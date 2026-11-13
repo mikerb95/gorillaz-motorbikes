@@ -1,7 +1,8 @@
 'use strict';
 // Teclado virtual propio del panel /kds. Cualquier campo con [data-kds-kbd] se vuelve
 // readonly y, al tocarlo, abre este panel en vez de activar el teclado nativo de la
-// tablet. Layout QWERTY por defecto; [data-kds-kbd="numeric"] muestra solo 1-0
+// tablet. Layout QWERTY español por defecto (como el teclado del celular: teclas del
+// mismo ancho, fila a-ñ completa y ⇧ z-m ⌫ debajo); [data-kds-kbd="numeric"] muestra solo 1-0
 // (usado por el PIN gate). Escribe directo sobre el input/textarea original y
 // dispara eventos input/change reales para que el resto del código de la página
 // (autouppercase de placa, autosugerencia de marca/modelo, etc.) siga funcionando.
@@ -12,7 +13,7 @@
     ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
     ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ñ'],
-    ['z', 'x', 'c', 'v', 'b', 'n', 'm', '.', '-', '+']
+    ['z', 'x', 'c', 'v', 'b', 'n', 'm']
   ];
   var NUMERIC_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
@@ -28,13 +29,10 @@
     '.kds-vkb-done{flex:none;background:var(--kds-brand,#F25C05);color:var(--kds-ink,#141414);border:none;border-radius:10px;padding:14px 22px;font:700 20px/1 var(--kds-cond,sans-serif);text-transform:uppercase;letter-spacing:.05em;cursor:pointer}' +
     '.kds-vkb-row{display:flex;gap:6px;margin-bottom:6px}' +
     '.kds-vkb-row:last-child{margin-bottom:0}' +
-    '.kds-vkb-row:nth-child(2){margin-left:5%;width:95%}' +
-    '.kds-vkb-row:nth-child(3){margin-left:7.5%;width:92.5%}' +
-    '.kds-vkb-row:nth-child(4){margin-left:10%;width:90%}' +
-    '.kds-vkb-key{flex:1;padding:14px 0;font:700 24px/1 var(--kds-cond,sans-serif);background:var(--kds-bg-3,#272a2e);color:var(--kds-text,#ecebe6);border:1px solid var(--kds-line,#2d3035);border-radius:8px;cursor:pointer;text-transform:uppercase;transition:transform .08s ease}' +
+    '.kds-vkb-key{flex:1 1 0;min-width:0;padding:14px 0;font:700 24px/1 var(--kds-cond,sans-serif);background:var(--kds-bg-3,#272a2e);color:var(--kds-text,#ecebe6);border:1px solid var(--kds-line,#2d3035);border-radius:8px;cursor:pointer;text-transform:uppercase;transition:transform .08s ease}' +
     '.kds-vkb-key:active{background:#3a3e44;transform:scale(.94)}' +
-    '.kds-vkb-key.wide{flex:3}' +
-    '.kds-vkb-key.action{background:transparent;color:var(--kds-text-2,#a6a9ae);flex:1.5;font:600 16px/1 var(--kds-font,sans-serif);text-transform:none}' +
+    '.kds-vkb-key.wide{flex:7 1 0}' +
+    '.kds-vkb-key.action{background:transparent;color:var(--kds-text-2,#a6a9ae);flex:1.5 1 0;font:600 22px/1 var(--kds-font,sans-serif);text-transform:none}' +
     '.kds-vkb-key.action.on{background:var(--kds-brand,#F25C05);color:var(--kds-ink,#141414);border-color:var(--kds-brand,#F25C05)}' +
     '.kds-vkb-row:nth-child(1) .kds-vkb-key{background:#1d1f22}' +
     '.kds-vkb-numgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}' +
@@ -100,9 +98,13 @@
       keysEl.appendChild(rowEl);
     });
 
+    // Fila inferior como en el teclado del celular: signos a los lados del espacio.
     var lastRow = document.createElement('div');
     lastRow.className = 'kds-vkb-row';
+    addKey(lastRow, '-');
+    addKey(lastRow, '+');
     addKey(lastRow, 'espacio', { cls: 'wide', onClick: function () { insert(' '); } });
+    addKey(lastRow, '.');
     keysEl.appendChild(lastRow);
   }
 
