@@ -209,6 +209,8 @@ const RECONOCIMIENTO_FALSO = () => {
   class Falso {
     start() {
       if (this._vivo) throw new Error('InvalidStateError');
+      // Android: a veces el reinicio tras un corte falla.
+      if (window.__arranques === 1 && window.__fallarReinicio) { window.__fallarReinicio = false; throw new Error('aborted'); }
       this._vivo = true;
       const pedazo = window.__dictado.split('|')[window.__arranques++] || '';
       this._t = setTimeout(() => {
@@ -231,6 +233,7 @@ const RECONOCIMIENTO_FALSO = () => {
 async function paginaMecanico(base, { sinVoz = false, pin = '4299' } = {}) {
   const ctx = await navegador.newContext({ viewport: { width: 390, height: 844 }, locale: 'es-CO', hasTouch: true, isMobile: true });
   await ctx.addCookies([{ name: 'emp_jwt', value: jwt.sign({ eid: 'emp-e2e' }, JWT_SECRET), url: base }]);
+  await ctx.grantPermissions(['microphone'], { origin: base });
   await ctx.addInitScript(sinVoz ? () => { delete window.SpeechRecognition; delete window.webkitSpeechRecognition; } : RECONOCIMIENTO_FALSO);
   const page = await ctx.newPage();
   await page.goto(`${base}/taller/voz`);
@@ -309,7 +312,7 @@ test('voz: sostener, dictar, soltar; tarjeta de ingreso y confirmación del mec�
 
 // Dedo real (eventos táctiles por CDP), no mouse: así es como se usa en el celular.
 async function sostenerConDedo(page, { ms, dictado }) {
-  await page.evaluate((t) => { window.__dictado = t; window.__arranques = 0; }, dictado);
+  await page.evaluate((t) => { window.__dictado = t; window.__arranques = 0; window.__fallarReinicio = true; }, dictado);
   const caja = await page.locator('#tvMic').boundingBox();
   const punto = { x: caja.x + caja.width / 2, y: caja.y + caja.height / 2 };
   const cdp = await page.context().newCDPSession(page);
