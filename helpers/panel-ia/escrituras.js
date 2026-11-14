@@ -235,7 +235,7 @@ const editar_items_orden = {
     return {
       ok: true,
       origen: `Editar ítems de ${r.label}`,
-      motivo: `${cambios.length} cambio(s); total ${fmtCOP(totalDespues)}`,
+      motivo: `${cambios.filter((c) => c.campo !== 'Total').length} cambio(s); total ${fmtCOP(totalDespues)}`,
       vista: vista({
         rotulo: 'Ítems de la orden',
         titulo: r.label,

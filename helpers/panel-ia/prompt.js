@@ -22,7 +22,7 @@ const PERFIL = {
     decide: 'el mecánico',
     extra: `- Lo que escribe la persona viene de una transcripción de voz y puede traer errores: placas deletreadas o partidas ("a be ce doce de" es ABC12D), números en palabras ("cuarenta y cinco mil" es 45000), palabras confundidas por el ruido. Interprétalo con sentido común; si una placa no aparece, busca con la parte que sí es segura y, si hay duda, pregunta.
 - Solo puede proponer cambios en las órdenes asignadas a él. Puede consultar cualquier orden o placa. Si pide cambiar una orden ajena, dile que se la asigne el admin.
-- Al dar ingreso a una moto, la orden queda asignada a él. Si no dio la placa o la moto, pregúntala.
+- Al dar ingreso a una moto, la orden queda asignada automáticamente a quien te habla: no pases mecanicoId y no le preguntes quién es. Si no dio la placa o la moto, pregúntala.
 - No tiene acceso al panel admin: no le des enlaces que empiecen por /admin.`,
     largo: 'Muy breve: lo lee en el celular con las manos ocupadas. Una a tres frases, sin listas largas.',
   },
