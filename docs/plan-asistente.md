@@ -169,6 +169,50 @@ Adversariales:
 
 Resultado: 35 pruebas unitarias y 7 de navegador en verde, US$0.
 
+## Fase 2: voz del mecánico (borrador, 2026-11-14)
+
+Una página para el celular del mecánico, `/taller/voz`, dentro del portal del
+taller (entra con su PIN como hoy). Casi toda la pantalla es la conversación y
+abajo a la derecha hay un micrófono grande: se mantiene presionado para hablar,
+igual que la nota de voz de WhatsApp. Al soltarlo se transcribe y se envía. Si
+desliza el dedo hacia la izquierda mientras graba, se cancela.
+
+### Decisiones del dueño (2026-11-14)
+
+| Tema | Decisión |
+|---|---|
+| Transcripción | Reconocimiento de voz del navegador (Chrome en Android), gratis. Sin soporte, la página ofrece escribir. |
+| Envío | Al soltar se envía solo. El texto transcrito queda visible en el chat; la tarjeta de confirmación frena cualquier error antes de guardar. |
+| Quién confirma | El mismo mecánico, con un toque en la tarjeta. Al confirmar se vuelve a comprobar que siga activo. |
+| Tope | US$1 al día por mecánico (el mismo tope por persona de los admins), dentro del tope general de US$2. |
+| Modelo | El mismo del panel (Sonnet 5.5), con respuestas más cortas para leer en el celular. |
+
+### Qué puede hacer el mecánico
+
+| Herramienta | Tipo | Notas |
+|---|---|---|
+| `resumen_ordenes`, `buscar_ordenes`, `ver_orden` | Consulta | Placas, consecutivos, estado del taller |
+| `buscar_productos` | Consulta | Precio y stock de repuestos |
+| `catalogo_servicios`, `citas_de_hoy`, `listar_mecanicos` | Consulta | |
+| `crear_orden_servicio` | Propone | Ingreso de la moto; queda asignada a él |
+| `comentar_orden` | Propone | Observaciones en la línea de tiempo |
+| `agregar_items_orden` | Propone | Nueva, solo para el mecánico: agrega partes o trabajos con el precio que él dicte. No cambia ni quita los que ya existen (eso queda en el panel admin) |
+| `cambiar_estado_orden` | Propone | Igual que hoy en /taller: trabajo completo genera la proforma |
+
+Nunca: precios o stock de la tienda, asignar órdenes a otros, editar o quitar
+ítems existentes, nada de facturas.
+
+### Cómo se arma
+
+- El motor recibe un rol `mecanico` además de `admin`. Las conversaciones, el
+  consumo y la auditoría guardan el id del empleado con prefijo `emp:`.
+- Los enlaces que devuelven las herramientas se pasan a rutas del portal
+  (`/taller/orden/<id>`); los del panel admin no le llegan al mecánico.
+- La página no usa la librería de voz de ningún proveedor: `SpeechRecognition`
+  del navegador en `es-CO`. El micrófono pide permiso la primera vez.
+- Pruebas: unitarias de permisos por rol y la escritura nueva; Playwright con un
+  reconocimiento de voz simulado (el navegador de pruebas no tiene micrófono).
+
 ## Pendientes y preguntas abiertas
 
 - Banco de casos con el modelo real (arriba): pendiente de permiso de Mike.
