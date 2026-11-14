@@ -9,6 +9,12 @@
   const raiz = document.getElementById('pia');
   if (!raiz) return;
 
+  // La misma caja sirve al panel admin (/admin) y a la voz del mecánico
+  // (/taller/voz): cada página declara su API, su URL base y qué rutas puede enlazar.
+  const API = raiz.dataset.api || '/admin/asistente';
+  const BASE = raiz.dataset.base || '/admin';
+  const PREFIJO_RUTAS = raiz.dataset.rutas || '/admin';
+
   const $ = (sel) => raiz.querySelector(sel);
   const hilo = $('#piaHilo');
   const form = $('#piaCaja');
@@ -20,7 +26,7 @@
   const chkTodas = $('#piaTodas');
   const csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
 
-  const NOTA_BASE = 'Enter para preguntar · Shift+Enter para otra línea. Los cambios siempre piden tu aprobación.';
+  const NOTA_BASE = raiz.dataset.nota || 'Enter para preguntar · Shift+Enter para otra línea. Los cambios siempre piden tu aprobación.';
   const PASOS = {
     resumen_ordenes: 'Revisando cómo va el taller',
     buscar_ordenes: 'Buscando órdenes',
@@ -52,7 +58,8 @@
     return n;
   }
 
-  const rutaSegura = (r) => typeof r === 'string' && /^\/admin(?:[/?#][\w\-./?=&#%]*)?$/.test(r);
+  const RUTA_OK = new RegExp(`^${PREFIJO_RUTAS.replace(/[/]/g, '\\/')}(?:[/?#][\\w\\-./?=&#%]*)?$`);
+  const rutaSegura = (r) => typeof r === 'string' && RUTA_OK.test(r);
 
   // Mini parser: párrafos, listas "- ", **negrita** y [texto](/admin/...).
   function enLinea(texto) {
@@ -229,12 +236,12 @@
       ocupar(false);
       if (!terminado) {
         const ver = estado.id
-          ? el('a', { href: `/admin?c=${encodeURIComponent(estado.id)}`, text: 'Ver el resultado' })
+          ? el('a', { href: `${BASE}?c=${encodeURIComponent(estado.id)}`, text: 'Ver el resultado' })
           : null;
         t.respuesta.append(el('p', { class: 'pia-vacia' }, ['Se cortó la conexión. ', ver]));
       }
       cargarRecientes();
-      if (!estado.ocupado && !estado.soloLectura) campo.focus();
+      if (!estado.ocupado && !estado.soloLectura && raiz.dataset.autofoco !== '0') campo.focus();
     }
   }
 
@@ -243,7 +250,7 @@
     switch (ev.tipo) {
       case 'conversacion':
         estado.id = ev.id;
-        history.replaceState(null, '', `/admin?c=${encodeURIComponent(ev.id)}`);
+        history.replaceState(null, '', `${BASE}?c=${encodeURIComponent(ev.id)}`);
         return false;
       case 'paso':
         agregarPaso(t, PASOS[ev.herramienta] || 'Consultando el panel');
@@ -293,14 +300,14 @@
     ajustarAlto();
     const t = nuevoTurno(pregunta);
     t.nodo.scrollIntoView({ block: 'start', behavior: 'smooth' });
-    transmitir('/admin/asistente', { pregunta, id: estado.id }, t);
+    transmitir(API, { pregunta, id: estado.id }, t);
   }
 
   function decidir(aprobado, nodoTarjeta) {
     if (estado.ocupado || !estado.id) return;
     nodoTarjeta.querySelectorAll('button').forEach((b) => { b.disabled = true; });
     const t = nuevoTurno(null);
-    transmitir('/admin/asistente/decision', { id: estado.id, aprobado }, t, {
+    transmitir(`${API}/decision`, { id: estado.id, aprobado }, t, {
       alDecidir(ev) {
         if (!aprobado) nodoTarjeta.sellar('Descartado', 'is-no');
         else if (ev.ok) nodoTarjeta.sellar(`Aprobado, ${horaCorta()}`, 'is-ok');
@@ -316,15 +323,16 @@
   let temporizador = null;
   let activo = -1;
   function cerrarResultados() {
+    if (!listaResultados) return;
     listaResultados.hidden = true;
     listaResultados.replaceChildren();
     activo = -1;
   }
   async function buscar(q) {
-    if (q.length < 2 || estado.ocupado) return cerrarResultados();
+    if (!listaResultados || q.length < 2 || estado.ocupado) return cerrarResultados();
     let datos;
     try {
-      const r = await fetch(`/admin/asistente/buscar?q=${encodeURIComponent(q)}`, { credentials: 'same-origin' });
+      const r = await fetch(`${API}/buscar?q=${encodeURIComponent(q)}`, { credentials: 'same-origin' });
       datos = await r.json();
     } catch {
       return;
@@ -349,6 +357,7 @@
   }
 
   function moverActivo(delta) {
+    if (!listaResultados) return false;
     const items = [...listaResultados.querySelectorAll('.pia-resultado')];
     if (listaResultados.hidden || !items.length) return false;
     activo = (activo + delta + items.length) % items.length;
@@ -374,9 +383,9 @@
     if (e.key === 'Escape') return cerrarResultados();
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      const elegido = listaResultados.querySelector('.pia-resultado.is-activo');
+      const elegido = listaResultados && listaResultados.querySelector('.pia-resultado.is-activo');
       if (elegido) return elegido.click();
-      if (!estado.iaDisponible) {
+      if (!estado.iaDisponible && listaResultados) {
         const primero = listaResultados.querySelector('.pia-resultado');
         if (primero) return primero.click();
       }
@@ -402,14 +411,15 @@
 
   // ── Recientes ─────────────────────────────────────────────────────────────
   async function cargarRecientes() {
+    if (!listaRecientes) return;
     try {
-      const r = await fetch(`/admin/asistente/recientes${chkTodas && chkTodas.checked ? '?todas=1' : ''}`, { credentials: 'same-origin' });
+      const r = await fetch(`${API}/recientes${chkTodas && chkTodas.checked ? '?todas=1' : ''}`, { credentials: 'same-origin' });
       const { recientes } = await r.json();
       if (!recientes.length) {
         listaRecientes.replaceChildren(el('li', { class: 'pia-vacia', text: 'Todavía no hay conversaciones.' }));
         return;
       }
-      listaRecientes.replaceChildren(...recientes.map((c) => el('li', {}, el('a', { href: `/admin?c=${encodeURIComponent(c.id)}` }, [
+      listaRecientes.replaceChildren(...recientes.map((c) => el('li', {}, el('a', { href: `${BASE}?c=${encodeURIComponent(c.id)}` }, [
         el('span', { class: 'pia-reciente-texto', text: c.pregunta }),
         c.estado === 'esperando_aprobacion' ? el('span', { class: 'pia-chip-espera', text: 'Por aprobar' }) : null,
         chkTodas && chkTodas.checked ? el('span', { class: 'pia-reciente-meta', text: c.usuarioNombre }) : null,
@@ -424,7 +434,7 @@
   async function retomar(id) {
     let c;
     try {
-      const r = await fetch(`/admin/asistente/conversacion/${encodeURIComponent(id)}`, { credentials: 'same-origin' });
+      const r = await fetch(`${API}/conversacion/${encodeURIComponent(id)}`, { credentials: 'same-origin' });
       if (!r.ok) throw new Error();
       c = await r.json();
     } catch {
@@ -459,7 +469,7 @@
     if (!consumo) return;
     let d;
     try {
-      const r = await fetch('/admin/asistente/consumo', { credentials: 'same-origin' });
+      const r = await fetch(`${API}/consumo`, { credentials: 'same-origin' });
       d = await r.json();
       if (!r.ok) throw new Error(d.error);
     } catch {
@@ -477,7 +487,7 @@
     guardar.addEventListener('click', async () => {
       guardar.disabled = true;
       try {
-        const r = await fetch('/admin/asistente/topes', {
+        const r = await fetch(`${API}/topes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf },
           body: JSON.stringify({ empresaUsd: Number(inEmpresa.value), usuarioUsd: Number(inUsuario.value) }),
@@ -506,23 +516,33 @@
     );
   }
 
+  // La página de voz manda aquí lo que transcribió el navegador.
+  window.PanelIA = {
+    preguntar,
+    ocupado: () => estado.ocupado,
+    disponible: () => estado.iaDisponible && !estado.soloLectura,
+    nota: ponerNota,
+  };
+
   // ── Arranque ──────────────────────────────────────────────────────────────
   (async function iniciar() {
     ponerNota();
     try {
-      const r = await fetch('/admin/asistente/estado', { credentials: 'same-origin' });
+      const r = await fetch(`${API}/estado`, { credentials: 'same-origin' });
       const s = await r.json();
       estado.iaDisponible = !!s.disponible;
       if (!s.disponible) {
+        const soloBusca = listaResultados ? ' la caja solo busca' : ' el asistente no responde';
         ponerNota(s.motivo === 'sin_clave'
-          ? 'Por ahora la caja solo busca: falta configurar la clave de la IA.'
-          : 'Se alcanzó el tope de gasto de hoy: la caja solo busca hasta mañana.', true);
+          ? `Por ahora${soloBusca}: falta configurar la clave de la IA.`
+          : `Se alcanzó el tope de gasto de hoy:${soloBusca} hasta mañana.`, true);
       }
     } catch { /* se intentará al preguntar */ }
     const c = new URLSearchParams(location.search).get('c');
     if (c) await retomar(c);
     cargarRecientes();
     cargarConsumo();
-    if (!estado.soloLectura) campo.focus({ preventScroll: true });
+    // En el celular, enfocar el campo abre el teclado y tapa el micrófono.
+    if (!estado.soloLectura && raiz.dataset.autofoco !== '0') campo.focus({ preventScroll: true });
   })();
 })();

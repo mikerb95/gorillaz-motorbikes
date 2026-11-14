@@ -253,4 +253,20 @@ async function notifyAdmin(order, employee) {
   });
 }
 
+// ── Voz del mecánico: asistente con IA por nota de voz (helpers/panel-ia) ──
+// Página para el celular: micrófono abajo a la derecha que graba mientras se
+// sostiene. El texto transcrito por el navegador va al mismo motor del panel
+// admin, con rol 'mecanico' (menos herramientas, solo sus órdenes).
+{
+  const motorIa = require('../helpers/panel-ia/motor');
+  const { rutasAsistente } = require('./admin-asistente');
+  router.get('/voz', requireEmployee, (req, res) => {
+    res.render('taller/voz', { employee: req.employee });
+  });
+  router.use('/voz/api', rutasAsistente({
+    guard: [requireEmployee],
+    actorDe: (req) => motorIa.actorMecanico(req.employee),
+  }));
+}
+
 module.exports = router;

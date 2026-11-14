@@ -180,7 +180,8 @@ async function resumenConsumo(usuarioId) {
     gastoDeHoy(usuarioId),
     db.execute({
       sql: `SELECT c.usuario_id,
-                   (SELECT COALESCE(u.name, '') FROM users u WHERE u.id = c.usuario_id) AS nombre,
+                   COALESCE((SELECT u.name FROM users u WHERE u.id = c.usuario_id),
+                            (SELECT e.name FROM employees e WHERE 'emp:' || e.id = c.usuario_id), '') AS nombre,
                    COUNT(*) AS llamadas, COUNT(DISTINCT c.conversacion_id) AS conversaciones, SUM(c.costo_usd) AS usd
             FROM asistente_consumo c
             WHERE c.dia LIKE ? GROUP BY c.usuario_id ORDER BY usd DESC`,
