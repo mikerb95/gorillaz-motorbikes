@@ -23,6 +23,41 @@ const ATTENTION = [
 ].filter(a => a.n > 0);
 %>
 
+<!-- ── Asistente con IA (helpers/panel-ia, public/js/panel-ia.js) ── -->
+<link rel="stylesheet" href="/static/css/panel-ia.css?v=<%= assetV('css/panel-ia.css') %>">
+<section class="pia" id="pia" aria-label="Asistente del panel">
+  <h1 class="pia-saludo">Hola<%= (user && (user.firstName || user.name)) ? ', ' + (user.firstName || user.name).split(' ')[0] : '' %>
+    <small>Pregúntale al asistente o busca una sección, una placa o un producto.</small>
+  </h1>
+  <div class="pia-hilo" id="piaHilo" aria-live="polite"></div>
+  <form class="pia-caja" id="piaCaja" autocomplete="off">
+    <textarea id="piaCampo" rows="1" maxlength="1500" placeholder="Pregunta o busca algo: «crea una orden para la ABC12D», «¿qué vence hoy?»" aria-label="Pregunta o busca algo"></textarea>
+    <button type="submit" class="pia-enviar" id="piaEnviar" aria-label="Preguntar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <span>Preguntar</span>
+    </button>
+    <div class="pia-resultados" id="piaResultados" role="listbox" hidden></div>
+  </form>
+  <p class="pia-nota" id="piaNota"></p>
+  <div class="pia-atajos">
+    <button type="button" class="pia-atajo">¿Cómo va el taller hoy?</button>
+    <button type="button" class="pia-atajo">¿Qué órdenes vencen hoy o están atrasadas?</button>
+    <button type="button" class="pia-atajo" data-completar="Crea una orden de servicio para la placa ">Crear una orden</button>
+    <button type="button" class="pia-atajo" data-completar="Cambia el precio de ">Cambiar un precio</button>
+  </div>
+  <div class="pia-pie">
+    <div class="pia-bloque">
+      <div class="pia-bloque-titulo"><span>Recientes</span><label><input type="checkbox" id="piaTodas"> De todos</label></div>
+      <ul class="pia-recientes" id="piaRecientes"><li class="pia-vacia">Cargando…</li></ul>
+    </div>
+    <div class="pia-bloque">
+      <div class="pia-bloque-titulo"><span>Gasto de la IA</span></div>
+      <div id="piaConsumo"><p class="pia-vacia">Cargando…</p></div>
+    </div>
+  </div>
+</section>
+<script src="/static/js/panel-ia.js?v=<%= assetV('js/panel-ia.js') %>" defer></script>
+
 <!-- ── Necesita tu atención: solo colas con algo pendiente ── -->
 <h2 class="crm-dash-section-title">Necesita tu atención</h2>
 <% if (ATTENTION.length === 0) { %>
