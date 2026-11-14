@@ -42,7 +42,6 @@ const serviceGroups = [
     title: 'Trámites',
     items: [
       svc('alistamiento-tecnomecanica', 'check', 'Listo para la revisión'),
-      { href: '/duplicado-placas', slug: null, label: 'Duplicado de placas', icon: 'doc', desc: 'Placas y portaplacas' },
     ],
   },
 ];

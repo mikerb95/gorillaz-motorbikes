@@ -80,7 +80,6 @@
     if (/^\/(tienda|carrito|checkout)/.test(p)) return 'tienda';
     if (/^\/cursos/.test(p)) return 'cursos';
     if (/^\/(club|clasificados)/.test(p)) return 'club';
-    if (/^\/duplicado-placas/.test(p)) return 'placas';
     return 'sitio';
   }
 

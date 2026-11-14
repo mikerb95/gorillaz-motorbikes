@@ -102,7 +102,8 @@ app.use('/',       require('./routes/services'));
 app.use('/',       require('./routes/shop'));
 app.use('/',       require('./routes/cart'));
 app.use('/clasificados', require('./routes/clasificados'));
-app.use('/duplicado-placas', require('./routes/duplicado-placas'));
+// El servicio de duplicado de placas se retiró (nov 2026): la URL vieja va a /servicios.
+app.get(/^\/duplicado-placas(\/.*)?$/, (req, res) => res.redirect(301, '/servicios'));
 app.use('/',       require('./routes/estetica'));
 app.use('/',       require('./routes/courses'));
 app.use('/',       require('./routes/events'));
