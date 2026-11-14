@@ -38,10 +38,19 @@ function vista({ rotulo, titulo, contexto = null, cambios, avisos = [], boton = 
   return { tipo: 'cambio', rotulo, titulo, contexto, cambios, avisos, boton, nota };
 }
 
-async function ordenEditable(ref) {
+/** El mecánico solo cambia sus órdenes (misma regla que /taller/orden/:id). */
+function ajenaParaMecanico(r, ctx) {
+  return ctx && ctx.usuario && ctx.usuario.rol === 'mecanico' && r.employee_id !== ctx.usuario.empleadoId
+    ? `La orden ${r.label} no está asignada a ti. Pídele al admin que te la asigne.`
+    : null;
+}
+
+async function ordenEditable(ref, ctx) {
   const r = await buscarOrdenPorRef(ref);
   if (!r) return { error: 'No encontré esa orden. Búscala primero con buscar_ordenes.' };
   if (r.status === 'entregado') return { error: `La orden ${r.label} ya se entregó; no se puede modificar.` };
+  const ajena = ajenaParaMecanico(r, ctx);
+  if (ajena) return { error: ajena };
   return { orden: r };
 }
 
@@ -81,13 +90,18 @@ const crear_orden_servicio = {
     required: ['items'],
     additionalProperties: false,
   },
-  async preparar(e) {
+  async preparar(e, ctx) {
     const placa = (e.placa || '').toUpperCase().replace(/\s/g, '');
     const moto = (e.moto || '').trim();
     const telefono = (e.telefono || '').replace(/\D/g, '');
     if (!placa && !moto) return fallo('Falta la placa o la moto. Pregúntasela a la persona.');
     let mecanico = null;
-    if (e.mecanicoId) {
+    if (ctx && ctx.usuario && ctx.usuario.rol === 'mecanico') {
+      // El ingreso que da un mecánico queda asignado a él.
+      if (e.mecanicoId && e.mecanicoId !== ctx.usuario.empleadoId) return fallo('Desde aquí solo puedes dar ingreso a motos que quedan asignadas a ti.');
+      mecanico = await empleadoActivo(ctx.usuario.empleadoId);
+      if (!mecanico) return fallo('Tu usuario del taller está inactivo.');
+    } else if (e.mecanicoId) {
       mecanico = await empleadoActivo(e.mecanicoId);
       if (!mecanico) return fallo('Ese mecánico no existe o está inactivo. Revisa listar_mecanicos.');
     }
@@ -173,8 +187,8 @@ const editar_items_orden = {
     required: ['orden', 'cambios'],
     additionalProperties: false,
   },
-  async preparar(e) {
-    const { orden: r, error } = await ordenEditable(e.orden);
+  async preparar(e, ctx) {
+    const { orden: r, error } = await ordenEditable(e.orden, ctx);
     if (error) return fallo(error);
     if (r.invoice_id) return fallo(`La orden ${r.label} ya tiene factura: sus ítems están congelados. Para editarlos hay que devolver su estado (eso anula la proforma) desde el detalle de la orden.`);
     const antes = safeJson(r.items, []);
@@ -259,8 +273,8 @@ const cambiar_estado_orden = {
     required: ['orden', 'estado'],
     additionalProperties: false,
   },
-  async preparar(e) {
-    const { orden: r, error } = await ordenEditable(e.orden);
+  async preparar(e, ctx) {
+    const { orden: r, error } = await ordenEditable(e.orden, ctx);
     if (error) return fallo(error);
     if (r.status === e.estado) return fallo(`La orden ${r.label} ya está en "${ESTADOS_ORDEN[e.estado]}".`);
     const avisos = [];
@@ -326,8 +340,8 @@ const asignar_orden = {
     required: ['orden'],
     additionalProperties: false,
   },
-  async preparar(e) {
-    const { orden: r, error } = await ordenEditable(e.orden);
+  async preparar(e, ctx) {
+    const { orden: r, error } = await ordenEditable(e.orden, ctx);
     if (error) return fallo(error);
     if (e.mecanicoId === undefined && e.fechaEstimada === undefined) return fallo('Dime el mecánico o la fecha estimada que quieres poner.');
     const cambios = [];
@@ -394,9 +408,11 @@ const comentar_orden = {
     required: ['orden', 'comentario'],
     additionalProperties: false,
   },
-  async preparar(e) {
+  async preparar(e, ctx) {
     const r = await buscarOrdenPorRef(e.orden);
     if (!r) return fallo('No encontré esa orden. Búscala primero con buscar_ordenes.');
+    const ajena = ajenaParaMecanico(r, ctx);
+    if (ajena) return fallo(ajena);
     const texto = e.comentario.replace(/\s+/g, ' ').trim();
     return {
       ok: true,
@@ -600,8 +616,31 @@ const ajustar_stock_producto = {
   },
 };
 
+// ── 2b. Agregar ítems (versión del mecánico) ─────────────────────────────────
+
+const agregar_items_orden = {
+  nombre: 'agregar_items_orden',
+  descripcion: 'Agrega partes o trabajos a una orden sin factura, con el nombre, tipo, precio y cantidad que diga la persona, y recalcula el total. No cambia ni quita los ítems que ya están. No se ejecuta sola: la persona ve los ítems nuevos y el total, y decide.',
+  esquema: {
+    type: 'object',
+    properties: {
+      orden: { type: 'string', minLength: 1, maxLength: 60, description: 'Id o consecutivo de la orden (de buscar_ordenes).' },
+      items: { type: 'array', minItems: 1, maxItems: 20, items: ESQUEMA_ITEM },
+    },
+    required: ['orden', 'items'],
+    additionalProperties: false,
+  },
+  preparar(e, ctx) {
+    return editar_items_orden.preparar({
+      orden: e.orden,
+      cambios: e.items.map((it) => ({ accion: 'agregar', nombre: it.nombre, tipo: it.tipo, precio: it.precio, cantidad: it.cantidad })),
+    }, ctx).then((p) => (p.ok ? { ...p, origen: p.origen.replace('Editar ítems de', 'Agregar ítems a'), vista: { ...p.vista, boton: 'Agregar a la orden' } } : p));
+  },
+  escribir: (p, ctx, extra) => editar_items_orden.escribir(p, ctx, extra),
+};
+
 const ESCRITURAS = [
-  crear_orden_servicio, editar_items_orden, cambiar_estado_orden, asignar_orden, comentar_orden,
+  crear_orden_servicio, editar_items_orden, agregar_items_orden, cambiar_estado_orden, asignar_orden, comentar_orden,
   editar_precio_producto, ajustar_stock_producto,
 ];
 
