@@ -15,7 +15,7 @@ const crypto = require('crypto');
 const { ALLOWED_STATUS } = require('../service-order-status');
 const { fmtCOP } = require('../money');
 const { unitPrice } = require('../shop/pricing');
-const { buscarOrdenPorRef, ESTADOS_ORDEN, COLS_PRODUCTO } = require('./herramientas');
+const { buscarOrdenPorRef, ESTADOS_ORDEN, COLS_PRODUCTO, motoTexto } = require('./herramientas');
 
 const dbc = () => require('../../db');
 
@@ -225,7 +225,7 @@ const editar_items_orden = {
       vista: vista({
         rotulo: 'Ítems de la orden',
         titulo: r.label,
-        contexto: [r.motorcycle, ESTADOS_ORDEN[r.status]].filter(Boolean).join(' · '),
+        contexto: [motoTexto(r.motorcycle), ESTADOS_ORDEN[r.status]].filter(Boolean).join(' · '),
         cambios,
         avisos: [],
       }),
@@ -292,7 +292,7 @@ const cambiar_estado_orden = {
       vista: vista({
         rotulo: 'Estado de la orden',
         titulo: r.label,
-        contexto: r.motorcycle || null,
+        contexto: motoTexto(r.motorcycle),
         cambios: [{ campo: 'Estado', antes: ESTADOS_ORDEN[r.status] || r.status, despues: ESTADOS_ORDEN[destino] }],
         avisos,
         boton: 'Cambiar estado',
@@ -362,7 +362,7 @@ const asignar_orden = {
       vista: vista({
         rotulo: 'Asignación de la orden',
         titulo: r.label,
-        contexto: r.motorcycle || null,
+        contexto: motoTexto(r.motorcycle),
         cambios,
         avisos: plan.employeeId !== undefined && plan.employeeId ? ['El mecánico la verá en su portal del taller.'] : [],
       }),
@@ -405,7 +405,7 @@ const comentar_orden = {
       vista: vista({
         rotulo: 'Comentario en la orden',
         titulo: r.label,
-        contexto: r.motorcycle || null,
+        contexto: motoTexto(r.motorcycle),
         cambios: [{ campo: 'Comentario', antes: null, despues: texto }],
         avisos: ['Lo ve cualquiera que abra la orden en el panel.'],
         boton: 'Publicar comentario',
@@ -501,7 +501,8 @@ const editar_precio_producto = {
         discount: plan.set.discount ?? p.discount,
         clubDiscount: plan.set.club_discount ?? p.club_discount,
       });
-      if (actual.regular !== nuevo.regular) cambios.push({ campo: 'Precio final en la tienda', antes: fmtCOP(actual.regular), despues: fmtCOP(nuevo.regular) });
+      const hayDescuento = actual.regular !== Number(p.price) || nuevo.regular !== (plan.set.price ?? Number(p.price));
+      if (hayDescuento && actual.regular !== nuevo.regular) cambios.push({ campo: 'Precio final en la tienda', antes: fmtCOP(actual.regular), despues: fmtCOP(nuevo.regular) });
       if ((actual.club ?? null) !== (nuevo.club ?? null)) cambios.push({ campo: 'Precio club', antes: actual.club === null ? null : fmtCOP(actual.club), despues: nuevo.club === null ? null : fmtCOP(nuevo.club) });
       if (plan.set.price !== undefined && Number(p.price) && Math.abs(plan.set.price - Number(p.price)) / Number(p.price) >= 0.5) {
         avisos.push(`Cambio grande: ${Math.round(((plan.set.price - Number(p.price)) / Number(p.price)) * 100)} % frente al precio actual.`);

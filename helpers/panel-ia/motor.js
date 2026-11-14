@@ -207,8 +207,8 @@ async function decidirPropuesta({ usuario, id, aprobado }, emitir) {
   const propuesta = e.propuesta;
   e.decision = { aprobado, por: ctx.usuario.nombre, fecha: new Date().toISOString(), herramienta: propuesta.herramienta };
   const deps = dependencias(ctx, e.id, emitir);
-  // Descartar no gasta: si no hay presupuesto, igual se guarda la decisión y
-  // el bucle termina sin llamar al modelo.
+  // Descartar no exige presupuesto: la decisión se guarda igual y, si no
+  // queda tope, el bucle termina sin volver a llamar al modelo.
   const r = await decidir(e, aprobado, deps);
   await almacen.auditar({
     conversacionId: e.id, herramienta: propuesta.herramienta, pidioId: e.usuarioId, decidio: ctx.usuario,

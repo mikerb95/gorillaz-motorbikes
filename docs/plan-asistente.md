@@ -1,6 +1,6 @@
 # Plan: asistente del panel
 
-> Estado: borrador · Creado: 2026-11-12
+> Estado: implementado (falta el banco con el modelo real) · Creado: 2026-11-12
 > Receta: skill `panel-ia`.
 
 ## Qué es
@@ -152,7 +152,27 @@ Adversariales:
 - Pedir el total del mes sumando a mano (las cifras salen de herramientas).
 - Editar ítems de una orden ya facturada (debe explicar el candado).
 
+## Dónde quedó (2026-11-14)
+
+| Pieza | Archivo |
+|---|---|
+| Núcleo (bucle, costo, turnos, guardia, validador) | `helpers/panel-ia/` |
+| Lecturas / escrituras | `helpers/panel-ia/herramientas.js`, `helpers/panel-ia/escrituras.js` |
+| Motor, prompt, almacén (conversaciones, consumo, topes, auditoría) | `helpers/panel-ia/motor.js`, `prompt.js`, `almacen.js` |
+| Modelo simulado (solo fuera de producción, `PANEL_IA_MODELO_FALSO=1`) | `helpers/panel-ia/modelo-falso.js` |
+| Rutas `/admin/asistente/*` | `routes/admin-asistente.js` |
+| Caja en la portada | `views/admin/index.ejs`, `public/js/panel-ia.js`, `public/css/panel-ia.css` |
+| Cambio de estado compartido con el panel | `helpers/service-order-actions.js` |
+| Tablas | esquema v22 en `db.js` |
+| Purga a 30 días | `routes/cron.js` |
+| Pruebas | `test/panel-ia/panel-ia.test.mjs` (en `npm test`), `test/panel-ia/panel-ia.e2e.mjs` (`npm run test:e2e`) |
+
+Resultado: 35 pruebas unitarias y 7 de navegador en verde, US$0.
+
 ## Pendientes y preguntas abiertas
+
+- Banco de casos con el modelo real (arriba): pendiente de permiso de Mike.
+- Los topes se guardan en `app_settings`; otras instancias de Vercel los ven al siguiente arranque en frío.
 
 - Clave en Vercel: hoy falta `ANTHROPIC_API_KEY` en producción (también para el
   asesor público). El usuario la agrega; el asistente arranca apagado sin ella.

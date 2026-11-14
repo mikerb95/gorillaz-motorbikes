@@ -43,6 +43,8 @@ const EVENTOS = {
   factura_enviada_wa: 'Factura enviada por WhatsApp',
 };
 
+// El panel guarda "PLACA <raya> moto"; hacia el modelo y la pantalla va con punto medio.
+const motoTexto = (m) => (m ? String(m).replace(/\s*[\u2013\u2014]\s*/g, ' · ') : null);
 const dinero = (n) => ({ valor: Math.round(Number(n) || 0), texto: fmtCOP(n) });
 const textoSeguro = (t) => (t == null ? null : String(t).replace(/\s+/g, ' ').trim().slice(0, MAX_TEXTO) || null);
 const ok = (datos) => ({ ok: true, datos });
@@ -58,7 +60,7 @@ function resumenOrden(r) {
   return {
     id: r.id,
     consecutivo: r.label,
-    moto: r.motorcycle || null,
+    moto: motoTexto(r.motorcycle),
     telefono: r.client_phone ? `${r.client_phone_country || '+57'} ${r.client_phone}` : null,
     mecanico: r.mechanic || null,
     estado: r.status,
@@ -388,4 +390,4 @@ const HERRAMIENTAS = [
   listar_mecanicos, catalogo_servicios, citas_de_hoy, buscar_en_panel,
 ];
 
-module.exports = { HERRAMIENTAS, ESTADOS_ORDEN, dinero, buscarOrdenPorRef, COLS_ORDEN, resumenOrden, fichaProducto, variantesDe, COLS_PRODUCTO };
+module.exports = { motoTexto, HERRAMIENTAS, ESTADOS_ORDEN, dinero, buscarOrdenPorRef, COLS_ORDEN, resumenOrden, fichaProducto, variantesDe, COLS_PRODUCTO };
