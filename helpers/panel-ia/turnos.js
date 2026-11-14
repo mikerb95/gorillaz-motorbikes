@@ -19,6 +19,18 @@ const PREFIJO_BLOQUEO = '[Respuesta retirada] ';
 const RESPALDO =
   'Preferí no darte esa respuesta porque traía cifras que no pude respaldar con los datos del panel. Pregúntame de nuevo indicando la orden o el producto.';
 
+/**
+ * El modelo pone rayas largas y medias aunque el prompt las prohíba: se
+ * cambian por coma antes de mostrarlas. Los rangos numéricos ("10–12") pasan
+ * a guion simple.
+ */
+function sinRayas(texto) {
+  return String(texto || '')
+    .replace(/(\d)\s*[\u2013\u2014]\s*(\d)/g, '$1-$2')
+    .replace(/\s*[\u2013\u2014]\s*/g, ', ')
+    .replace(/,\s*,/g, ',');
+}
+
 /** Lo que recibe el modelo cuando no se aprueba. Con indicación, `turnosDe` la recupera para pintarla. */
 function textoRechazo(comentario) {
   return comentario
@@ -75,7 +87,8 @@ function turnosDe(mensajes) {
     if (!actual || typeof m.content === 'string') continue;
     for (const b of m.content) {
       if (b.type === 'text' && b.text && b.text.trim()) {
-        actual.respuesta = actual.respuesta ? `${actual.respuesta}\n\n${b.text.trim()}` : b.text.trim();
+        const t = sinRayas(b.text.trim());
+        actual.respuesta = actual.respuesta ? `${actual.respuesta}\n\n${t}` : t;
       }
       if (b.type === 'tool_use' && b.name && !actual.pasos.includes(b.name)) actual.pasos.push(b.name);
     }
@@ -87,5 +100,5 @@ const contarTurnos = (mensajes) => turnosDe(mensajes).length;
 
 module.exports = {
   PREFIJO_CAMBIOS, PREFIJO_GUARDIA, PREFIJO_BLOQUEO, RESPALDO,
-  textoRechazo, turnosDe, contarTurnos,
+  textoRechazo, turnosDe, contarTurnos, sinRayas,
 };
