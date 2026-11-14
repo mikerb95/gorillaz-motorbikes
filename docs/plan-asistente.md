@@ -220,6 +220,16 @@ Pruebas: 40 unitarias y 11 de navegador en verde (US$0).
 - Pruebas: unitarias de permisos por rol y la escritura nueva; Playwright con un
   reconocimiento de voz simulado (el navegador de pruebas no tiene micrófono).
 
+### Candado con PIN (2026-11-14)
+
+Además del login del mecánico, `/taller/voz` pide un PIN compartido. Se guarda
+con bcrypt en `app_settings('voz_pin_hash')`; al acertarlo queda la cookie
+firmada `voz_ok`, ligada a ese empleado, por 1 día (se borra al salir del
+portal). La API de voz también lo exige. Sin PIN configurado la página no abre.
+10 intentos fallidos en 15 minutos bloquean el PIN (tope global).
+Cambiarlo: `node scripts/set-voz-pin.js <PIN>` (usa la base del `.env`).
+PIN inicial escrito en producción el 2026-11-14.
+
 ## Banco con el modelo real: resultados (2026-11-14)
 
 `node scripts/banco-panel-ia.mjs` (base temporal, clave del `.env` de desarrollo).

@@ -73,6 +73,9 @@ before(async () => {
   });
   ordenId = o.id;
   await dbm.db.execute("INSERT INTO employees (id, name, pin_hash, active) VALUES ('emp-e2e', 'Andrés', 'x', 1)");
+  // PIN de la página de voz (antes de arrancar: el sitio lee app_settings al iniciar).
+  const hashVoz = await require('bcryptjs').hash('4299', 4);
+  await dbm.db.execute({ sql: "INSERT INTO app_settings (key, value) VALUES ('voz_pin_hash', ?)", args: [JSON.stringify(hashVoz)] });
   await dbm.db.execute(`INSERT INTO products (id, slug, name, brand, sku, category, price, stock, status)
     VALUES ('p-casco-e2e','casco-e2e','Casco LS2 Rapid','LS2','LS2-R','cascos',350000,5,'active')`);
   [BASE, BASE_SIN_CLAVE] = await Promise.all([
@@ -214,12 +217,17 @@ const RECONOCIMIENTO_FALSO = () => {
   window.webkitSpeechRecognition = Falso;
 };
 
-async function paginaMecanico(base, { sinVoz = false } = {}) {
+async function paginaMecanico(base, { sinVoz = false, pin = '4299' } = {}) {
   const ctx = await navegador.newContext({ viewport: { width: 390, height: 844 }, locale: 'es-CO', hasTouch: true, isMobile: true });
   await ctx.addCookies([{ name: 'emp_jwt', value: jwt.sign({ eid: 'emp-e2e' }, JWT_SECRET), url: base }]);
   await ctx.addInitScript(sinVoz ? () => { delete window.SpeechRecognition; delete window.webkitSpeechRecognition; } : RECONOCIMIENTO_FALSO);
   const page = await ctx.newPage();
   await page.goto(`${base}/taller/voz`);
+  if (pin) {
+    await page.getByLabel('PIN', { exact: true }).fill(pin);
+    await page.getByRole('button', { name: 'Abrir' }).click();
+    await page.waitForLoadState();
+  }
   return page;
 }
 
@@ -242,6 +250,22 @@ test('voz: el portal del taller pide sesión de empleado', async () => {
   await page.goto(`${BASE}/taller/voz`);
   assert.match(page.url(), /\/taller\/login/);
   await ctx.close();
+});
+
+test('voz: pide el PIN; uno incorrecto no abre y la API sigue cerrada', async () => {
+  const page = await paginaMecanico(BASE, { pin: null });
+  await page.getByRole('heading', { name: 'PIN del asistente' }).waitFor();
+  await page.screenshot({ path: path.join(capturas, 'voz-0-pin.png') });
+  const api = await page.evaluate(async () => (await fetch('/taller/voz/api/estado')).status);
+  assert.equal(api, 403);
+  await page.getByLabel('PIN', { exact: true }).fill('1111');
+  await page.getByRole('button', { name: 'Abrir' }).click();
+  await page.getByText('PIN incorrecto.').waitFor();
+  await page.getByLabel('PIN', { exact: true }).fill('4299');
+  await page.getByRole('button', { name: 'Abrir' }).click();
+  await page.getByRole('heading', { name: '¿Qué necesitas?' }).waitFor();
+  assert.equal(await page.evaluate(async () => (await fetch('/taller/voz/api/estado')).status), 200);
+  await page.context().close();
 });
 
 test('voz: sostener, dictar, soltar; tarjeta de ingreso y confirmación del mecánico', async () => {
