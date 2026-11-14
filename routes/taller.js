@@ -304,7 +304,7 @@ async function notifyAdmin(order, employee) {
     }
     if (!(await bcrypt.compare(pin, hash))) {
       await recordThrottleFailure(VOZ_THROTTLE, VOZ_WINDOW_MS);
-      return pantallaPin(res, 'PIN incorrecto.', 401);
+      return pantallaPin(res, 'PIN del asistente incorrecto.', 401);
     }
     res.cookie(VOZ_COOKIE, jwt.sign({ eid: req.employee.id, voz: 1 }, JWT_SECRET, { expiresIn: '1d' }), {
       httpOnly: true,

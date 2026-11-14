@@ -260,7 +260,7 @@ test('voz: pide el PIN; uno incorrecto no abre y la API sigue cerrada', async ()
   assert.equal(api, 403);
   await page.getByLabel('PIN', { exact: true }).fill('1111');
   await page.getByRole('button', { name: 'Abrir' }).click();
-  await page.getByText('PIN incorrecto.').waitFor();
+  await page.getByText('PIN del asistente incorrecto.').waitFor();
   await page.getByLabel('PIN', { exact: true }).fill('4299');
   await page.getByRole('button', { name: 'Abrir' }).click();
   await page.getByRole('heading', { name: '¿Qué necesitas?' }).waitFor();
