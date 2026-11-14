@@ -21,7 +21,7 @@ const db = createClient({
 // desactualizada. Así un cold start con la base ya migrada cuesta 3 viajes
 // baratos a la red en vez de los ~46 (16 CREATE + 25 ALTER + 5 INDEX) de antes.
 // (Turso remoto no permite escribir PRAGMA user_version, por eso usamos tabla.)
-const SCHEMA_VERSION = 21;
+const SCHEMA_VERSION = 22;
 
 async function initDb() {
   // Control de versión del esquema (sentencias idempotentes y baratas).
@@ -591,6 +591,57 @@ async function initDb() {
       cookies TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
     )`,
+    // v22: asistente con IA del panel (helpers/panel-ia). Conversaciones = el
+    // estado del bucle (historial de la API solo por anexión); consumo = una
+    // fila por llamada al modelo (de ahí salen los topes del día); auditoría =
+    // cada decisión sobre una propuesta. Consumo y auditoría no se purgan.
+    `CREATE TABLE IF NOT EXISTS asistente_conversaciones (
+      id TEXT PRIMARY KEY,
+      usuario_id TEXT NOT NULL,
+      usuario_nombre TEXT NOT NULL DEFAULT '',
+      estado TEXT NOT NULL,
+      pregunta TEXT NOT NULL,
+      mensajes TEXT NOT NULL DEFAULT '[]',
+      propuesta TEXT,
+      decision TEXT,
+      respuesta TEXT,
+      error TEXT,
+      iteraciones INTEGER NOT NULL DEFAULT 0,
+      tokens_entrada INTEGER NOT NULL DEFAULT 0,
+      tokens_salida INTEGER NOT NULL DEFAULT 0,
+      tokens_cache_lectura INTEGER NOT NULL DEFAULT 0,
+      tokens_cache_escritura INTEGER NOT NULL DEFAULT 0,
+      costo_usd REAL NOT NULL DEFAULT 0,
+      creada TEXT NOT NULL,
+      actualizada TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS asistente_consumo (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      fecha TEXT NOT NULL,
+      dia TEXT NOT NULL,
+      usuario_id TEXT NOT NULL,
+      conversacion_id TEXT NOT NULL,
+      modelo TEXT NOT NULL,
+      tokens_entrada INTEGER NOT NULL DEFAULT 0,
+      tokens_salida INTEGER NOT NULL DEFAULT 0,
+      tokens_cache_lectura INTEGER NOT NULL DEFAULT 0,
+      tokens_cache_escritura INTEGER NOT NULL DEFAULT 0,
+      costo_usd REAL NOT NULL DEFAULT 0
+    )`,
+    `CREATE TABLE IF NOT EXISTS asistente_auditoria (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      fecha TEXT NOT NULL,
+      conversacion_id TEXT NOT NULL,
+      herramienta TEXT NOT NULL,
+      pidio_usuario_id TEXT NOT NULL,
+      decidio_usuario_id TEXT NOT NULL,
+      decidio_nombre TEXT NOT NULL DEFAULT '',
+      decision TEXT NOT NULL,
+      entrada TEXT NOT NULL,
+      vista TEXT,
+      resultado TEXT,
+      ok INTEGER NOT NULL DEFAULT 0
+    )`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch { /* column already exists */ }
@@ -638,6 +689,10 @@ async function initDb() {
     `CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_public_code ON orders(public_code)`,
     `CREATE INDEX IF NOT EXISTS idx_reviews_target      ON reviews(kind, target, status)`,
     `CREATE INDEX IF NOT EXISTS idx_pqrs_created        ON pqrs(created_at)`,
+    `CREATE INDEX IF NOT EXISTS idx_asis_conv_usuario   ON asistente_conversaciones(usuario_id, actualizada)`,
+    `CREATE INDEX IF NOT EXISTS idx_asis_conv_actual    ON asistente_conversaciones(actualizada)`,
+    `CREATE INDEX IF NOT EXISTS idx_asis_consumo_dia    ON asistente_consumo(dia, usuario_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_asis_auditoria_conv ON asistente_auditoria(conversacion_id)`,
   ];
   for (const sql of indexes) {
     try { await db.execute(sql); } catch { /* index already exists */ }
