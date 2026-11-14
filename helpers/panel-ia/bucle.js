@@ -221,7 +221,7 @@ async function decidir(e, aprobado, deps, comentario = null) {
   let r = null;
   if (aprobado) {
     try {
-      r = await deps.ejecutar(p.herramienta, p.entrada, { toolUseId: p.toolUseId, aprobada: true });
+      r = await deps.ejecutar(p.herramienta, p.entrada, { toolUseId: p.toolUseId, aprobada: true, vista: p.vista });
     } catch (err) {
       r = { ok: false, error: `No se pudo guardar: ${mensajeError(err)}` };
     }
