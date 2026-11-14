@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1115" />
+  <title>Asistente por voz · Taller Gorillaz</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <link rel="stylesheet" href="/static/css/panel-ia.css?v=<%= assetV('css/panel-ia.css') %>">
+  <link rel="stylesheet" href="/static/css/taller-voz.css?v=<%= assetV('css/taller-voz.css') %>">
+</head>
+<body class="tv-body">
+  <header class="tv-top">
+    <a class="tv-volver" href="/taller" aria-label="Volver a mis órdenes">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <div class="tv-titulo"><%= employee.name %><small>Asistente por voz</small></div>
+    <a class="tv-nueva" href="/taller/voz" aria-label="Nueva conversación">Nueva</a>
+  </header>
+
+  <main class="pia pia-voz" id="pia"
+        data-api="/taller/voz/api" data-base="/taller/voz" data-rutas="/taller" data-autofoco="0"
+        data-nota="Mantén presionado el micrófono para hablar. Los cambios siempre piden tu confirmación.">
+    <section class="tv-vacio" aria-label="Ejemplos">
+      <h1>¿Qué necesitas?</h1>
+      <p>Mantén presionado el micrófono, habla y suelta. Por ejemplo:</p>
+      <div class="pia-atajos tv-ejemplos">
+        <button type="button" class="pia-atajo" data-completar="Dale ingreso a la placa ABC12D, Pulsar NS200, cambio de aceite 45000">«Dale ingreso a la ABC12D, Pulsar NS200, cambio de aceite 45 mil»</button>
+        <button type="button" class="pia-atajo" data-completar="Comenta en la ABC12D que trae el freno trasero gastado">«Comenta en la ABC12D que trae el freno trasero gastado»</button>
+        <button type="button" class="pia-atajo">¿Cómo va el taller hoy?</button>
+        <button type="button" class="pia-atajo" data-completar="Agrega a la ABC12D pastillas de freno delanteras 60000">«Agrega a la ABC12D pastillas delanteras, 60 mil»</button>
+      </div>
+    </section>
+
+    <div class="pia-hilo" id="piaHilo" aria-live="polite"></div>
+
+    <div class="tv-barra">
+      <p class="pia-nota" id="piaNota"></p>
+      <div class="tv-fila">
+        <form class="pia-caja tv-caja" id="piaCaja" autocomplete="off">
+          <textarea id="piaCampo" rows="1" maxlength="1500" placeholder="Escribe o mantén el micrófono" aria-label="Escribe tu petición"></textarea>
+          <button type="submit" class="pia-enviar tv-enviar" id="piaEnviar" aria-label="Enviar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+        <button type="button" class="tv-mic" id="tvMic" aria-label="Mantén presionado para hablar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg>
+        </button>
+      </div>
+      <!-- Mientras graba: reemplaza visualmente la fila -->
+      <div class="tv-grabando" id="tvGrabando" hidden>
+        <span class="tv-punto" aria-hidden="true"></span>
+        <span class="tv-tiempo" id="tvTiempo">0:00</span>
+        <span class="tv-parcial" id="tvParcial">Escuchando…</span>
+        <span class="tv-cancelar" id="tvCancelar">‹ desliza para cancelar</span>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/js/panel-ia.js?v=<%= assetV('js/panel-ia.js') %>" defer></script>
+  <script src="/static/js/taller-voz.js?v=<%= assetV('js/taller-voz.js') %>" defer></script>
+</body>
+</html>

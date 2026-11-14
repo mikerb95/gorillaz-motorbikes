@@ -1,0 +1,150 @@
+/* Página de voz del mecánico (/taller/voz). Mobile first: la conversación
+   ocupa la pantalla y abajo queda la barra con el campo y el micrófono en la
+   esquina inferior derecha, al alcance del pulgar. Usa panel-ia.css para el
+   hilo y la tarjeta. */
+
+* { box-sizing: border-box; }
+
+.tv-body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: Montserrat, system-ui, sans-serif;
+  background: #f3f4f6;
+  color: #111;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tv-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  background: #0f1115;
+  color: #fff;
+}
+.tv-volver, .tv-nueva {
+  color: #fff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 10px;
+}
+.tv-volver:active, .tv-nueva:active { background: rgba(255, 255, 255, .12); }
+.tv-nueva { font-size: 13px; font-weight: 800; padding: 0 12px; background: rgba(255, 255, 255, .12); }
+.tv-titulo { flex: 1; min-width: 0; font-weight: 800; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-titulo small { display: block; font-weight: 600; font-size: 11px; color: #9ca3af; }
+
+/* Contenedor: deja sitio abajo para la barra fija. */
+.pia.pia-voz {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px 16px calc(150px + env(safe-area-inset-bottom));
+  gap: 16px;
+}
+.pia-voz .pia-hilo { order: 1; }
+.pia-voz .pia-respuesta { font-size: 1rem; }
+.pia-voz .pia-pregunta { font-size: .95rem; max-width: 88%; }
+.pia-voz .pia-tarjeta { max-width: none; }
+.pia-voz .pia-boton { padding: 12px 16px; font-size: .9rem; }
+
+.tv-vacio { order: 0; padding: 12px 2px 0; }
+.tv-vacio h1 { font-size: 1.4rem; font-weight: 900; margin: 0 0 4px; letter-spacing: -.01em; }
+.tv-vacio p { margin: 0 0 14px; color: #6b7280; font-size: .9rem; line-height: 1.45; }
+.tv-ejemplos { flex-direction: column; align-items: stretch; }
+.tv-ejemplos .pia-atajo { text-align: left; border-radius: 14px; padding: 12px 14px; font-size: .85rem; line-height: 1.35; }
+.pia-voz.is-chat .tv-vacio { display: none; }
+
+/* ── Barra inferior ── */
+.tv-barra {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, #f3f4f6 70%, rgba(243, 244, 246, 0));
+}
+.tv-barra > * { max-width: 680px; margin-left: auto; margin-right: auto; }
+.pia-voz .tv-barra .pia-nota { margin: 0 4px 6px; text-align: center; font-size: .72rem; }
+.tv-fila { display: flex; align-items: flex-end; gap: 10px; }
+
+.pia.pia-voz .tv-caja,
+.pia.pia-voz.is-chat .tv-caja {
+  flex: 1;
+  min-width: 0;
+  position: static;
+  border-radius: 26px;
+  padding: 4px 4px 4px 16px;
+  min-height: 56px;
+  align-items: center;
+}
+.pia-voz .tv-caja textarea { font-size: 1rem; padding: 10px 0; }
+/* Como en WhatsApp: el botón de enviar solo aparece si hay texto escrito. */
+.tv-enviar { width: 44px; height: 44px; padding: 0; border-radius: 50%; justify-content: center; }
+.tv-enviar svg { width: 18px; height: 18px; }
+.pia-voz:not(.tv-con-texto) .tv-enviar { display: none; }
+
+.tv-mic {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border: 0;
+  border-radius: 50%;
+  background: #F25C05;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px -8px rgba(242, 92, 5, .7);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: transform .15s ease, background-color .15s;
+}
+.tv-mic svg { width: 28px; height: 28px; pointer-events: none; }
+.tv-mic:disabled { background: #d4d4d8; box-shadow: none; }
+.tv-mic.is-grabando { transform: scale(1.25); background: #dc2626; box-shadow: 0 0 0 10px rgba(220, 38, 38, .15), 0 10px 24px -8px rgba(220, 38, 38, .7); }
+.tv-mic.is-cancelar { background: #52525b; }
+
+/* Estado "grabando": ocupa el lugar del campo, el micrófono queda a la derecha. */
+.tv-grabando {
+  position: absolute;
+  left: 12px;
+  right: 86px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  background: #fff;
+  border-radius: 26px;
+  border: 1.5px solid #fecaca;
+  font-size: .9rem;
+  overflow: hidden;
+}
+.tv-grabando[hidden] { display: none; }
+.tv-punto { width: 10px; height: 10px; border-radius: 50%; background: #dc2626; flex: none; animation: tv-latido 1s infinite; }
+.tv-tiempo { font-weight: 800; font-variant-numeric: tabular-nums; flex: none; }
+.tv-parcial { flex: 1; min-width: 0; color: #52525b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-cancelar { flex: none; font-size: .75rem; color: #a1a1aa; font-weight: 700; }
+.tv-grabando.is-cancelar .tv-cancelar { color: #dc2626; }
+@keyframes tv-latido { 50% { opacity: .25; } }
+
+@media (min-width: 720px) {
+  .tv-grabando { left: calc(50% - 340px + 12px); right: calc(50% - 340px + 86px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-punto { animation: none; }
+  .tv-mic { transition: none; }
+}

@@ -3,6 +3,7 @@
 // sin gastar API. Lo activa PANEL_IA_MODELO_FALSO=1 y solo fuera de producción
 // (motor.js lo ignora en Vercel). Responde con guiones fijos según la pregunta:
 //
+//  - "ingreso ... placa X" → propone crear_orden_servicio con un ítem fijo.
 //  - "comenta ..."        → buscar_ordenes y propone comentar_orden en la primera.
 //  - "precio ... a N"     → buscar_productos y propone editar_precio_producto.
 //  - cualquier otra cosa  → resumen_ordenes y responde con un conteo.
@@ -49,6 +50,14 @@ async function llamar(mensajes) {
   const resultado = Array.isArray(ultimo.content) ? ultimo.content.find((b) => b.type === 'tool_result') : null;
 
   if (!resultado) {
+    if (pregunta.includes('ingreso')) {
+      const placa = (pregunta.match(/placa\s+([a-z0-9 ]{5,8}?)(?:,|\s|$)/) || [])[1] || 'AAA11A';
+      return herramienta('crear_orden_servicio', {
+        placa: placa.replace(/\s/g, '').toUpperCase(),
+        moto: 'Moto de prueba',
+        items: [{ nombre: 'Cambio de aceite', tipo: 'service', precio: 45000, cantidad: 1 }],
+      }, 'Preparé el ingreso.');
+    }
     if (pregunta.includes('comenta')) return herramienta('buscar_ordenes', {}, 'Busco la orden.');
     if (pregunta.includes('precio')) {
       const m = pregunta.match(/precio de(l)?\s+(.+?)\s+a\s+/);
