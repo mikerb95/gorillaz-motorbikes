@@ -21,8 +21,8 @@ const RESPALDO =
 
 /**
  * El modelo pone rayas largas y medias aunque el prompt las prohíba: se
- * cambian por coma antes de mostrarlas. Los rangos numéricos ("10–12") pasan
- * a guion simple.
+ * cambian por coma antes de mostrarlas. Los rangos numéricos (raya entre dos
+ * números) pasan a guion simple.
  */
 function sinRayas(texto) {
   return String(texto || '')

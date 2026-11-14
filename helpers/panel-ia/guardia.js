@@ -20,6 +20,13 @@ function numerosDe(texto) {
     if (Number.isFinite(n)) out.push(n);
   }
   for (const c of extraerCifras(texto)) out.push(c.valor);
+  // "90 mil" o "1,5 millones" sin signo de pesos: la guardia del asesor los
+  // ignora por ambiguos, pero aquí solo sirven para PERMITIR una cifra.
+  for (const m of String(texto).matchAll(/(\d+(?:[.,]\d{1,2})?)\s*(mil|millones|millón|millon|k)\b/gi)) {
+    const base = Number(m[1].replace(',', '.'));
+    const factor = /^mil$|^k$/i.test(m[2]) ? 1e3 : 1e6;
+    if (Number.isFinite(base)) out.push(Math.round(base * factor));
+  }
   return out;
 }
 

@@ -127,7 +127,8 @@ const crear_orden_servicio = {
       id,
       items: p.items,
       total: p.total,
-      motorcycle: [p.placa, p.moto].filter(Boolean).join(' — ') || null,
+      // Mismo formato "PLACA <raya> moto" que guarda el panel (plateFromOrder lo lee).
+      motorcycle: [p.placa, p.moto].filter(Boolean).join(' \u2014 ') || null,
       clientPhone: p.telefono || null,
       clientPhoneCountry: '+57',
       employeeId: p.mecanico ? p.mecanico.id : null,
