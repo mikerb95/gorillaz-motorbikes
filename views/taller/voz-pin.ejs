@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1115" />
+  <title>PIN · Asistente por voz</title>
+  <link rel="icon" href="/favicons/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/taller-voz.css?v=<%= assetV('css/taller-voz.css') %>">
+  <style>
+    .vp { max-width: 380px; margin: 0 auto; padding: 48px 20px 32px; text-align: center; }
+    .vp-icono { width: 64px; height: 64px; border-radius: 50%; background: #F25C05; color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px -8px rgba(242, 92, 5, .7); }
+    .vp h1 { font-size: 1.35rem; font-weight: 900; margin: 18px 0 6px; }
+    .vp p { color: #6b7280; font-size: .9rem; margin: 0 0 22px; line-height: 1.45; }
+    .vp input { width: 100%; font: inherit; font-size: 1.8rem; font-weight: 800; letter-spacing: .5em; text-align: center; padding: 14px 10px 14px calc(10px + .5em); border: 1.5px solid #e4e4e7; border-radius: 16px; background: #fff; outline: none; }
+    .vp input:focus { border-color: #F25C05; box-shadow: 0 0 0 4px rgba(242, 92, 5, .12); }
+    .vp button { margin-top: 14px; width: 100%; border: 0; border-radius: 14px; background: #F25C05; color: #fff; font: inherit; font-weight: 800; font-size: 1rem; padding: 15px; cursor: pointer; }
+    .vp-error { background: #fef2f2; color: #b91c1c; font-weight: 700; font-size: .85rem; border-radius: 12px; padding: 10px 12px; margin: 0 0 14px; }
+  </style>
+</head>
+<body class="tv-body">
+  <header class="tv-top">
+    <a class="tv-volver" href="/taller" aria-label="Volver a mis órdenes">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <div class="tv-titulo"><%= employee.name %><small>Asistente por voz</small></div>
+  </header>
+
+  <main class="vp">
+    <span class="vp-icono" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+    </span>
+    <h1>PIN del asistente</h1>
+    <p>Escribe el PIN para abrir el asistente por voz. Queda abierto en este celular hasta mañana.</p>
+    <% if (error) { %><div class="vp-error" role="alert"><%= error %></div><% } %>
+    <form method="post" action="/taller/voz/pin" autocomplete="off">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <input type="password" name="pin" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="6" required autofocus aria-label="PIN" <%= configurado ? '' : 'disabled' %> />
+      <button type="submit" <%= configurado ? '' : 'disabled' %>>Abrir</button>
+    </form>
+  </main>
+</body>
+</html>

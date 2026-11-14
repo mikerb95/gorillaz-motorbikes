@@ -120,6 +120,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
 router.post('/logout', (req, res) => {
   res.clearCookie('emp_jwt');
+  res.clearCookie('voz_ok');
   res.redirect('/taller/login');
 });
 
@@ -260,10 +261,61 @@ async function notifyAdmin(order, employee) {
 {
   const motorIa = require('../helpers/panel-ia/motor');
   const { rutasAsistente } = require('./admin-asistente');
+
+  // Candado extra de la página de voz: además del login del mecánico, un PIN
+  // compartido (bcrypt en app_settings 'voz_pin_hash'). Al acertarlo queda una
+  // cookie firmada, ligada a ESE empleado y con la misma vida que su sesión.
+  // Sin PIN configurado la página no abre (falla cerrado).
+  const VOZ_PIN_KEY = 'voz_pin_hash';
+  const VOZ_COOKIE = 'voz_ok';
+  const VOZ_THROTTLE = 'taller_voz_pin';
+  const VOZ_WINDOW_MS = 15 * 60 * 1000;
+  const VOZ_MAX_FAIL = 10;
+
+  const vozDesbloqueada = (req) => {
+    const t = req.cookies[VOZ_COOKIE];
+    if (!t || !req.employee) return false;
+    try {
+      const d = jwt.verify(t, JWT_SECRET);
+      return d.voz === 1 && d.eid === req.employee.id;
+    } catch {
+      return false;
+    }
+  };
+  const requireVozPin = (req, res, next) => (vozDesbloqueada(req)
+    ? next()
+    : res.status(403).json({ error: 'La página de voz está bloqueada. Recarga y escribe el PIN.' }));
+
+  const pantallaPin = (res, error = null, status = 200) =>
+    res.status(status).render('taller/voz-pin', { employee: res.locals.employee, error, configurado: settings.get(VOZ_PIN_KEY) != null });
+
   router.get('/voz', requireEmployee, (req, res) => {
+    if (!vozDesbloqueada(req)) return pantallaPin(res);
     res.render('taller/voz', { employee: req.employee });
   });
-  router.use('/voz/api', rutasAsistente({
+
+  router.post('/voz/pin', requireEmployee, authLimiter, async (req, res) => {
+    const hash = settings.get(VOZ_PIN_KEY);
+    if (!hash) return pantallaPin(res, 'El PIN de esta página no está configurado. Pídeselo al admin.', 503);
+    const pin = String(req.body.pin || '').trim();
+    if (!/^\d{4,6}$/.test(pin)) return pantallaPin(res, 'Escribe el PIN de 4 a 6 números.', 400);
+    if (await isThrottleLocked(VOZ_THROTTLE, VOZ_MAX_FAIL, VOZ_WINDOW_MS)) {
+      return pantallaPin(res, 'Demasiados intentos. Espera unos minutos.', 429);
+    }
+    if (!(await bcrypt.compare(pin, hash))) {
+      await recordThrottleFailure(VOZ_THROTTLE, VOZ_WINDOW_MS);
+      return pantallaPin(res, 'PIN incorrecto.', 401);
+    }
+    res.cookie(VOZ_COOKIE, jwt.sign({ eid: req.employee.id, voz: 1 }, JWT_SECRET, { expiresIn: '1d' }), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+    res.redirect('/taller/voz');
+  });
+
+  router.use('/voz/api', requireEmployee, requireVozPin, rutasAsistente({
     guard: [requireEmployee],
     actorDe: (req) => motorIa.actorMecanico(req.employee),
   }));
