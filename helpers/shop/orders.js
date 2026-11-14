@@ -18,6 +18,9 @@ const { loadCatalog } = require('../catalog');
 const { redeemCoupon } = require('./coupons');
 const { getShopConfig, pointsForPurchase } = require('./config');
 const { sendOrderEmails } = require('./emails');
+const { notify } = require('../ntfy');
+const { fmtCOP } = require('../money');
+const { abs } = require('../seo');
 
 // Código corto y legible para el cliente (sin 0/O/1/I para evitar confusiones).
 const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -100,6 +103,13 @@ async function confirmPaid(orderId, paymentRef, { mailer } = {}) {
   order = await getOrderById(orderId);
   await loadCatalog().catch(() => {}); // refleja el stock nuevo en esta instancia
   (mailer || sendOrderEmails)(order).catch((e) => console.error('[Orders] correos:', e.message));
+  await notify({
+    title: `Pedido pagado ${order.publicCode || ''}: ${fmtCOP(order.total)}`.trim(),
+    message: `${order.customerName}\n${order.items.map((i) => `${i.qty} × ${i.name}`).join('\n')}${order.installation ? '\nIncluye instalación en el taller' : ''}`,
+    tags: ['moneybag'],
+    priority: 4,
+    click: abs('/admin/pedidos'),
+  });
   return order;
 }
 

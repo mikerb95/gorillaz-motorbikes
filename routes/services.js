@@ -6,6 +6,8 @@ const { v4: uuidv4 } = require('uuid');
 const { createAppointment, getServiceOrdersByPlate } = require('../db');
 const { computeDemandMap } = require('../helpers/appointments');
 const { resendClient } = require('../config');
+const { notify } = require('../helpers/ntfy');
+const { abs } = require('../helpers/seo');
 
 const settings = require('../helpers/settings');
 const { DatosInvalidos, ordenDelCliente } = require('../helpers/asesor/orden');
@@ -92,6 +94,12 @@ router.post('/servicios/agendar', async (req, res) => {
         ]);
       }
     } catch (e) { console.error('Resend error:', e.message); }
+    await notify({
+      title: `Nueva cita: ${service}`,
+      message: `${name} (${plate})\n${formattedDate}\nTel: ${phone || 'sin teléfono'}`,
+      tags: ['calendar'],
+      click: abs('/admin/citas'),
+    });
     res.render('services_schedule', { services: SERVICES, bookingMessage: `Gracias ${name}. Confirmación enviada a ${email}. Te contactaremos al ${phone}.`, demandMap: await computeDemandMap() });
   } catch (e) {
     console.error('POST /servicios/agendar error:', e.message);

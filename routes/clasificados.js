@@ -4,6 +4,8 @@ const rateLimit = require('express-rate-limit');
 const { requireAuth }            = require('../middleware/auth');
 const { uploadClassified, deleteFromBlob } = require('../helpers/files');
 const { setFlash } = require('../helpers/flash');
+const { notify } = require('../helpers/ntfy');
+const { abs } = require('../helpers/seo');
 const {
   createClassified, updateClassified, setClassifiedStatus, getClassifiedById,
   getActiveClassifieds, getClassifiedsByUser, deleteClassified,
@@ -121,6 +123,12 @@ router.post('/nuevo', requireAuth, createLimiter, uploadClassified, async (req, 
       contactPhone: parsed.data.contactPhone || (user && user.phone) || '',
       images,
       status: 'pending',
+    });
+    await notify({
+      title: 'Anuncio por aprobar',
+      message: `${parsed.data.title}\nDe: ${user ? (user.nickname || user.name) : 'miembro'}`,
+      tags: ['motorcycle'],
+      click: abs('/admin/clasificados'),
     });
     setFlash(res, 'success', 'Tu anuncio fue enviado y aparecerá publicado una vez que el equipo lo apruebe.');
     res.redirect('/clasificados/mios');
