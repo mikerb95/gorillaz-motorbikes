@@ -56,7 +56,11 @@ router.get('/api/cron/tienda', async (req, res) => {
   // Primero el RUNT (quien ya renovó no recibe aviso), luego los avisos.
   const runt = await refreshDueVehicles().catch((e) => { console.error('[cron] runt:', e.message); return -1; });
   const docs = await remindExpiringDocs().catch((e) => { console.error('[cron] documentos:', e.message); return -1; });
-  res.json({ ok: true, released, reminders, runt, docs });
+  // Retención del asistente del panel: conversaciones de más de 30 días (el
+  // consumo y la auditoría no se borran).
+  const asistente = await require('../helpers/panel-ia/almacen').purgarViejas()
+    .catch((e) => { console.error('[cron] asistente:', e.message); return -1; });
+  res.json({ ok: true, released, reminders, runt, docs, asistente });
 });
 
 module.exports = router;
