@@ -169,7 +169,7 @@ Adversariales:
 
 Resultado: 35 pruebas unitarias y 7 de navegador en verde, US$0.
 
-## Fase 2: voz del mecánico (borrador, 2026-11-14)
+## Fase 2: voz del mecánico (implementada, 2026-11-14)
 
 Una página para el celular del mecánico, `/taller/voz`, dentro del portal del
 taller (entra con su PIN como hoy). Casi toda la pantalla es la conversación y
@@ -200,7 +200,14 @@ desliza el dedo hacia la izquierda mientras graba, se cancela.
 | `cambiar_estado_orden` | Propone | Igual que hoy en /taller: trabajo completo genera la proforma |
 
 Nunca: precios o stock de la tienda, asignar órdenes a otros, editar o quitar
-ítems existentes, nada de facturas.
+ítems existentes, nada de facturas. Solo propone cambios en órdenes asignadas a
+él (misma regla que `/taller/orden/:id`); consultar puede cualquier orden.
+
+Archivos: `views/taller/voz.ejs`, `public/js/taller-voz.js`,
+`public/css/taller-voz.css`, rutas en `routes/taller.js` (fábrica
+`rutasAsistente` de `routes/admin-asistente.js`), permisos por rol en
+`helpers/panel-ia/motor.js` (`PERMISOS`). Acceso desde "Mis órdenes".
+Pruebas: 40 unitarias y 11 de navegador en verde (US$0).
 
 ### Cómo se arma
 

@@ -148,3 +148,8 @@
   .tv-punto { animation: none; }
   .tv-mic { transition: none; }
 }
+
+/* panel-ia.css ordena la caja con `order: 2` para el panel admin; aquí el
+   campo va primero y el micrófono a la derecha, al alcance del pulgar. */
+.pia.pia-voz .tv-fila > .pia-caja { order: 0; }
+.pia.pia-voz .tv-fila > .tv-mic { order: 1; }
