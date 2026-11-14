@@ -200,18 +200,29 @@ test('móvil: sin desborde horizontal', async () => {
 
 // El navegador de pruebas no tiene micrófono: se reemplaza el reconocimiento
 // de voz por uno que "escucha" el texto de window.__dictado.
+// Como en Chrome de Android: aunque se pida `continuous`, el dictado entrega la
+// frase y SE CORTA SOLO al poco tiempo, con el dedo todavía presionando. Cada
+// arranque entrega el siguiente pedazo de window.__dictado (separado por |).
 const RECONOCIMIENTO_FALSO = () => {
   window.__dictado = '';
+  window.__arranques = 0;
   class Falso {
     start() {
+      if (this._vivo) throw new Error('InvalidStateError');
+      this._vivo = true;
+      const pedazo = window.__dictado.split('|')[window.__arranques++] || '';
       this._t = setTimeout(() => {
-        if (!window.__dictado) return;
-        const r = [{ transcript: window.__dictado }];
-        r.isFinal = true;
-        this.onresult && this.onresult({ resultIndex: 0, results: [r] });
+        if (pedazo) {
+          const r = [{ transcript: pedazo }];
+          r.isFinal = true;
+          this.onresult && this.onresult({ resultIndex: 0, results: [r] });
+        }
+        this._fin = setTimeout(() => this._terminar(), 250);
       }, 120);
     }
-    stop() { clearTimeout(this._t); setTimeout(() => this.onend && this.onend(), 60); }
+    _terminar() { if (!this._vivo) return; this._vivo = false; clearTimeout(this._t); clearTimeout(this._fin); this.onend && this.onend(); }
+    stop() { setTimeout(() => this._terminar(), 60); }
+    abort() { this._terminar(); }
   }
   window.SpeechRecognition = Falso;
   window.webkitSpeechRecognition = Falso;
@@ -293,6 +304,31 @@ test('voz: sostener, dictar, soltar; tarjeta de ingreso y confirmación del mec�
   const desborde = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   assert.ok(desborde <= 1, `desborde horizontal de ${desborde}px`);
   await page.screenshot({ path: path.join(capturas, 'voz-4-confirmada.png') });
+  await page.context().close();
+});
+
+// Dedo real (eventos táctiles por CDP), no mouse: así es como se usa en el celular.
+async function sostenerConDedo(page, { ms, dictado }) {
+  await page.evaluate((t) => { window.__dictado = t; window.__arranques = 0; }, dictado);
+  const caja = await page.locator('#tvMic').boundingBox();
+  const punto = { x: caja.x + caja.width / 2, y: caja.y + caja.height / 2 };
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [punto] });
+  const visible = [];
+  for (let t = 0; t < ms; t += 300) {
+    await page.waitForTimeout(300);
+    visible.push(await page.locator('#tvGrabando').isVisible());
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  return visible;
+}
+
+test('voz: con el dedo sostenido no se suelta solo aunque el dictado se corte, y junta todo lo dicho', async () => {
+  const page = await paginaMecanico(BASE);
+  const visible = await sostenerConDedo(page, { ms: 2400, dictado: 'comenta en la orden de la ABC12D|que trae el freno trasero gastado' });
+  assert.ok(visible.every(Boolean), `se soltó solo: ${JSON.stringify(visible)}`);
+  assert.ok(await page.evaluate(() => window.__arranques) >= 2, 'debía volver a escuchar tras el corte');
+  await page.locator('.pia-pregunta').filter({ hasText: 'comenta en la orden de la ABC12D que trae el freno trasero gastado' }).waitFor();
   await page.context().close();
 });
 
