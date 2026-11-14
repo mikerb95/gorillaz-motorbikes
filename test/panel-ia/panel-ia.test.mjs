@@ -76,13 +76,13 @@ after(() => {
 // ── Prompt ──────────────────────────────────────────────────────────────────
 
 test('el prompt: fecha sin hora, tuteo sin voseo, sin rayas, y todas las acciones', () => {
-  const s = systemPrompt('2026-11-13', motor.ACCIONES);
+  const s = systemPrompt('2026-11-13', motor.accionesDe('admin'));
   assert.match(s, /Hoy es 2026-11-13/);
   assert.doesNotMatch(s, /\d{2}:\d{2}/, 'no debe llevar hora (rompe la caché)');
   assert.match(s, /tuteando/);
   assert.doesNotMatch(s.replace(/Nada de voseo \([^)]*\) ni "vosotros"\./, ''), VOSEO);
   assert.ok(!s.includes(RAYA) && !s.includes(MEDIA), 'el prompt tiene rayas');
-  for (const e of ESCRITURAS) assert.ok(s.includes(e.nombre), `falta ${e.nombre} en el prompt`);
+  for (const n of motor.PERMISOS.admin.filter((x) => ESCRITURAS.some((e) => e.nombre === x))) assert.ok(s.includes(n), `falta ${n} en el prompt`);
 });
 
 test('ninguna descripción de herramienta lleva rayas', () => {
@@ -473,17 +473,17 @@ test('flujo completo con modelo simulado: pregunta, tarjeta, aprobación, audito
   process.env.NODE_ENV = 'test';
   try {
     const eventos = [];
-    const e = await motor.preguntar({ usuario: ADMIN, pregunta: 'comenta que el cliente pagó anticipo' }, (x) => eventos.push(x));
+    const e = await motor.preguntar({ actor: motor.actorAdmin(ADMIN), pregunta: 'comenta que el cliente pagó anticipo' }, (x) => eventos.push(x));
     assert.equal(e.estado, 'esperando_aprobacion');
     assert.equal(e.propuesta.herramienta, 'comentar_orden');
     // Otro usuario no puede decidir la propuesta ajena.
-    await assert.rejects(motor.decidirPropuesta({ usuario: { id: 'u-socio', role: 'user' }, id: e.id, aprobado: true }, () => {}));
-    const r = await motor.decidirPropuesta({ usuario: ADMIN, id: e.id, aprobado: true }, (x) => eventos.push(x));
+    await assert.rejects(motor.decidirPropuesta({ actor: motor.actorAdmin({ id: 'u-socio', role: 'user', name: 'S' }), id: e.id, aprobado: true }, () => {}));
+    const r = await motor.decidirPropuesta({ actor: motor.actorAdmin(ADMIN), id: e.id, aprobado: true }, (x) => eventos.push(x));
     assert.equal(r.estado, 'terminada');
     assert.ok(eventos.some((x) => x.tipo === 'decision' && x.ok === true));
     const aud = await fila('SELECT decision, ok, decidio_usuario_id FROM asistente_auditoria WHERE conversacion_id = ?', [e.id]);
     assert.deepEqual([aud.decision, Number(aud.ok), aud.decidio_usuario_id], ['aprobada', 1, ADMIN.id]);
-    await assert.rejects(motor.decidirPropuesta({ usuario: ADMIN, id: e.id, aprobado: true }, () => {}), /ya se decidió/);
+    await assert.rejects(motor.decidirPropuesta({ actor: motor.actorAdmin(ADMIN), id: e.id, aprobado: true }, () => {}), /ya se decidió/);
     assert.equal(await almacen.reclamar(e.id, ['esperando_aprobacion'], ADMIN.id), null);
     const guardada = await almacen.obtener(e.id);
     assert.equal(turnos.turnosDe(guardada.mensajes).length, 1);
@@ -493,9 +493,89 @@ test('flujo completo con modelo simulado: pregunta, tarjeta, aprobación, audito
 });
 
 test('sin clave de API (y sin modelo falso) el asistente no está disponible', async () => {
-  const s = await motor.estado(ADMIN);
+  const s = await motor.estado(motor.actorAdmin(ADMIN));
   assert.deepEqual(s, { disponible: false, motivo: 'sin_clave' });
-  await assert.rejects(motor.preguntar({ usuario: ADMIN, pregunta: 'hola' }, () => {}), /clave/);
+  await assert.rejects(motor.preguntar({ actor: motor.actorAdmin(ADMIN), pregunta: 'hola' }, () => {}), /clave/);
+});
+
+// ── Voz del mecánico (rol 'mecanico') ───────────────────────────────────────
+
+const MEC = { usuario: { id: 'emp:emp-1', nombre: 'Andrés', rol: 'mecanico', empleadoId: 'emp-1' } };
+
+test('mecánico: solo recibe sus herramientas; nada de precios, stock ni asignar', () => {
+  const nombres = motor.definiciones('mecanico').map((d) => d.name).sort();
+  assert.deepEqual(nombres, [...motor.PERMISOS.mecanico].sort());
+  for (const n of ['editar_precio_producto', 'ajustar_stock_producto', 'asignar_orden', 'editar_items_orden', 'ver_producto', 'buscar_en_panel']) {
+    assert.equal(motor.puede('mecanico', n), false, n);
+  }
+  assert.equal(motor.puede('admin', 'agregar_items_orden'), false);
+  const p = systemPrompt('2026-11-14', motor.accionesDe('mecanico'), 'mecanico');
+  assert.match(p, /transcripción de voz/);
+  assert.ok(p.includes('agregar_items_orden') && !p.includes('editar_precio_producto'));
+  assert.ok(!p.includes(RAYA) && !p.includes(MEDIA));
+});
+
+test('mecánico: los enlaces del admin pasan al portal o se quitan', () => {
+  const r = motor.enlacesPara('mecanico', { ordenes: [{ enlace: '/admin/ordenes-servicio/abc-1' }], enlace: '/admin/tienda/x/editar' });
+  assert.equal(r.ordenes[0].enlace, '/taller/orden/abc-1');
+  assert.equal(r.enlace, null);
+});
+
+test('mecánico: el ingreso queda asignado a él y no puede asignarlo a otro', async () => {
+  const e = escritura('crear_orden_servicio');
+  const otro = await e.preparar({ placa: 'MEC11A', items: [{ nombre: 'x', precio: 1, cantidad: 1 }], mecanicoId: 'emp-2' }, MEC);
+  assert.equal(otro.ok, false);
+  const entrada = { placa: 'MEC11A', moto: 'NKD', items: [{ nombre: 'Revisión', precio: 30000, cantidad: 1 }] };
+  const p = await e.preparar(entrada, MEC);
+  assert.ok(p.vista.cambios.some((c) => c.campo === 'Mecánico' && c.despues === 'Andrés'));
+  const r = await ejecutarAprobada(e, entrada, MEC, { toolUseId: 't-mec-crear', vista: p.vista, aprobada: true });
+  assert.equal(r.ok, true, r.error);
+  const o = await fila("SELECT employee_id, mechanic FROM service_orders WHERE motorcycle LIKE 'MEC11A%'");
+  assert.deepEqual([o.employee_id, o.mechanic], ['emp-1', 'Andrés']);
+});
+
+test('mecánico: no toca órdenes ajenas; en las suyas agrega ítems sin cambiar los existentes', async () => {
+  const ajena = await escritura('comentar_orden').preparar({ orden: ordenFacturadaId, comentario: 'x' }, MEC);
+  assert.equal(ajena.ok, false);
+  assert.match(ajena.error, /no está asignada a ti/);
+  const propia = (await fila("SELECT id, items, total FROM service_orders WHERE motorcycle LIKE 'MEC11A%'"));
+  const e = escritura('agregar_items_orden');
+  const entrada = { orden: propia.id, items: [{ nombre: 'Pastillas delanteras', tipo: 'product', precio: 60000, cantidad: 1 }] };
+  const p = await e.preparar(entrada, MEC);
+  assert.equal(p.ok, true, p.error);
+  assert.equal(p.vista.boton, 'Agregar a la orden');
+  const r = await ejecutarAprobada(e, entrada, MEC, { toolUseId: 't-mec-items', vista: p.vista, aprobada: true });
+  assert.equal(r.ok, true, r.error);
+  const o = await dbm.getServiceOrderById(propia.id);
+  assert.equal(o.items.length, 2);
+  assert.equal(o.items[0].name, 'Revisión');
+  assert.equal(o.total, 90000);
+  assert.match(validar(e.esquema, { orden: 'x', items: [{ nombre: 'a', precio: 1, cantidad: 1 }], cambios: [] }), /no permitido/);
+});
+
+test('mecánico: flujo con modelo simulado; un empleado inactivo ya no puede aprobar', async () => {
+  process.env.PANEL_IA_MODELO_FALSO = '1';
+  process.env.NODE_ENV = 'test';
+  try {
+    const emp = await dbm.getEmployeeById('emp-1');
+    const actor = motor.actorMecanico(emp);
+    const e = await motor.preguntar({ actor, pregunta: 'dale ingreso a la placa vvv22v, una boxer' }, () => {});
+    assert.equal(e.estado, 'esperando_aprobacion');
+    assert.equal(e.propuesta.herramienta, 'crear_orden_servicio');
+    await dbm.db.execute("UPDATE employees SET active = 0 WHERE id = 'emp-1'");
+    await assert.rejects(motor.decidirPropuesta({ actor, id: e.id, aprobado: true }, () => {}), /permiso/);
+    await dbm.db.execute("UPDATE employees SET active = 1 WHERE id = 'emp-1'");
+    const eventos = [];
+    const r = await motor.decidirPropuesta({ actor, id: e.id, aprobado: true }, (x) => eventos.push(x));
+    assert.equal(r.estado, 'terminada');
+    assert.match(r.respuesta, /\/taller\/orden\//, 'el enlace debe ir al portal del taller');
+    const o = await fila("SELECT employee_id FROM service_orders WHERE motorcycle LIKE 'VVV22V%'");
+    assert.equal(o.employee_id, 'emp-1');
+    const aud = await fila('SELECT pidio_usuario_id, decidio_usuario_id FROM asistente_auditoria WHERE conversacion_id = ?', [e.id]);
+    assert.deepEqual([aud.pidio_usuario_id, aud.decidio_usuario_id], ['emp:emp-1', 'emp:emp-1']);
+  } finally {
+    delete process.env.PANEL_IA_MODELO_FALSO;
+  }
 });
 
 test('retención: purga conversaciones viejas pero no consumo ni auditoría', async () => {

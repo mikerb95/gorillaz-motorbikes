@@ -72,6 +72,7 @@ before(async () => {
     total: 45000, motorcycle: `ABC12D ${String.fromCharCode(0x2014)} Pulsar NS200`, status: 'ingreso_taller', actor: 'E2E',
   });
   ordenId = o.id;
+  await dbm.db.execute("INSERT INTO employees (id, name, pin_hash, active) VALUES ('emp-e2e', 'Andrés', 'x', 1)");
   await dbm.db.execute(`INSERT INTO products (id, slug, name, brand, sku, category, price, stock, status)
     VALUES ('p-casco-e2e','casco-e2e','Casco LS2 Rapid','LS2','LS2-R','cascos',350000,5,'active')`);
   [BASE, BASE_SIN_CLAVE] = await Promise.all([
@@ -190,4 +191,106 @@ test('móvil: sin desborde horizontal', async () => {
   await page.screenshot({ path: path.join(capturas, '7-movil.png'), fullPage: true });
   assert.ok(desborde <= 1, `desborde horizontal de ${desborde}px`);
   await ctx.close();
+});
+
+// ── Voz del mecánico (/taller/voz) ─────────────────────────────────────────
+
+// El navegador de pruebas no tiene micrófono: se reemplaza el reconocimiento
+// de voz por uno que "escucha" el texto de window.__dictado.
+const RECONOCIMIENTO_FALSO = () => {
+  window.__dictado = '';
+  class Falso {
+    start() {
+      this._t = setTimeout(() => {
+        if (!window.__dictado) return;
+        const r = [{ transcript: window.__dictado }];
+        r.isFinal = true;
+        this.onresult && this.onresult({ resultIndex: 0, results: [r] });
+      }, 120);
+    }
+    stop() { clearTimeout(this._t); setTimeout(() => this.onend && this.onend(), 60); }
+  }
+  window.SpeechRecognition = Falso;
+  window.webkitSpeechRecognition = Falso;
+};
+
+async function paginaMecanico(base, { sinVoz = false } = {}) {
+  const ctx = await navegador.newContext({ viewport: { width: 390, height: 844 }, locale: 'es-CO', hasTouch: true, isMobile: true });
+  await ctx.addCookies([{ name: 'emp_jwt', value: jwt.sign({ eid: 'emp-e2e' }, JWT_SECRET), url: base }]);
+  await ctx.addInitScript(sinVoz ? () => { delete window.SpeechRecognition; delete window.webkitSpeechRecognition; } : RECONOCIMIENTO_FALSO);
+  const page = await ctx.newPage();
+  await page.goto(`${base}/taller/voz`);
+  return page;
+}
+
+async function sostenerMic(page, { ms = 700, deslizar = 0, dictado = '' } = {}) {
+  await page.evaluate((t) => { window.__dictado = t; }, dictado);
+  const caja = await page.locator('#tvMic').boundingBox();
+  const x = caja.x + caja.width / 2;
+  const y = caja.y + caja.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.waitForTimeout(ms / 2);
+  if (deslizar) await page.mouse.move(x - deslizar, y, { steps: 5 });
+  await page.waitForTimeout(ms / 2);
+  return async () => page.mouse.up();
+}
+
+test('voz: el portal del taller pide sesión de empleado', async () => {
+  const ctx = await navegador.newContext();
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/taller/voz`);
+  assert.match(page.url(), /\/taller\/login/);
+  await ctx.close();
+});
+
+test('voz: sostener, dictar, soltar; tarjeta de ingreso y confirmación del mecánico', async () => {
+  const page = await paginaMecanico(BASE);
+  await page.getByRole('heading', { name: '¿Qué necesitas?' }).waitFor();
+  await page.screenshot({ path: path.join(capturas, 'voz-1-inicio.png') });
+  const soltar = await sostenerMic(page, { dictado: 'dale ingreso a la placa xyz77k, una boxer' });
+  assert.equal(await page.locator('#tvGrabando').isVisible(), true);
+  assert.match(await page.locator('#tvParcial').innerText(), /dale ingreso/);
+  await page.screenshot({ path: path.join(capturas, 'voz-2-grabando.png') });
+  await soltar();
+  await page.locator('.pia-pregunta').filter({ hasText: 'dale ingreso a la placa xyz77k' }).waitFor();
+  const tarjeta = page.locator('.pia-tarjeta');
+  await tarjeta.waitFor();
+  assert.match(await tarjeta.innerText(), /Andrés/);
+  await page.screenshot({ path: path.join(capturas, 'voz-3-tarjeta.png') });
+  assert.equal(await fila("SELECT id FROM service_orders WHERE motorcycle LIKE 'XYZ77K%'"), undefined);
+  await tarjeta.getByRole('button', { name: 'Crear orden' }).click();
+  await tarjeta.locator('.pia-sello.is-ok').waitFor();
+  const enlace = page.locator('.pia-respuesta a').filter({ hasText: 'Abrir' });
+  await enlace.waitFor();
+  assert.match(await enlace.getAttribute('href'), /^\/taller\/orden\//);
+  const o = await fila("SELECT employee_id FROM service_orders WHERE motorcycle LIKE 'XYZ77K%'");
+  assert.equal(o.employee_id, 'emp-e2e');
+  const desborde = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert.ok(desborde <= 1, `desborde horizontal de ${desborde}px`);
+  await page.screenshot({ path: path.join(capturas, 'voz-4-confirmada.png') });
+  await page.context().close();
+});
+
+test('voz: deslizar a la izquierda cancela y un toque corto no envía', async () => {
+  const page = await paginaMecanico(BASE);
+  const soltar = await sostenerMic(page, { dictado: 'comenta que no debía enviarse', deslizar: 150 });
+  assert.equal(await page.locator('#tvGrabando.is-cancelar').isVisible(), true);
+  await soltar();
+  await page.waitForTimeout(400);
+  const toque = await sostenerMic(page, { ms: 100, dictado: 'otro texto' });
+  await toque();
+  await page.locator('#piaNota').filter({ hasText: 'Mantén presionado' }).waitFor();
+  assert.equal(await page.locator('.pia-pregunta').count(), 0);
+  await page.context().close();
+});
+
+test('voz: sin dictado en el navegador, el micrófono se apaga y se puede escribir', async () => {
+  const page = await paginaMecanico(BASE, { sinVoz: true });
+  await page.locator('#piaNota').filter({ hasText: 'no permite dictar' }).waitFor();
+  assert.equal(await page.locator('#tvMic').isDisabled(), true);
+  await page.locator('#piaCampo').fill('¿cómo va el taller?');
+  await page.locator('#piaEnviar').click();
+  await page.locator('.pia-respuesta').filter({ hasText: 'órdenes en el panel' }).waitFor();
+  await page.context().close();
 });
